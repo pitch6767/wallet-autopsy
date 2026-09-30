@@ -118,7 +118,9 @@ async function walletReport(sp) {
     else if (type === "REDEEM") { m.redeemUsdc += usdc; }
   }
 
-  let liste = [...marches.values()].map(analyseMarche);
+  // On ne garde que les marchés ayant des trades dans la fenêtre téléchargée :
+  // un remboursement sans les achats correspondants fausserait les flux.
+  let liste = [...marches.values()].map(analyseMarche).filter((m) => m.nTrades > 0);
   if (filtre) liste = liste.filter((m) => (m.titre + " " + m.slug).toLowerCase().includes(filtre));
   liste.sort((a, b) => b.dernier - a.dernier);
 
