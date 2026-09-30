@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wallet Autopsy</title>
+<meta name="theme-color" content="#0f1115">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14171c;--mute:#667085;--line:#e4e7ec;--acc:#2f5bea;--ok:#0f8a4b;--bad:#c2372b;--warn:#b26b00;--chip:#eef1f6}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#181b21;--ink:#e8eaee;--mute:#98a2b3;--line:#2a2f38;--acc:#6f8fff;--ok:#35c37a;--bad:#ff6b5e;--warn:#f0a33a;--chip:#232833}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:18px 16px 6px;max-width:960px;margin:auto}
+h1{font-size:20px;margin:0}
+.sub{color:var(--mute);font-size:13px;margin-top:2px}
+main{max-width:960px;margin:auto;padding:8px 16px 40px}
+.tabs{display:flex;gap:6px;margin:10px 0}
+.tabs button{flex:1;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font-size:14px;cursor:pointer}
+.tabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
+label{display:block;font-size:12px;color:var(--mute);margin:8px 0 4px}
+input{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:15px}
+.go{margin-top:12px;width:100%;padding:12px;border:0;border-radius:10px;background:var(--acc);color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.go:disabled{opacity:.5}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:640px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--chip);border-radius:10px;padding:10px}
+.kpi b{display:block;font-size:18px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--mute)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tag{background:var(--chip);border-radius:20px;padding:4px 10px;font-size:12px}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.mute{color:var(--mute)}
+details.m{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:8px 0}
+details.m summary{list-style:none;padding:12px 14px;cursor:pointer}
+details.m summary::-webkit-details-marker{display:none}
+.mt{font-weight:600;font-size:14px}
+.ml{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--mute);margin-top:4px}
+.mb{padding:0 14px 14px}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:6px 4px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--mute);font-weight:500;font-size:12px}
+.note{font-size:12px;color:var(--mute);margin-top:8px}
+.err{color:var(--bad);font-size:14px}
+.h-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.h-row button{padding:6px 10px;border:1px solid var(--acc);background:transparent;color:var(--acc);border-radius:8px;cursor:pointer;white-space:nowrap}
+.addr{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+a{color:var(--acc)}
+.hide{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>Wallet Autopsy</h1>
+  <div class="sub">Profilage de portefeuilles Polymarket — lecture seule, données publiques</div>
+</header>
+<main>
+  <div class="tabs">
+    <button id="t1" class="on" onclick="tab(1)">Portefeuille</button>
+    <button id="t2" onclick="tab(2)">Détenteurs d'un marché</button>
+  </div>
+
+  <section id="p1">
+    <div class="card">
+      <label for="addr">Adresse du portefeuille</label>
+      <input id="addr" placeholder="0x…" autocomplete="off" spellcheck="false">
+      <label for="filtre">Filtre sur le titre du marché (facultatif)</label>
+      <input id="filtre" placeholder="ex. Bitcoin Up or Down" autocomplete="off">
+      <input id="market" type="hidden">
+      <div id="marketInfo" class="note hide"></div>
+      <button class="go" id="goW" onclick="analyser()">Analyser</button>
+    </div>
+    <div id="outW"></div>
+  </section>
+
+  <section id="p2" class="hide">
+    <div class="card">
+      <label for="q">Lien de la page Polymarket ou slug de l'événement</label>
+      <input id="q" placeholder="https://polymarket.com/event/…" autocomplete="off" spellcheck="false">
+      <button class="go" id="goH" onclick="detenteurs()">Voir les détenteurs</button>
+    </div>
+    <div id="outH"></div>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const f2 = (x) => x == null ? "—" : Number(x).toLocaleString("fr-CH", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const f4 = (x) => x == null ? "—" : Number(x).toFixed(4);
+const f0 = (x) => x == null ? "—" : Math.round(Number(x)).toLocaleString("fr-CH");
+const usd = (x) => x == null ? "—" : (x < 0 ? "−" : "") + "$" + f2(Math.abs(x));
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dt = (t) => t ? new Date(t * 1000).toLocaleString("fr-CH", {day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}) : "—";
+const sec = (s) => s == null ? "—" : s < 60 ? s + " s" : (s / 60).toFixed(1) + " min";
+
+function tab(n){ $("t1").classList.toggle("on", n===1); $("t2").classList.toggle("on", n===2);
+  $("p1").classList.toggle("hide", n!==1); $("p2").classList.toggle("hide", n!==2); }
+
+async function api(path){ const r = await fetch(path); const j = await r.json(); if (!r.ok || j.erreur) throw new Error(j.erreur || ("Erreur " + r.status)); return j; }
+
+async function analyser(){
+  const addr = $("addr").value.trim(), filtre = $("filtre").value.trim(), market = $("market").value;
+  const q = new URLSearchParams({addr}); if (filtre) q.set("filtre", filtre); if (market) q.set("market", market);
+  history.replaceState(null, "", "?" + q.toString());
+  $("goW").disabled = true; $("outW").innerHTML = '<div class="card mute">Téléchargement des trades…</div>';
+  try { rendW(await api("/api/wallet?" + q)); }
+  catch(e){ $("outW").innerHTML = '<div class="card err">' + esc(e.message) + '</div>'; }
+  finally { $("goW").disabled = false; }
+}
+
+function rendW(d){
+  const s = d.synthese;
+  const cls = (v) => v == null ? "" : v < 1 ? "ok" : v > 1 ? "bad" : "";
+  let h = '<div class="card"><div class="kpis">'
+   + kpi(f0(s.marches), "marchés") + kpi(f0(s.trades), "trades")
+   + kpi(usd(s.volumeAchats), "volume acheté") + kpi(usd(s.fluxRealise), "flux réalisés*")
+   + kpi(f0(s.marchesDeuxCotes) + " / " + f0(s.marches), "marchés achetés des deux côtés")
+   + kpi('<span class="'+cls(s.combineMoyenPondere)+'">' + f4(s.combineMoyenPondere) + '</span>', "prix combiné moyen des paires")
+   + kpi('<span class="'+(s.margePairesTotale>0?"ok":s.margePairesTotale<0?"bad":"")+'">' + usd(s.margePairesTotale) + '</span>', "marge figée sur les paires")
+   + kpi(sec(s.ecartMedianSec), "écart médian entre trades")
+   + '</div><div class="tags">' + s.profil.map(t => '<span class="tag">' + esc(t) + '</span>').join("") + '</div>'
+   + '<div class="note">* Ventes + fusions + remboursements − achats − splits. Les parts encore détenues ne sont pas valorisées.'
+   + (d.tronque ? ' <b class="warn">Historique tronqué par l\'API : seules les lignes les plus récentes sont prises.</b>' : '')
+   + (d.activiteIndisponible ? ' <b class="warn">Fusions et remboursements indisponibles.</b>' : '')
+   + ' — ' + f0(d.lignes.trades) + ' trades, ' + f0(d.lignes.activite) + ' mouvements.</div></div>';
+
+  if (!d.marches.length) h += '<div class="card mute">Aucun marché trouvé' + (d.filtre ? ' avec ce filtre' : '') + '.</div>';
+  for (const m of d.marches) {
+    const link = m.eventSlug ? 'https://polymarket.com/event/' + encodeURIComponent(m.eventSlug) : null;
+    h += '<details class="m"><summary><div class="mt">' + esc(m.titre || m.conditionId) + '</div><div class="ml">'
+      + '<span>' + dt(m.premier) + '</span><span>' + m.nTrades + ' trades</span>'
+      + (m.combine != null ? '<span class="' + cls(m.combine) + '">combiné ' + f4(m.combine) + '</span>' : '<span>un seul côté</span>')
+      + (m.pairesAchetees ? '<span class="' + (m.margePaires>=0?"ok":"bad") + '">marge ' + usd(m.margePaires) + '</span>' : '')
+      + '<span>flux ' + usd(m.fluxRealise) + '</span></div></summary><div class="mb"><table><tr><th>Issue</th><th>Parts achetées</th><th>Prix moyen</th><th>Parts vendues</th><th>Prix vente</th><th>Tendance prix</th><th>Accum.</th></tr>';
+    for (const o of m.issues) {
+      h += '<tr><td>' + esc(o.nom) + '</td><td>' + f0(o.achatParts) + '</td><td>' + f4(o.prixMoyenAchat) + '</td><td>' + f0(o.venteParts)
+        + '</td><td>' + f4(o.prixMoyenVente) + '</td><td class="' + (o.tendancePrix>0.02?"warn":"") + '">' + (o.tendancePrix==null?"—":(o.tendancePrix>0?"+":"")+o.tendancePrix.toFixed(3))
+        + '</td><td>' + (o.accumulation==null?"—":o.accumulation.toFixed(2)+"×") + '</td></tr>';
+    }
+    h += '</table><div class="note">Paires : ' + f0(m.pairesAchetees) + ' · parts non appariées : ' + f0(m.partsNonAppariees)
+      + ' · fusions : ' + f0(m.merges) + ' (' + usd(m.mergeUsdc) + ') · remboursé : ' + usd(m.redeemUsdc)
+      + ' · durée : ' + (m.dureeMin<1? Math.round(m.dureeMin*60)+" s" : m.dureeMin.toFixed(1)+" min")
+      + ' · écart médian : ' + sec(m.ecartMedianSec) + ' · même seconde : ' + (m.memeSecondePct==null?"—":m.memeSecondePct.toFixed(0)+" %")
+      + (link ? ' · <a href="' + link + '" target="_blank" rel="noopener">page Polymarket</a>' : '') + '</div></div></details>';
+  }
+  $("outW").innerHTML = h;
+}
+const kpi = (v, l) => '<div class="kpi"><b>' + v + '</b><span>' + l + '</span></div>';
+
+async function detenteurs(){
+  const q = $("q").value.trim();
+  $("goH").disabled = true; $("outH").innerHTML = '<div class="card mute">Recherche…</div>';
+  try {
+    const d = await api("/api/holders?q=" + encodeURIComponent(q));
+    let h = '<div class="card"><div class="mt">' + esc(d.titre) + '</div>';
+    for (const m of d.marches) {
+      if (d.marches.length > 1) h += '<div class="note" style="margin-top:14px"><b>' + esc(m.question) + '</b></div>';
+      const tous = m.cotes.flatMap(c => c.detenteurs).sort((a,b) => b.parts - a.parts);
+      if (!tous.length) h += '<div class="note">Aucun détenteur renvoyé.</div>';
+      for (const x of tous) {
+        h += '<div class="h-row"><div><div>' + esc(x.nom || "—") + ' · <b>' + esc(x.issue) + '</b> ' + f0(x.parts) + '</div><div class="addr mute">' + esc(x.adresse) + '</div></div>'
+          + '<button onclick="depuisDet(\'' + esc(x.adresse) + '\',\'' + esc(m.conditionId) + '\',\'' + esc(m.question).replace(/'/g,"") + '\')">Analyser</button></div>';
+      }
+    }
+    $("outH").innerHTML = h + '</div>';
+  } catch(e){ $("outH").innerHTML = '<div class="card err">' + esc(e.message) + '</div>'; }
+  finally { $("goH").disabled = false; }
+}
+function depuisDet(addr, cid, q){
+  $("addr").value = addr; $("filtre").value = ""; $("market").value = cid;
+  $("marketInfo").textContent = "Limité au marché : " + q + " (effacer l'adresse pour tout voir)";
+  $("marketInfo").classList.remove("hide"); tab(1); analyser();
+}
+$("addr").addEventListener("input", () => { $("market").value = ""; $("marketInfo").classList.add("hide"); });
+
+// Relance depuis l'adresse de la page
+const p = new URLSearchParams(location.search);
+if (p.get("addr")) { $("addr").value = p.get("addr"); $("filtre").value = p.get("filtre") || ""; $("market").value = p.get("market") || ""; analyser(); }
+</script>
+</body>
+</html>
