@@ -16,9 +16,9 @@ export const SERIES = [
   { id: 41, type: "1j", fen: 24 * 90, per: 24 },
 ];
 
-const MAX_MARCHES = 16;
-const MAX_FETCH = 400;
-const DUREE_MAX_MS = 25_000;
+const MAX_MARCHES = 70;
+const MAX_FETCH = 800;
+const DUREE_MAX_MS = 45_000;
 
 const num = (x) => (x == null || x === "" ? 0 : Number(x)) || 0;
 const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
@@ -213,9 +213,9 @@ export async function tourDeCollecte(env) {
     // Marchés restés « en cours » après un tour interrompu
     await db.prepare("UPDATE markets SET statut=0 WHERE statut=2 AND claim_ts < ?").bind((t0 / 1000 | 0) - 600).run();
     const { results } = await db.prepare("SELECT cid,type,gagnant FROM markets WHERE statut=0 ORDER BY end_ts DESC LIMIT ?").bind(MAX_MARCHES).all();
-    for (let i = 0; i < results.length; i += 2) {
+    for (let i = 0; i < results.length; i += 5) {
       if (Date.now() - t0 > DUREE_MAX_MS || f.n > MAX_FETCH) break;
-      const lot = results.slice(i, i + 2);
+      const lot = results.slice(i, i + 5);
       await db.batch(lot.map((m) => db.prepare("UPDATE markets SET statut=2, claim_ts=? WHERE cid=? AND statut=0").bind(Date.now() / 1000 | 0, m.cid)));
       await Promise.all(lot.map(async (m) => {
         try { const nt = await traiterMarche(db, f, m); rapport.trades += nt; rapport.traites++; }
