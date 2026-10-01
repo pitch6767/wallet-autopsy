@@ -16,9 +16,9 @@ export const SERIES = [
   { id: 41, type: "1j", fen: 24 * 90, per: 24 },
 ];
 
-const MAX_MARCHES = 40;
-const MAX_FETCH = 750;
-const DUREE_MAX_MS = 50_000;
+const MAX_MARCHES = 16;
+const MAX_FETCH = 400;
+const DUREE_MAX_MS = 25_000;
 
 const num = (x) => (x == null || x === "" ? 0 : Number(x)) || 0;
 const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
@@ -166,8 +166,8 @@ const sqlTxt = (s) => "'" + String(s || "").replace(/[^\p{L}\p{N} ._\-]/gu, "").
 function upserts(db, type, ws) {
   const cols = "wallet,type,nom,n_marches,n_gagnes,cout,pnl,sum_roi,sum_roi2,best_roi,best_pnl,worst_pnl,trades,deux,deux_sous1,sum_combine,n_combine,sniper,loterie,dir,dir_gagne,split,last_ts";
   const stm = [];
-  for (let i = 0; i < ws.length; i += 250) {
-    const vals = ws.slice(i, i + 250).map((w) => "(" + [
+  for (let i = 0; i < ws.length; i += 80) {
+    const vals = ws.slice(i, i + 80).map((w) => "(" + [
       `'${w.adresse}'`, `'${type}'`, sqlTxt(w.nom), 1, w.pnl > 0 ? 1 : 0, sqlNum(w.cout), sqlNum(w.pnl),
       sqlNum(w.roi), sqlNum(w.roi * w.roi), sqlNum(w.roi), sqlNum(w.pnl), sqlNum(w.pnl), w.n,
       w.classe === "deux" ? 1 : 0, w.combine != null && w.combine < 1 ? 1 : 0, sqlNum(w.combine ?? 0), w.combine != null ? 1 : 0,
@@ -208,22 +208,26 @@ export async function tourDeCollecte(env) {
   const f = compteur();
   const rapport = { decouverts: 0, traites: 0, erreurs: 0, trades: 0 };
   try {
+    await setMeta(db, "tour_debut", new Date().toISOString());
     try { rapport.decouverts = await decouvrir(db, f); } catch (e) { rapport.erreurDecouverte = String(e.message || e); }
     // Marchés restés « en cours » après un tour interrompu
     await db.prepare("UPDATE markets SET statut=0 WHERE statut=2 AND claim_ts < ?").bind((t0 / 1000 | 0) - 600).run();
     const { results } = await db.prepare("SELECT cid,type,gagnant FROM markets WHERE statut=0 ORDER BY end_ts DESC LIMIT ?").bind(MAX_MARCHES).all();
-    for (let i = 0; i < results.length; i += 4) {
+    for (let i = 0; i < results.length; i += 2) {
       if (Date.now() - t0 > DUREE_MAX_MS || f.n > MAX_FETCH) break;
-      const lot = results.slice(i, i + 4);
+      const lot = results.slice(i, i + 2);
       await db.batch(lot.map((m) => db.prepare("UPDATE markets SET statut=2, claim_ts=? WHERE cid=? AND statut=0").bind(Date.now() / 1000 | 0, m.cid)));
       await Promise.all(lot.map(async (m) => {
         try { const nt = await traiterMarche(db, f, m); rapport.trades += nt; rapport.traites++; }
         catch (e) {
           rapport.erreurs++;
+          rapport.derniereErreur = String(e.message || e).slice(0, 300);
           await db.prepare("UPDATE markets SET statut=CASE WHEN essais>=3 THEN 9 ELSE 0 END, essais=essais+1, erreur=? WHERE cid=?").bind(String(e.message || e).slice(0, 200), m.cid).run();
         }
       }));
     }
+  } catch (e) {
+    rapport.erreurTour = String(e && e.stack || e).slice(0, 500);
   } finally {
     rapport.fetch = f.n;
     rapport.ms = Date.now() - t0;

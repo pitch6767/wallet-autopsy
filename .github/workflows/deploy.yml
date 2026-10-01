@@ -32,6 +32,9 @@ jobs:
           wrangler deploy >> /tmp/deploy.log 2>&1; echo "code sortie: $?" >> /tmp/deploy.log
           tail -30 /tmp/deploy.log
       - name: Controle apres deploiement
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set +e
           mkdir -p diagnostic
@@ -40,7 +43,11 @@ jobs:
           A=0x6031b6eed1c97e853c6e0f03ad3ce3529351f96d
           {
             echo "=== deploiement"; grep -E "D1:|migrations|Deployed|code sortie|rror|schedule|cron" /tmp/deploy.log | head -20
-            echo; echo "=== /api/btc/etat (apres 70 s)"; sleep 70; curl -sS -m 30 $U/api/btc/etat
+            echo; echo "=== tour manuel 1"; curl -sS -m 120 $U/api/btc/tour
+            echo; echo "=== tour manuel 2"; curl -sS -m 120 $U/api/btc/tour
+            echo; echo "=== journaux cron 130 s"
+            timeout 130 wrangler tail wallet-autopsy --format pretty > /tmp/tail.txt 2>&1; grep -v "^$" /tmp/tail.txt | head -40
+            echo; echo "=== /api/btc/etat"; curl -sS -m 30 $U/api/btc/etat
             echo; echo "=== /api/sante"; curl -sS -m 20 $U/api/sante
             echo; echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}" $U/
             echo; echo "=== /api/market"; curl -sS -m 90 "$U/api/market?q=https%3A%2F%2Fpolymarket.com%2Ffr%2Fevent%2Fbtc-updown-5m-1790840700" > /tmp/m.json; head -c 3000 /tmp/m.json

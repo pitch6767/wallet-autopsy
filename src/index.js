@@ -13,6 +13,7 @@ export default {
     try {
       if (url.pathname === "/api/wallet") return json(await walletReport(url.searchParams));
       if (url.pathname === "/api/btc/classement") return json(await classement(env, url.searchParams));
+      if (url.pathname === "/api/btc/tour") return json(await tourDeCollecte(env));
       if (url.pathname === "/api/btc/etat") return json(await etatCollecte(env));
       if (url.pathname === "/api/copier") return json(await copierReport(url.searchParams));
       if (url.pathname === "/api/market") return json(await marketReport(url.searchParams));
