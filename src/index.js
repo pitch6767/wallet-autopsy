@@ -1,3 +1,4 @@
+import { tourDeCollecte, etatCollecte, classement } from "./collect.js";
 // wallet-autopsy — profilage de portefeuilles Polymarket
 // Lecture seule : uniquement les API publiques de Polymarket, aucune clé, aucun ordre.
 
@@ -11,6 +12,8 @@ export default {
     const url = new URL(req.url);
     try {
       if (url.pathname === "/api/wallet") return json(await walletReport(url.searchParams));
+      if (url.pathname === "/api/btc/classement") return json(await classement(env, url.searchParams));
+      if (url.pathname === "/api/btc/etat") return json(await etatCollecte(env));
       if (url.pathname === "/api/copier") return json(await copierReport(url.searchParams));
       if (url.pathname === "/api/market") return json(await marketReport(url.searchParams));
       if (url.pathname === "/api/holders") return json(await holdersReport(url.searchParams));
@@ -19,6 +22,9 @@ export default {
       return json({ erreur: String(e && e.message ? e.message : e) }, 500);
     }
     return env.ASSETS.fetch(req);
+  },
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(tourDeCollecte(env).catch((e) => console.log("collecte", e && e.message)));
   },
 };
 
