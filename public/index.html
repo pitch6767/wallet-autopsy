@@ -57,6 +57,9 @@ table.w td{white-space:nowrap}
 table.w tr.cl{cursor:pointer}
 table.w tr.cl:hover td{background:var(--chip)}
 .mini{font-size:11px;color:var(--mute)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:8px 12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:20px;cursor:pointer;font-size:13px}
+.seg button.on{background:var(--acc);border-color:var(--acc);color:#fff}
 .filt{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;align-items:end}
 @media(min-width:720px){.filt{grid-template-columns:repeat(5,1fr)}}
 .filt label{margin:0 0 4px}
@@ -84,12 +87,30 @@ tr.det td{white-space:normal;text-align:left;background:var(--bg);padding:10px 1
 </header>
 <main>
   <div class="tabs">
-    <button id="t3" class="on" onclick="tab(3)">Marché</button>
+    <button id="t4" class="on" onclick="tab(4)">BTC historique</button>
+    <button id="t3" onclick="tab(3)">Marché</button>
     <button id="t1" onclick="tab(1)">Portefeuille</button>
     <button id="t2" onclick="tab(2)">Détenteurs</button>
   </div>
 
-  <section id="p3">
+  <section id="p4">
+    <div class="card">
+      <div class="seg" id="types">
+        <button data-t="tous" class="on">Tous</button><button data-t="5m">5 min</button><button data-t="15m">15 min</button><button data-t="1h">1 h</button><button data-t="4h">4 h</button><button data-t="1j">Jour</button>
+      </div>
+      <div class="filt" style="margin-top:10px">
+        <div><label for="hM">Marchés min.</label><input id="hM" type="number" inputmode="numeric" placeholder="1"></div>
+        <div><label for="hT">Trades min.</label><input id="hT" type="number" inputmode="numeric" placeholder="0"></div>
+        <div><label for="hC">Misé min. ($)</label><input id="hC" type="number" inputmode="decimal" placeholder="0"></div>
+        <div><label for="hR">ROI min. (%)</label><input id="hR" type="number" inputmode="decimal" placeholder="—"></div>
+        <div><button class="go" style="margin:0" onclick="chargerH()">Appliquer</button></div>
+      </div>
+      <div class="note" id="hEtat">Chargement de l'état de la collecte…</div>
+    </div>
+    <div id="outH4"></div>
+  </section>
+
+  <section id="p3" class="hide">
     <div class="card">
       <label for="qm">Lien de la page Polymarket du marché</label>
       <input id="qm" placeholder="https://polymarket.com/fr/event/btc-updown-5m-…" autocomplete="off" spellcheck="false">
@@ -130,7 +151,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"
 const dt = (t) => t ? new Date(t * 1000).toLocaleString("fr-CH", {day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}) : "—";
 const sec = (s) => s == null ? "—" : s < 60 ? s + " s" : (s / 60).toFixed(1) + " min";
 
-function tab(n){ for (const k of [1,2,3]) { $("t"+k).classList.toggle("on", n===k); $("p"+k).classList.toggle("hide", n!==k); } }
+function tab(n){ for (const k of [1,2,3,4]) { $("t"+k).classList.toggle("on", n===k); $("p"+k).classList.toggle("hide", n!==k); } }
 
 let M = null, triCle = "volume", triSens = -1;
 async function marche(){
@@ -259,7 +280,7 @@ function stratHisto(h, fam){
   else if (dom[0] === "loterie ≤ 0,25") titre = "Chasseur de cotes";
   else titre = "Parieur directionnel";
   const txt = [];
-  txt.push("Sur ses " + h.marches + " derniers marchés " + esc(fam) + " : " + parts.filter(x => x[1]).map(x => x[0] + " " + pc(x[1])).join(", ") + ".");
+  txt.push("Sur ses " + h.marches + " marchés " + esc(fam) + " : " + parts.filter(x => x[1]).map(x => x[0] + " " + pc(x[1])).join(", ") + ".");
   if (p.deuxCotesPct) txt.push("Quand il prend les deux côtés, il paie en moyenne " + px(p.combineMoyen) + " la paire, sous 1 $ dans " + pc(p.deuxCotesSousUnPct) + " des cas.");
   if (p.directionnelPct) txt.push("Ses paris directionnels (entre 0,25 et 0,90) sont justes dans " + pc(p.directionnelReussitePct) + " des cas.");
   txt.push("Il gagne " + pc(h.pctGagnes) + " de ses marchés, mise en moyenne " + usd(p.miseMoyenne) + " par marché, ROI total " + (h.roi == null ? "—" : (h.roi * 100).toFixed(1) + " %") + " pour " + usd(h.pnl) + ". Meilleur marché " + usd(p.meilleurMarche) + ", pire " + usd(p.pireMarche) + ".");
@@ -267,6 +288,7 @@ function stratHisto(h, fam){
   if (titre === "Arbitreur de paires") copie = "Difficile à copier : le gain vient de la vitesse, quand tu copies les prix sont déjà partis.";
   else if (titre === "Sniper de fin de marché") copie = "Copiable seulement en automatique dans les dernières secondes ; le risque est la perte rare mais totale.";
   else if (titre === "Deux côtés / teneur de marché") copie = "Peu copiable : il vit de l'écart achat/vente avec des ordres passifs.";
+  else if (titre === "Chasseur de cotes") copie = "Facile à suivre (prix bas, pas de course de vitesse), mais les gains sont rares : il faut le copier sur beaucoup de marchés et accepter de longues séries de petites pertes.";
   else copie = "Copiable : un pari directionnel se suit avec quelques secondes de retard, à condition que son taux de réussite tienne.";
   txt.push("Pour copier : " + copie);
   return { titre, txt };
@@ -411,9 +433,83 @@ function depuisDet(addr, cid, q){
 }
 $("addr").addEventListener("input", () => { $("market").value = ""; $("marketInfo").classList.add("hide"); });
 
+// ───── BTC historique ─────
+let HT = "tous", HD = null, hTri = "pnl";
+document.querySelectorAll("#types button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#types button").forEach(x => x.classList.toggle("on", x === b)); HT = b.dataset.t; chargerH(); });
+const DUREES = { "5m": "5 min", "15m": "15 min", "1h": "1 h", "4h": "4 h", "1j": "jour" };
+async function etatH(){
+  try {
+    const e = await api("/api/btc/etat");
+    const t = e.parType.reduce((a, r) => ({ tr: a.tr + (r.traites||0), at: a.at + (r.attente||0), old: Math.min(a.old, r.plus_ancien || 1e12) }), { tr: 0, at: 0, old: 1e12 });
+    const det = e.parType.map(r => (DUREES[r.type] || r.type) + " " + f0(r.traites) + "/" + f0((r.traites||0) + (r.attente||0))).join(" · ");
+    $("hEtat").innerHTML = '<b>' + f0(t.tr) + '</b> marchés analysés, ' + f0(e.portefeuilles) + ' portefeuilles. Remonte jusqu\'au <b>' + (t.old < 1e12 ? new Date(t.old*1000).toLocaleDateString("fr-CH") : "—")
+      + '</b> (objectif ' + e.jours + ' jours) — encore ' + f0(t.at) + ' marchés en file, et la liste s\'allonge en remontant le temps. ' + det
+      + '. Mise à jour automatique chaque minute.';
+  } catch(err) { $("hEtat").textContent = "État indisponible : " + err.message; }
+}
+function paramsH(tri){
+  const q = new URLSearchParams({ type: HT, tri: tri || hTri });
+  if ($("hM").value) q.set("marches", $("hM").value);
+  if ($("hT").value) q.set("trades", $("hT").value);
+  if ($("hC").value) q.set("mise", $("hC").value);
+  if ($("hR").value !== "") q.set("roi", $("hR").value);
+  return q;
+}
+async function chargerH(){
+  etatH();
+  $("outH4").innerHTML = '<div class="card mute">Calcul du classement…</div>';
+  try { HD = await api("/api/btc/classement?" + paramsH()); rendH(); }
+  catch(e){ $("outH4").innerHTML = '<div class="card err">' + esc(e.message) + '</div>'; }
+}
+const nomH = (w) => w.nom || (w.wallet.slice(0,8) + "…" + w.wallet.slice(-4));
+const xFois = (r) => r == null ? "—" : "×" + (1 + r).toFixed(r >= 9 ? 0 : 1);
+function profilH(w){
+  const n = w.n_marches;
+  return { marches: n, pctGagnes: w.pct, pnl: w.pnl, roi: w.roi, profil: {
+    deuxCotesPct: w.deux / n, combineMoyen: w.n_combine ? w.sum_combine / w.n_combine : null, deuxCotesSousUnPct: w.deux ? w.deux_sous1 / w.deux : null,
+    sniperPct: w.sniper / n, loteriePct: w.loterie / n, directionnelPct: w.dir / n, directionnelReussitePct: w.dir ? w.dir_gagne / w.dir : null,
+    pireMarche: w.worst_pnl, meilleurMarche: w.best_pnl, miseMoyenne: w.cout / n } };
+}
+function ligneH(w, i, cells){
+  return '<tr class="cl" onclick="ouvrirH(this,\'' + w.wallet + '\')"><td class="mute">' + (i+1) + '</td><td><div class="nm">' + esc(nomH(w)) + '</div></td>' + cells + '</tr>';
+}
+const cPnl = (w) => w.pnl > 0 ? "ok" : w.pnl < 0 ? "bad" : "";
+const roiTxt = (r) => r == null ? "—" : (r * 100).toFixed(1) + " %";
+function rendH(){
+  const d = HD, lib = HT === "tous" ? "tous les BTC Up or Down" : "BTC Up or Down " + DUREES[HT];
+  let h = '<div class="duo"><div class="card"><div class="mt">Top 20 — performance</div><div class="note">PnL total en $ sur ' + lib + ', avec tes filtres. Clique une ligne pour sa stratégie.</div><div class="scroll"><table class="w2"><tr><th>#</th><th>Portefeuille</th><th>PnL</th><th>ROI</th><th>Marchés</th><th>% gagnés</th><th>Meilleur coup</th></tr>';
+  d.perf.forEach((w, i) => h += ligneH(w, i, '<td class="' + cPnl(w) + '">' + usd(w.pnl) + '</td><td class="' + cPnl(w) + '">' + roiTxt(w.roi) + '</td><td>' + f0(w.n_marches) + '</td><td>' + pc(w.pct) + '</td><td>' + xFois(w.best_roi) + '</td>'));
+  h += '</table></div></div><div class="card"><div class="mt">Top 20 — à copier</div><div class="note">Au moins 10 marchés. Classés par régularité : ROI moyen par marché ÷ sa dispersion × √(marchés). Haut = gains constants, pas un coup de chance.</div><div class="scroll"><table class="w2"><tr><th>#</th><th>Portefeuille</th><th>Régularité</th><th>Marchés</th><th>% gagnés</th><th>PnL</th><th>ROI</th></tr>';
+  d.copier.forEach((w, i) => h += ligneH(w, i, '<td><b>' + w.regularite.toFixed(1) + '</b></td><td>' + f0(w.n_marches) + '</td><td>' + pc(w.pct) + '</td><td class="' + cPnl(w) + '">' + usd(w.pnl) + '</td><td class="' + cPnl(w) + '">' + roiTxt(w.roi) + '</td>'));
+  if (!d.copier.length) h += '<tr><td colspan="7" class="mute">Pas encore assez d\'historique.</td></tr>';
+  h += '</table></div></div></div>';
+  const C = [["pnl","PnL"],["roi","ROI"],["regularite","Régularité"],["best_roi","Meilleur coup"],["n_marches","Marchés"],["pct","% gagnés"],["cout","Misé"]];
+  h += '<div class="card"><div class="note">' + f0(d.total) + ' portefeuilles correspondent à tes filtres — les 300 premiers selon le tri choisi. Clique un en-tête pour trier.</div><div class="scroll"><table class="w"><tr><th>#</th><th>Portefeuille</th>'
+    + C.map(c => '<th onclick="trierH(\'' + c[0] + '\')">' + c[1] + (d.tri === c[0] ? " ▾" : "") + '</th>').join("") + '<th>Trades</th><th>Durées</th></tr>';
+  d.table.forEach((w, i) => h += ligneH(w, i, '<td class="' + cPnl(w) + '">' + usd(w.pnl) + '</td><td class="' + cPnl(w) + '">' + roiTxt(w.roi) + '</td><td>' + (w.regularite == null ? "—" : w.regularite.toFixed(1)) + '</td><td>' + xFois(w.best_roi)
+    + '</td><td>' + f0(w.n_marches) + '</td><td>' + pc(w.pct) + '</td><td>' + usd(w.cout) + '</td><td>' + f0(w.trades) + '</td><td class="mini">' + esc((w.types || "").split(",").map(x => { const [t, n] = x.split(":"); return (DUREES[t] || t) + " " + n; }).join(" · ")) + '</td>'));
+  $("outH4").innerHTML = h + '</table></div></div>';
+}
+async function trierH(t){ hTri = t; $("outH4").style.opacity = .5; try { HD = await api("/api/btc/classement?" + paramsH()); rendH(); } finally { $("outH4").style.opacity = 1; } }
+function ouvrirH(tr, a){
+  const nx = tr.nextElementSibling;
+  if (nx && nx.classList.contains("det")) { nx.remove(); return; }
+  const all = [...HD.perf, ...HD.copier, ...HD.table];
+  const w = all.find(x => x.wallet === a);
+  const s = stratHisto(profilH(w), HT === "tous" ? "BTC Up or Down" : "BTC " + DUREES[HT]);
+  const det = document.createElement("tr"); det.className = "det";
+  det.innerHTML = '<td colspan="' + tr.children.length + '"><div class="dt"><div class="st"><div class="stt">' + esc(s.titre) + '</div>' + s.txt.map(t => '<p>' + t + '</p>').join("")
+    + '<p>Meilleur coup : ' + xFois(w.best_roi) + ' la mise sur un seul marché. ' + (w.split ? 'Crée des paires à 1 $ (split) sur ' + f0(w.split) + ' marchés pour revendre un côté : comportement de teneur de marché.' : '') + '</p></div>'
+    + '<button class="lien" onclick="event.stopPropagation();versPortefeuille(\'' + a + '\')">Historique complet du portefeuille →</button></div></td>';
+  tr.after(det);
+}
+setInterval(() => { if (!$("p4").classList.contains("hide")) etatH(); }, 60000);
+
 // Relance depuis l'adresse de la page
 const p = new URLSearchParams(location.search);
-if (p.get("m")) { $("qm").value = p.get("m"); marche(); }
+if (p.get("m")) { tab(3); $("qm").value = p.get("m"); marche(); }
+else if (!p.get("addr")) { chargerH(); }
 else if (p.get("addr")) { tab(1); }
 if (p.get("addr")) { $("addr").value = p.get("addr"); $("filtre").value = p.get("filtre") || ""; $("market").value = p.get("market") || ""; analyser(); }
 </script>
