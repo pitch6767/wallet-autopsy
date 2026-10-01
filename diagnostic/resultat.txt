@@ -1,14 +1,33 @@
-=== séries BTC
-nb series 50
+=== séries par slug
+btc-up-or-down-5m -> [('10684', '5m', False)]
+btc-up-or-down-15m -> [('10192', '15m', False)]
+btc-up-or-down-hourly -> [('10114', 'hourly', False)]
+bitcoin-up-or-down-hourly -> []
+btc-up-or-down-1h -> []
+btc-up-or-down-4h -> [('10331', '4h', False)]
+btc-up-or-down-daily -> [('41', 'daily', False)]
+btc-up-or-down-weekly -> []
+=== toutes séries paginées
 41 btc-up-or-down-daily | BTC Up or Down Daily | daily | closed False
-=== events d'une série, ordre et pagination
-3
-btc-updown-5m-1790843400 2026-10-01T08:35:00Z 1 ["0", "1"]
-btc-updown-5m-1790843100 2026-10-01T08:30:00Z 1 ["1", "0"]
-btc-updown-5m-1790842800 2026-10-01T08:25:00Z 1 ["1", "0"]
-offset 25000 -> {'type': 'validation error', 'error': 'offset too large, use /events/keyset for deeper pagination'} 
-fenetre date -> 13 ['btc-updown-5m-1782863700', 'btc-updown-5m-1782864000', 'btc-updown-5m-1782864300', 'btc-updown-5m-1782864600']
-=== trades: filtres side / start
-cid=
-side=BUY total 0
-side=SELL total 0
+10070 bitcoin-up-or-down-monthly | Bitcoin Up or Down Monthly | monthly | closed False
+10092 bitcoin-dominance-up-or-down-monthly | Bitcoin Dominance Up or Down Monthly | monthly | closed False
+10093 bitcoin-dominance-up-or-down-weekly | Bitcoin Dominance Up or Down Weekly | weekly | closed False
+10094 bitcoin-up-or-down-weekly | Bitcoin Up or Down Weekly | weekly | closed False
+10096 ethbtc-up-or-down-weekly | ETH/BTC Up or Down Weekly | weekly | closed False
+10097 ethbtc-up-or-down-monthly | ETH/BTC Up or Down Monthly | monthly | closed False
+10110 archbtc-up-or-down-hourly | archBTC Up or Down Hourly | hourly | closed False
+10114 btc-up-or-down-hourly | BTC Up or Down Hourly | hourly | closed False
+10192 btc-up-or-down-15m | BTC Up or Down 15m | 15m | closed False
+10323 bitcoin-up-or-down-4h | Bitcoin Up or Down 4H | 4h | closed False
+10331 btc-up-or-down-4h | BTC Up or Down 4h | 4h | closed False
+10684 btc-up-or-down-5m | BTC Up or Down 5m | 5m | closed False
+=== nb events par série sur 1 jour (2026-09-29)
+10684 100 btc-updown-5m-1790639700
+41 1 bitcoin-up-or-down-on-september-29-2026
+=== trades d'un 5m via events?slug, side filtre
+side=BUY total 3689
+side=SELL total 448
+x=1 total 4137
+=== taille d'un marché daily
+bitcoin-up-or-down-on-september-30-2026 309000.9585199999
+daily offset 9500 -> 0
