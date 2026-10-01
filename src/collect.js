@@ -118,16 +118,16 @@ async function tradesMarche(f, cid) {
   return { rows: [...b.rows, ...s.rows], tronque: b.plein || s.plein };
 }
 
-function agreger(rows, gagnant) {
+function agreger(rows, gagnant, finTs) {
   const W = new Map();
   for (const t of rows) {
     const a = String(t.proxyWallet || "").toLowerCase();
     if (!/^0x[0-9a-f]{40}$/.test(a)) continue;
-    if (!W.has(a)) W.set(a, { nom: t.name || t.pseudonym || "", o: [{ ap: 0, ac: 0, vp: 0, vr: 0 }, { ap: 0, ac: 0, vp: 0, vr: 0 }], n: 0, ts: 0 });
+    if (!W.has(a)) W.set(a, { nom: t.name || t.pseudonym || "", o: [{ ap: 0, ac: 0, vp: 0, vr: 0 }, { ap: 0, ac: 0, vp: 0, vr: 0 }], n: 0, ts: 0, premierAchat: Infinity });
     const w = W.get(a);
     const i = Number(t.outcomeIndex) === 1 ? 1 : 0;
     const sz = num(t.size), px = num(t.price);
-    if (String(t.side).toUpperCase() === "BUY") { w.o[i].ap += sz; w.o[i].ac += sz * px; }
+    if (String(t.side).toUpperCase() === "BUY") { w.o[i].ap += sz; w.o[i].ac += sz * px; w.premierAchat = Math.min(w.premierAchat, num(t.timestamp) || Infinity); }
     else { w.o[i].vp += sz; w.o[i].vr += sz * px; }
     w.n++;
     w.ts = Math.max(w.ts, num(t.timestamp));
@@ -151,12 +151,15 @@ function agreger(rows, gagnant) {
       if (pmA != null && pmB != null) combine = pmA + pmB;
     } else {
       const cote = A.ap > 0 ? 0 : 1, pm = cote === 0 ? pmA : pmB;
+      const o = cote === 0 ? A : B;
       px = pm; gagne = cote === gagnant ? 1 : 0;
-      if (pm >= 0.9) classe = "sniper";
+      if (o.vp > 0.1 * o.ap) classe = "scalp"; // revend avant la fin : le résultat ne dit rien de son pari
+      else if (pm >= 0.9) classe = "sniper";
       else if (pm <= 0.25) classe = "loterie";
       else { classe = "dir"; dirGagne = gagne; }
     }
-    out.push({ adresse, nom: w.nom, n: w.n, ts: w.ts, cout, pnl, roi: pnl / cout, classe, combine, dirGagne, px, gagne, split: k > 0 ? 1 : 0 });
+    out.push({ adresse, nom: w.nom, n: w.n, ts: w.ts, cout, pnl, roi: pnl / cout, classe, combine, dirGagne, px, gagne, split: k > 0 ? 1 : 0,
+      avant: finTs && Number.isFinite(w.premierAchat) ? Math.max(0, finTs - w.premierAchat) : null });
   }
   return out;
 }
@@ -165,7 +168,7 @@ const sqlNum = (x) => (Number.isFinite(x) ? String(Math.round(x * 1e6) / 1e6) : 
 const sqlTxt = (s) => "'" + String(s || "").replace(/[^\p{L}\p{N} ._\-]/gu, "").slice(0, 40).replace(/'/g, "''") + "'";
 
 function upserts(db, type, ws) {
-  const cols = "wallet,type,nom,n_marches,n_gagnes,cout,pnl,sum_roi,sum_roi2,best_roi,best_pnl,worst_pnl,trades,deux,deux_sous1,sum_combine,n_combine,sniper,loterie,dir,dir_gagne,split,last_ts,px_sniper,g_sniper,px_loterie,g_loterie,px_dir";
+  const cols = "wallet,type,nom,n_marches,n_gagnes,cout,pnl,sum_roi,sum_roi2,best_roi,best_pnl,worst_pnl,trades,deux,deux_sous1,sum_combine,n_combine,sniper,loterie,dir,dir_gagne,split,last_ts,px_sniper,g_sniper,px_loterie,g_loterie,px_dir,scalp,sum_avant,n_avant";
   const stm = [];
   for (let i = 0; i < ws.length; i += 80) {
     const vals = ws.slice(i, i + 80).map((w) => "(" + [
@@ -176,6 +179,9 @@ function upserts(db, type, ws) {
       w.classe === "sniper" ? sqlNum(w.px) : 0, w.classe === "sniper" ? w.gagne : 0,
       w.classe === "loterie" ? sqlNum(w.px) : 0, w.classe === "loterie" ? w.gagne : 0,
       w.classe === "dir" ? sqlNum(w.px) : 0,
+      w.classe === "scalp" ? 1 : 0,
+      ["sniper", "loterie", "dir"].includes(w.classe) && w.avant != null ? sqlNum(w.avant) : 0,
+      ["sniper", "loterie", "dir"].includes(w.classe) && w.avant != null ? 1 : 0,
     ].join(",") + ")").join(",");
     stm.push(db.prepare(`INSERT INTO stats(${cols}) VALUES ${vals}
       ON CONFLICT(wallet,type) DO UPDATE SET
@@ -189,14 +195,15 @@ function upserts(db, type, ws) {
         sniper=stats.sniper+excluded.sniper, loterie=stats.loterie+excluded.loterie, dir=stats.dir+excluded.dir,
         dir_gagne=stats.dir_gagne+excluded.dir_gagne, split=stats.split+excluded.split, last_ts=MAX(stats.last_ts,excluded.last_ts),
         px_sniper=stats.px_sniper+excluded.px_sniper, g_sniper=stats.g_sniper+excluded.g_sniper,
-        px_loterie=stats.px_loterie+excluded.px_loterie, g_loterie=stats.g_loterie+excluded.g_loterie, px_dir=stats.px_dir+excluded.px_dir`));
+        px_loterie=stats.px_loterie+excluded.px_loterie, g_loterie=stats.g_loterie+excluded.g_loterie, px_dir=stats.px_dir+excluded.px_dir,
+        scalp=stats.scalp+excluded.scalp, sum_avant=stats.sum_avant+excluded.sum_avant, n_avant=stats.n_avant+excluded.n_avant`));
   }
   return stm;
 }
 
 async function traiterMarche(db, f, m) {
   const { rows, tronque } = await tradesMarche(f, m.cid);
-  const ws = agreger(rows, m.gagnant);
+  const ws = agreger(rows, m.gagnant, m.end_ts);
   const st = upserts(db, m.type, ws);
   st.push(db.prepare("UPDATE markets SET statut=1, n_trades=?, n_wallets=?, tronque=?, traite_ts=? WHERE cid=? AND statut=2")
     .bind(rows.length, ws.length, tronque ? 1 : 0, Date.now() / 1000 | 0, m.cid));
@@ -218,7 +225,7 @@ export async function tourDeCollecte(env) {
     try { rapport.decouverts = await decouvrir(db, f); } catch (e) { rapport.erreurDecouverte = String(e.message || e); }
     // Marchés restés « en cours » après un tour interrompu
     await db.prepare("UPDATE markets SET statut=0 WHERE statut=2 AND claim_ts < ?").bind((t0 / 1000 | 0) - 600).run();
-    const { results } = await db.prepare("SELECT cid,type,gagnant FROM markets WHERE statut=0 ORDER BY end_ts DESC LIMIT ?").bind(MAX_MARCHES).all();
+    const { results } = await db.prepare("SELECT cid,type,gagnant,end_ts FROM markets WHERE statut=0 ORDER BY end_ts DESC LIMIT ?").bind(MAX_MARCHES).all();
     for (let i = 0; i < results.length; i += 5) {
       if (Date.now() - t0 > DUREE_MAX_MS || f.n > MAX_FETCH) break;
       const lot = results.slice(i, i + 5);
@@ -281,7 +288,7 @@ export async function classement(env, sp) {
       SUM(sum_roi) sum_roi, SUM(sum_roi2) sum_roi2, MAX(best_roi) best_roi, MAX(best_pnl) best_pnl, MIN(worst_pnl) worst_pnl,
       SUM(trades) trades, SUM(deux) deux, SUM(deux_sous1) deux_sous1, SUM(sum_combine) sum_combine, SUM(n_combine) n_combine,
       SUM(sniper) sniper, SUM(loterie) loterie, SUM(dir) dir, SUM(dir_gagne) dir_gagne, SUM(split) split, MAX(last_ts) last_ts,
-      SUM(px_sniper) px_sniper, SUM(g_sniper) g_sniper, SUM(px_loterie) px_loterie, SUM(g_loterie) g_loterie, SUM(px_dir) px_dir,
+      SUM(px_sniper) px_sniper, SUM(g_sniper) g_sniper, SUM(px_loterie) px_loterie, SUM(g_loterie) g_loterie, SUM(px_dir) px_dir, SUM(scalp) scalp, SUM(sum_avant) sum_avant, SUM(n_avant) n_avant,
       GROUP_CONCAT(type || ':' || n_marches) types,
       CASE WHEN SUM(n_marches) > 1 AND (SUM(sum_roi2) - SUM(sum_roi) * SUM(sum_roi) / SUM(n_marches)) > 1e-12
         THEN (CASE WHEN SUM(sum_roi) > 0 THEN 1.0 ELSE -1.0 END) * (SUM(sum_roi) * SUM(sum_roi) / SUM(n_marches))
@@ -293,6 +300,7 @@ export async function classement(env, sp) {
   // « Tueurs » : candidats copiables (paris sur un seul côté, peu d'ordres par marché, rentables)
   const tueursSql = db.prepare(`SELECT * FROM (${agg}) WHERE n_marches >= 30 AND pnl > 0
       AND (sniper + loterie + dir) >= 0.6 * n_marches AND trades <= 30 * n_marches
+      AND n_avant > 0 AND sum_avant / n_avant >= 60
       ORDER BY pnl DESC LIMIT 3000`).bind(...binds);
   const [perf, copier, table, total, cand] = await db.batch([
     q("pnl", 20),
@@ -315,7 +323,7 @@ export async function classement(env, sp) {
       nS += n; g += gg; p += px; v += n * pm * (1 - pm);
     }
     const z = v > 0 ? (g - p) / Math.sqrt(v) : null;
-    return { ...fin(r), nSimple: nS, justes: g, attendus: p, avantage: nS ? (g - p) / nS : null, confiance: z, ordresParMarche: r.trades / r.n_marches };
+    return { ...fin(r), nSimple: nS, justes: g, attendus: p, avantage: nS ? (g - p) / nS : null, confiance: z, ordresParMarche: r.trades / r.n_marches, avantFinMoyen: r.n_avant ? r.sum_avant / r.n_avant : null };
   }).filter((r) => r.confiance != null && r.confiance >= 2 && r.avantage > 0)
     .sort((a, b) => b.confiance - a.confiance).slice(0, 20);
   return {

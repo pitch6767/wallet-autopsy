@@ -25,11 +25,12 @@ jobs:
             ID=$(wrangler d1 list --json 2>/dev/null | python3 -c "import json,sys;print(next((d['uuid'] for d in json.load(sys.stdin) if d['name']=='wallet-autopsy'),''))"); fi
           echo "D1: $ID" | tee /tmp/deploy.log
           sed -i "s/A_REMPLACER_PAR_LE_WORKFLOW/$ID/" wrangler.jsonc
-          wrangler d1 migrations apply wallet-autopsy --remote >> /tmp/deploy.log 2>&1; echo "migrations: $?" >> /tmp/deploy.log
       - name: Deployer
         run: |
           set +e
           wrangler deploy >> /tmp/deploy.log 2>&1; echo "code sortie: $?" >> /tmp/deploy.log
+          # Migrations APRÈS le déploiement : l'ancien code ne doit jamais écrire dans un schéma réinitialisé
+          wrangler d1 migrations apply wallet-autopsy --remote >> /tmp/deploy.log 2>&1; echo "migrations: $?" >> /tmp/deploy.log
           tail -30 /tmp/deploy.log
       - name: Controle apres deploiement
         env:
