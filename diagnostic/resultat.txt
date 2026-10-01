@@ -1,33 +1,13 @@
-=== séries par slug
-btc-up-or-down-5m -> [('10684', '5m', False)]
-btc-up-or-down-15m -> [('10192', '15m', False)]
-btc-up-or-down-hourly -> [('10114', 'hourly', False)]
-bitcoin-up-or-down-hourly -> []
-btc-up-or-down-1h -> []
-btc-up-or-down-4h -> [('10331', '4h', False)]
-btc-up-or-down-daily -> [('41', 'daily', False)]
-btc-up-or-down-weekly -> []
-=== toutes séries paginées
-41 btc-up-or-down-daily | BTC Up or Down Daily | daily | closed False
-10070 bitcoin-up-or-down-monthly | Bitcoin Up or Down Monthly | monthly | closed False
-10092 bitcoin-dominance-up-or-down-monthly | Bitcoin Dominance Up or Down Monthly | monthly | closed False
-10093 bitcoin-dominance-up-or-down-weekly | Bitcoin Dominance Up or Down Weekly | weekly | closed False
-10094 bitcoin-up-or-down-weekly | Bitcoin Up or Down Weekly | weekly | closed False
-10096 ethbtc-up-or-down-weekly | ETH/BTC Up or Down Weekly | weekly | closed False
-10097 ethbtc-up-or-down-monthly | ETH/BTC Up or Down Monthly | monthly | closed False
-10110 archbtc-up-or-down-hourly | archBTC Up or Down Hourly | hourly | closed False
-10114 btc-up-or-down-hourly | BTC Up or Down Hourly | hourly | closed False
-10192 btc-up-or-down-15m | BTC Up or Down 15m | 15m | closed False
-10323 bitcoin-up-or-down-4h | Bitcoin Up or Down 4H | 4h | closed False
-10331 btc-up-or-down-4h | BTC Up or Down 4h | 4h | closed False
-10684 btc-up-or-down-5m | BTC Up or Down 5m | 5m | closed False
-=== nb events par série sur 1 jour (2026-09-29)
-10684 100 btc-updown-5m-1790639700
-41 1 bitcoin-up-or-down-on-september-29-2026
-=== trades d'un 5m via events?slug, side filtre
-side=BUY total 3689
-side=SELL total 448
-x=1 total 4137
-=== taille d'un marché daily
-bitcoin-up-or-down-on-september-30-2026 309000.9585199999
-daily offset 9500 -> 0
+=== etat
+{"parType":[{"type":"15m","traites":2,"attente":106,"echecs":0,"plus_ancien":1790843400,"plus_recent":1790844300,"trades":4623,"tronques":0},{"type":"1h","traites":0,"attente":99,"echecs":0,"plus_ancien":null,"plus_recent":null,"trades":null,"tronques":0},{"type":"1j","traites":0,"attente":90,"echecs":0,"plus_ancien":null,"plus_recent":null,"trades":null,"tronques":0},{"type":"4h","traites":0,"attente":99,"echecs":0,"plus_ancien":null,"plus_recent":null,"trades":null,"tronques":0},{"type":"5m","traites":4,"attente":104,"echecs":0,"plus_ancien":1790843700,"plus_recent":1790844600,"trades":16310,"tronques":0}],"portefeuilles":1761,"dernierTour":null,"jours":90}
+=== classement tous (meilleur coup)
+total 2171
+0x3dcdeffe  n 1 pnl 8.6 best x 33.3
+0x2e95a181 cnmgz n 2 pnl 13.6 best x 16.7
+0xa937e2d2 0xa937e2D2C67CB8d7 n 2 pnl 4.5 best x 16.6
+0x3c36ad60  n 2 pnl 20.5 best x 11.0
+0x3648b898 busymeng n 1 pnl 18 best x 10
+0x579e60c3 0x579E60c39D229F0c n 1 pnl 18.9 best x 10
+0x581e745b 0x070Af9062723A76C n 1 pnl 9 best x 10
+0x78a07b91 Flyinghippo08 n 2 pnl 24 best x 10
+copier: []
