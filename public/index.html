@@ -69,6 +69,12 @@ table.w2 td,table.w2 th{white-space:nowrap;padding:6px 6px}
 table.w2 tr.cl{cursor:pointer}
 table.w2 tr.cl:hover td{background:var(--chip)}
 .nm{max-width:160px;overflow:hidden;text-overflow:ellipsis}
+tr.det td{white-space:normal;text-align:left;background:var(--bg);padding:10px 12px}
+.dt{max-width:640px;font-size:13px;line-height:1.5}
+.dt p{margin:4px 0}
+.st{margin-bottom:10px}
+.stt{font-weight:700;font-size:14px}
+.lien{border:0;background:none;color:var(--acc);padding:4px 0;cursor:pointer;font-size:13px}
 </style>
 </head>
 <body>
@@ -173,7 +179,7 @@ function rendM(){
     + '<div><label for="fP">Profil</label><select id="fP" onchange="filtrer()"><option value="">Tous</option>'
     + [...new Set(d.portefeuilles.flatMap(w => w.tags))].sort().map(t => '<option' + (FIL.p===t?' selected':'') + '>' + esc(t) + '</option>').join("") + '</select></div>'
     + '<div class="cpt" id="cpt"></div></div>';
-  h += '<div class="duo"><div class="card"><div class="mt">Top 20 — performance sur ce marché</div><div class="note">Classés par PnL en $, avec les filtres ci-dessus.</div><div id="topPerf"></div></div>'
+  h += '<div class="duo"><div class="card"><div class="mt">Top 20 — performance sur ce marché</div><div class="note">Classés par PnL en $, avec les filtres ci-dessus. Clique une ligne pour l\'explication de sa stratégie.</div><div id="topPerf"></div></div>'
     + '<div class="card"><div class="mt">Top 20 — à copier</div><div class="note" id="copNote">Lecture de l\'historique des 60 plus gros portefeuilles sur les marchés du même type…</div><div id="topCop"></div></div></div>';
   h += '<div id="tab"></div>';
   $("outM").innerHTML = h;
@@ -191,13 +197,104 @@ async function chargerCopier(){
   } catch(e){ $("copNote").innerHTML = '<span class="err">' + esc(e.message) + '</span>'; }
 }
 const nomDe = (a) => { const w = M.portefeuilles.find(x => x.adresse === a); return w && w.nom ? w.nom : a.slice(0,8) + "…" + a.slice(-4); };
-function ligneMini(a, cells){ return '<tr class="cl" onclick="versPortefeuille(\'' + a + '\')"><td><div class="nm">' + esc(nomDe(a)) + '</div></td>' + cells + '</tr>'; }
+function ligneMini(a, cells, fen){ return '<tr class="cl" onclick="ouvrir(this,\'' + a + '\',\'' + fen + '\')"><td><div class="nm">' + esc(nomDe(a)) + '</div></td>' + cells + '</tr>'; }
 function rendPerf(garde){
   const top = garde.filter(w => w.pnl != null).sort((a, b) => b.pnl - a.pnl).slice(0, 20);
   let h = '<div class="scroll"><table class="w2"><tr><th>#</th><th>Portefeuille</th><th>PnL</th><th>ROI</th><th>Misé</th><th>Trades</th><th>Profil</th></tr>';
   top.forEach((w, i) => { const c = w.pnl > 0 ? "ok" : w.pnl < 0 ? "bad" : "";
     h += ligneMini(w.adresse, '<td class="' + c + '">' + usd(w.pnl) + '</td><td class="' + c + '">' + (w.roi==null?"—":(w.roi*100).toFixed(1)+" %") + '</td><td>' + usd(w.cout) + '</td><td>' + w.trades + '</td><td>' + w.tags.map(t => '<span class="tag">' + esc(t) + '</span>').join(" ") + '</td>').replace('<tr class="cl"', '<tr class="cl" data-i="' + (i+1) + '"').replace('<td><div class="nm">', '<td class="mute">' + (i+1) + '</td><td><div class="nm">'); });
   $("topPerf").innerHTML = top.length ? h + '</table></div>' : '<div class="note">Aucun portefeuille avec ces filtres.</div>';
+}
+const pc = (x) => x == null ? "—" : Math.round(x * 100) + " %";
+const px = (x) => x == null ? "—" : x.toFixed(3) + " $";
+function stratMarche(w, d){
+  const A = d.issues[0] || "A", B = d.issues[1] || "B";
+  const deux = w.achatA > 0 && w.achatB > 0;
+  const vendu = (w.venteA + w.venteB), achete = (w.achatA + w.achatB);
+  const nonApp = Math.abs(w.achatA - w.achatB);
+  const cote = w.achatA >= w.achatB ? A : B, pm = w.achatA >= w.achatB ? w.pmA : w.pmB;
+  const gagnant = d.resolu ? (d.prix[0] === 1 ? A : B) : null;
+  let titre, txt = [];
+  if (deux && w.combine < 1 && nonApp <= 0.15 * w.paires) {
+    titre = "Arbitrage de paires";
+    txt.push("Il achète " + A + " et " + B + " en quantités presque égales (" + f0(w.achatA) + " / " + f0(w.achatB) + " parts) pour " + px(w.combine) + " la paire. Une paire vaut toujours 1 $ à la fin : il fige " + usd(w.margePaires) + " de gain quel que soit le résultat (" + ((1 - w.combine) * 100).toFixed(1) + " % par paire).");
+    if (w.merge > 0) txt.push("Il fusionne " + f0(w.merge) + " paires pour récupérer 1 $ chacune avant la fin, ce qui libère le capital tout de suite.");
+    txt.push("Ce n'est pas un pari sur le BTC : tout se joue sur la vitesse d'exécution pour attraper les deux côtés pas chers avant les autres.");
+  } else if (deux && nonApp <= 0.15 * w.paires) {
+    titre = "Deux côtés au-dessus de 1 $";
+    txt.push("Il achète " + A + " et " + B + " en quantités proches, mais paie " + px(w.combine) + " la paire : chaque paire gardée jusqu'au bout perd " + ((w.combine - 1) * 100).toFixed(1) + " %.");
+    txt.push(vendu > 0 ? "Il revend une partie (" + f0(vendu) + " parts) : probablement un teneur de marché qui encaisse l'écart achat/vente plutôt que la résolution." : "Sans revente, c'est soit une tentative d'arbitrage ratée (exécutée trop tard), soit une couverture d'une position prise ailleurs.");
+  } else if (deux) {
+    titre = "Directionnel couvert";
+    txt.push("Il penche nettement sur " + cote + " (" + f0(Math.max(w.achatA, w.achatB)) + " parts contre " + f0(Math.min(w.achatA, w.achatB)) + ") et achète un peu l'autre côté pour limiter la perte si le marché se retourne. Prix combiné des paires : " + px(w.combine) + ".");
+  } else if (pm != null && pm >= 0.9) {
+    titre = "Sniper de fin de marché";
+    txt.push("Il n'achète que " + cote + ", à " + px(pm) + " en moyenne, quand l'issue semble presque acquise. Il gagne " + ((1 - pm) * 100).toFixed(1) + " centimes par part si ça tient, et perd la totalité de la mise si le BTC se retourne dans les dernières secondes.");
+    txt.push("Il gagne très souvent pour très peu ; une seule perte efface des dizaines de gains.");
+  } else if (pm != null && pm <= 0.25) {
+    titre = "Billet de loterie";
+    txt.push("Il achète " + cote + " à " + px(pm) + " : le côté donné perdant. Il perd presque toujours sa petite mise, mais gagne " + (1 / pm).toFixed(1) + "× quand il a raison.");
+  } else {
+    titre = "Directionnel";
+    txt.push("Il parie sur " + cote + " à " + px(pm) + " en moyenne, sans couverture. S'il a raison il gagne " + (pm ? ((1 - pm) / pm * 100).toFixed(0) : "—") + " % de sa mise, sinon il perd tout.");
+  }
+  if (vendu > 0.5 * achete && titre !== "Deux côtés au-dessus de 1 $") txt.push("Il revend " + pc(vendu / achete) + " de ce qu'il achète : il trade le prix pendant le marché plutôt que d'attendre la fin.");
+  const exe = [];
+  if (w.avantFinSec != null) exe.push("première entrée " + sec(w.avantFinSec) + " avant la fin");
+  exe.push(w.trades + " trades");
+  if (w.ecartMedianSec != null) exe.push("écart médian " + sec(w.ecartMedianSec));
+  if (w.memeSecondePct != null) exe.push(Math.round(w.memeSecondePct) + " % dans la même seconde");
+  txt.push("Exécution : " + exe.join(", ") + (w.tags.includes("Automate") ? " — c'est un automate." : " — rythme compatible avec un humain."));
+  if (gagnant) txt.push("Résultat : " + gagnant + " a gagné, PnL " + usd(w.pnl) + " (" + (w.roi == null ? "—" : (w.roi * 100).toFixed(1) + " %") + ").");
+  else txt.push("PnL au dernier prix : " + usd(w.pnl) + ".");
+  return { titre, txt };
+}
+function stratHisto(h, fam){
+  const p = h.profil || {};
+  const parts = [["deux côtés", p.deuxCotesPct], ["sniper ≥ 0,90", p.sniperPct], ["directionnel", p.directionnelPct], ["loterie ≤ 0,25", p.loteriePct]].sort((a, b) => (b[1] || 0) - (a[1] || 0));
+  const dom = parts[0];
+  let titre;
+  if (dom[0] === "deux côtés") titre = (p.deuxCotesSousUnPct || 0) >= 0.5 ? "Arbitreur de paires" : "Deux côtés / teneur de marché";
+  else if (dom[0] === "sniper ≥ 0,90") titre = "Sniper de fin de marché";
+  else if (dom[0] === "loterie ≤ 0,25") titre = "Chasseur de cotes";
+  else titre = "Parieur directionnel";
+  const txt = [];
+  txt.push("Sur ses " + h.marches + " derniers marchés " + esc(fam) + " : " + parts.filter(x => x[1]).map(x => x[0] + " " + pc(x[1])).join(", ") + ".");
+  if (p.deuxCotesPct) txt.push("Quand il prend les deux côtés, il paie en moyenne " + px(p.combineMoyen) + " la paire, sous 1 $ dans " + pc(p.deuxCotesSousUnPct) + " des cas.");
+  if (p.directionnelPct) txt.push("Ses paris directionnels (entre 0,25 et 0,90) sont justes dans " + pc(p.directionnelReussitePct) + " des cas.");
+  txt.push("Il gagne " + pc(h.pctGagnes) + " de ses marchés, mise en moyenne " + usd(p.miseMoyenne) + " par marché, ROI total " + (h.roi == null ? "—" : (h.roi * 100).toFixed(1) + " %") + " pour " + usd(h.pnl) + ". Meilleur marché " + usd(p.meilleurMarche) + ", pire " + usd(p.pireMarche) + ".");
+  let copie;
+  if (titre === "Arbitreur de paires") copie = "Difficile à copier : le gain vient de la vitesse, quand tu copies les prix sont déjà partis.";
+  else if (titre === "Sniper de fin de marché") copie = "Copiable seulement en automatique dans les dernières secondes ; le risque est la perte rare mais totale.";
+  else if (titre === "Deux côtés / teneur de marché") copie = "Peu copiable : il vit de l'écart achat/vente avec des ordres passifs.";
+  else copie = "Copiable : un pari directionnel se suit avec quelques secondes de retard, à condition que son taux de réussite tienne.";
+  txt.push("Pour copier : " + copie);
+  return { titre, txt };
+}
+const histCache = {};
+async function ouvrir(tr, a, fen){
+  const nx = tr.nextElementSibling;
+  if (nx && nx.classList.contains("det")) { nx.remove(); return; }
+  const ncol = tr.children.length;
+  const det = document.createElement("tr"); det.className = "det";
+  det.innerHTML = '<td colspan="' + ncol + '"><div class="dt mute">Analyse…</div></td>';
+  tr.after(det);
+  const w = M.portefeuilles.find(x => x.adresse === a);
+  let h = (COP && COP.portefeuilles.find(x => x.adresse === a)) || histCache[a];
+  const bloc = (s, sous) => '<div class="st"><div class="stt">' + esc(s.titre) + ' <span class="mute">' + sous + '</span></div>' + s.txt.map(t => '<p>' + t + '</p>').join("") + '</div>';
+  const rendre = () => {
+    let x = '';
+    if (w) x += bloc(stratMarche(w, M), "sur ce marché");
+    if (h && h.marches && h.profil) x += bloc(stratHisto(h, COP ? COP.famille : "du même type"), "sur son historique");
+    else if (h) x += '<p class="mute">Aucun historique sur ce type de marché.</p>';
+    x += '<button class="lien" onclick="event.stopPropagation();versPortefeuille(\'' + a + '\')">Historique complet du portefeuille →</button>';
+    det.firstChild.innerHTML = '<div class="dt">' + x + '</div>';
+  };
+  rendre();
+  if (!h) {
+    try { const r = await api("/api/copier?slug=" + encodeURIComponent(M.slug || "") + "&titre=" + encodeURIComponent(M.question || "") + "&addrs=" + a);
+      h = histCache[a] = r.portefeuilles[0] || { marches: 0 }; if (det.isConnected) rendre(); } catch {}
+  }
 }
 function rendCopier(){
   const r = COP, MIN = 10;
@@ -206,7 +303,7 @@ function rendCopier(){
     + 'Classés par <b>régularité</b> : ROI moyen par marché divisé par sa dispersion × √(nombre de marchés) — plus c\'est haut, plus le gain est constant et moins il tient de la chance.';
   let h = '<div class="scroll"><table class="w2"><tr><th>#</th><th>Portefeuille</th><th>Régularité</th><th>Marchés</th><th>% gagnés</th><th>PnL total</th><th>ROI</th></tr>';
   ok.forEach((w, i) => { const c = w.pnl > 0 ? "ok" : w.pnl < 0 ? "bad" : "";
-    h += ligneMini(w.adresse, '<td><b>' + w.regularite.toFixed(1) + '</b></td><td>' + w.marches + '</td><td>' + Math.round(w.pctGagnes*100) + ' %</td><td class="' + c + '">' + usd(w.pnl) + '</td><td class="' + c + '">' + (w.roi==null?"—":(w.roi*100).toFixed(1)+" %") + '</td>').replace('<td><div class="nm">', '<td class="mute">' + (i+1) + '</td><td><div class="nm">'); });
+    h += ligneMini(w.adresse, '<td><b>' + w.regularite.toFixed(1) + '</b></td><td>' + w.marches + '</td><td>' + Math.round(w.pctGagnes*100) + ' %</td><td class="' + c + '">' + usd(w.pnl) + '</td><td class="' + c + '">' + (w.roi==null?"—":(w.roi*100).toFixed(1)+" %") + '</td>', 'c').replace('<td><div class="nm">', '<td class="mute">' + (i+1) + '</td><td><div class="nm">'); });
   $("topCop").innerHTML = ok.length ? h + '</table></div>' : '<div class="note">Aucun portefeuille n\'a assez d\'historique sur ce type de marché.</div>';
 }
 function filtrer(){ FIL = { t: $("fT").value, m: $("fM").value, r: $("fR").value, p: $("fP").value }; rendTable(); }

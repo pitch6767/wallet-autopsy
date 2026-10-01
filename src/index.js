@@ -469,10 +469,12 @@ async function historiqueFamille(addr, f) {
   for (const r of rows) {
     if (!memeFamille(f, r.slug, r.title)) continue;
     const cid = r.conditionId;
-    if (!M.has(cid)) M.set(cid, { pnl: 0, cout: 0, ts: num(r.timestamp) });
+    if (!M.has(cid)) M.set(cid, { pnl: 0, cout: 0, ts: num(r.timestamp), cotes: [] });
     const m = M.get(cid);
+    const c = num(r.avgPrice) * num(r.totalBought);
     m.pnl += num(r.realizedPnl);
-    m.cout += num(r.avgPrice) * num(r.totalBought);
+    m.cout += c;
+    m.cotes.push({ prix: num(r.avgPrice), parts: num(r.totalBought), cout: c, gagnant: num(r.curPrice) >= 0.99 });
   }
   const ms = [...M.values()];
   const n = ms.length;
@@ -482,9 +484,26 @@ async function historiqueFamille(addr, f) {
   const rois = ms.filter((m) => m.cout > 0).map((m) => m.pnl / m.cout);
   const moy = rois.length ? rois.reduce((a, b) => a + b, 0) / rois.length : null;
   const sd = rois.length > 1 ? Math.sqrt(rois.reduce((a, b) => a + (b - moy) ** 2, 0) / (rois.length - 1)) : null;
-  // Régularité : ROI moyen par marché rapporté à sa dispersion (≈ t-stat)
   const regularite = sd && sd > 0 ? (moy / sd) * Math.sqrt(rois.length) : null;
-  return { adresse: addr, marches: n, gagnes, pctGagnes: n ? gagnes / n : null, pnl, cout, roi: cout > 0 ? pnl / cout : null, roiMoyen: moy, regularite, positionsLues: rows.length };
+  // Profil de stratégie sur l'historique
+  const deux = ms.filter((m) => m.cotes.length >= 2);
+  const un = ms.filter((m) => m.cotes.length === 1);
+  const parts = ms.reduce((x, m) => x + m.cotes.reduce((y, c) => y + c.parts, 0), 0);
+  const combines = deux.map((m) => m.cotes[0].prix + m.cotes[1].prix);
+  const profil = {
+    deuxCotesPct: n ? deux.length / n : null,
+    combineMoyen: combines.length ? combines.reduce((a, b) => a + b, 0) / combines.length : null,
+    deuxCotesSousUnPct: combines.length ? combines.filter((c) => c < 1).length / combines.length : null,
+    prixEntreeMoyen: parts ? cout / parts : null,
+    sniperPct: n ? un.filter((m) => m.cotes[0].prix >= 0.9).length / n : null,
+    loteriePct: n ? un.filter((m) => m.cotes[0].prix <= 0.25).length / n : null,
+    directionnelPct: n ? un.filter((m) => m.cotes[0].prix > 0.25 && m.cotes[0].prix < 0.9).length / n : null,
+    directionnelReussitePct: (() => { const d = un.filter((m) => m.cotes[0].prix > 0.25 && m.cotes[0].prix < 0.9); return d.length ? d.filter((m) => m.cotes[0].gagnant).length / d.length : null; })(),
+    pireMarche: ms.length ? Math.min(...ms.map((m) => m.pnl)) : null,
+    meilleurMarche: ms.length ? Math.max(...ms.map((m) => m.pnl)) : null,
+    miseMoyenne: n ? cout / n : null,
+  };
+  return { adresse: addr, marches: n, gagnes, pctGagnes: n ? gagnes / n : null, pnl, cout, roi: cout > 0 ? pnl / cout : null, roiMoyen: moy, regularite, positionsLues: rows.length, profil };
 }
 
 async function copierReport(sp) {
