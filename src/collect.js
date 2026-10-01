@@ -145,17 +145,18 @@ function agreger(rows, gagnant) {
     const pnl = encaisse + valeur - cout;
     if (cout <= 0.000001) continue;
     const pmA = A.ap ? A.ac / A.ap : null, pmB = B.ap ? B.ac / B.ap : null;
-    let classe, combine = null, dirGagne = 0;
+    let classe, combine = null, dirGagne = 0, px = 0, gagne = 0;
     if ((A.ap > 0 && B.ap > 0) || k > 0) {
       classe = "deux";
       if (pmA != null && pmB != null) combine = pmA + pmB;
     } else {
       const cote = A.ap > 0 ? 0 : 1, pm = cote === 0 ? pmA : pmB;
+      px = pm; gagne = cote === gagnant ? 1 : 0;
       if (pm >= 0.9) classe = "sniper";
       else if (pm <= 0.25) classe = "loterie";
-      else { classe = "dir"; dirGagne = cote === gagnant ? 1 : 0; }
+      else { classe = "dir"; dirGagne = gagne; }
     }
-    out.push({ adresse, nom: w.nom, n: w.n, ts: w.ts, cout, pnl, roi: pnl / cout, classe, combine, dirGagne, split: k > 0 ? 1 : 0 });
+    out.push({ adresse, nom: w.nom, n: w.n, ts: w.ts, cout, pnl, roi: pnl / cout, classe, combine, dirGagne, px, gagne, split: k > 0 ? 1 : 0 });
   }
   return out;
 }
@@ -164,7 +165,7 @@ const sqlNum = (x) => (Number.isFinite(x) ? String(Math.round(x * 1e6) / 1e6) : 
 const sqlTxt = (s) => "'" + String(s || "").replace(/[^\p{L}\p{N} ._\-]/gu, "").slice(0, 40).replace(/'/g, "''") + "'";
 
 function upserts(db, type, ws) {
-  const cols = "wallet,type,nom,n_marches,n_gagnes,cout,pnl,sum_roi,sum_roi2,best_roi,best_pnl,worst_pnl,trades,deux,deux_sous1,sum_combine,n_combine,sniper,loterie,dir,dir_gagne,split,last_ts";
+  const cols = "wallet,type,nom,n_marches,n_gagnes,cout,pnl,sum_roi,sum_roi2,best_roi,best_pnl,worst_pnl,trades,deux,deux_sous1,sum_combine,n_combine,sniper,loterie,dir,dir_gagne,split,last_ts,px_sniper,g_sniper,px_loterie,g_loterie,px_dir";
   const stm = [];
   for (let i = 0; i < ws.length; i += 80) {
     const vals = ws.slice(i, i + 80).map((w) => "(" + [
@@ -172,6 +173,9 @@ function upserts(db, type, ws) {
       sqlNum(w.roi), sqlNum(w.roi * w.roi), sqlNum(w.roi), sqlNum(w.pnl), sqlNum(w.pnl), w.n,
       w.classe === "deux" ? 1 : 0, w.combine != null && w.combine < 1 ? 1 : 0, sqlNum(w.combine ?? 0), w.combine != null ? 1 : 0,
       w.classe === "sniper" ? 1 : 0, w.classe === "loterie" ? 1 : 0, w.classe === "dir" ? 1 : 0, w.dirGagne, w.split, w.ts,
+      w.classe === "sniper" ? sqlNum(w.px) : 0, w.classe === "sniper" ? w.gagne : 0,
+      w.classe === "loterie" ? sqlNum(w.px) : 0, w.classe === "loterie" ? w.gagne : 0,
+      w.classe === "dir" ? sqlNum(w.px) : 0,
     ].join(",") + ")").join(",");
     stm.push(db.prepare(`INSERT INTO stats(${cols}) VALUES ${vals}
       ON CONFLICT(wallet,type) DO UPDATE SET
@@ -183,7 +187,9 @@ function upserts(db, type, ws) {
         trades=stats.trades+excluded.trades, deux=stats.deux+excluded.deux, deux_sous1=stats.deux_sous1+excluded.deux_sous1,
         sum_combine=stats.sum_combine+excluded.sum_combine, n_combine=stats.n_combine+excluded.n_combine,
         sniper=stats.sniper+excluded.sniper, loterie=stats.loterie+excluded.loterie, dir=stats.dir+excluded.dir,
-        dir_gagne=stats.dir_gagne+excluded.dir_gagne, split=stats.split+excluded.split, last_ts=MAX(stats.last_ts,excluded.last_ts)`));
+        dir_gagne=stats.dir_gagne+excluded.dir_gagne, split=stats.split+excluded.split, last_ts=MAX(stats.last_ts,excluded.last_ts),
+        px_sniper=stats.px_sniper+excluded.px_sniper, g_sniper=stats.g_sniper+excluded.g_sniper,
+        px_loterie=stats.px_loterie+excluded.px_loterie, g_loterie=stats.g_loterie+excluded.g_loterie, px_dir=stats.px_dir+excluded.px_dir`));
   }
   return stm;
 }
@@ -275,6 +281,7 @@ export async function classement(env, sp) {
       SUM(sum_roi) sum_roi, SUM(sum_roi2) sum_roi2, MAX(best_roi) best_roi, MAX(best_pnl) best_pnl, MIN(worst_pnl) worst_pnl,
       SUM(trades) trades, SUM(deux) deux, SUM(deux_sous1) deux_sous1, SUM(sum_combine) sum_combine, SUM(n_combine) n_combine,
       SUM(sniper) sniper, SUM(loterie) loterie, SUM(dir) dir, SUM(dir_gagne) dir_gagne, SUM(split) split, MAX(last_ts) last_ts,
+      SUM(px_sniper) px_sniper, SUM(g_sniper) g_sniper, SUM(px_loterie) px_loterie, SUM(g_loterie) g_loterie, SUM(px_dir) px_dir,
       GROUP_CONCAT(type || ':' || n_marches) types,
       CASE WHEN SUM(n_marches) > 1 AND (SUM(sum_roi2) - SUM(sum_roi) * SUM(sum_roi) / SUM(n_marches)) > 1e-12
         THEN (CASE WHEN SUM(sum_roi) > 0 THEN 1.0 ELSE -1.0 END) * (SUM(sum_roi) * SUM(sum_roi) / SUM(n_marches))
@@ -283,19 +290,36 @@ export async function classement(env, sp) {
     FROM stats ${where} GROUP BY wallet HAVING ${having}`;
   const q = (order, lim, extra = "") =>
     db.prepare(`SELECT * FROM (${agg}) ${extra} ORDER BY ${order} DESC LIMIT ${lim}`).bind(...binds);
-  const [perf, copier, table, total] = await db.batch([
+  // « Tueurs » : candidats copiables (paris sur un seul côté, peu d'ordres par marché, rentables)
+  const tueursSql = db.prepare(`SELECT * FROM (${agg}) WHERE n_marches >= 30 AND pnl > 0
+      AND (sniper + loterie + dir) >= 0.6 * n_marches AND trades <= 30 * n_marches
+      ORDER BY pnl DESC LIMIT 3000`).bind(...binds);
+  const [perf, copier, table, total, cand] = await db.batch([
     q("pnl", 20),
-    q("t2s", 20, `WHERE t2s IS NOT NULL AND n_marches >= ${Math.max(10, minM)}`),
+    q("t2s", 20, `WHERE t2s IS NOT NULL AND n_marches >= ${Math.max(30, minM)}`),
     q(TRIS[tri], 300, `WHERE ${TRIS[tri]} IS NOT NULL`),
     db.prepare(`SELECT COUNT(*) n FROM (${agg})`).bind(...binds),
+    tueursSql,
   ]);
   const fin = (r) => ({
     ...r,
     roiMoyen: r.sum_roi / r.n_marches,
     regularite: r.t2s == null ? null : Math.sign(r.t2s) * Math.sqrt(Math.abs(r.t2s)),
   });
+  // Avantage = paris justes − probabilité annoncée par le prix ; confiance = écart en écarts-types
+  const tueurs = cand.results.map((r) => {
+    let nS = 0, g = 0, p = 0, v = 0;
+    for (const [n, gg, px] of [[r.sniper, r.g_sniper, r.px_sniper], [r.loterie, r.g_loterie, r.px_loterie], [r.dir, r.dir_gagne, r.px_dir]]) {
+      if (!n) continue;
+      const pm = px / n;
+      nS += n; g += gg; p += px; v += n * pm * (1 - pm);
+    }
+    const z = v > 0 ? (g - p) / Math.sqrt(v) : null;
+    return { ...fin(r), nSimple: nS, justes: g, attendus: p, avantage: nS ? (g - p) / nS : null, confiance: z, ordresParMarche: r.trades / r.n_marches };
+  }).filter((r) => r.confiance != null && r.confiance >= 2 && r.avantage > 0)
+    .sort((a, b) => b.confiance - a.confiance).slice(0, 20);
   return {
-    type, tri,
+    type, tri, tueurs,
     total: total.results[0]?.n || 0,
     perf: perf.results.map(fin),
     copier: copier.results.map(fin),

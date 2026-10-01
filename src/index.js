@@ -497,15 +497,10 @@ async function historiqueFamille(addr, f) {
   const un = ms.filter((m) => m.cotes.length === 1);
   const parts = ms.reduce((x, m) => x + m.cotes.reduce((y, c) => y + c.parts, 0), 0);
   const combines = deux.map((m) => m.cotes[0].prix + m.cotes[1].prix);
+  const cat = (f) => { const l = un.filter((m) => f(m.cotes[0].prix)); return { n: l.length, g: l.filter((m) => m.cotes[0].gagnant).length, px: l.reduce((x, m) => x + m.cotes[0].prix, 0) }; };
   const profil = {
-    deuxCotesPct: n ? deux.length / n : null,
-    combineMoyen: combines.length ? combines.reduce((a, b) => a + b, 0) / combines.length : null,
-    deuxCotesSousUnPct: combines.length ? combines.filter((c) => c < 1).length / combines.length : null,
-    prixEntreeMoyen: parts ? cout / parts : null,
-    sniperPct: n ? un.filter((m) => m.cotes[0].prix >= 0.9).length / n : null,
-    loteriePct: n ? un.filter((m) => m.cotes[0].prix <= 0.25).length / n : null,
-    directionnelPct: n ? un.filter((m) => m.cotes[0].prix > 0.25 && m.cotes[0].prix < 0.9).length / n : null,
-    directionnelReussitePct: (() => { const d = un.filter((m) => m.cotes[0].prix > 0.25 && m.cotes[0].prix < 0.9); return d.length ? d.filter((m) => m.cotes[0].gagnant).length / d.length : null; })(),
+    deux: { n: deux.length, combine: combines.length ? combines.reduce((a, b) => a + b, 0) / combines.length : null, sous1: combines.filter((c) => c < 1).length, nComb: combines.length },
+    sniper: cat((p) => p >= 0.9), loterie: cat((p) => p <= 0.25), dir: cat((p) => p > 0.25 && p < 0.9),
     pireMarche: ms.length ? Math.min(...ms.map((m) => m.pnl)) : null,
     meilleurMarche: ms.length ? Math.max(...ms.map((m) => m.pnl)) : null,
     miseMoyenne: n ? cout / n : null,

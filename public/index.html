@@ -250,14 +250,14 @@ function stratMarche(w, d){
     txt.push("Il penche nettement sur " + cote + " (" + f0(Math.max(w.achatA, w.achatB)) + " parts contre " + f0(Math.min(w.achatA, w.achatB)) + ") et achète un peu l'autre côté pour limiter la perte si le marché se retourne. Prix combiné des paires : " + px(w.combine) + ".");
   } else if (pm != null && pm >= 0.9) {
     titre = "Sniper de fin de marché";
-    txt.push("Il n'achète que " + cote + ", à " + px(pm) + " en moyenne, quand l'issue semble presque acquise. Il gagne " + ((1 - pm) * 100).toFixed(1) + " centimes par part si ça tient, et perd la totalité de la mise si le BTC se retourne dans les dernières secondes.");
-    txt.push("Il gagne très souvent pour très peu ; une seule perte efface des dizaines de gains.");
+    txt.push("Il n'achète que " + cote + ", à " + px(pm) + " en moyenne. Il gagne " + ((1 - pm) * 100).toFixed(1) + " centimes par part si " + cote + " l'emporte, et perd toute la mise sinon.");
+    txt.push("À ce prix, il doit avoir raison plus de " + pc(pm) + " du temps pour être rentable : une erreur coûte autant que " + Math.round(pm / (1 - pm)) + " paris réussis.");
   } else if (pm != null && pm <= 0.25) {
     titre = "Billet de loterie";
-    txt.push("Il achète " + cote + " à " + px(pm) + " : le côté donné perdant. Il perd presque toujours sa petite mise, mais gagne " + (1 / pm).toFixed(1) + "× quand il a raison.");
+    txt.push("Il achète " + cote + " à " + px(pm) + " : le marché lui donnait environ " + pc(pm) + " de chances. S'il a raison, il récupère " + (1 / pm).toFixed(1) + "× sa mise ; sinon il perd la mise.");
   } else {
     titre = "Directionnel";
-    txt.push("Il parie sur " + cote + " à " + px(pm) + " en moyenne, sans couverture. S'il a raison il gagne " + (pm ? ((1 - pm) / pm * 100).toFixed(0) : "—") + " % de sa mise, sinon il perd tout.");
+    txt.push("Il parie sur " + cote + " à " + px(pm) + " en moyenne, sans couverture. S'il a raison il gagne " + (pm ? ((1 - pm) / pm * 100).toFixed(0) : "—") + " % de sa mise, sinon il perd tout. Pour être rentable à ce prix, il doit avoir raison plus de " + pc(pm) + " du temps.");
   }
   if (vendu > 0.5 * achete && titre !== "Deux côtés au-dessus de 1 $") txt.push("Il revend " + pc(vendu / achete) + " de ce qu'il achète : il trade le prix pendant le marché plutôt que d'attendre la fin.");
   const exe = [];
@@ -271,26 +271,53 @@ function stratMarche(w, d){
   return { titre, txt };
 }
 function stratHisto(h, fam){
-  const p = h.profil || {};
-  const parts = [["deux côtés", p.deuxCotesPct], ["sniper ≥ 0,90", p.sniperPct], ["directionnel", p.directionnelPct], ["loterie ≤ 0,25", p.loteriePct]].sort((a, b) => (b[1] || 0) - (a[1] || 0));
-  const dom = parts[0];
-  let titre;
-  if (dom[0] === "deux côtés") titre = (p.deuxCotesSousUnPct || 0) >= 0.5 ? "Arbitreur de paires" : "Deux côtés / teneur de marché";
-  else if (dom[0] === "sniper ≥ 0,90") titre = "Sniper de fin de marché";
-  else if (dom[0] === "loterie ≤ 0,25") titre = "Chasseur de cotes";
-  else titre = "Parieur directionnel";
+  const p = h.profil, n = h.marches;
+  const LIB = { deux: "prend les deux côtés", sniper: "achète le favori à 0,90 $ ou plus", dir: "parie sur un côté entre 0,25 et 0,90 $", loterie: "achète l'outsider à 0,25 $ ou moins" };
+  const NOM = { sniper: "Paris sur le favori", dir: "Paris directionnels", loterie: "Paris sur l'outsider" };
+  const cats = ["deux", "sniper", "dir", "loterie"].map(k => [k, p[k] ? p[k].n : 0]).filter(c => c[1] > 0).sort((x, y) => y[1] - x[1]);
   const txt = [];
-  txt.push("Sur ses " + h.marches + " marchés " + esc(fam) + " : " + parts.filter(x => x[1]).map(x => x[0] + " " + pc(x[1])).join(", ") + ".");
-  if (p.deuxCotesPct) txt.push("Quand il prend les deux côtés, il paie en moyenne " + px(p.combineMoyen) + " la paire, sous 1 $ dans " + pc(p.deuxCotesSousUnPct) + " des cas.");
-  if (p.directionnelPct) txt.push("Ses paris directionnels (entre 0,25 et 0,90) sont justes dans " + pc(p.directionnelReussitePct) + " des cas.");
-  txt.push("Il gagne " + pc(h.pctGagnes) + " de ses marchés, mise en moyenne " + usd(p.miseMoyenne) + " par marché, ROI total " + (h.roi == null ? "—" : (h.roi * 100).toFixed(1) + " %") + " pour " + usd(h.pnl) + ". Meilleur marché " + usd(p.meilleurMarche) + ", pire " + usd(p.pireMarche) + ".");
+  let titre = "Sans catégorie";
+  if (cats.length) {
+    const d = cats[0][0], part = cats[0][1] / n;
+    titre = d === "deux" ? (p.deux.nComb && p.deux.sous1 / p.deux.nComb >= 0.5 ? "Arbitreur de paires" : "Deux côtés / teneur de marché")
+      : d === "sniper" ? "Parieur sur le favori" : d === "dir" ? "Parieur directionnel" : "Chasseur d'outsiders";
+    if (part < 0.6) titre = "Mixte — surtout " + titre.charAt(0).toLowerCase() + titre.slice(1);
+  }
+  if (n < 10) txt.push("<b>Seulement " + n + " marché" + (n > 1 ? "s" : "") + "</b> : beaucoup trop peu pour conclure. Ces chiffres peuvent venir d'un coup de chance.");
+  else if (n < 30) txt.push("Échantillon court (" + n + " marchés) : tendance à confirmer.");
+  txt.push("Sur ses " + n + " marchés " + esc(fam) + ", il " + cats.map(c => LIB[c[0]] + " sur " + c[1] + " (" + pc(c[1] / n) + ")").join(", ") + ".");
+  let meilleurAvantage = null;
+  for (const k of ["sniper", "dir", "loterie"]) {
+    const c = p[k]; if (!c || !c.n) continue;
+    const pm = c.px / c.n, obs = c.g / c.n, diff = obs - pm;
+    let v;
+    if (c.n < 10) v = "Trop peu de cas pour mesurer un avantage.";
+    else if (diff > 0.05) { v = "Il bat le prix du marché de <b>+" + Math.round(diff * 100) + " points</b> : c'est là qu'est son avantage."; if (!meilleurAvantage || diff > meilleurAvantage.diff) meilleurAvantage = { k, diff, obs, pm, n: c.n }; }
+    else if (diff < -0.05) v = "Il fait <b>" + Math.round(diff * 100) + " points</b> moins bien que le prix : ce type de pari lui coûte de l'argent.";
+    else v = "Il fait à peu près ce que le prix annonçait : pas d'avantage visible.";
+    txt.push(NOM[k] + " : prix moyen payé " + px(pm) + ", le marché lui donnait donc environ " + pc(pm) + " de chances. Il a eu raison " + c.g + " fois sur " + c.n + " (" + pc(obs) + "). " + v);
+  }
+  if (p.deux && p.deux.n) {
+    let t = "Deux côtés : " + p.deux.n + " marchés";
+    if (p.deux.nComb) t += ", prix moyen de la paire " + px(p.deux.combine) + ", sous 1 $ dans " + p.deux.sous1 + " cas sur " + p.deux.nComb + (p.deux.combine < 1 ? " — une paire achetée sous 1 $ rapporte quel que soit le résultat" : " — au-dessus de 1 $, une paire gardée jusqu'au bout perd de l'argent");
+    else t += " où il a revendu un côté après avoir créé des paires à 1 $ : technique de teneur de marché";
+    txt.push(t + ".");
+  }
+  const gm = n ? h.pnl / n : 0;
+  let r = "Résultat : " + Math.round(h.pctGagnes * n) + " marchés gagnants sur " + n + " (" + pc(h.pctGagnes) + "), PnL " + usd(h.pnl) + ", ROI " + (h.roi == null ? "—" : (h.roi * 100).toFixed(1) + " %") + ", mise moyenne " + usd(p.miseMoyenne) + ". Meilleur marché " + usd(p.meilleurMarche) + ", pire " + usd(p.pireMarche) + ".";
+  if (p.pireMarche < 0 && gm > 0 && -p.pireMarche / gm >= 1.5) r += " Sa pire perte équivaut à " + Math.round(-p.pireMarche / gm) + " marchés de gain moyen.";
+  txt.push(r);
   let copie;
-  if (titre === "Arbitreur de paires") copie = "Difficile à copier : le gain vient de la vitesse, quand tu copies les prix sont déjà partis.";
-  else if (titre === "Sniper de fin de marché") copie = "Copiable seulement en automatique dans les dernières secondes ; le risque est la perte rare mais totale.";
-  else if (titre === "Deux côtés / teneur de marché") copie = "Peu copiable : il vit de l'écart achat/vente avec des ordres passifs.";
-  else if (titre === "Chasseur de cotes") copie = "Facile à suivre (prix bas, pas de course de vitesse), mais les gains sont rares : il faut le copier sur beaucoup de marchés et accepter de longues séries de petites pertes.";
-  else copie = "Copiable : un pari directionnel se suit avec quelques secondes de retard, à condition que son taux de réussite tienne.";
-  txt.push("Pour copier : " + copie);
+  if (n < 10) copie = "pas encore. Il faut au moins une vingtaine de marchés pour distinguer le talent de la chance.";
+  else if (h.roi != null && h.roi < 0) copie = "non, il perd de l'argent sur la période.";
+  else if (titre.includes("Arbitreur")) copie = "difficile. Son gain vient de la vitesse : il achète les deux côtés avant les autres ; en le copiant avec retard, les prix seront déjà partis.";
+  else if (titre.includes("teneur")) copie = "difficile. Il gagne sur l'écart achat/vente avec des ordres posés à l'avance, pas en devinant la direction.";
+  else if (meilleurAvantage) {
+    const m = meilleurAvantage;
+    copie = "intéressant sur ses " + NOM[m.k].toLowerCase() + " : sur " + m.n + " cas il a eu raison " + pc(m.obs) + " du temps quand le prix n'en annonçait que " + pc(m.pm) + ". À vérifier : en copiant quelques secondes plus tard, tu paieras un prix moins bon.";
+    if (m.k === "sniper") copie += " À ce prix, une seule erreur coûte autant que " + Math.round(m.pm / (1 - m.pm)) + " paris réussis.";
+  } else copie = "rien ne montre d'avantage mesurable sur le prix du marché : ses gains peuvent venir de la chance.";
+  txt.push("<b>Pour copier :</b> " + copie);
   return { titre, txt };
 }
 const histCache = {};
@@ -307,7 +334,7 @@ async function ouvrir(tr, a, fen){
   const rendre = () => {
     let x = '';
     if (w) x += bloc(stratMarche(w, M), "sur ce marché");
-    if (h && h.marches && h.profil) x += bloc(stratHisto(h, COP ? COP.famille : "du même type"), "sur son historique");
+    if (h && h.marches && h.profil && h.profil.deux) x += bloc(stratHisto(h, COP ? COP.famille : "du même type"), "sur son historique");
     else if (h) x += '<p class="mute">Aucun historique sur ce type de marché.</p>';
     x += '<button class="lien" onclick="event.stopPropagation();versPortefeuille(\'' + a + '\')">Historique complet du portefeuille →</button>';
     det.firstChild.innerHTML = '<div class="dt">' + x + '</div>';
@@ -467,8 +494,9 @@ const xFois = (r) => r == null ? "—" : "×" + (1 + r).toFixed(r >= 9 ? 0 : 1);
 function profilH(w){
   const n = w.n_marches;
   return { marches: n, pctGagnes: w.pct, pnl: w.pnl, roi: w.roi, profil: {
-    deuxCotesPct: w.deux / n, combineMoyen: w.n_combine ? w.sum_combine / w.n_combine : null, deuxCotesSousUnPct: w.deux ? w.deux_sous1 / w.deux : null,
-    sniperPct: w.sniper / n, loteriePct: w.loterie / n, directionnelPct: w.dir / n, directionnelReussitePct: w.dir ? w.dir_gagne / w.dir : null,
+    deux: { n: w.deux, combine: w.n_combine ? w.sum_combine / w.n_combine : null, sous1: w.deux_sous1, nComb: w.n_combine },
+    sniper: { n: w.sniper, g: w.g_sniper, px: w.px_sniper }, loterie: { n: w.loterie, g: w.g_loterie, px: w.px_loterie },
+    dir: { n: w.dir, g: w.dir_gagne, px: w.px_dir },
     pireMarche: w.worst_pnl, meilleurMarche: w.best_pnl, miseMoyenne: w.cout / n } };
 }
 function ligneH(w, i, cells){
@@ -478,9 +506,15 @@ const cPnl = (w) => w.pnl > 0 ? "ok" : w.pnl < 0 ? "bad" : "";
 const roiTxt = (r) => r == null ? "—" : (r * 100).toFixed(1) + " %";
 function rendH(){
   const d = HD, lib = HT === "tous" ? "tous les BTC Up or Down" : "BTC Up or Down " + DUREES[HT];
-  let h = '<div class="duo"><div class="card"><div class="mt">Top 20 — performance</div><div class="note">PnL total en $ sur ' + lib + ', avec tes filtres. Clique une ligne pour sa stratégie.</div><div class="scroll"><table class="w2"><tr><th>#</th><th>Portefeuille</th><th>PnL</th><th>ROI</th><th>Marchés</th><th>% gagnés</th><th>Meilleur coup</th></tr>';
+  let h = '<div class="card"><div class="mt">Tueurs à copier — ma sélection</div><div class="note">Critères : au moins <b>30 marchés</b> (toutes durées si « Tous »), rentable, au moins 60 % de paris sur un seul côté (pas d\'arbitrage ni de tenue de marché, qu\'on ne peut pas suivre), 30 ordres par marché au plus (rythme suivable), et un <b>avantage prouvé</b> : il a raison nettement plus souvent que le prix ne l\'annonçait, avec une confiance d\'au moins 2 (moins de 2,5 % de chances que ce soit le hasard). Classés par confiance. Tu peux changer ces critères : dis-le-moi.</div>'
+    + '<div class="scroll"><table class="w2"><tr><th>#</th><th>Portefeuille</th><th>Confiance</th><th>Avantage</th><th>Justes / attendus</th><th>Marchés</th><th>Ordres/marché</th><th>ROI</th><th>PnL</th><th>Durées</th></tr>';
+  d.tueurs.forEach((w, i) => h += ligneH(w, i, '<td><b>' + w.confiance.toFixed(1) + '</b></td><td class="ok">+' + Math.round(w.avantage * 100) + ' pts</td><td>' + f0(w.justes) + ' / ' + f0(w.attendus) + '</td><td>' + f0(w.n_marches) + '</td><td>' + w.ordresParMarche.toFixed(1)
+    + '</td><td class="' + cPnl(w) + '">' + roiTxt(w.roi) + '</td><td class="' + cPnl(w) + '">' + usd(w.pnl) + '</td><td class="mini">' + esc((w.types || "").split(",").map(x => { const [t, n] = x.split(":"); return (DUREES[t] || t) + " " + n; }).join(" · ")) + '</td>'));
+  if (!d.tueurs.length) h += '<tr><td colspan="10" class="mute">Personne ne remplit encore ces critères — la collecte se remplit, revois dans une heure.</td></tr>';
+  h += '</table></div></div>';
+  h += '<div class="duo"><div class="card"><div class="mt">Top 20 — performance</div><div class="note">PnL total en $ sur ' + lib + ', avec tes filtres. Clique une ligne pour sa stratégie.</div><div class="scroll"><table class="w2"><tr><th>#</th><th>Portefeuille</th><th>PnL</th><th>ROI</th><th>Marchés</th><th>% gagnés</th><th>Meilleur coup</th></tr>';
   d.perf.forEach((w, i) => h += ligneH(w, i, '<td class="' + cPnl(w) + '">' + usd(w.pnl) + '</td><td class="' + cPnl(w) + '">' + roiTxt(w.roi) + '</td><td>' + f0(w.n_marches) + '</td><td>' + pc(w.pct) + '</td><td>' + xFois(w.best_roi) + '</td>'));
-  h += '</table></div></div><div class="card"><div class="mt">Top 20 — à copier</div><div class="note">Au moins 10 marchés. Classés par régularité : ROI moyen par marché ÷ sa dispersion × √(marchés). Haut = gains constants, pas un coup de chance.</div><div class="scroll"><table class="w2"><tr><th>#</th><th>Portefeuille</th><th>Régularité</th><th>Marchés</th><th>% gagnés</th><th>PnL</th><th>ROI</th></tr>';
+  h += '</table></div></div><div class="card"><div class="mt">Top 20 — à copier</div><div class="note">Au moins 30 marchés. Classés par régularité : ROI moyen par marché ÷ sa dispersion × √(marchés). Haut = gains constants, pas un coup de chance.</div><div class="scroll"><table class="w2"><tr><th>#</th><th>Portefeuille</th><th>Régularité</th><th>Marchés</th><th>% gagnés</th><th>PnL</th><th>ROI</th></tr>';
   d.copier.forEach((w, i) => h += ligneH(w, i, '<td><b>' + w.regularite.toFixed(1) + '</b></td><td>' + f0(w.n_marches) + '</td><td>' + pc(w.pct) + '</td><td class="' + cPnl(w) + '">' + usd(w.pnl) + '</td><td class="' + cPnl(w) + '">' + roiTxt(w.roi) + '</td>'));
   if (!d.copier.length) h += '<tr><td colspan="7" class="mute">Pas encore assez d\'historique.</td></tr>';
   h += '</table></div></div></div>';
@@ -495,7 +529,7 @@ async function trierH(t){ hTri = t; $("outH4").style.opacity = .5; try { HD = aw
 function ouvrirH(tr, a){
   const nx = tr.nextElementSibling;
   if (nx && nx.classList.contains("det")) { nx.remove(); return; }
-  const all = [...HD.perf, ...HD.copier, ...HD.table];
+  const all = [...HD.tueurs, ...HD.perf, ...HD.copier, ...HD.table];
   const w = all.find(x => x.wallet === a);
   const s = stratHisto(profilH(w), HT === "tous" ? "BTC Up or Down" : "BTC " + DUREES[HT]);
   const det = document.createElement("tr"); det.className = "det";
