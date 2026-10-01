@@ -1,13 +1,9 @@
 === etat
-{"parType":[{"type":"15m","traites":2,"attente":106,"echecs":0,"plus_ancien":1790843400,"plus_recent":1790844300,"trades":4623,"tronques":0},{"type":"1h","traites":0,"attente":99,"echecs":0,"plus_ancien":null,"plus_recent":null,"trades":null,"tronques":0},{"type":"1j","traites":0,"attente":90,"echecs":0,"plus_ancien":null,"plus_recent":null,"trades":null,"tronques":0},{"type":"4h","traites":0,"attente":99,"echecs":0,"plus_ancien":null,"plus_recent":null,"trades":null,"tronques":0},{"type":"5m","traites":4,"attente":104,"echecs":0,"plus_ancien":1790843700,"plus_recent":1790844600,"trades":16310,"tronques":0}],"portefeuilles":1761,"dernierTour":null,"jours":90}
-=== classement tous (meilleur coup)
-total 2171
-0x3dcdeffe  n 1 pnl 8.6 best x 33.3
-0x2e95a181 cnmgz n 2 pnl 13.6 best x 16.7
-0xa937e2d2 0xa937e2D2C67CB8d7 n 2 pnl 4.5 best x 16.6
-0x3c36ad60  n 2 pnl 20.5 best x 11.0
-0x3648b898 busymeng n 1 pnl 18 best x 10
-0x579e60c3 0x579E60c39D229F0c n 1 pnl 18.9 best x 10
-0x581e745b 0x070Af9062723A76C n 1 pnl 9 best x 10
-0x78a07b91 Flyinghippo08 n 2 pnl 24 best x 10
-copier: []
+{"parType":[{"type":"15m","traites":198,"attente":1927,"echecs":0,"plus_ancien":1790667900,"plus_recent":1790845200,"trades":469214,"tronques":0},{"type":"1h","traites":50,"attente":2065,"echecs":0,"plus_ancien":1790668800,"plus_recent":1790845200,"trades":112483,"tronques":0},{"type":"1j","traites":2,"attente":88,"echecs":0,"plus_ancien":1790697600,"plus_recent":1790784000,"trades":8761,"tronques":0},{"type":"4h","traites":13,"attente":527,"echecs":0,"plus_ancien":1790668800,"plus_recent":1790841600,"trades":21772,"tronques":0},{"type":"5m","traites":596,"attente":1028,"echecs":0,"plus_ancien":1790667300,"plus_recent":1790845800,"trades":2569787,"tronques":7}],"portefeuilles":13413,"dernierTour":{"decouverts":264,"traites":40,"erreurs":0,"trades":131812,"fetch":291,"ms":36533,"a":"2026-10-01T09:15:14.900Z"},"jours":90}
+=== tail 150 s
+-- ok cpu 775 wall 36574 {'cron': '* * * * *', 'scheduledTime': 1790846198000}
+-- ok cpu 1 wall 124 {'cron': '* * * * *', 'scheduledTime': 1790846258000}
+-- ok cpu 222 wall 28754 {'request': {'url': 'https://wallet-autopsy.pitch67.workers.dev/api/btc/tour', 'method': 'GET', 'headers': {'accept': '*
+evenements 3
+=== etat apres
+{"parType":[{"type":"15m","traites":218,"attente":2292,"echecs":0,"plus_ancien":1790650800,"plus_recent":1790846100,"trades":508775,"tronques":0},{"type":"1h","traites":54,"attente":2105,"echecs":0,"plus_ancien":1790654400,"plus_recent":1790845200,"trades":121122,"tronques":0},{"type":"1j","traites":2,"attente":88,"echecs":0,"plus_ancien":1790697600,"plus_recent":1790784000,"trades":8761,"tronques":0},{"type":"4h","traites":14,"attente":526,"echecs":0,"plus_ancien":1790654400,"plus_recent":1790841600,"trades":22767,"tronques":0},{"type":"5m","traites":653,"attente":1260,"echecs":0,"plus_ancien":1790650500,"plus_recent":1790846100,"trades":2823042,"tronques":11}],"portefeuilles":13826,"dernierTour":{"decouverts":168,"traites":8,"erreurs":0,"trades":24962,"fetch":61,"ms":28191,"a":"2026-10-01T09:17:56.006Z"},"jours":90}
