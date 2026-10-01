@@ -47,6 +47,13 @@ th{color:var(--mute);font-weight:500;font-size:12px}
 .addr{font-family:ui-monospace,Menlo,monospace;font-size:12px}
 a{color:var(--acc)}
 .hide{display:none}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.w{min-width:860px}
+table.w th{cursor:pointer;user-select:none;white-space:nowrap}
+table.w td{white-space:nowrap}
+table.w tr.cl{cursor:pointer}
+table.w tr.cl:hover td{background:var(--chip)}
+.mini{font-size:11px;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -56,11 +63,21 @@ a{color:var(--acc)}
 </header>
 <main>
   <div class="tabs">
-    <button id="t1" class="on" onclick="tab(1)">Portefeuille</button>
-    <button id="t2" onclick="tab(2)">Détenteurs d'un marché</button>
+    <button id="t3" class="on" onclick="tab(3)">Marché</button>
+    <button id="t1" onclick="tab(1)">Portefeuille</button>
+    <button id="t2" onclick="tab(2)">Détenteurs</button>
   </div>
 
-  <section id="p1">
+  <section id="p3">
+    <div class="card">
+      <label for="qm">Lien de la page Polymarket du marché</label>
+      <input id="qm" placeholder="https://polymarket.com/fr/event/btc-updown-5m-…" autocomplete="off" spellcheck="false">
+      <button class="go" id="goM" onclick="marche()">Analyser tous les portefeuilles</button>
+    </div>
+    <div id="outM"></div>
+  </section>
+
+  <section id="p1" class="hide">
     <div class="card">
       <label for="addr">Adresse du portefeuille</label>
       <input id="addr" placeholder="0x…" autocomplete="off" spellcheck="false">
@@ -92,8 +109,67 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"
 const dt = (t) => t ? new Date(t * 1000).toLocaleString("fr-CH", {day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}) : "—";
 const sec = (s) => s == null ? "—" : s < 60 ? s + " s" : (s / 60).toFixed(1) + " min";
 
-function tab(n){ $("t1").classList.toggle("on", n===1); $("t2").classList.toggle("on", n===2);
-  $("p1").classList.toggle("hide", n!==1); $("p2").classList.toggle("hide", n!==2); }
+function tab(n){ for (const k of [1,2,3]) { $("t"+k).classList.toggle("on", n===k); $("p"+k).classList.toggle("hide", n!==k); } }
+
+let M = null, triCle = "volume", triSens = -1;
+async function marche(){
+  const q = $("qm").value.trim();
+  history.replaceState(null, "", "?m=" + encodeURIComponent(q));
+  $("goM").disabled = true; $("outM").innerHTML = '<div class="card mute">Téléchargement de tous les trades du marché… (jusqu\'à 30 s)</div>';
+  try { M = await api("/api/market?q=" + encodeURIComponent(q)); rendM(); }
+  catch(e){ $("outM").innerHTML = '<div class="card err">' + esc(e.message) + '</div>'; }
+  finally { $("goM").disabled = false; }
+}
+const COLS = [
+  ["adresse","Portefeuille", w => w.nom || w.adresse],
+  ["trades","Trades", w => w.trades],
+  ["achatA","A parts", w => w.achatA],
+  ["pmA","A prix", w => w.pmA],
+  ["achatB","B parts", w => w.achatB],
+  ["pmB","B prix", w => w.pmB],
+  ["combine","Combiné", w => w.combine],
+  ["volume","Misé", w => w.cout],
+  ["pnl","PnL", w => w.pnl],
+  ["roi","ROI", w => w.roi],
+  ["avantFinSec","1re entrée", w => w.avantFinSec],
+  ["ecartMedianSec","Écart méd.", w => w.ecartMedianSec],
+  ["tags","Profil", w => w.tags.join(" ")],
+];
+function trier(c){ if (triCle === c) triSens = -triSens; else { triCle = c; triSens = -1; } rendM(); }
+function rendM(){
+  const d = M, s = d.synthese, A = d.issues[0] || "A", B = d.issues[1] || "B";
+  const etat = d.resolu ? "Résolu : <b>" + esc(d.prix[0] === 1 ? A : B) + "</b> gagne" : d.ferme ? "Fermé, en attente de résolution" : "En cours — PnL au dernier prix (" + esc(A) + " " + f2(d.prix[0]) + " / " + esc(B) + " " + f2(d.prix[1]) + ")";
+  let h = '<div class="card"><div class="mt">' + esc(d.question || d.titre) + '</div><div class="note" style="margin-top:2px">' + etat
+    + (d.autresMarches ? ' · cet événement contient ' + d.autresMarches + ' marchés, seul le premier est analysé' : '') + '</div>'
+    + '<div class="kpis" style="margin-top:10px">'
+    + kpi(f0(s.portefeuilles), "portefeuilles") + kpi(f0(s.trades), "trades")
+    + kpi(usd(s.volumeAchats), "misé au total") + kpi(f0(s.automates), "automates")
+    + kpi(f0(s.deuxCotes), "achètent les deux côtés") + kpi(f0(s.pairesSousUn), "dont paires sous 1 $")
+    + kpi('<span class="ok">' + f0(s.gagnants) + '</span> / <span class="bad">' + f0(s.perdants) + '</span>', "gagnants / perdants")
+    + kpi(s.partTop10Volume == null ? "—" : Math.round(s.partTop10Volume*100) + " %", "du volume fait par les 10 plus gros")
+    + '</div><div class="note">A = ' + esc(A) + ', B = ' + esc(B) + '. PnL = encaissé (ventes + fusions) + valeur des parts restantes − misé. '
+    + 'Fusions lues pour les ' + d.activiteLuePourTop + ' plus gros portefeuilles. « 1re entrée » = temps restant avant la fin du marché au premier trade. Clique un en-tête pour trier, une ligne pour l\'historique complet du portefeuille.'
+    + (d.tronque ? ' <b class="warn">L\'API a limité l\'historique : les trades les plus anciens manquent.</b>' : '') + '</div></div>';
+
+  const col = COLS.find(c => c[0] === triCle) || COLS[7];
+  const rows = [...d.portefeuilles].sort((x, y) => { const a = col[2](x), b = col[2](y);
+    if (a == null) return 1; if (b == null) return -1; return (typeof a === "string" ? a.localeCompare(b) : a - b) * triSens; });
+  h += '<div class="card scroll"><table class="w"><tr>' + COLS.map(c => '<th onclick="trier(\'' + c[0] + '\')">' + c[1] + (c[0]===triCle ? (triSens<0?" ▾":" ▴") : "") + '</th>').join("") + '</tr>';
+  for (const w of rows) {
+    const pc = w.pnl == null ? "" : w.pnl > 0 ? "ok" : w.pnl < 0 ? "bad" : "";
+    h += '<tr class="cl" onclick="versPortefeuille(\'' + w.adresse + '\')"><td><div>' + esc(w.nom || "—") + '</div><div class="addr mini">' + w.adresse.slice(0,8) + '…' + w.adresse.slice(-4) + '</div></td>'
+      + '<td>' + w.trades + '</td><td>' + f0(w.achatA) + '</td><td>' + f4(w.pmA) + '</td><td>' + f0(w.achatB) + '</td><td>' + f4(w.pmB) + '</td>'
+      + '<td class="' + (w.combine==null?"":w.combine<1?"ok":"bad") + '">' + f4(w.combine) + '</td>'
+      + '<td>' + usd(w.cout) + '</td><td class="' + pc + '">' + usd(w.pnl) + '</td><td class="' + pc + '">' + (w.roi==null?"—":(w.roi*100).toFixed(1)+" %") + '</td>'
+      + '<td>' + (w.avantFinSec==null?"—":sec(w.avantFinSec)) + '</td><td>' + sec(w.ecartMedianSec) + '</td>'
+      + '<td>' + w.tags.map(t => '<span class="tag">' + esc(t) + '</span>').join(" ") + '</td></tr>';
+  }
+  $("outM").innerHTML = h + '</table></div>';
+}
+function versPortefeuille(a){
+  $("addr").value = a; $("filtre").value = ""; $("market").value = "";
+  $("marketInfo").classList.add("hide"); tab(1); analyser(); window.scrollTo(0,0);
+}
 
 async function api(path){ const r = await fetch(path); const j = await r.json(); if (!r.ok || j.erreur) throw new Error(j.erreur || ("Erreur " + r.status)); return j; }
 
@@ -174,6 +250,8 @@ $("addr").addEventListener("input", () => { $("market").value = ""; $("marketInf
 
 // Relance depuis l'adresse de la page
 const p = new URLSearchParams(location.search);
+if (p.get("m")) { $("qm").value = p.get("m"); marche(); }
+else if (p.get("addr")) { tab(1); }
 if (p.get("addr")) { $("addr").value = p.get("addr"); $("filtre").value = p.get("filtre") || ""; $("market").value = p.get("market") || ""; analyser(); }
 </script>
 </body>

@@ -11,6 +11,7 @@ export default {
     const url = new URL(req.url);
     try {
       if (url.pathname === "/api/wallet") return json(await walletReport(url.searchParams));
+      if (url.pathname === "/api/market") return json(await marketReport(url.searchParams));
       if (url.pathname === "/api/holders") return json(await holdersReport(url.searchParams));
       if (url.pathname === "/api/sante") return json({ ok: true, heure: new Date().toISOString() });
     } catch (e) {
@@ -298,4 +299,143 @@ async function holdersReport(sp) {
     res.push({ conditionId: cid, question: mk.question || "", slug: mk.slug || "", cotes });
   }
   return { titre, marches: res };
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// Analyse de TOUS les portefeuilles ayant tradé sur un marché
+// ─────────────────────────────────────────────────────────────
+async function resoudreMarche(saisie) {
+  saisie = saisie.trim();
+  if (/^0x[0-9a-fA-F]{64}$/.test(saisie)) {
+    const mk = await getJSON(`${GAMMA}/markets?condition_ids=${saisie}`).catch(() => []);
+    if (Array.isArray(mk) && mk.length) return { titre: mk[0].question, marche: mk[0] };
+  }
+  const m = saisie.match(/polymarket\.com\/(?:[a-z]{2}\/)?(event|market)\/([^/?#]+)(?:\/([^/?#]+))?/i);
+  const evSlug = m ? m[2] : saisie;
+  const mkSlug = m ? m[3] : null;
+  const ev = await getJSON(`${GAMMA}/events?slug=${encodeURIComponent(evSlug)}`).catch(() => []);
+  if (Array.isArray(ev) && ev.length && (ev[0].markets || []).length) {
+    const ms = ev[0].markets;
+    const choisi = (mkSlug && ms.find((x) => x.slug === mkSlug)) || ms[0];
+    return { titre: ev[0].title || choisi.question, marche: choisi, autres: ms.length };
+  }
+  const mk = await getJSON(`${GAMMA}/markets?slug=${encodeURIComponent(mkSlug || evSlug)}`).catch(() => []);
+  if (Array.isArray(mk) && mk.length) return { titre: mk[0].question, marche: mk[0] };
+  throw new Error("Marché introuvable sur Polymarket avec ce lien.");
+}
+
+const parseArr = (x) => { try { return Array.isArray(x) ? x : JSON.parse(x || "[]"); } catch { return []; } };
+
+async function marketReport(sp) {
+  const saisie = sp.get("q") || "";
+  if (!saisie.trim()) throw new Error("Colle le lien de la page Polymarket du marché.");
+  const { titre, marche, autres } = await resoudreMarche(saisie);
+  const cid = marche.conditionId;
+  const issuesNoms = parseArr(marche.outcomes);
+  const prix = parseArr(marche.outcomePrices).map(Number);
+  const resolu = !!marche.closed && prix.some((p) => p === 1);
+  const fin = marche.endDate ? Math.floor(Date.parse(marche.endDate) / 1000) : null;
+
+  // 1. Tous les trades du marché
+  const tr = await paged("/trades", { market: cid, takerOnly: "false" });
+
+  // 2. Regroupement par portefeuille
+  const W = new Map();
+  for (const t of tr.rows) {
+    const a = (t.proxyWallet || "").toLowerCase();
+    if (!a) continue;
+    if (!W.has(a)) W.set(a, { adresse: a, nom: t.name || t.pseudonym || "", o: [0, 1].map(() => ({ ap: 0, ac: 0, vp: 0, vr: 0, n: 0 })), ts: [], tailles: [] });
+    const w = W.get(a);
+    const i = Number(t.outcomeIndex) === 1 ? 1 : 0;
+    const size = num(t.size), price = num(t.price), ts = num(t.timestamp);
+    if (String(t.side).toUpperCase() === "BUY") { w.o[i].ap += size; w.o[i].ac += size * price; }
+    else { w.o[i].vp += size; w.o[i].vr += size * price; }
+    w.o[i].n++;
+    w.ts.push(ts);
+    w.tailles.push(size * price);
+  }
+
+  // 3. Fusions / splits / remboursements pour les plus gros portefeuilles
+  const parVolume = [...W.values()].map((w) => ({ w, vol: w.o[0].ac + w.o[1].ac + w.o[0].vr + w.o[1].vr })).sort((a, b) => b.vol - a.vol);
+  const TOP_ACT = 40;
+  const cibles = parVolume.slice(0, TOP_ACT).map((x) => x.w);
+  for (let k = 0; k < cibles.length; k += 8) {
+    await Promise.all(cibles.slice(k, k + 8).map(async (w) => {
+      try {
+        const rows = await getJSON(`${DATA}/activity?user=${w.adresse}&market=${cid}&type=SPLIT,MERGE,REDEEM&limit=500`);
+        w.act = { merge: 0, mergeUsdc: 0, split: 0, splitUsdc: 0, redeemUsdc: 0 };
+        for (const r of rows || []) {
+          const ty = String(r.type).toUpperCase();
+          if (ty === "MERGE") { w.act.merge += num(r.size); w.act.mergeUsdc += num(r.usdcSize ?? r.size); }
+          if (ty === "SPLIT") { w.act.split += num(r.size); w.act.splitUsdc += num(r.usdcSize ?? r.size); }
+          if (ty === "REDEEM") w.act.redeemUsdc += num(r.usdcSize ?? r.size);
+        }
+      } catch { /* laissé vide */ }
+    }));
+  }
+
+  // 4. Calculs par portefeuille
+  const liste = [...W.values()].map((w) => {
+    const [A, B] = w.o;
+    const pmA = A.ap ? A.ac / A.ap : null, pmB = B.ap ? B.ac / B.ap : null;
+    const act = w.act || { merge: 0, mergeUsdc: 0, split: 0, splitUsdc: 0, redeemUsdc: 0 };
+    const netA = A.ap - A.vp - act.merge + act.split;
+    const netB = B.ap - B.vp - act.merge + act.split;
+    const cout = A.ac + B.ac + act.splitUsdc;
+    const encaisse = A.vr + B.vr + act.mergeUsdc;
+    // Valeur des parts restantes : prix de résolution si résolu, sinon dernier prix connu
+    const valeur = (prix.length === 2) ? Math.max(netA, 0) * (prix[0] || 0) + Math.max(netB, 0) * (prix[1] || 0) : null;
+    const pnl = valeur == null ? null : encaisse + valeur - cout;
+    const paires = A.ap && B.ap ? Math.min(A.ap, B.ap) : 0;
+    const combine = A.ap && B.ap ? pmA + pmB : null;
+    const ts = w.ts.sort((a, b) => a - b);
+    const n = ts.length;
+    const ecart = medianeEcarts(ts);
+    const meme = memeSeconde(ts);
+    const tags = [];
+    if (n >= 10 && ecart != null && ecart <= 2) tags.push("Automate");
+    if (paires > 0 && combine != null) tags.push(combine < 1 ? "Paires < 1 $" : "Deux côtés");
+    else if (A.ap || B.ap) tags.push("Directionnel " + (A.ap >= B.ap ? (issuesNoms[0] || "A") : (issuesNoms[1] || "B")));
+    if (A.vp + B.vp > 0) tags.push("Revend");
+    if (act.merge > 0) tags.push("Fusionne");
+    return {
+      adresse: w.adresse, nom: w.nom, trades: n,
+      achatA: A.ap, pmA, achatB: B.ap, pmB, venteA: A.vp, venteB: B.vp,
+      combine, paires, margePaires: paires ? paires * (1 - combine) : 0,
+      cout, encaisse, valeur, pnl, roi: pnl != null && cout > 0 ? pnl / cout : null,
+      premier: ts[0] || 0, dernier: ts[n - 1] || 0,
+      avantFinSec: fin && ts[0] ? fin - ts[0] : null,
+      ecartMedianSec: ecart, memeSecondePct: meme,
+      merge: act.merge, mergeUsdc: act.mergeUsdc, redeemUsdc: act.redeemUsdc,
+      activiteLue: !!w.act, tags,
+    };
+  });
+  liste.sort((a, b) => (b.cout + b.encaisse) - (a.cout + a.encaisse));
+
+  // 5. Synthèse du marché
+  const somme = (f) => liste.reduce((x, w) => x + (f(w) || 0), 0);
+  const avecPnl = liste.filter((w) => w.pnl != null);
+  const gagnants = avecPnl.filter((w) => w.pnl > 0);
+  const synthese = {
+    portefeuilles: liste.length,
+    trades: tr.rows.length,
+    volumeAchats: somme((w) => w.cout),
+    automates: liste.filter((w) => w.tags.includes("Automate")).length,
+    deuxCotes: liste.filter((w) => w.paires > 0).length,
+    pairesSousUn: liste.filter((w) => w.combine != null && w.combine < 1).length,
+    gagnants: gagnants.length,
+    perdants: avecPnl.filter((w) => w.pnl < 0).length,
+    pnlGagnants: gagnants.reduce((x, w) => x + w.pnl, 0),
+    pnlTotal: avecPnl.reduce((x, w) => x + w.pnl, 0),
+    partTop10Volume: (() => { const t = somme((w) => w.cout); return t ? liste.slice(0, 10).reduce((x, w) => x + w.cout, 0) / t : null; })(),
+  };
+
+  return {
+    titre, question: marche.question, conditionId: cid, slug: marche.slug,
+    issues: issuesNoms, prix, resolu, ferme: !!marche.closed, fin: marche.endDate || null,
+    autresMarches: autres && autres > 1 ? autres : null,
+    tronque: tr.tronque, activiteLuePourTop: Math.min(TOP_ACT, liste.length),
+    synthese, portefeuilles: liste,
+  };
 }
