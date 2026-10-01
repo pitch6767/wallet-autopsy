@@ -1,22 +1,14 @@
-=== markets fermés sur 3h hier, filtrés Bitcoin Up or Down
-total renvoyes 100
-btc updown 0
-[]
-=== pagination offset: markets 2026-07-03
-100 0 []
-=== events series
-[{"id":"10684","ticker":"btc-up-or-down-5m","slug":"btc-up-or-down-5m","title":"BTC Up or Down 5m","seriesType":"single","recurrence":"5m","image":"","icon":"","active":true,"closed":false,"archived":false,"featured":false,"restricted":true,"createdAt":"2025-11-21T21:46:22.201627Z","updatedAt":"2026-10-01T08:34:00.114198Z","volume24hr":10886608.200072,"volume":64149.652056,"liquidity":3058279.9901
-[{"id":"107735","ticker":"btc-updown-5m-1766038500","slug":"btc-updown-5m-1766038500","title":"Bitcoin Up or Down - December 18, 1:15AM-1:20AM ET","description":"This market will resolve to \"Up\" if the Bitcoin price at the end of the time range specified in the title is greater than or equal to the price at the beginning of that range. Otherwise, it will resolve to \"Down\".\nThe resolution sour
-=== offset cap trades
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-IndexError: list index out of range
-offset 9500: [{"proxyWallet":"0x605b2f9de3db8bb3509e51db39eb299061635d60","side":"BUY","asset":"8360992671317817985418064910696299809923171727639649684964837332856curl: (23) Failure writing output to destination
-
-offset 10000: [{"proxyWallet":"0xc8fd586752b76061c12b0a37658bb4117d6b5efa","side":"BUY","asset":"2274618689005492954796313790814548511117260633577856119763639890270curl: (23) Failure writing output to destination
-
-offset 10500: {"error":"max historical trades offset of 10000 exceeded"}
-offset 15000: {"error":"max historical trades offset of 10000 exceeded"}
-=== un marché 1h : nb trades
-arret offset 0 code 0
-trades 1h: 0
+=== séries BTC
+nb series 50
+41 btc-up-or-down-daily | BTC Up or Down Daily | daily | closed False
+=== events d'une série, ordre et pagination
+3
+btc-updown-5m-1790843400 2026-10-01T08:35:00Z 1 ["0", "1"]
+btc-updown-5m-1790843100 2026-10-01T08:30:00Z 1 ["1", "0"]
+btc-updown-5m-1790842800 2026-10-01T08:25:00Z 1 ["1", "0"]
+offset 25000 -> {'type': 'validation error', 'error': 'offset too large, use /events/keyset for deeper pagination'} 
+fenetre date -> 13 ['btc-updown-5m-1782863700', 'btc-updown-5m-1782864000', 'btc-updown-5m-1782864300', 'btc-updown-5m-1782864600']
+=== trades: filtres side / start
+cid=
+side=BUY total 0
+side=SELL total 0
