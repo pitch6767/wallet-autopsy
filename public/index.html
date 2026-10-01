@@ -57,6 +57,11 @@ table.w td{white-space:nowrap}
 table.w tr.cl{cursor:pointer}
 table.w tr.cl:hover td{background:var(--chip)}
 .mini{font-size:11px;color:var(--mute)}
+.filt{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;align-items:end}
+@media(min-width:720px){.filt{grid-template-columns:repeat(5,1fr)}}
+.filt label{margin:0 0 4px}
+select{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:15px}
+.cpt{font-size:13px;color:var(--mute);padding-bottom:12px}
 </style>
 </head>
 <body>
@@ -138,7 +143,8 @@ const COLS = [
   ["ecartMedianSec","Écart méd.", w => w.ecartMedianSec],
   ["tags","Profil", w => w.tags.join(" ")],
 ];
-function trier(c){ if (triCle === c) triSens = -triSens; else { triCle = c; triSens = -1; } rendM(); }
+function trier(c){ if (triCle === c) triSens = -triSens; else { triCle = c; triSens = -1; } rendTable(); }
+let FIL = { t: "", m: "", r: "", p: "" };
 function rendM(){
   const d = M, s = d.synthese, A = d.issues[0] || "A", B = d.issues[1] || "B";
   const etat = d.resolu ? "Résolu : <b>" + esc(d.prix[0] === 1 ? A : B) + "</b> gagne" : d.ferme ? "Fermé, en attente de résolution" : "En cours — PnL au dernier prix (" + esc(A) + " " + f2(d.prix[0]) + " / " + esc(B) + " " + f2(d.prix[1]) + ")";
@@ -154,10 +160,27 @@ function rendM(){
     + 'Fusions lues pour les ' + d.activiteLuePourTop + ' plus gros portefeuilles. « 1re entrée » = temps restant avant la fin du marché au premier trade. Clique un en-tête pour trier, une ligne pour l\'historique complet du portefeuille.'
     + (d.tronque ? ' <b class="warn">L\'API a limité l\'historique : les trades les plus anciens manquent.</b>' : '') + '</div></div>';
 
+  h += '<div class="card filt"><div><label for="fT">Trades min.</label><input id="fT" type="number" inputmode="numeric" value="' + esc(FIL.t) + '" oninput="filtrer()"></div>'
+    + '<div><label for="fM">Misé min. ($)</label><input id="fM" type="number" inputmode="decimal" value="' + esc(FIL.m) + '" oninput="filtrer()"></div>'
+    + '<div><label for="fR">ROI min. (%)</label><input id="fR" type="number" inputmode="decimal" value="' + esc(FIL.r) + '" oninput="filtrer()"></div>'
+    + '<div><label for="fP">Profil</label><select id="fP" onchange="filtrer()"><option value="">Tous</option>'
+    + [...new Set(d.portefeuilles.flatMap(w => w.tags))].sort().map(t => '<option' + (FIL.p===t?' selected':'') + '>' + esc(t) + '</option>').join("") + '</select></div>'
+    + '<div class="cpt" id="cpt"></div></div>';
+  h += '<div id="tab"></div>';
+  $("outM").innerHTML = h;
+  rendTable();
+}
+function filtrer(){ FIL = { t: $("fT").value, m: $("fM").value, r: $("fR").value, p: $("fP").value }; rendTable(); }
+function rendTable(){
+  const d = M;
   const col = COLS.find(c => c[0] === triCle) || COLS[7];
-  const rows = [...d.portefeuilles].sort((x, y) => { const a = col[2](x), b = col[2](y);
+  const nt = parseFloat(FIL.t), nm = parseFloat(FIL.m), nr = parseFloat(FIL.r);
+  const garde = d.portefeuilles.filter(w => (isNaN(nt) || w.trades >= nt) && (isNaN(nm) || w.cout >= nm)
+    && (isNaN(nr) || (w.roi != null && w.roi * 100 >= nr)) && (!FIL.p || w.tags.includes(FIL.p)));
+  $("cpt").textContent = garde.length + " / " + d.portefeuilles.length + " portefeuilles";
+  const rows = garde.sort((x, y) => { const a = col[2](x), b = col[2](y);
     if (a == null) return 1; if (b == null) return -1; return (typeof a === "string" ? a.localeCompare(b) : a - b) * triSens; });
-  h += '<div class="card scroll"><table class="w"><tr>' + COLS.map(c => '<th onclick="trier(\'' + c[0] + '\')">' + c[1] + (c[0]===triCle ? (triSens<0?" ▾":" ▴") : "") + '</th>').join("") + '</tr>';
+  let h = '<div class="card scroll"><table class="w"><tr>' + COLS.map(c => '<th onclick="trier(\'' + c[0] + '\')">' + c[1] + (c[0]===triCle ? (triSens<0?" ▾":" ▴") : "") + '</th>').join("") + '</tr>';
   for (const w of rows) {
     const pc = w.pnl == null ? "" : w.pnl > 0 ? "ok" : w.pnl < 0 ? "bad" : "";
     h += '<tr class="cl" onclick="versPortefeuille(\'' + w.adresse + '\')"><td><div>' + esc(w.nom || "—") + '</div><div class="addr mini">' + w.adresse.slice(0,8) + '…' + w.adresse.slice(-4) + '</div></td>'
@@ -167,7 +190,7 @@ function rendM(){
       + '<td>' + (w.avantFinSec==null?"—":sec(w.avantFinSec)) + '</td><td>' + sec(w.ecartMedianSec) + '</td>'
       + '<td>' + w.tags.map(t => '<span class="tag">' + esc(t) + '</span>').join(" ") + '</td></tr>';
   }
-  $("outM").innerHTML = h + '</table></div>';
+  $("tab").innerHTML = h + '</table></div>';
 }
 function versPortefeuille(a){
   $("addr").value = a; $("filtre").value = ""; $("market").value = "";
