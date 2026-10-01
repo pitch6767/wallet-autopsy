@@ -2,7 +2,7 @@ name: Diagnostic
 on:
   push:
     branches: [main]
-    paths: [diagnostic/demande.txt]
+    paths: [diagnostic/demande.txt, diagnostic/probe.sh]
 permissions:
   contents: write
 jobs:
@@ -17,28 +17,7 @@ jobs:
           U=https://wallet-autopsy.pitch67.workers.dev
           SLUG=btc-updown-5m-1790840700
           {
-          CID=$(curl -sS "https://gamma-api.polymarket.com/events?slug=$SLUG" | python3 -c "import json,sys;e=json.load(sys.stdin)[0];m=e['markets'][0];print(m['conditionId']);import sys as s;print('volume gamma:',m.get('volume'),'| prix:',m.get('outcomePrices'),'| closed:',m.get('closed'),file=s.stderr)")
-          echo "cid $CID"
-          for T in true false; do
-            N=0; for o in 0 500 1000 1500 2000 2500 3000 3500 4000 4500 5000; do
-              c=$(curl -sS "$D/trades?market=$CID&limit=500&offset=$o&takerOnly=$T" | python3 -c "import json,sys;d=json.load(sys.stdin);print(len(d) if isinstance(d,list) else 'ERR '+str(d)[:80])"); echo "takerOnly=$T offset=$o -> $c"; case "$c" in ERR*|0) break;; esac; N=$((N+c)); [ "$c" -lt 500 ] && break; done
-            echo "TOTAL takerOnly=$T : $N"
-          done
-          echo "=== app"
-          curl -sS -m 90 "$U/api/market?q=$SLUG" | python3 -c "
-          import json,sys
-          d=json.load(sys.stdin); s=d['synthese']
-          print('app: portefeuilles',s['portefeuilles'],'trades',s['trades'],'mise',round(s['volumeAchats']),'resolu',d['resolu'],d['prix'],'tronque',d['tronque'])
-          ws=[w for w in d['portefeuilles'] if w['roi'] is not None]
-          ws.sort(key=lambda w:-w['roi'])
-          for w in ws[:15]: print(round(w['roi']*100), '%', w['adresse'], w['nom'][:20], 'mise', round(w['cout'],2), 'pnl', round(w['pnl'],2), 'trades', w['trades'], 'pmA', w['pmA'], 'pmB', w['pmB'])
-          "
-          echo "=== holders"
-          curl -sS "$D/holders?market=$CID&limit=20" | python3 -c "
-          import json,sys
-          for b in json.load(sys.stdin):
-            for h in b.get('holders',[])[:20]: print(h.get('outcomeIndex'), h.get('proxyWallet'), (h.get('name') or '')[:20], round(float(h.get('amount',0))))
-          "
+          bash diagnostic/probe.sh
           } > diagnostic/resultat.txt 2>&1
           git config user.name diag; git config user.email bot@users.noreply.github.com
           git add diagnostic/resultat.txt; git commit -m "Diagnostic [skip ci]"; git push
