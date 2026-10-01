@@ -62,6 +62,13 @@ table.w tr.cl:hover td{background:var(--chip)}
 .filt label{margin:0 0 4px}
 select{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:15px}
 .cpt{font-size:13px;color:var(--mute);padding-bottom:12px}
+.duo{display:grid;grid-template-columns:1fr;gap:0 12px}
+@media(min-width:1100px){.duo{grid-template-columns:1fr 1fr}}
+table.w2{min-width:520px;margin-top:8px}
+table.w2 td,table.w2 th{white-space:nowrap;padding:6px 6px}
+table.w2 tr.cl{cursor:pointer}
+table.w2 tr.cl:hover td{background:var(--chip)}
+.nm{max-width:160px;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -166,9 +173,41 @@ function rendM(){
     + '<div><label for="fP">Profil</label><select id="fP" onchange="filtrer()"><option value="">Tous</option>'
     + [...new Set(d.portefeuilles.flatMap(w => w.tags))].sort().map(t => '<option' + (FIL.p===t?' selected':'') + '>' + esc(t) + '</option>').join("") + '</select></div>'
     + '<div class="cpt" id="cpt"></div></div>';
+  h += '<div class="duo"><div class="card"><div class="mt">Top 20 — performance sur ce marché</div><div class="note">Classés par PnL en $, avec les filtres ci-dessus.</div><div id="topPerf"></div></div>'
+    + '<div class="card"><div class="mt">Top 20 — à copier</div><div class="note" id="copNote">Lecture de l\'historique des 60 plus gros portefeuilles sur les marchés du même type…</div><div id="topCop"></div></div></div>';
   h += '<div id="tab"></div>';
   $("outM").innerHTML = h;
   rendTable();
+  chargerCopier();
+}
+let COP = null;
+async function chargerCopier(){
+  const d = M; COP = null;
+  const cands = [...d.portefeuilles].sort((a, b) => (b.cout + b.encaisse) - (a.cout + a.encaisse)).slice(0, 60).map(w => w.adresse);
+  try {
+    const r = await api("/api/copier?slug=" + encodeURIComponent(d.slug || "") + "&titre=" + encodeURIComponent(d.question || "") + "&addrs=" + cands.join(","));
+    if (M !== d) return;
+    COP = r; rendCopier();
+  } catch(e){ $("copNote").innerHTML = '<span class="err">' + esc(e.message) + '</span>'; }
+}
+const nomDe = (a) => { const w = M.portefeuilles.find(x => x.adresse === a); return w && w.nom ? w.nom : a.slice(0,8) + "…" + a.slice(-4); };
+function ligneMini(a, cells){ return '<tr class="cl" onclick="versPortefeuille(\'' + a + '\')"><td><div class="nm">' + esc(nomDe(a)) + '</div></td>' + cells + '</tr>'; }
+function rendPerf(garde){
+  const top = garde.filter(w => w.pnl != null).sort((a, b) => b.pnl - a.pnl).slice(0, 20);
+  let h = '<div class="scroll"><table class="w2"><tr><th>#</th><th>Portefeuille</th><th>PnL</th><th>ROI</th><th>Misé</th><th>Trades</th><th>Profil</th></tr>';
+  top.forEach((w, i) => { const c = w.pnl > 0 ? "ok" : w.pnl < 0 ? "bad" : "";
+    h += ligneMini(w.adresse, '<td class="' + c + '">' + usd(w.pnl) + '</td><td class="' + c + '">' + (w.roi==null?"—":(w.roi*100).toFixed(1)+" %") + '</td><td>' + usd(w.cout) + '</td><td>' + w.trades + '</td><td>' + w.tags.map(t => '<span class="tag">' + esc(t) + '</span>').join(" ") + '</td>').replace('<tr class="cl"', '<tr class="cl" data-i="' + (i+1) + '"').replace('<td><div class="nm">', '<td class="mute">' + (i+1) + '</td><td><div class="nm">'); });
+  $("topPerf").innerHTML = top.length ? h + '</table></div>' : '<div class="note">Aucun portefeuille avec ces filtres.</div>';
+}
+function rendCopier(){
+  const r = COP, MIN = 10;
+  const ok = r.portefeuilles.filter(w => w.marches >= MIN && w.regularite != null).sort((a, b) => b.regularite - a.regularite).slice(0, 20);
+  $("copNote").innerHTML = 'Historique sur les marchés <b>' + esc(r.famille) + '</b> (200 dernières positions de chacun). ' + r.evalues + ' portefeuilles évalués, au moins ' + MIN + ' marchés exigés. '
+    + 'Classés par <b>régularité</b> : ROI moyen par marché divisé par sa dispersion × √(nombre de marchés) — plus c\'est haut, plus le gain est constant et moins il tient de la chance.';
+  let h = '<div class="scroll"><table class="w2"><tr><th>#</th><th>Portefeuille</th><th>Régularité</th><th>Marchés</th><th>% gagnés</th><th>PnL total</th><th>ROI</th></tr>';
+  ok.forEach((w, i) => { const c = w.pnl > 0 ? "ok" : w.pnl < 0 ? "bad" : "";
+    h += ligneMini(w.adresse, '<td><b>' + w.regularite.toFixed(1) + '</b></td><td>' + w.marches + '</td><td>' + Math.round(w.pctGagnes*100) + ' %</td><td class="' + c + '">' + usd(w.pnl) + '</td><td class="' + c + '">' + (w.roi==null?"—":(w.roi*100).toFixed(1)+" %") + '</td>').replace('<td><div class="nm">', '<td class="mute">' + (i+1) + '</td><td><div class="nm">'); });
+  $("topCop").innerHTML = ok.length ? h + '</table></div>' : '<div class="note">Aucun portefeuille n\'a assez d\'historique sur ce type de marché.</div>';
 }
 function filtrer(){ FIL = { t: $("fT").value, m: $("fM").value, r: $("fR").value, p: $("fP").value }; rendTable(); }
 function rendTable(){
@@ -178,6 +217,7 @@ function rendTable(){
   const garde = d.portefeuilles.filter(w => (isNaN(nt) || w.trades >= nt) && (isNaN(nm) || w.cout >= nm)
     && (isNaN(nr) || (w.roi != null && w.roi * 100 >= nr)) && (!FIL.p || w.tags.includes(FIL.p)));
   $("cpt").textContent = garde.length + " / " + d.portefeuilles.length + " portefeuilles";
+  rendPerf(garde);
   const rows = garde.sort((x, y) => { const a = col[2](x), b = col[2](y);
     if (a == null) return 1; if (b == null) return -1; return (typeof a === "string" ? a.localeCompare(b) : a - b) * triSens; });
   let h = '<div class="card scroll"><table class="w"><tr>' + COLS.map(c => '<th onclick="trier(\'' + c[0] + '\')">' + c[1] + (c[0]===triCle ? (triSens<0?" ▾":" ▴") : "") + '</th>').join("") + '</tr>';
