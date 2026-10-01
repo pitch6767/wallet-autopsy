@@ -11,6 +11,7 @@ export default {
     const url = new URL(req.url);
     try {
       if (url.pathname === "/api/wallet") return json(await walletReport(url.searchParams));
+      if (url.pathname === "/api/copier") return json(await copierReport(url.searchParams));
       if (url.pathname === "/api/market") return json(await marketReport(url.searchParams));
       if (url.pathname === "/api/holders") return json(await holdersReport(url.searchParams));
       if (url.pathname === "/api/sante") return json({ ok: true, heure: new Date().toISOString() });
@@ -438,4 +439,62 @@ async function marketReport(sp) {
     tronque: tr.tronque, activiteLuePourTop: Math.min(TOP_ACT, liste.length),
     synthese, portefeuilles: liste,
   };
+}
+
+// ─────────────────────────────────────────────────────────────
+// « À copier » : historique de chaque portefeuille sur les marchés
+// du même type (même famille de slug, ex. btc-updown-5m)
+// ─────────────────────────────────────────────────────────────
+function famille(slug, titre) {
+  slug = slug || "";
+  if (/-\d{6,}$/.test(slug)) return { cle: "slug", val: slug.replace(/-\d{6,}$/, "") };
+  return { cle: "titre", val: String(titre || "").split(" - ")[0].trim().toLowerCase() };
+}
+function memeFamille(f, slug, titre) {
+  if (f.cle === "slug") return (slug || "").replace(/-\d{6,}$/, "") === f.val && /-\d{6,}$/.test(slug || "");
+  return String(titre || "").split(" - ")[0].trim().toLowerCase() === f.val;
+}
+
+async function historiqueFamille(addr, f) {
+  const rows = [];
+  for (let p = 0; p < 4; p++) {
+    const q = new URLSearchParams({ user: addr, limit: "50", offset: String(p * 50), sortBy: "TIMESTAMP", sortDirection: "DESC" });
+    let r;
+    try { r = await getJSON(`${DATA}/closed-positions?${q}`); } catch { break; }
+    if (!Array.isArray(r) || !r.length) break;
+    rows.push(...r);
+    if (r.length < 50) break;
+  }
+  const M = new Map();
+  for (const r of rows) {
+    if (!memeFamille(f, r.slug, r.title)) continue;
+    const cid = r.conditionId;
+    if (!M.has(cid)) M.set(cid, { pnl: 0, cout: 0, ts: num(r.timestamp) });
+    const m = M.get(cid);
+    m.pnl += num(r.realizedPnl);
+    m.cout += num(r.avgPrice) * num(r.totalBought);
+  }
+  const ms = [...M.values()];
+  const n = ms.length;
+  const pnl = ms.reduce((x, m) => x + m.pnl, 0);
+  const cout = ms.reduce((x, m) => x + m.cout, 0);
+  const gagnes = ms.filter((m) => m.pnl > 0).length;
+  const rois = ms.filter((m) => m.cout > 0).map((m) => m.pnl / m.cout);
+  const moy = rois.length ? rois.reduce((a, b) => a + b, 0) / rois.length : null;
+  const sd = rois.length > 1 ? Math.sqrt(rois.reduce((a, b) => a + (b - moy) ** 2, 0) / (rois.length - 1)) : null;
+  // Régularité : ROI moyen par marché rapporté à sa dispersion (≈ t-stat)
+  const regularite = sd && sd > 0 ? (moy / sd) * Math.sqrt(rois.length) : null;
+  return { adresse: addr, marches: n, gagnes, pctGagnes: n ? gagnes / n : null, pnl, cout, roi: cout > 0 ? pnl / cout : null, roiMoyen: moy, regularite, positionsLues: rows.length };
+}
+
+async function copierReport(sp) {
+  const slug = sp.get("slug") || "", titre = sp.get("titre") || "";
+  const addrs = (sp.get("addrs") || "").split(",").map((a) => a.trim().toLowerCase()).filter(isAddr).slice(0, 60);
+  if (!addrs.length) throw new Error("Aucune adresse à évaluer.");
+  const f = famille(slug, titre);
+  const out = [];
+  for (let k = 0; k < addrs.length; k += 10) {
+    out.push(...(await Promise.all(addrs.slice(k, k + 10).map((a) => historiqueFamille(a, f).catch(() => null)))));
+  }
+  return { famille: f.val, evalues: addrs.length, portefeuilles: out.filter(Boolean) };
 }

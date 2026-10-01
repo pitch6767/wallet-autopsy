@@ -34,6 +34,10 @@ jobs:
             echo; echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}" $U/
             echo; echo "=== /api/market"; curl -sS -m 90 "$U/api/market?q=https%3A%2F%2Fpolymarket.com%2Ffr%2Fevent%2Fbtc-updown-5m-1790840700" > /tmp/m.json; head -c 3000 /tmp/m.json
             echo; echo "=== /api/wallet"; curl -sS -m 60 "$U/api/wallet?addr=$A" | head -c 800
+            echo; echo "=== brut closed-positions"; curl -sS -m 20 "https://data-api.polymarket.com/closed-positions?user=0x21f4c1&limit=2" | head -c 300
+            echo; B=$(python3 -c "import json;d=json.load(open('/tmp/m.json'));print(','.join(w['adresse'] for w in d['portefeuilles'][:12]))")
+            curl -sS -m 20 "https://data-api.polymarket.com/closed-positions?user=$(echo $B | cut -d, -f1)&limit=3&sortBy=TIMESTAMP&sortDirection=DESC" | head -c 2500
+            echo; echo "=== /api/copier"; curl -sS -m 90 "$U/api/copier?slug=btc-updown-5m-1790840700&addrs=$B" | head -c 3000
             echo; echo "=== brut trades"; curl -sS -m 20 "https://data-api.polymarket.com/trades?user=$A&limit=2&takerOnly=false" | head -c 1500
             echo; echo "=== brut activity"; curl -sS -m 20 "https://data-api.polymarket.com/activity?user=$A&limit=2&type=MERGE,REDEEM,SPLIT" | head -c 1500
           } > diagnostic/controle.txt 2>&1
