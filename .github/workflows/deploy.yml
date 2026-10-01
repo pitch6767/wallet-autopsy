@@ -55,4 +55,4 @@ jobs:
           git config user.name "controle"
           git config user.email "bot@users.noreply.github.com"
           git add diagnostic/controle.txt
-          git commit -m "Controle apres deploiement [skip ci]" && git push
+          git commit -m "Controle apres deploiement [skip ci]" && for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
