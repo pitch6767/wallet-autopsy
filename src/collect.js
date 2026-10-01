@@ -28,10 +28,14 @@ function compteur() {
   return {
     get n() { return n; },
     async json(u) {
-      n++;
-      const r = await fetch(u, { headers: { accept: "application/json", "user-agent": "wallet-autopsy/1.0" } });
-      if (!r.ok) throw new Error(`HTTP ${r.status} ${new URL(u).pathname}`);
-      return r.json();
+      for (let essai = 0; ; essai++) {
+        n++;
+        const r = await fetch(u, { headers: { accept: "application/json", "user-agent": "wallet-autopsy/1.0" } });
+        if (r.ok) return r.json();
+        // Limite de débit de Polymarket : on patiente et on réessaie
+        if ((r.status === 429 || r.status >= 500) && essai < 4) { await new Promise((ok) => setTimeout(ok, 800 * (essai + 1))); continue; }
+        throw new Error(`HTTP ${r.status} ${new URL(u).pathname}`);
+      }
     },
   };
 }
@@ -226,16 +230,16 @@ export async function tourDeCollecte(env) {
     // Marchés restés « en cours » après un tour interrompu
     await db.prepare("UPDATE markets SET statut=0 WHERE statut=2 AND claim_ts < ?").bind((t0 / 1000 | 0) - 600).run();
     const { results } = await db.prepare("SELECT cid,type,gagnant,end_ts FROM markets WHERE statut=0 ORDER BY end_ts DESC LIMIT ?").bind(MAX_MARCHES).all();
-    for (let i = 0; i < results.length; i += 5) {
+    for (let i = 0; i < results.length; i += 3) {
       if (Date.now() - t0 > DUREE_MAX_MS || f.n > MAX_FETCH) break;
-      const lot = results.slice(i, i + 5);
+      const lot = results.slice(i, i + 3);
       await db.batch(lot.map((m) => db.prepare("UPDATE markets SET statut=2, claim_ts=? WHERE cid=? AND statut=0").bind(Date.now() / 1000 | 0, m.cid)));
       await Promise.all(lot.map(async (m) => {
         try { const nt = await traiterMarche(db, f, m); rapport.trades += nt; rapport.traites++; }
         catch (e) {
           rapport.erreurs++;
           rapport.derniereErreur = String(e.message || e).slice(0, 300);
-          await db.prepare("UPDATE markets SET statut=CASE WHEN essais>=3 THEN 9 ELSE 0 END, essais=essais+1, erreur=? WHERE cid=?").bind(String(e.message || e).slice(0, 200), m.cid).run();
+          await db.prepare("UPDATE markets SET statut=CASE WHEN essais>=8 THEN 9 ELSE 0 END, essais=essais+1, erreur=? WHERE cid=?").bind(String(e.message || e).slice(0, 200), m.cid).run();
         }
       }));
     }
