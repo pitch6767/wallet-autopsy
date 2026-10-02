@@ -1,12 +1,7 @@
 U=https://wallet-autopsy.pitch67.workers.dev
-sleep 120
-for A in 0x3750aa21fd677f569b63fde892f773ee7dd02c42 $(curl -sS -m 60 "$U/api/btc/classement" | python3 -c "
-import json,sys; d=json.load(sys.stdin); print(' '.join(w['wallet'] for w in d['tueurs'][:3]))"); do
-echo "################ $A"
-curl -sS -m 90 "$U/api/etude?addr=$A" | python3 -c "
-import json,sys,re; e=json.load(sys.stdin)
-if 'erreur' in e: print(e); sys.exit()
-print('#',e['titre'],'| marches',e['marches'],e['meta'])
-for c in e['constats']: print(' -',re.sub('<[^>]+>','',c['texte']))
-print(' =>',e['verdict'])"
-done
+sleep 30
+for i in 1 2 3; do curl -sS -m 120 $U/api/btc/etudes; echo; done
+curl -sS -m 60 "$U/api/btc/classement" | python3 -c "
+import json,sys,re; d=json.load(sys.stdin)
+print('etudes',d['etudesFaites'],'copiables',d['etudesCopiables'])
+for w in d['tueurs']: print(w['nom'] or w['wallet'][:10], w['cible'], round(w['marge']*100), 'pts', round(w['roiCible']*100,1),'%', w['nCible'], re.sub('<[^>]+>','',w['verdict'])[:300])"

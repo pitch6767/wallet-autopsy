@@ -1,5 +1,5 @@
 import { etude } from "./etude.js";
-import { tourDeCollecte, etatCollecte, classement } from "./collect.js";
+import { tourDeCollecte, etatCollecte, classement, tourEtudes } from "./collect.js";
 // wallet-autopsy — profilage de portefeuilles Polymarket
 // Lecture seule : uniquement les API publiques de Polymarket, aucune clé, aucun ordre.
 
@@ -16,6 +16,7 @@ export default {
       if (url.pathname === "/api/etude") return json(await etude(env, url.searchParams.get("addr")));
       if (url.pathname === "/api/btc/classement") return json(await classement(env, url.searchParams));
       if (url.pathname === "/api/btc/tour") return json(await tourDeCollecte(env));
+      if (url.pathname === "/api/btc/etudes") return json({ faites: await tourEtudes(env, etude) });
       if (url.pathname === "/api/btc/etat") return json(await etatCollecte(env));
       if (url.pathname === "/api/copier") return json(await copierReport(url.searchParams));
       if (url.pathname === "/api/market") return json(await marketReport(url.searchParams));
@@ -27,7 +28,8 @@ export default {
     return env.ASSETS.fetch(req);
   },
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(tourDeCollecte(env).catch((e) => console.log("collecte", e && e.message)));
+    if (event.cron === "*/2 * * * *") ctx.waitUntil(tourEtudes(env, etude).catch((e) => console.log("etudes", e && e.message)));
+    else ctx.waitUntil(tourDeCollecte(env).catch((e) => console.log("collecte", e && e.message)));
   },
 };
 

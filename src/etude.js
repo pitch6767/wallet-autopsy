@@ -212,7 +212,9 @@ function analyser(addr, ms, meta) {
     const couverts = l.filter((m) => m.deux || m.revend).length;
     const t = { lib, n: l.length, ok, att, z, p, c, avant, couverts };
     lignes.push(t);
-    if (z >= 2 && p > 0 && avant != null && avant >= 60 && (!meilleure || p / c * z > meilleure.p / meilleure.c * meilleure.z)) meilleure = t;
+    // Copiable seulement si l'avance survit au retard d'un copieur : >= 5 points, ROI >= 5 %, 30 marchés
+    t.marge = (ok - att) / l.length;
+    if (z >= 2 && p > 0 && p / c >= 0.05 && t.marge >= 0.05 && l.length >= 30 && avant != null && avant >= 60 && (!meilleure || t.marge * Math.sqrt(t.n) > meilleure.marge * Math.sqrt(meilleure.n))) meilleure = t;
   }
   if (lignes.length) {
     const exclus = mApres.size ? `, hors ${mApres.size} marché${mApres.size > 1 ? "s" : ""} acheté${mApres.size > 1 ? "s" : ""} après la clôture` : "";
@@ -323,6 +325,7 @@ function analyser(addr, ms, meta) {
   else if (rev.length >= 0.5 * n) out.titre = "Trader intra-marché";
   else if (mFin10.size >= 0.3 * n) out.titre = "Sniper des dernières secondes";
   else if (meilleure) out.titre = `Parieur avec avantage (${meilleure.lib})`;
+  else if (lignes.some((l) => l.z >= 2 && l.p > 0 && l.avant >= 60)) out.titre = "Avantage réel mais trop mince pour être copié";
   else if (lignes.some((l) => l.z >= 2 && l.p > 0)) out.titre = "Bat le prix, mais trop tard pour être suivi";
   else if (concentre) out.titre = "Un gros coup, le reste au hasard";
   else out.titre = pnl > 0 ? "Gagnant sans avantage démontré" : "Perdant";
@@ -338,11 +341,16 @@ function analyser(addr, ms, meta) {
       + (pnl < 0.5 * m.p ? `Ne copie pas le reste : son résultat global n'est que de ${usd(pnl)} (ROI ${pc(pnl / cout)}) parce qu'il perd ${usd(Math.abs(pnl - m.p))} sur ses autres marchés. ` : "")
       + `Son avance sur le prix est de ${Math.round(marge * 100)} points : chaque centime payé en plus par part en mange un. En achetant au plus ${Math.max(1, Math.floor(marge * 100 / 2))} centimes au-dessus de son prix, tu gardes au moins la moitié de son avance.`
       + (m.couverts > 0.2 * m.n ? ` Attention : sur ${m.couverts} de ces ${m.n} marchés il agit encore après son entrée (achat de l'autre côté ou revente) ; ce résultat suppose de reproduire aussi ces gestes.` : "");
+  } else if (lignes.some((l) => l.z >= 2 && l.p > 0 && l.avant >= 60)) {
+    const l = lignes.filter((x) => x.z >= 2 && x.p > 0 && x.avant >= 60).sort((a, b) => b.marge - a.marge)[0];
+    out.verdict = `Non en pratique : sa première entrée ${l.lib} bat bien le prix, mais de ${Math.round(l.marge * 100)} point${l.marge >= 0.015 ? "s" : ""} seulement (ROI ${pc(l.p / l.c)}). En le copiant quelques secondes plus tard, tu paierais ${l.marge < 0.02 ? "au moins un centime" : "quelques centimes"} de plus par part, ce qui suffit à effacer son avance.`;
   } else if (lignes.some((l) => l.z >= 2 && l.p > 0)) out.verdict = "Non : il bat le prix du marché, mais uniquement sur des achats pris dans la dernière minute, quand le résultat est presque connu. Impossible à suivre sans être aussi rapide que lui.";
   else if (mdAv != null && mdAv < 30) out.verdict = "Non à la main : il entre trop près de la fin pour qu'on ait le temps de le suivre.";
   else out.verdict = pnl > 0 ? "Pas convaincant : il gagne, mais aucune de ses catégories de paris ne bat le prix du marché au-delà du hasard." : "Non : il perd de l'argent sur la période étudiée.";
 
   out.constats.sort((a, b) => b.poids - a.poids);
+  out.meilleure = meilleure ? { lib: meilleure.lib, n: meilleure.n, marge: meilleure.marge, roi: meilleure.p / meilleure.c, p: meilleure.p, avant: meilleure.avant } : null;
+  out.pnl = pnl; out.roi = cout ? pnl / cout : null;
   return out;
 }
 

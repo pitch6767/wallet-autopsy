@@ -269,6 +269,35 @@ export async function etatCollecte(env) {
 
 const TYPES = ["5m", "15m", "1h", "4h", "1j"];
 
+// ─── Études en tâche de fond ───
+export async function tourEtudes(env, etude) {
+  const db = env.DB, t0 = Date.now();
+  const { results } = await db.prepare(`SELECT s.wallet FROM (
+      SELECT wallet, SUM(n_marches) n, SUM(pnl) pnl, SUM(trades) tr, SUM(sum_avant) sa, SUM(n_avant) na FROM stats GROUP BY wallet) s
+      LEFT JOIN etudes e ON e.wallet = s.wallet
+      WHERE s.n >= 30 AND s.pnl > 0 AND s.tr <= 30 * s.n AND s.na > 0 AND s.sa / s.na >= 60
+        AND (e.ts IS NULL OR e.ts < ?)
+      ORDER BY (e.ts IS NOT NULL), s.pnl DESC LIMIT 4`).bind((t0 / 1000 | 0) - 86400).all();
+  let faits = 0;
+  for (const r of results) {
+    if (Date.now() - t0 > 40_000) break;
+    try {
+      const e = await etude(env, r.wallet);
+      const m = e.meilleure;
+      await db.prepare(`INSERT INTO etudes(wallet,ts,copiable,titre,marches,pnl,roi,marge,roi_cible,n_cible,score,json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(wallet) DO UPDATE SET ts=excluded.ts,copiable=excluded.copiable,titre=excluded.titre,marches=excluded.marches,pnl=excluded.pnl,roi=excluded.roi,
+          marge=excluded.marge,roi_cible=excluded.roi_cible,n_cible=excluded.n_cible,score=excluded.score,json=excluded.json`)
+        .bind(r.wallet, Date.now() / 1000 | 0, e.copiable ? 1 : 0, e.titre, e.marches, e.pnl || 0, e.roi || 0,
+          m ? m.marge : null, m ? m.roi : null, m ? m.n : null, m ? m.marge * Math.sqrt(m.n) : null, JSON.stringify(e)).run();
+      faits++;
+    } catch (err) {
+      await db.prepare("INSERT INTO etudes(wallet,ts,copiable,titre) VALUES(?,?,0,?) ON CONFLICT(wallet) DO UPDATE SET ts=excluded.ts")
+        .bind(r.wallet, Date.now() / 1000 | 0, "Étude impossible").run();
+    }
+  }
+  return faits;
+}
+
 export async function classement(env, sp) {
   const db = env.DB;
   const type = TYPES.includes(sp.get("type")) ? sp.get("type") : "tous";
@@ -302,37 +331,32 @@ export async function classement(env, sp) {
     FROM stats ${where} GROUP BY wallet HAVING ${having}`;
   const q = (order, lim, extra = "") =>
     db.prepare(`SELECT * FROM (${agg}) ${extra} ORDER BY ${order} DESC LIMIT ${lim}`).bind(...binds);
-  // « Tueurs » : candidats copiables (paris sur un seul côté, peu d'ordres par marché, rentables)
-  const tueursSql = db.prepare(`SELECT * FROM (${agg}) WHERE n_marches >= 30 AND pnl > 0
-      AND (sniper + loterie + dir) >= 0.6 * n_marches AND trades <= 30 * n_marches
-      AND n_avant > 0 AND sum_avant / n_avant >= 60
-      ORDER BY pnl DESC LIMIT 3000`).bind(...binds);
-  const [perf, copier, table, total, cand] = await db.batch([
+  const [perf, copier, table, total] = await db.batch([
     q("pnl", 20),
     q("t2s", 20, `WHERE t2s IS NOT NULL AND n_marches >= ${Math.max(30, minM)}`),
     q(TRIS[tri], 300, `WHERE ${TRIS[tri]} IS NOT NULL`),
     db.prepare(`SELECT COUNT(*) n FROM (${agg})`).bind(...binds),
-    tueursSql,
   ]);
   const fin = (r) => ({
     ...r,
     roiMoyen: r.sum_roi / r.n_marches,
     regularite: r.t2s == null ? null : Math.sign(r.t2s) * Math.sqrt(Math.abs(r.t2s)),
   });
-  // Avantage = paris justes − probabilité annoncée par le prix ; confiance = écart en écarts-types
-  const tueurs = cand.results.map((r) => {
-    let nS = 0, g = 0, p = 0, v = 0;
-    for (const [n, gg, px] of [[r.sniper, r.g_sniper, r.px_sniper], [r.loterie, r.g_loterie, r.px_loterie], [r.dir, r.dir_gagne, r.px_dir]]) {
-      if (!n) continue;
-      const pm = px / n;
-      nS += n; g += gg; p += px; v += n * pm * (1 - pm);
-    }
-    const z = v > 0 ? (g - p) / Math.sqrt(v) : null;
-    return { ...fin(r), nSimple: nS, justes: g, attendus: p, avantage: nS ? (g - p) / nS : null, confiance: z, ordresParMarche: r.trades / r.n_marches, avantFinMoyen: r.n_avant ? r.sum_avant / r.n_avant : null };
-  }).filter((r) => r.confiance != null && r.confiance >= 2 && r.avantage > 0)
-    .sort((a, b) => b.confiance - a.confiance).slice(0, 20);
+  const et = await db.prepare(`SELECT wallet, titre, marches, pnl, roi, marge, roi_cible, n_cible, score, json FROM etudes WHERE copiable=1 ORDER BY score DESC LIMIT 20`).all();
+  const ws = et.results.map((r) => r.wallet);
+  const noms = new Map();
+  if (ws.length) {
+    const nn = await db.prepare(`SELECT wallet, MAX(nom) nom FROM stats WHERE wallet IN (${ws.map(() => "?").join(",")}) GROUP BY wallet`).bind(...ws).all();
+    for (const r of nn.results) noms.set(r.wallet, r);
+  }
+  const tueurs = et.results.map((r) => {
+    const e = JSON.parse(r.json || "{}");
+    return { wallet: r.wallet, nom: (noms.get(r.wallet) || {}).nom || "", titre: r.titre, n_marches: r.marches, pnl: r.pnl, roi: r.roi, marge: r.marge,
+      roiCible: r.roi_cible, nCible: r.n_cible, cible: e.meilleure ? e.meilleure.lib : "", avant: e.meilleure ? e.meilleure.avant : null, verdict: e.verdict };
+  });
+  const suivi = await db.prepare("SELECT COUNT(*) n, SUM(copiable) c FROM etudes").first();
   return {
-    type, tri, tueurs,
+    type, tri, tueurs, etudesFaites: suivi?.n || 0, etudesCopiables: suivi?.c || 0,
     total: total.results[0]?.n || 0,
     perf: perf.results.map(fin),
     copier: copier.results.map(fin),
