@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 
 G = "https://gamma-api.polymarket.com"
 D = "https://data-api.polymarket.com"
-JOURS = 14
+JOURS = int(sys.argv[1]) if len(sys.argv) > 1 else 14
 NOW = time.time()
 DEBUT = NOW - JOURS * 86400
 VOL_MIN = 2000
@@ -49,7 +49,7 @@ def categorie(m):
     if "up or down" in q:
         return "crypto 5-15 min"
     if m.get("gameStartTime") or m.get("sportsMarketType"):
-        return "sport"
+        return "sport " + (m.get("slug") or "?").split("-")[0]
     if re.search(r"temperature|°|precipitation|rain|snow|hurricane|weather|highest temp", q):
         return "meteo"
     if re.search(r"bitcoin|ethereum|solana|xrp|btc|eth |crypto|price of", q):
@@ -101,7 +101,7 @@ def marches():
                 E = ts(m.get("endDate")) or R
                 K = E
                 gs = ts(m.get("gameStartTime"))
-                if cat == "sport" and gs:
+                if cat.startswith("sport") and gs:
                     K = gs + 3.5 * 3600
                 out.append({"cid": m["conditionId"], "q": m.get("question", "")[:80], "cat": cat,
                             "gagnant": px.index(1.0), "R": R, "K": min(K, R), "frais": bool(m.get("feesEnabled"))})
@@ -199,6 +199,11 @@ def main():
             for c, l in sorted(cats.items(), key=lambda x: -len(x[1])):
                 bloc(l, "  " + c)
         print()
+    print("=" * 30, "SPORT (toutes ligues) APRES la fin, par tranche")
+    for tr in TRANCHES:
+        bloc([x for x in R if x["phase"] == "apres" and x["tranche"] == tr and x["cat"].startswith("sport")], "sport %.3f-%.4f" % tr)
+    bloc([x for x in R if x["phase"] == "apres" and x["cat"].startswith("sport")], "SPORT toutes tranches")
+    bloc([x for x in R if x["phase"] == "apres" and not x["cat"].startswith("sport") and x["cat"] != "politique"], "HORS sport et politique")
     print("=" * 30, "PERTES apres la fin (issue achetee >= 0,95 qui a perdu)")
     P = [x for x in R if x["phase"] == "apres" and not x["gagne"] and x["p"] >= 0.95]
     for x in sorted(P, key=lambda x: -x["p"])[:25]:
