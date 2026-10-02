@@ -1,10 +1,57 @@
-=== gamma marches recompenses
-{'question': 'Will Belgium win on 2026-10-02?', 'conditionId': '0x6e80f1d062ad5f2a049bfd27498eaa641da593777475cdebb9e4e8ce8bb4d243', 'clobTokenIds': '["104379086576444458007896843592399621439233955324799272605300933651479707035301", "20936989777651295240568873652651347162683472645473604740277071285208378220137"]', 'rewardsMinSize': 50, 'rewardsMaxSpread': 4.5, 'clobRewards': None, 'volume24hr': 3081421.8064189996, 'liquidity': '948512.96143', 'spread': 0.001, 'bestBid': 0.999, 'bestAsk': 1, 'endDate': '2026-10-02T18:45:00Z', 'negRisk': True}
-{'question': 'Will France win on 2026-10-02?', 'conditionId': '0x2b9e6a942a16f2ca43ddec6033c0c4afd6fb11cf06eb840f422282371eb066dd', 'clobTokenIds': '["65941091065939106472835109280359379224650838855424511168579788941359855208899", "49544405543333031354294253157724216741756235619113562702176166686871464338310"]', 'rewardsMinSize': 50, 'rewardsMaxSpread': 4.5, 'clobRewards': None, 'volume24hr': 1108106.3846910002, 'liquidity': '930254.53824', 'spread': 0.001, 'bestBid': None, 'bestAsk': 0.001, 'endDate': '2026-10-02T18:45:00Z', 'negRisk': True}
-['acceptingOrders', 'acceptingOrdersTimestamp', 'active', 'approved', 'archived', 'automaticallyActive', 'bestAsk', 'bestBid', 'clearBookOnStart', 'clobTokenIds', 'closed', 'comboStatus', 'competitive', 'conditionId', 'createdAt', 'cyom', 'deploying', 'deployingTimestamp', 'description', 'enableOrderBook', 'endDate', 'endDateIso', 'events', 'featured', 'feeSchedule', 'feeType', 'feesEnabled', 'funded', 'gameStartTime', 'groupItemThreshold', 'groupItemTitle', 'hasReviewedDates', 'holdingRewardsEnabled', 'icon', 'id', 'image', 'lastTradePrice', 'liquidity', 'liquidityClob', 'liquidityNum', 'makerBaseFee', 'manualActivation', 'marketMakerAddress', 'marketMetadata', 'negRisk', 'negRiskMarketID', 'negRiskOther', 'negRiskRequestID', 'new', 'oneDayPriceChange', 'oneHourPriceChange', 'oneWeekPriceChange', 'orderMinSize', 'orderPriceMinTickSize', 'outcomePrices', 'outcomes', 'pendingDeployment', 'positionIds', 'question', 'questionID', 'ready', 'resolutionSource', 'resolvedBy', 'restricted', 'rewardsMaxSpread', 'rewardsMinSize', 'rfqEnabled', 'secondsDelay', 'slug', 'sportsMarketType', 'spread', 'startDate', 'startDateIso', 'takerBaseFee', 'umaBond', 'umaResolutionStatus', 'umaResolutionStatuses', 'umaReward', 'updatedAt', 'version', 'volume', 'volume1mo', 'volume1moClob', 'volume1wk', 'volume1wkClob', 'volume1yr', 'volume1yrClob', 'volume24hr', 'volume24hrClob', 'volumeClob', 'volumeNum']
+marches recompenses : 18747
+total recompenses / jour : 218699 $
+sampling-markets : 18744
+candidats etudies : 250 (recompense >= 5 $/jour, fin > 2 jours, min_size <= 200)
+analyses : 215 erreurs : 0 duree 67s
 
-=== clob rewards current
-{"data":[{"condition_id":"0x0000c7fe300953933808d82cd4aa35dbc9f291f0b78ca9da43b0604883906c6c","rewards_config":[{"asset_address":"0xC011a7E12a19f7B1f670d46F03B03f3342E82DFB","start_date":"2026-09-25","end_date":"2500-12-31","rate_per_day":1,"total_rewards":0,"id":0}],"rewards_max_spread":4.5,"rewards_min_size":20,"native_daily_rate":1,"total_daily_rate":1},{"condition_id":"0x00020007558a5bb00fae1e40255a46ef18f04a6ef1d200bb31ead43e6bed36e7","rewards_config":[{"asset_address":"0xC011a7E12a19f7B1f670d46F03B03f3342E82DFB","start_date":"2026-10-02","end_date":"2500-12-31","rate_per_day":2,"total_rewards":0,"id":0}],"rewards_max_spread":6.5,"rewards_min_size":20,"native_daily_rate":2,"total_daily_rate":2},{"condition_id":"0x0005c476ee52e5da1c2feb1e1e2ef4e4086fc0818b6cb471f8a2c114fcf6101a","rewards_config":[{"asset_address":"0xC011a7E12a19f7B1f670d46F03B03f3342E82DFB","start_date":"2026-09-13","end_date":"2500-12-31","rate_per_day":5,"total_rewards":0,"id":0}],"rewards_max_spread":4.5,"rewards_min_size":20,"native_daily_rate":5,"total_daily_rate":5},{"condition_id":"0x000927bb183ef17d4a0a3e609f5995b7cfac3983b5baa50ba3842679b7f71d69","rewards_config":[{"asset_address":"0xC011a7E12a19f7B1f670d46F03B03f3342E82DFB","start_date":"2026-09-12","end_date":"2500-12-31","rate_per_day":2,"total_rewards":0,"id":0}],"rewards_max_spread":4.5,"rewards_min_size":20,"native_daily_rate":2,"total_daily_rate":2},{"condition_id":"0x000b9447be5bf30f0d3ecba3e4f0284d29b7b2465b10065978a326c3307bcdda","rewarcurl: (23) Failure writing output to destination
+marches nets positifs : 193 / 215
+somme recompenses estimees /jour : 4622.5 $
+somme markout /jour : -1179.5 $
+somme nette /jour (tous) : 3443.0 $  | positifs seulement : 4314.6 $
+capital si on prend tous les positifs : ~38600 $
+mediane markout par marche /jour : -0.04 $
 
-=== clob sampling-markets
-{"data":[{"enable_order_book":true,"active":true,"closed":false,"archived":false,"accepting_orders":true,"accepting_order_timestamp":"2025-07-03T20:36:33Z","minimum_order_size":5,"minimum_tick_size":0.001,"condition_id":"0xa467b14d51f01b957109d9cbb1d6c124fab2a089d52ed8f471d23c2812e743b7","question_id":"0x1d925c6933062c2e38031293612d8680ffa097c5d3ba2f87a8ecc565bd47183e","question":"Xi Jinping out before 2027?","description":"This market will resolve to \"Yes\" if China's General Secretary of the Communist Party, Xi Jinping, is removed from power for any length of time between July 3, 2025, and December 31, 2026, 11:59 PM ET. Otherwise, this market will resolve to \"No\".\n\nCCP General Secretary Xi Jinping will be considered removed from power if he announces his resignation from his role as General Secretary, or is otherwise dismissed, detained, disqualified, or otherwise loses his position or is prevented from fulfilling his duties as General Secretary within this market's timeframe.\n\nThe primary resolution source for this market will be a consensus of credible reporting.","market_slug":"xi-jinping-out-before-2027","end_date_iso":"2027-01-01T00:00:00Z","game_start_time":null,"seconds_delay":0,"fpmm":"","maker_base_fee":1000,"taker_base_fee":1000,"notifications_enabled":true,"neg_risk":false,"neg_risk_market_id":"","neg_risk_request_id":"","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/xi-jinping-out-in-2025-EjF4SM20eaa3.jpg","image":"https://polymarket-uploadcurl: (23) Failure writing output to destination
+TOP 30 par gain net / jour (S=200 parts par cote, cote a 50% de l'ecart max, markout 1 h)
+net$/j | recomp | markout | part | rate | exec7j | mid | fin | question
+499.72 | 500.00 |   -0.28 | 1.00 |  500 |     18 | 0.61 | 2026-11-01 | Spain snap election called by October 31?
+200.65 | 200.00 |    0.65 | 1.00 |  200 |      6 | 0.33 | 2026-10-31 | Will Taylor Swift's daily YouTube view count hit 24M in October?
+200.03 | 200.00 |    0.03 | 1.00 |  200 |      5 | 0.62 | 2026-12-01 | Spain snap election called by November 30?
+200.00 | 200.00 |    0.00 | 1.00 |  200 |      0 | 0.55 | 2026-10-12 | Rain during the Bahrain Grand Prix?
+199.56 | 200.00 |   -0.44 | 1.00 |  200 |      4 | 0.79 | 2026-10-18 | Next Fable Model (5.2+) released by October 17, 2026?
+199.24 | 200.00 |   -0.76 | 1.00 |  200 |      4 | 0.84 | 2026-10-25 | Next Fable Model (5.2+) released by October 24, 2026?
+124.28 | 134.00 |   -9.72 | 1.00 |  134 |     24 | 0.36 | 2027-01-08 | Will Hong Kong have between 70-120mm of precipitation in October?
+122.57 | 127.00 |   -4.43 | 1.00 |  127 |     15 | 0.47 | 2027-03-01 | Will no next Israeli Minister of Finance be appointed by February 28, 
+118.72 | 124.00 |   -5.28 | 1.00 |  124 |     30 | 0.41 | 2026-10-06 | Will DeepSeek have the highest OpenRouter market share the week of Sep
+118.47 | 132.00 |  -13.53 | 1.00 |  132 |     32 | 0.56 | 2026-10-06 | Will DeepSeek have the second highest OpenRouter market share the week
+115.94 | 118.00 |   -2.06 | 1.00 |  118 |     12 | 0.30 | 2026-10-12 | Will 170-189 ships transit the Bab el-Mandeb Strait between October 5-
+100.06 | 100.00 |    0.06 | 1.00 |  100 |      2 | 0.25 | 2026-12-31 | Will Rodrigo Mora win the 2026 Golden Boy award?
+ 97.43 | 100.00 |   -2.57 | 1.00 |  100 |      8 | 0.38 | 2026-10-09 | Will NYC Mayor post 20-39 posts from October 2 to October 9, 2026?
+ 89.85 |  90.00 |   -0.15 | 1.00 |   90 |      2 | 0.41 | 2026-11-01 | Will there be between 25 and 29 average daily transits of the Bab el-M
+ 85.71 |  85.71 |    0.00 | 0.43 |  200 |      0 | 0.30 | 2026-10-11 | Next Fable Model (5.2+) released by October 10, 2026?
+ 84.49 |  84.41 |    0.08 | 0.42 |  200 |      1 | 0.27 | 2027-01-01 | Will EU emergency diesel stocks be at least 33M tonnes at end of Decem
+ 83.81 | 101.38 |  -17.57 | 0.51 |  200 |     51 | 0.55 | 2026-12-31 | Will Abbas Araghchi attend a US x Iran diplomatic meeting by December 
+ 81.96 |  88.92 |   -6.96 | 0.57 |  156 |     17 | 0.31 | 2027-01-01 | Will AloisNL Win the ADC Race 2026?
+ 75.47 |  80.00 |   -4.53 | 1.00 |   80 |      6 | 0.39 | 2026-10-30 | Will the Central Bank of Colombia increase the monetary policy interes
+ 75.03 |  76.00 |   -0.97 | 1.00 |   76 |     23 | 0.33 | 2026-10-06 | Will Google have the highest OpenRouter market share the week of Septe
+ 73.21 |  79.98 |   -6.78 | 0.80 |  100 |     23 | 0.39 | 2026-11-01 | Will Trump speak to Mark Rutte by October 31?
+ 72.98 |  75.93 |   -2.95 | 0.97 |   78 |      7 | 0.64 | 2026-11-18 | Will Abyss be the fewest played map at VALORANT Champions 2026?
+ 71.85 |  72.00 |   -0.15 | 1.00 |   72 |      4 | 0.40 | 2027-01-08 | Will NYC have less than 3 inches of precipitation in October?
+ 60.41 |  65.00 |   -4.59 | 1.00 |   65 |      8 | 0.64 | 2026-10-06 | Will "East of Eden: Limited Series" be the #2 US Netflix show this wee
+ 59.17 |  65.07 |   -5.90 | 0.45 |  144 |     22 | 0.69 | 2027-01-01 | Will NattyNatt Win the ADC Race 2026?
+ 57.10 |  63.00 |   -5.90 | 1.00 |   63 |      5 | 0.49 | 2026-10-06 | Will "East of Eden: Limited Series" be the #2 global Netflix show this
+ 56.95 |  58.68 |   -1.73 | 0.96 |   61 |     10 | 0.39 | 2027-03-01 | Will no next Israeli Minister of Foreign Affairs be appointed by Febru
+ 56.44 |  68.00 |  -11.56 | 1.00 |   68 |     33 | 0.24 | 2026-10-06 | Will Google have the second highest OpenRouter market share the week o
+ 47.38 |  52.13 |   -4.74 | 0.48 |  108 |     27 | 0.82 | 2026-11-01 | Will Alphabet be the third-largest company in the world by market cap 
+ 43.90 |  43.90 |    0.00 | 0.22 |  200 |      0 | 0.51 | 2027-06-14 | Will Alavés record 50 or more points in the 2026-27 LALIGA season?
+
+PIRES 10
+-583.71 |   2.15 | -585.86 | 0.02 |   99 |    117 | 0.39 | 2026-10-31 | Will Anthropic have the best AI model at the end of October 2026?
+-198.54 |   2.65 | -201.19 | 0.03 |  101 |    122 | 0.60 | 2026-10-31 | Will Google have the best AI model at the end of October 2026?
+-16.93 |   5.61 |  -22.55 | 0.03 |  200 |    279 | 0.34 | 2026-10-16 | Saudi Oil Pipeline (East-West) restarts by October 15?
+-15.51 |   8.09 |  -23.59 | 0.08 |  100 |    119 | 0.51 | 2026-12-31 | Next US-Iran senior diplomatic meeting by December 31, 2026?
+ -9.99 |   1.19 |  -11.18 | 0.01 |  121 |     49 | 0.72 | 2026-12-09 | Will the Fed increase interest rates by 25 bps after the December 2026
+ -8.08 |   1.15 |   -9.23 | 0.01 |  150 |     30 | 0.71 | 2026-12-10 | Another Fed rate hike in 2026?
+ -6.71 |   0.78 |   -7.49 | 0.00 | 1000 |    538 | 0.17 | 2026-10-29 | Will the Fed increase interest rates by 25 bps after the October 2026 
+ -6.54 |   6.47 |  -13.02 | 0.07 |  100 |    243 | 0.22 | 2026-10-31 | Next US-Iran senior diplomatic meeting by October 31, 2026? (copy)
+ -5.07 |   0.39 |   -5.45 | 0.00 | 1000 |     26 | 0.35 | 2029-01-01 | Will Oklahoma enact a data center moratorium by December 31, 2028?
+ -4.74 |   0.76 |   -5.50 | 0.00 | 1020 |    426 | 0.82 | 2026-10-29 | Will there be no change in Fed interest rates after the October 2026 m
