@@ -157,7 +157,8 @@ function agreger(rows, gagnant, finTs) {
       const cote = A.ap > 0 ? 0 : 1, pm = cote === 0 ? pmA : pmB;
       const o = cote === 0 ? A : B;
       px = pm; gagne = cote === gagnant ? 1 : 0;
-      if (o.vp > 0.1 * o.ap) classe = "scalp"; // revend avant la fin : le résultat ne dit rien de son pari
+      if (finTs && Number.isFinite(w.premierAchat) && w.premierAchat > finTs) classe = "apres"; // résultat déjà connu : pas une prédiction
+      else if (o.vp > 0.1 * o.ap) classe = "scalp"; // revend avant la fin : le résultat ne dit rien de son pari
       else if (pm >= 0.9) classe = "sniper";
       else if (pm <= 0.25) classe = "loterie";
       else { classe = "dir"; dirGagne = gagne; }

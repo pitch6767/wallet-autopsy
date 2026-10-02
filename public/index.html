@@ -77,6 +77,8 @@ tr.det td{white-space:normal;text-align:left;background:var(--bg);padding:10px 1
 .dt p{margin:4px 0}
 .st{margin-bottom:10px}
 .stt{font-weight:700;font-size:14px}
+.verdict{border-left:3px solid var(--line);padding-left:8px}
+.verdict.ok{border-color:var(--ok);color:var(--ink)}
 .lien{border:0;background:none;color:var(--acc);padding:4px 0;cursor:pointer;font-size:13px}
 </style>
 </head>
@@ -324,30 +326,28 @@ function stratHisto(h, fam){
   txt.push("<b>Pour copier :</b> " + copie);
   return { titre, txt };
 }
+const etudeCache = {};
+async function rendreEtude(cible, a){
+  cible.innerHTML = '<p class="mute">Étude en cours : téléchargement de tous ses trades BTC…</p>';
+  try {
+    const e = etudeCache[a] || (etudeCache[a] = await api("/api/etude?addr=" + a));
+    if (!cible.isConnected) return;
+    cible.innerHTML = '<div class="st"><div class="stt">' + esc(e.titre) + ' <span class="mute">— étude de ' + e.marches + ' marchés BTC</span></div>'
+      + e.constats.map(c => '<p>' + c.texte + '</p>').join("")
+      + '<p class="verdict ' + (e.copiable ? "ok" : "") + '"><b>Pour copier :</b> ' + e.verdict + '</p></div>';
+  } catch(err) { delete etudeCache[a]; cible.innerHTML = '<p class="err">Étude impossible : ' + esc(err.message) + '</p>'; }
+}
 const histCache = {};
-async function ouvrir(tr, a, fen){
+function ouvrir(tr, a, fen){
   const nx = tr.nextElementSibling;
   if (nx && nx.classList.contains("det")) { nx.remove(); return; }
-  const ncol = tr.children.length;
-  const det = document.createElement("tr"); det.className = "det";
-  det.innerHTML = '<td colspan="' + ncol + '"><div class="dt mute">Analyse…</div></td>';
-  tr.after(det);
   const w = M.portefeuilles.find(x => x.adresse === a);
-  let h = (COP && COP.portefeuilles.find(x => x.adresse === a)) || histCache[a];
-  const bloc = (s, sous) => '<div class="st"><div class="stt">' + esc(s.titre) + ' <span class="mute">' + sous + '</span></div>' + s.txt.map(t => '<p>' + t + '</p>').join("") + '</div>';
-  const rendre = () => {
-    let x = '';
-    if (w) x += bloc(stratMarche(w, M), "sur ce marché");
-    if (h && h.marches && h.profil && h.profil.deux) x += bloc(stratHisto(h, COP ? COP.famille : "du même type"), "sur son historique");
-    else if (h) x += '<p class="mute">Aucun historique sur ce type de marché.</p>';
-    x += '<button class="lien" onclick="event.stopPropagation();versPortefeuille(\'' + a + '\')">Historique complet du portefeuille →</button>';
-    det.firstChild.innerHTML = '<div class="dt">' + x + '</div>';
-  };
-  rendre();
-  if (!h) {
-    try { const r = await api("/api/copier?slug=" + encodeURIComponent(M.slug || "") + "&titre=" + encodeURIComponent(M.question || "") + "&addrs=" + a);
-      h = histCache[a] = r.portefeuilles[0] || { marches: 0 }; if (det.isConnected) rendre(); } catch {}
-  }
+  const det = document.createElement("tr"); det.className = "det";
+  let x = '';
+  if (w) { const s = stratMarche(w, M); x += '<div class="st"><div class="stt">' + esc(s.titre) + ' <span class="mute">sur ce marché</span></div>' + s.txt.map(t => '<p>' + t + '</p>').join("") + '</div>'; }
+  det.innerHTML = '<td colspan="' + tr.children.length + '"><div class="dt">' + x + '<div class="etu"></div><button class="lien" onclick="event.stopPropagation();versPortefeuille(\'' + a + '\')">Historique complet du portefeuille →</button></div></td>';
+  tr.after(det);
+  rendreEtude(det.querySelector(".etu"), a);
 }
 function rendCopier(){
   const r = COP, MIN = 10;
@@ -533,14 +533,10 @@ async function trierH(t){ hTri = t; $("outH4").style.opacity = .5; try { HD = aw
 function ouvrirH(tr, a){
   const nx = tr.nextElementSibling;
   if (nx && nx.classList.contains("det")) { nx.remove(); return; }
-  const all = [...HD.tueurs, ...HD.perf, ...HD.copier, ...HD.table];
-  const w = all.find(x => x.wallet === a);
-  const s = stratHisto(profilH(w), HT === "tous" ? "BTC Up or Down" : "BTC " + DUREES[HT]);
   const det = document.createElement("tr"); det.className = "det";
-  det.innerHTML = '<td colspan="' + tr.children.length + '"><div class="dt"><div class="st"><div class="stt">' + esc(s.titre) + '</div>' + s.txt.map(t => '<p>' + t + '</p>').join("")
-    + '<p>Meilleur coup : ' + xFois(w.best_roi) + ' la mise sur un seul marché. ' + (w.split ? 'Crée des paires à 1 $ (split) sur ' + f0(w.split) + ' marchés pour revendre un côté : comportement de teneur de marché.' : '') + '</p></div>'
-    + '<button class="lien" onclick="event.stopPropagation();versPortefeuille(\'' + a + '\')">Historique complet du portefeuille →</button></div></td>';
+  det.innerHTML = '<td colspan="' + tr.children.length + '"><div class="dt"><div class="etu"></div><button class="lien" onclick="event.stopPropagation();versPortefeuille(\'' + a + '\')">Historique complet du portefeuille →</button></div></td>';
   tr.after(det);
+  rendreEtude(det.querySelector(".etu"), a);
 }
 setInterval(() => { if (!$("p4").classList.contains("hide")) etatH(); }, 60000);
 
