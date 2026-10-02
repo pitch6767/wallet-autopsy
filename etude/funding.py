@@ -17,7 +17,7 @@ DEBUT = NOW - JOURS * 86400 * 1000
 FRAIS = 2 * 0.00045 + 2 * 0.0010 + 0.0010   # 0,39 % par aller-retour
 
 
-def post(body, tries=4):
+def post(body, tries=8):
     for k in range(tries):
         try:
             req = urllib.request.Request(HL, data=json.dumps(body).encode(),
@@ -26,7 +26,7 @@ def post(body, tries=4):
                 return json.loads(r.read())
         except Exception as e:
             err = e
-            time.sleep(2 * (k + 1))
+            time.sleep(15 if "429" in str(e) else 3)
     raise err
 
 
@@ -41,6 +41,7 @@ def historique(coin):
         if dernier <= t or len(lot) < 400:
             break
         t = dernier + 1
+        time.sleep(1.2)
     vu, propre = set(), []
     for x in out:
         if x["time"] not in vu:
@@ -73,9 +74,15 @@ def main():
         lignes.append({"coin": a["name"], "oi_usd": float(c.get("openInterest") or 0) * float(c.get("markPx") or 0),
                        "vol24h": float(c.get("dayNtlVlm") or 0), "fund_now": float(c.get("funding") or 0) * 24 * 365})
     print("perpetuels actifs :", len(lignes))
-    with ThreadPoolExecutor(4) as ex:
-        hs = list(ex.map(lambda l: (l["coin"], historique(l["coin"])), lignes))
-    H = dict(hs)
+    lignes = [l for l in lignes if l["vol24h"] > 300000]
+    print("perpetuels avec > 0,3 M$ de volume/jour :", len(lignes))
+    H = {}
+    for l in lignes:
+        try:
+            H[l["coin"]] = historique(l["coin"])
+        except Exception as e:
+            print("  echec", l["coin"], str(e)[:60])
+        time.sleep(1.2)
     regles = [(0.30, 0.10), (0.50, 0.20), (1.00, 0.30), (2.00, 0.50)]
     print("frais par aller-retour : %.2f %%" % (FRAIS * 100))
     print("\n=== Resultat global par regle (30 jours, notionnel egal sur chaque episode) ===")

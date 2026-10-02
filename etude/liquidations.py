@@ -8,7 +8,7 @@ from collections import defaultdict
 
 TOPIC = "0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286"
 CHAINES = {
-    "Ethereum": {"rpc": ["https://ethereum-rpc.publicnode.com", "https://eth.llamarpc.com"],
+    "Ethereum": {"rpc": ["https://eth.drpc.org", "https://rpc.ankr.com/eth", "https://ethereum-rpc.publicnode.com"],
                  "pool": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2", "bloc_s": 12},
     "Arbitrum": {"rpc": ["https://arbitrum-one-rpc.publicnode.com", "https://arb1.arbitrum.io/rpc"],
                  "pool": "0x794a61358D6845594F94dc1DB02A252b5b4814aD", "bloc_s": 0.25},
@@ -146,7 +146,11 @@ def etude(nom, c):
 
 
 def main():
+    import sys
+    choix = sys.argv[1:] or list(CHAINES)
     for nom, c in CHAINES.items():
+        if nom not in choix:
+            continue
         try:
             etude(nom, c)
         except Exception as e:
