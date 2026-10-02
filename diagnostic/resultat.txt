@@ -1,32 +1,95 @@
-Traceback (most recent call last):
-  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/quasi_certains.py", line 202, in <module>
-    main()
-  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/quasi_certains.py", line 147, in main
-    M = marches()
-        ^^^^^^^^^
-  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/quasi_certains.py", line 69, in marches
-    lot = get(f"{G}/markets?closed=true&limit=500&offset={off}&order=closedTime&ascending=false")
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/quasi_certains.py", line 30, in get
-    raise err
-  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/quasi_certains.py", line 25, in get
-    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "etude"}), timeout=40) as r:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 215, in urlopen
-    return opener.open(url, data, timeout)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 521, in open
-    response = meth(req, response)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 630, in http_response
-    response = self.parent.error(
-               ^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 559, in error
-    return self._call_chain(*args)
-           ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 492, in _call_chain
-    result = func(*args)
-             ^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 639, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 422: Unprocessable Entity
+marches crypto 5-15 min vus : 0 (1 sur 10 etudie)
+marches resolus etudies (14 jours, volume >= 2000 $) : 1302  (8s)
+par categorie : {'sport': 801, 'autre': 259, 'politique': 190, 'economie': 24, 'classements/medias': 20, 'crypto prix': 5, 'meteo': 3}
+analyse terminee en 122s
+
+============================== APRES la fin de l'evenement (resultat connu)
+
+-- tranche 0.900 - 0.9500
+TOUTES categories                  n=   53 | gagne  98.11 % | prix moyen 0.922 | gain moyen/trade  +6.43 % | bloque med.   16.7 h |   3.8 occasions/jour | dispo med.     494 $
+  politique                        n=   32 | gagne  96.88 % | prix moyen 0.923 | gain moyen/trade  +4.98 % | bloque med.   27.8 h |   2.3 occasions/jour | dispo med.     690 $
+  autre                            n=   10 | gagne 100.00 % | prix moyen 0.925 | gain moyen/trade  +8.10 % | bloque med.    4.1 h |   0.7 occasions/jour | dispo med.      72 $
+  sport                            n=    9 | gagne 100.00 % | prix moyen 0.915 | gain moyen/trade  +9.33 % | bloque med.    0.6 h |   0.6 occasions/jour | dispo med.     712 $
+  meteo                            n=    1 | gagne 100.00 % | prix moyen 0.942 | gain moyen/trade  +6.16 % | bloque med.    3.8 h |   0.1 occasions/jour | dispo med.      18 $
+  economie                         n=    1 | gagne 100.00 % | prix moyen 0.905 | gain moyen/trade +10.53 % | bloque med.    2.0 h |   0.1 occasions/jour | dispo med.     609 $
+
+-- tranche 0.950 - 0.9700
+TOUTES categories                  n=   61 | gagne  98.36 % | prix moyen 0.957 | gain moyen/trade  +2.75 % | bloque med.   20.5 h |   4.4 occasions/jour | dispo med.     250 $
+  politique                        n=   40 | gagne  97.50 % | prix moyen 0.957 | gain moyen/trade  +1.89 % | bloque med.   24.2 h |   2.9 occasions/jour | dispo med.     294 $
+  sport                            n=   13 | gagne 100.00 % | prix moyen 0.955 | gain moyen/trade  +4.75 % | bloque med.    1.3 h |   0.9 occasions/jour | dispo med.     385 $
+  autre                            n=    8 | gagne 100.00 % | prix moyen 0.963 | gain moyen/trade  +3.81 % | bloque med.   28.0 h |   0.6 occasions/jour | dispo med.      53 $
+
+-- tranche 0.970 - 0.9800
+TOUTES categories                  n=   59 | gagne  98.31 % | prix moyen 0.973 | gain moyen/trade  +1.03 % | bloque med.   17.9 h |   4.2 occasions/jour | dispo med.     107 $
+  politique                        n=   42 | gagne 100.00 % | prix moyen 0.973 | gain moyen/trade  +2.75 % | bloque med.   22.4 h |   3.0 occasions/jour | dispo med.     115 $
+  sport                            n=   11 | gagne 100.00 % | prix moyen 0.972 | gain moyen/trade  +2.93 % | bloque med.    1.3 h |   0.8 occasions/jour | dispo med.     260 $
+  autre                            n=    6 | gagne  83.33 % | prix moyen 0.975 | gain moyen/trade -14.54 % | bloque med.    4.3 h |   0.4 occasions/jour | dispo med.      34 $
+
+-- tranche 0.980 - 0.9900
+TOUTES categories                  n=   83 | gagne  98.80 % | prix moyen 0.985 | gain moyen/trade  +0.32 % | bloque med.   14.2 h |   5.9 occasions/jour | dispo med.     317 $
+  politique                        n=   54 | gagne  98.15 % | prix moyen 0.985 | gain moyen/trade  -0.38 % | bloque med.   19.7 h |   3.9 occasions/jour | dispo med.     416 $
+  sport                            n=   16 | gagne 100.00 % | prix moyen 0.983 | gain moyen/trade  +1.71 % | bloque med.    1.9 h |   1.1 occasions/jour | dispo med.     584 $
+  autre                            n=   11 | gagne 100.00 % | prix moyen 0.986 | gain moyen/trade  +1.44 % | bloque med.    2.1 h |   0.8 occasions/jour | dispo med.      30 $
+  economie                         n=    2 | gagne 100.00 % | prix moyen 0.983 | gain moyen/trade  +1.72 % | bloque med.    2.0 h |   0.1 occasions/jour | dispo med.     104 $
+
+-- tranche 0.990 - 0.9975
+TOUTES categories                  n=  156 | gagne  99.36 % | prix moyen 0.993 | gain moyen/trade  +0.03 % | bloque med.    9.5 h |  11.1 occasions/jour | dispo med.     537 $
+  politique                        n=   95 | gagne  98.95 % | prix moyen 0.994 | gain moyen/trade  -0.42 % | bloque med.   14.3 h |   6.8 occasions/jour | dispo med.     747 $
+  sport                            n=   31 | gagne 100.00 % | prix moyen 0.991 | gain moyen/trade  +0.90 % | bloque med.    2.0 h |   2.2 occasions/jour | dispo med.     143 $
+  autre                            n=   23 | gagne 100.00 % | prix moyen 0.994 | gain moyen/trade  +0.56 % | bloque med.    2.6 h |   1.6 occasions/jour | dispo med.      99 $
+  economie                         n=    6 | gagne 100.00 % | prix moyen 0.994 | gain moyen/trade  +0.62 % | bloque med.    4.4 h |   0.4 occasions/jour | dispo med.     496 $
+  classements/medias               n=    1 | gagne 100.00 % | prix moyen 0.996 | gain moyen/trade  +0.40 % | bloque med.    2.0 h |   0.1 occasions/jour | dispo med.      51 $
+
+============================== AVANT la fin (72 h max)
+
+-- tranche 0.900 - 0.9500
+TOUTES categories                  n=  607 | gagne  92.26 % | prix moyen 0.916 | gain moyen/trade  +0.70 % | bloque med.    2.7 h |  43.4 occasions/jour | dispo med.     359 $
+  sport                            n=  496 | gagne  91.53 % | prix moyen 0.914 | gain moyen/trade  +0.08 % | bloque med.    2.4 h |  35.4 occasions/jour | dispo med.     472 $
+  politique                        n=   63 | gagne  96.83 % | prix moyen 0.921 | gain moyen/trade  +5.06 % | bloque med.   57.6 h |   4.5 occasions/jour | dispo med.     226 $
+  autre                            n=   41 | gagne  95.12 % | prix moyen 0.923 | gain moyen/trade  +3.00 % | bloque med.   51.0 h |   2.9 occasions/jour | dispo med.      82 $
+  classements/medias               n=    3 | gagne 100.00 % | prix moyen 0.933 | gain moyen/trade  +7.24 % | bloque med.    5.8 h |   0.2 occasions/jour | dispo med.      18 $
+  economie                         n=    3 | gagne  66.67 % | prix moyen 0.938 | gain moyen/trade -28.85 % | bloque med.   26.0 h |   0.2 occasions/jour | dispo med.      38 $
+  meteo                            n=    1 | gagne 100.00 % | prix moyen 0.943 | gain moyen/trade  +6.04 % | bloque med.   47.7 h |   0.1 occasions/jour | dispo med.       0 $
+
+-- tranche 0.950 - 0.9700
+TOUTES categories                  n=  529 | gagne  95.27 % | prix moyen 0.956 | gain moyen/trade  -0.30 % | bloque med.    2.5 h |  37.8 occasions/jour | dispo med.     237 $
+  sport                            n=  415 | gagne  94.94 % | prix moyen 0.955 | gain moyen/trade  -0.57 % | bloque med.    2.2 h |  29.6 occasions/jour | dispo med.     268 $
+  politique                        n=   58 | gagne  98.28 % | prix moyen 0.958 | gain moyen/trade  +2.59 % | bloque med.   34.1 h |   4.1 occasions/jour | dispo med.     239 $
+  autre                            n=   44 | gagne  95.45 % | prix moyen 0.958 | gain moyen/trade  -0.38 % | bloque med.   26.7 h |   3.1 occasions/jour | dispo med.     161 $
+  classements/medias               n=    5 | gagne 100.00 % | prix moyen 0.960 | gain moyen/trade  +4.14 % | bloque med.    6.6 h |   0.4 occasions/jour | dispo med.      26 $
+  economie                         n=    5 | gagne  80.00 % | prix moyen 0.957 | gain moyen/trade -16.56 % | bloque med.   24.4 h |   0.4 occasions/jour | dispo med.      20 $
+  meteo                            n=    2 | gagne 100.00 % | prix moyen 0.969 | gain moyen/trade  +3.24 % | bloque med.   75.2 h |   0.1 occasions/jour | dispo med.     211 $
+
+-- tranche 0.970 - 0.9800
+TOUTES categories                  n=  432 | gagne  97.69 % | prix moyen 0.972 | gain moyen/trade  +0.48 % | bloque med.    2.4 h |  30.9 occasions/jour | dispo med.     159 $
+  sport                            n=  314 | gagne  97.45 % | prix moyen 0.972 | gain moyen/trade  +0.30 % | bloque med.    2.1 h |  22.4 occasions/jour | dispo med.     198 $
+  politique                        n=   57 | gagne 100.00 % | prix moyen 0.973 | gain moyen/trade  +2.73 % | bloque med.   28.9 h |   4.1 occasions/jour | dispo med.     125 $
+  autre                            n=   50 | gagne  96.00 % | prix moyen 0.974 | gain moyen/trade  -1.44 % | bloque med.   46.8 h |   3.6 occasions/jour | dispo med.      61 $
+  classements/medias               n=    6 | gagne 100.00 % | prix moyen 0.975 | gain moyen/trade  +2.59 % | bloque med.   46.5 h |   0.4 occasions/jour | dispo med.      89 $
+  economie                         n=    3 | gagne 100.00 % | prix moyen 0.975 | gain moyen/trade  +2.54 % | bloque med.   25.1 h |   0.2 occasions/jour | dispo med.      44 $
+  meteo                            n=    2 | gagne 100.00 % | prix moyen 0.970 | gain moyen/trade  +3.04 % | bloque med.   50.1 h |   0.1 occasions/jour | dispo med.     228 $
+
+-- tranche 0.980 - 0.9900
+TOUTES categories                  n=  564 | gagne  97.52 % | prix moyen 0.983 | gain moyen/trade  -0.80 % | bloque med.    2.3 h |  40.3 occasions/jour | dispo med.     226 $
+  sport                            n=  398 | gagne  97.24 % | prix moyen 0.982 | gain moyen/trade  -1.03 % | bloque med.    2.0 h |  28.4 occasions/jour | dispo med.     218 $
+  politique                        n=   77 | gagne 100.00 % | prix moyen 0.984 | gain moyen/trade  +1.60 % | bloque med.   30.7 h |   5.5 occasions/jour | dispo med.     324 $
+  autre                            n=   73 | gagne  95.89 % | prix moyen 0.985 | gain moyen/trade  -2.60 % | bloque med.   47.0 h |   5.2 occasions/jour | dispo med.     128 $
+  economie                         n=    9 | gagne 100.00 % | prix moyen 0.985 | gain moyen/trade  +1.52 % | bloque med.   45.6 h |   0.6 occasions/jour | dispo med.     291 $
+  classements/medias               n=    5 | gagne 100.00 % | prix moyen 0.986 | gain moyen/trade  +1.45 % | bloque med.    5.7 h |   0.4 occasions/jour | dispo med.      47 $
+  meteo                            n=    2 | gagne 100.00 % | prix moyen 0.984 | gain moyen/trade  +1.63 % | bloque med.   49.3 h |   0.1 occasions/jour | dispo med.     508 $
+
+-- tranche 0.990 - 0.9975
+TOUTES categories                  n=  714 | gagne  99.16 % | prix moyen 0.992 | gain moyen/trade  -0.01 % | bloque med.    2.3 h |  51.0 occasions/jour | dispo med.     242 $
+  sport                            n=  481 | gagne  99.17 % | prix moyen 0.991 | gain moyen/trade  +0.09 % | bloque med.    2.0 h |  34.4 occasions/jour | dispo med.     208 $
+  autre                            n=  128 | gagne  99.22 % | prix moyen 0.994 | gain moyen/trade  -0.15 % | bloque med.   38.7 h |   9.1 occasions/jour | dispo med.     271 $
+  politique                        n=   81 | gagne  98.77 % | prix moyen 0.994 | gain moyen/trade  -0.59 % | bloque med.   30.6 h |   5.8 occasions/jour | dispo med.     455 $
+  economie                         n=   13 | gagne 100.00 % | prix moyen 0.993 | gain moyen/trade  +0.74 % | bloque med.   28.0 h |   0.9 occasions/jour | dispo med.     163 $
+  classements/medias               n=    9 | gagne 100.00 % | prix moyen 0.993 | gain moyen/trade  +0.67 % | bloque med.    5.4 h |   0.6 occasions/jour | dispo med.     368 $
+  meteo                            n=    2 | gagne 100.00 % | prix moyen 0.990 | gain moyen/trade  +1.01 % | bloque med.   35.0 h |   0.1 occasions/jour | dispo med.    2423 $
+
+============================== PERTES apres la fin (issue achetee >= 0,95 qui a perdu)
+  0.990 | politique          | bloque  21.7 h | Will RNI get the second-most number of seats in the next Moroccan legislative el
+  0.980 | politique          | bloque  21.7 h | Will RNI get the second-most number of seats in the next Moroccan legislative el
+  0.976 | autre              | bloque  32.7 h | Will "Bass Persuades" - Miley Cyrus first week album sales be between 60k and 70
+  0.950 | politique          | bloque  99.5 h | Will United Russia win between 340 and 354 seats in the next Russian State Duma 
+nombre total : 4
