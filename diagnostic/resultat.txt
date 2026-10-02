@@ -1,77 +1,8 @@
-################ N°3 FINANCEMENT HYPERLIQUID
-perpetuels actifs : 178
-perpetuels avec > 0,3 M$ de volume/jour : 130
-frais par aller-retour : 0.39 %
+5
+{'question': 'Bitcoin Up or Down - October 2, 5:45PM-5:50PM ET', 'conditionId': '0x0a00140fa89265ade5ca878634aa8a8979cfa24bb7622a67e4300597ef230848', 'outcomes': '["Up", "Down"]', 'outcomePrices': '["0", "1"]', 'endDate': '2026-10-02T21:50:00Z', 'closedTime': '2026-10-02 21:52:32+00', 'gameStartTime': None, 'sportsMarketType': None, 'umaEndDate': '2026-10-02T21:52:32Z', 'volumeNum': 45738.960369999986, 'category': None} | event tags: [] ecat None
+{'question': 'Bitcoin Up or Down - October 2, 5:30PM-5:45PM ET', 'conditionId': '0xd900fc17d480a41d282b72704bfb4c658adafdd563671ae5686cb725a9d24d5d', 'outcomes': '["Up", "Down"]', 'outcomePrices': '["1", "0"]', 'endDate': '2026-10-02T21:45:00Z', 'closedTime': '2026-10-02 21:45:56+00', 'gameStartTime': None, 'sportsMarketType': None, 'umaEndDate': '2026-10-02T21:45:56Z', 'volumeNum': 44655.66928299999, 'category': None} | event tags: [] ecat None
+{'question': 'Bitcoin Up or Down - October 2, 5:40PM-5:45PM ET', 'conditionId': '0xadf2f0e26d226d5235297a76663a3adbfb25861bca5647dcaf9df3c1c177154b', 'outcomes': '["Up", "Down"]', 'outcomePrices': '["0", "1"]', 'endDate': '2026-10-02T21:45:00Z', 'closedTime': '2026-10-02 21:45:54+00', 'gameStartTime': None, 'sportsMarketType': None, 'umaEndDate': '2026-10-02T21:45:54Z', 'volumeNum': 42610.003093999934, 'category': None} | event tags: [] ecat None
+{'question': 'Bitcoin Up or Down - October 2, 5:35PM-5:40PM ET', 'conditionId': '0x2f652be37ab9362480c51cb1481cf5286bc263f7c349bd15631cc2b108844fb0', 'outcomes': '["Up", "Down"]', 'outcomePrices': '["1", "0"]', 'endDate': '2026-10-02T21:40:00Z', 'closedTime': '2026-10-02 21:40:53+00', 'gameStartTime': None, 'sportsMarketType': None, 'umaEndDate': '2026-10-02T21:40:53Z', 'volumeNum': 32639.615221999993, 'category': None} | event tags: [] ecat None
+{'question': 'Bitcoin Up or Down - October 2, 5:30PM-5:35PM ET', 'conditionId': '0xb6853a0def487fa4cece48de62dcf64aac096dac706a64cbbe7bb9724cba7aec', 'outcomes': '["Up", "Down"]', 'outcomePrices': '["1", "0"]', 'endDate': '2026-10-02T21:35:00Z', 'closedTime': '2026-10-02 21:35:54+00', 'gameStartTime': None, 'sportsMarketType': None, 'umaEndDate': '2026-10-02T21:35:54Z', 'volumeNum': 48413.514169, 'category': None} | event tags: [] ecat None
 
-=== Resultat global par regle (30 jours, notionnel egal sur chaque episode) ===
-entree >  30 %/an, sortie <  10 % :  97 cryptos tradees,  64 gagnantes,  149 episodes, rendement annualise du capital EN POSITION :    9.6 %
-entree >  50 %/an, sortie <  20 % :  89 cryptos tradees,   2 gagnantes,  260 episodes, rendement annualise du capital EN POSITION :  -77.9 %
-entree > 100 %/an, sortie <  30 % :  41 cryptos tradees,   5 gagnantes,   79 episodes, rendement annualise du capital EN POSITION :  -56.4 %
-entree > 200 %/an, sortie <  50 % :   8 cryptos tradees,   3 gagnantes,   12 episodes, rendement annualise du capital EN POSITION :  -55.6 %
-
-=== Detail de la meilleure regle (entree 30 %, sortie 10 %) - 25 premieres ===
-crypto | gain 30j %% notionnel | episodes | heures | volume 24h M$ | OI M$
-APEX       |    3.47 |   1 |  707 |     1.29 |    2.76
-PURR       |    2.71 |   1 |  693 |     5.84 |   18.36
-AZTEC      |    2.63 |   1 |  701 |     0.51 |    1.64
-GRASS      |    2.35 |   1 |  695 |     6.94 |   35.82
-CASHCAT    |    2.05 |   2 |  692 |    11.18 |   35.74
-USELESS    |    1.89 |   1 |  573 |     7.58 |   10.55
-PONS       |    1.86 |   2 |  641 |    20.15 |   48.87
-VVV        |    1.85 |   1 |  695 |    21.51 |   65.93
-SYRUP      |    1.51 |   1 |  682 |     2.23 |    8.56
-BOME       |    1.32 |   1 |  699 |     0.36 |    4.27
-MNT        |    1.29 |   1 |  637 |     0.46 |    7.24
-NIL        |    1.26 |   1 |  332 |     1.61 |    7.12
-AERO       |    1.22 |   2 |  543 |     3.28 |   29.86
-REZ        |    1.21 |   2 |  381 |     0.44 |    1.69
-0G         |    1.15 |   1 |  339 |     1.29 |    4.12
-SPX        |    1.11 |   1 |  696 |     1.21 |    7.41
-AR         |    1.08 |   1 |  579 |     0.80 |    2.91
-MEGA       |    0.99 |   1 |  582 |     4.42 |    9.16
-KAS        |    0.93 |   1 |  684 |     0.45 |    2.39
-GRAM       |    0.83 |   2 |  460 |    11.85 |   45.56
-POPCAT     |    0.83 |   1 |  490 |     0.46 |    2.46
-CHIP       |    0.75 |   2 |  635 |     2.49 |   11.10
-BRETT      |    0.73 |   1 |  601 |     0.42 |    0.23
-SKY        |    0.70 |   2 |  417 |     3.49 |    7.15
-XMR        |    0.66 |   4 |  435 |    13.32 |   72.55
-
-=== Les 10 pires ===
-LIT        |   -1.02 |   4 |  226 |    47.05 |  179.56
-ZRO        |   -0.77 |   4 |  318 |    30.91 |   75.87
-JUP        |   -0.66 |   3 |  229 |     7.08 |   14.65
-MON        |   -0.58 |   4 |  265 |    22.69 |   56.88
-WLD        |   -0.56 |   4 |  366 |    67.77 |   79.56
-BNB        |   -0.39 |   2 |  232 |     4.96 |   44.84
-TRUMP      |   -0.32 |   1 |   15 |     6.43 |   11.71
-LINK       |   -0.30 |   2 |  292 |    36.05 |   79.27
-BERA       |   -0.28 |   1 |   75 |     0.55 |    2.22
-HYPE       |   -0.26 |   1 |   77 |   617.00 | 1745.10
-
-=== Profil des taux horaires (annualises), toutes cryptos ===
-observations : 93461
-  centile 50 :    11.0 %
-  centile 75 :    11.0 %
-  centile 90 :    22.3 %
-  centile 95 :    50.6 %
-  centile 99 :   113.3 %
-  part des heures > 50 %/an : 5.1 %
-  part des heures negatives : 7.9 %
-
-cryptos avec > 5 M$ de volume/jour : 45
-taux actuels les plus eleves (annualises) :
-  RESOLV        54.4 %  vol24h   0.67 M$  OI   1.54 M$
-  ZRO           27.5 %  vol24h  30.91 M$  OI  75.87 M$
-  AZTEC         26.2 %  vol24h   0.51 M$  OI   1.64 M$
-  XMR           18.2 %  vol24h  13.32 M$  OI  72.55 M$
-  ETH           11.0 %  vol24h 1524.94 M$  OI 3251.40 M$
-  DYDX          11.0 %  vol24h   0.52 M$  OI   2.57 M$
-  APE           11.0 %  vol24h   2.43 M$  OI   1.86 M$
-  OP            11.0 %  vol24h   1.58 M$  OI   3.25 M$
-  LTC           11.0 %  vol24h  19.43 M$  OI  47.56 M$
-  DOGE          11.0 %  vol24h  38.23 M$  OI  97.72 M$
-
-################ N°5 LIQUIDATIONS AAVE V3 - Ethereum
-
-=== Ethereum : echec HTTP Error 403: Forbidden
+[{"proxyWallet":"0x747533ac791bf2b966c50673f08df2a22f9d2edf","side":"SELL","asset":"105652194073939579412385709741730342793015668225335247121926515044988174667260","conditionId":"0x0a00140fa89265ade5ca878634aa8a8979cfa24bb7622a67e4300597ef230848","size":395.17,"price":0.999,"timestamp":1790977947,"title":"Bitcoin Up or Down - October 2, 5:45PM-5:50PM ET","slug":"btc-updown-5m-1790977500","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/BTC+fullsize.png","eventSlug":"btc-updown-5m-1790977500","outcome":"Down","outcomeIndex":1,"name":"aenews6","pseudonym":"Gigantic-Dromedary","bio":"","profileImage":"https://polymarket-upload.s3.us-east-2.amazonaws.com/profile-image-3790853-968cb7c6-1752-467b-9056-100d017f93a7.png","profileImageOptimized":"","transactionHash":"0xe29484a018c02f1ead2d12d7591d6a95bcb72f2799033fc31d9d9b7ab0e13cfe"},{"proxyWallet":"0x7cb239f58390a0743e439d92209530502306e655","side":"BUY","asset":"105652194073939579412385709741730342793015668225335247121926515044988174667260","conditionId":"0x0a00140fa89265ade5ca878634aa8a8979cfa24bb7622a67e4300597ef230848","size":395.17,"price":0.999,"timestamp":1790977947,"title":"Bitcoin Up or Down - October 2, 5:45PM-5:50PM ET","slug":"btc-updown-5m-1790977500","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/BTC+fullsize.png","eventSlug":"btc-updown-5m-1790977500","outcome":"Down","outcomeIndex":1,"name":"ClobCleaner","pseudonym":"Meaty-Borrowing","bio":"","profileImage":"https://polymarket-upload.s3.us-e
