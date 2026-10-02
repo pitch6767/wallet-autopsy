@@ -64,43 +64,51 @@ def categorie(m):
 
 
 def marches():
-    out, off, n_updown = [], 0, 0
-    while off < 120000:
-        lot = get(f"{G}/markets?closed=true&limit=500&offset={off}&order=closedTime&ascending=false")
-        if not lot:
-            break
-        fin = False
-        for m in lot:
-            R = ts(m.get("closedTime"))
-            if R is None:
-                continue
-            if R < DEBUT:
-                fin = True
-                continue
-            if (m.get("volumeNum") or 0) < VOL_MIN:
-                continue
+    out, n_updown, vus = [], 0, set()
+    for j in range(JOURS + 1):
+        a = datetime.fromtimestamp(DEBUT + j * 86400, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        b = datetime.fromtimestamp(DEBUT + (j + 1) * 86400, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        off = 0
+        while off <= 9500:
             try:
-                px = [float(x) for x in json.loads(m.get("outcomePrices") or "[]")]
-                toks = json.loads(m.get("clobTokenIds") or "[]")
-            except Exception:
-                continue
-            if len(px) != 2 or sorted(px) != [0.0, 1.0] or len(toks) != 2:
-                continue
-            cat = categorie(m)
-            if cat == "crypto 5-15 min":
-                n_updown += 1
-                if n_updown > 400:      # echantillon suffisant pour cette categorie
+                lot = get(f"{G}/markets?closed=true&limit=500&offset={off}&end_date_min={a}&end_date_max={b}&volume_num_min={VOL_MIN}")
+            except Exception as e:
+                print("  jour", a[:10], "offset", off, "arret :", str(e)[:60])
+                break
+            if not lot:
+                break
+            for m in lot:
+                if m.get("conditionId") in vus:
                     continue
-            E = ts(m.get("endDate")) or R
-            K = E
-            gs = ts(m.get("gameStartTime"))
-            if cat == "sport" and gs:
-                K = gs + 3.5 * 3600
-            out.append({"cid": m["conditionId"], "q": m.get("question", "")[:80], "cat": cat,
-                        "gagnant": px.index(1.0), "R": R, "K": min(K, R), "frais": bool(m.get("feesEnabled"))})
-        off += 500
-        if fin:
-            break
+                vus.add(m.get("conditionId"))
+                R = ts(m.get("closedTime"))
+                if R is None or R < DEBUT or R > NOW:
+                    continue
+                if (m.get("volumeNum") or 0) < VOL_MIN:
+                    continue
+                try:
+                    px = [float(x) for x in json.loads(m.get("outcomePrices") or "[]")]
+                    toks = json.loads(m.get("clobTokenIds") or "[]")
+                except Exception:
+                    continue
+                if len(px) != 2 or sorted(px) != [0.0, 1.0] or len(toks) != 2:
+                    continue
+                cat = categorie(m)
+                if cat == "crypto 5-15 min":
+                    n_updown += 1
+                    if n_updown % 10:      # 1 sur 10 suffit pour cette categorie
+                        continue
+                E = ts(m.get("endDate")) or R
+                K = E
+                gs = ts(m.get("gameStartTime"))
+                if cat == "sport" and gs:
+                    K = gs + 3.5 * 3600
+                out.append({"cid": m["conditionId"], "q": m.get("question", "")[:80], "cat": cat,
+                            "gagnant": px.index(1.0), "R": R, "K": min(K, R), "frais": bool(m.get("feesEnabled"))})
+            if len(lot) < 500:
+                break
+            off += 500
+    print("marches crypto 5-15 min vus :", n_updown, "(1 sur 10 etudie)")
     return out
 
 
