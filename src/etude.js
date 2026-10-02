@@ -22,7 +22,7 @@ const estBtc = (t) => {
 
 // ─── formatage ───
 const usd = (x) => (x < 0 ? "−" : "") + "$" + Math.abs(x).toLocaleString("fr-CH", { maximumFractionDigits: Math.abs(x) >= 100 ? 0 : 2 });
-const pc = (x) => Math.round(x * 100) + " %";
+const pc = (x) => (Math.abs(x) < 0.1 ? (x * 100).toFixed(1) : Math.round(x * 100)) + " %";
 const px = (x) => x.toFixed(x < 0.1 ? 3 : 2) + " $";
 const dur = (s) => {
   const a = Math.abs(s);
@@ -195,16 +195,21 @@ function analyser(addr, ms, meta) {
     const att = l.reduce((x, m) => x + m.prixCote, 0), ok = l.filter((m) => m.coteGagne).length;
     const v = l.reduce((x, m) => x + m.prixCote * (1 - m.prixCote), 0);
     const z = v > 0 ? (ok - att) / Math.sqrt(v) : 0;
-    const p = l.reduce((x, m) => x + m.pnl, 0);
-    lignes.push({ lib, n: l.length, ok, att, z, p });
-    if (!meilleure || z > meilleure.z) meilleure = { lib, n: l.length, ok, att, z, p, a, b };
+    const p = l.reduce((x, m) => x + m.pnl, 0), c = l.reduce((x, m) => x + m.cout, 0);
+    const avant = med(l.filter((m) => m.avantFin != null).map((m) => m.avantFin));
+    const t = { lib, n: l.length, ok, att, z, p, c, avant };
+    lignes.push(t);
+    // Retenu pour copier seulement si l'avantage est réel, rentable ET pris assez tôt pour être suivi
+    if (z >= 2 && p > 0 && avant != null && avant >= 60 && (!meilleure || z > meilleure.z)) meilleure = t;
   }
   if (lignes.length) {
-    const exclus = mApres.size ? ` (hors ${mApres.size} marchés achetés après la clôture)` : "";
-    const txt = lignes.map((l) => `${l.lib} : ${l.ok}/${l.n} justes pour ${Math.round(l.att)} attendus par le prix (${usd(l.p)})`).join(" ; ");
+    const exclus = mApres.size ? `, hors ${mApres.size} marché${mApres.size > 1 ? "s" : ""} acheté${mApres.size > 1 ? "s" : ""} après la clôture` : "";
+    const txt = lignes.map((l) => `${l.lib} : ${l.ok}/${l.n} justes pour ${Math.round(l.att)} attendus par le prix, ${usd(l.p)}, entrée médiane ${l.avant == null ? "—" : dur(l.avant) + " avant la fin"}`).join(" ; ");
     const fort = lignes.filter((l) => l.z >= 2);
     const faible = lignes.filter((l) => l.z <= -2);
-    let conclu = fort.length ? ` <b>Avantage réel sur ${fort.map((l) => l.lib).join(" et ")}</b> (écart trop grand pour être du hasard).` : " Aucune tranche ne bat le prix au-delà du hasard.";
+    let conclu = fort.length ? ` <b>Il bat le prix sur ${fort.map((l) => l.lib).join(", ")}</b> (écart trop grand pour être du hasard).` : " Aucune tranche ne bat le prix au-delà du hasard.";
+    const tard = fort.filter((l) => l.avant != null && l.avant < 60);
+    if (tard.length) conclu += ` Mais sur ${tard.map((l) => l.lib).join(", ")} il entre moins d'une minute avant la fin : le résultat est alors presque joué, et ce n'est pas suivable.`;
     if (faible.length) conclu += ` Il perd nettement sur ${faible.map((l) => l.lib).join(" et ")}.`;
     C(fort.length ? 85 : 50, `Paris sur un seul côté gardés jusqu'au résultat (${simples.length} marchés${exclus}), par prix payé — ${txt}.${conclu}`);
   }
@@ -245,7 +250,7 @@ function analyser(addr, ms, meta) {
     const gros = s.slice(0, q), petits = s.slice(-q);
     const rg = gros.reduce((x, m) => x + m.pnl, 0) / gros.reduce((x, m) => x + m.cout, 0);
     const rp = petits.reduce((x, m) => x + m.pnl, 0) / petits.reduce((x, m) => x + m.cout, 0);
-    if (Math.abs(rg - rp) > 0.1) C(50, `Ses ${q} plus grosses mises (médiane ${usd(med(gros.map((m) => m.cout)))}) font un ROI de ${pc(rg)}, ses ${q} plus petites ${pc(rp)} : ${rg > rp ? "il mise plus quand il a raison — c'est un signal à suivre." : "il perd surtout quand il mise gros."}`);
+    if (Math.abs(rg - rp) > 0.1) C(50, `Ses ${q} plus grosses mises (médiane ${usd(med(gros.map((m) => m.cout)))}) font un ROI de ${pc(rg)}, ses ${q} plus petites ${pc(rp)} : ${rg > rp ? "ses grosses mises sont mieux choisies : la taille de sa mise est un signal." : rg < 0 ? "il perd quand il mise gros." : "ses grosses mises rapportent moins que les petites."}`);
   }
 
   // 10. Stabilité dans le temps
@@ -292,7 +297,8 @@ function analyser(addr, ms, meta) {
   else if (deux.length >= 0.5 * n) out.titre = med(deux.map((m) => m.combine)) < 1 ? "Arbitreur de paires" : "Achète les deux côtés";
   else if (rev.length >= 0.5 * n) out.titre = "Trader intra-marché";
   else if (mFin10.size >= 0.3 * n) out.titre = "Sniper des dernières secondes";
-  else if (meilleure && z >= 2) out.titre = `Parieur avec avantage (${meilleure.lib})`;
+  else if (meilleure) out.titre = `Parieur avec avantage (${meilleure.lib})`;
+  else if (lignes.some((l) => l.z >= 2)) out.titre = "Bat le prix, mais trop tard pour être suivi";
   else if (concentre) out.titre = "Un gros coup, le reste au hasard";
   else out.titre = pnl > 0 ? "Gagnant sans avantage démontré" : "Perdant";
 
@@ -300,12 +306,15 @@ function analyser(addr, ms, meta) {
   else if (ramasseur) out.verdict = "Non copiable : il n'anticipe rien, il achète un résultat déjà connu. Il faut un automate plus rapide que lui sur les mêmes ordres oubliés, et les quantités disponibles sont minuscules.";
   else if (out.titre === "Arbitreur de paires") out.verdict = "Non copiable : l'arbitrage disparaît dès qu'il a pris les prix ; en le suivant tu achètes plus cher.";
   else if (concentre) out.verdict = "Non : ses résultats reposent sur un seul marché. Rien ne dit qu'il saura le refaire.";
-  else if (pnl <= 0) out.verdict = "Non : il perd de l'argent sur la période étudiée.";
-  else if (mdAv != null && mdAv < 30) out.verdict = "Non à la main : il entre trop près de la fin pour qu'on ait le temps de le suivre.";
-  else if (meilleure && z >= 2) {
+  else if (meilleure) {
+    const m = meilleure, roiT = m.p / m.c, marge = (m.ok - m.att) / m.n;
     out.copiable = true;
-    out.verdict = `Oui, mais seulement ses paris ${meilleure.lib} : ${meilleure.ok} justes sur ${meilleure.n} quand le prix en annonçait ${Math.round(meilleure.att)}, pour ${usd(meilleure.p)}. ` + (mdAv != null ? `Il entre ${dur(mdAv)} avant la fin en médiane, ce qui laisse le temps de suivre. ` : "") + "Tu paieras un peu plus cher que lui : l'avantage doit rester positif après ce surcoût.";
-  } else out.verdict = "Pas convaincant : il gagne, mais aucune de ses catégories de paris ne bat le prix du marché au-delà du hasard.";
+    out.verdict = `Oui, mais <b>seulement quand il achète ${m.lib}</b> : ${m.ok} justes sur ${m.n} quand le prix en annonçait ${Math.round(m.att)}, ROI ${pc(roiT)} sur ces paris, entrée médiane ${dur(m.avant)} avant la fin. `
+      + (pnl < 0.5 * m.p ? `Ne copie pas le reste : son résultat global n'est que de ${usd(pnl)} (ROI ${pc(pnl / cout)}) parce qu'il perd ${usd(Math.abs(pnl - m.p))} sur ses autres marchés. ` : "")
+      + `Son avance sur le prix est de ${Math.round(marge * 100)} points : chaque centime payé en plus par part en mange un. En achetant au plus ${Math.max(1, Math.floor(marge * 100 / 2))} centimes au-dessus de son prix, tu gardes au moins la moitié de son avance.`;
+  } else if (lignes.some((l) => l.z >= 2)) out.verdict = "Non : il bat le prix du marché, mais uniquement sur des achats pris dans la dernière minute, quand le résultat est presque connu. Impossible à suivre sans être aussi rapide que lui.";
+  else if (mdAv != null && mdAv < 30) out.verdict = "Non à la main : il entre trop près de la fin pour qu'on ait le temps de le suivre.";
+  else out.verdict = pnl > 0 ? "Pas convaincant : il gagne, mais aucune de ses catégories de paris ne bat le prix du marché au-delà du hasard." : "Non : il perd de l'argent sur la période étudiée.";
 
   out.constats.sort((a, b) => b.poids - a.poids);
   return out;
