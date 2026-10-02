@@ -1,8 +1,32 @@
-5
-{'question': 'Bitcoin Up or Down - October 2, 5:45PM-5:50PM ET', 'conditionId': '0x0a00140fa89265ade5ca878634aa8a8979cfa24bb7622a67e4300597ef230848', 'outcomes': '["Up", "Down"]', 'outcomePrices': '["0", "1"]', 'endDate': '2026-10-02T21:50:00Z', 'closedTime': '2026-10-02 21:52:32+00', 'gameStartTime': None, 'sportsMarketType': None, 'umaEndDate': '2026-10-02T21:52:32Z', 'volumeNum': 45738.960369999986, 'category': None} | event tags: [] ecat None
-{'question': 'Bitcoin Up or Down - October 2, 5:30PM-5:45PM ET', 'conditionId': '0xd900fc17d480a41d282b72704bfb4c658adafdd563671ae5686cb725a9d24d5d', 'outcomes': '["Up", "Down"]', 'outcomePrices': '["1", "0"]', 'endDate': '2026-10-02T21:45:00Z', 'closedTime': '2026-10-02 21:45:56+00', 'gameStartTime': None, 'sportsMarketType': None, 'umaEndDate': '2026-10-02T21:45:56Z', 'volumeNum': 44655.66928299999, 'category': None} | event tags: [] ecat None
-{'question': 'Bitcoin Up or Down - October 2, 5:40PM-5:45PM ET', 'conditionId': '0xadf2f0e26d226d5235297a76663a3adbfb25861bca5647dcaf9df3c1c177154b', 'outcomes': '["Up", "Down"]', 'outcomePrices': '["0", "1"]', 'endDate': '2026-10-02T21:45:00Z', 'closedTime': '2026-10-02 21:45:54+00', 'gameStartTime': None, 'sportsMarketType': None, 'umaEndDate': '2026-10-02T21:45:54Z', 'volumeNum': 42610.003093999934, 'category': None} | event tags: [] ecat None
-{'question': 'Bitcoin Up or Down - October 2, 5:35PM-5:40PM ET', 'conditionId': '0x2f652be37ab9362480c51cb1481cf5286bc263f7c349bd15631cc2b108844fb0', 'outcomes': '["Up", "Down"]', 'outcomePrices': '["1", "0"]', 'endDate': '2026-10-02T21:40:00Z', 'closedTime': '2026-10-02 21:40:53+00', 'gameStartTime': None, 'sportsMarketType': None, 'umaEndDate': '2026-10-02T21:40:53Z', 'volumeNum': 32639.615221999993, 'category': None} | event tags: [] ecat None
-{'question': 'Bitcoin Up or Down - October 2, 5:30PM-5:35PM ET', 'conditionId': '0xb6853a0def487fa4cece48de62dcf64aac096dac706a64cbbe7bb9724cba7aec', 'outcomes': '["Up", "Down"]', 'outcomePrices': '["1", "0"]', 'endDate': '2026-10-02T21:35:00Z', 'closedTime': '2026-10-02 21:35:54+00', 'gameStartTime': None, 'sportsMarketType': None, 'umaEndDate': '2026-10-02T21:35:54Z', 'volumeNum': 48413.514169, 'category': None} | event tags: [] ecat None
-
-[{"proxyWallet":"0x747533ac791bf2b966c50673f08df2a22f9d2edf","side":"SELL","asset":"105652194073939579412385709741730342793015668225335247121926515044988174667260","conditionId":"0x0a00140fa89265ade5ca878634aa8a8979cfa24bb7622a67e4300597ef230848","size":395.17,"price":0.999,"timestamp":1790977947,"title":"Bitcoin Up or Down - October 2, 5:45PM-5:50PM ET","slug":"btc-updown-5m-1790977500","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/BTC+fullsize.png","eventSlug":"btc-updown-5m-1790977500","outcome":"Down","outcomeIndex":1,"name":"aenews6","pseudonym":"Gigantic-Dromedary","bio":"","profileImage":"https://polymarket-upload.s3.us-east-2.amazonaws.com/profile-image-3790853-968cb7c6-1752-467b-9056-100d017f93a7.png","profileImageOptimized":"","transactionHash":"0xe29484a018c02f1ead2d12d7591d6a95bcb72f2799033fc31d9d9b7ab0e13cfe"},{"proxyWallet":"0x7cb239f58390a0743e439d92209530502306e655","side":"BUY","asset":"105652194073939579412385709741730342793015668225335247121926515044988174667260","conditionId":"0x0a00140fa89265ade5ca878634aa8a8979cfa24bb7622a67e4300597ef230848","size":395.17,"price":0.999,"timestamp":1790977947,"title":"Bitcoin Up or Down - October 2, 5:45PM-5:50PM ET","slug":"btc-updown-5m-1790977500","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/BTC+fullsize.png","eventSlug":"btc-updown-5m-1790977500","outcome":"Down","outcomeIndex":1,"name":"ClobCleaner","pseudonym":"Meaty-Borrowing","bio":"","profileImage":"https://polymarket-upload.s3.us-e
+Traceback (most recent call last):
+  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/quasi_certains.py", line 202, in <module>
+    main()
+  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/quasi_certains.py", line 147, in main
+    M = marches()
+        ^^^^^^^^^
+  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/quasi_certains.py", line 69, in marches
+    lot = get(f"{G}/markets?closed=true&limit=500&offset={off}&order=closedTime&ascending=false")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/quasi_certains.py", line 30, in get
+    raise err
+  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/quasi_certains.py", line 25, in get
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "etude"}), timeout=40) as r:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 521, in open
+    response = meth(req, response)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 630, in http_response
+    response = self.parent.error(
+               ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 559, in error
+    return self._call_chain(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 639, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 422: Unprocessable Entity
