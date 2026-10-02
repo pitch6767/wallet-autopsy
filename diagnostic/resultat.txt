@@ -1,49 +1,35 @@
-=== html
-cache-control: public, max-age=0, must-revalidate
-      1 Chasseur d'outsiders
-      1 Tueurs à copier
-=== etat
-traites 27575 attente 10064 wallets 122942 {'decouverts': 1, 'traites': 21, 'erreurs': 0, 'trades': 96145, 'fetch': 207, 'ms': 49338, 'a': '2026-10-02T06:23:27.703Z'}
-=== wallet trades sample
-wallet 0x3750aa21fd677f569b63fde892f773ee7dd02c42
-BUY Down 20 0.408 1788772084 xrp-updown-5m-1788771600
-BUY Up 61.06 0.076 1788478392 btc-updown-15m-1788477300
-BUY Down 1.21 0.171 1788264192 btc-updown-5m-1788263700
-BUY Down 8.673099 0.1710000082 1788264189 btc-updown-5m-1788263700
-BUY Down 1.069507 0.0650000421 1788252516 sol-updown-5m-1788252000
-BUY Up 2069.76 0.043 1788241366 btc-updown-5m-1788240900
-BUY Up 9.08 0.197 1788233991 btc-updown-5m-1788233400
-BUY Up 4.44 0.01 1787999850 btc-updown-5m-1787999400
-BUY Down 1.11 0.01 1787794707 btc-updown-5m-1787794200
-BUY Up 1.0101 0.01 1787700885 btc-updown-5m-1787700300
-BUY Up 5.89 0.01 1787670745 btc-updown-5m-1787670300
-BUY Up 8.71 0.01 1787670745 btc-updown-5m-1787670300
-BUY Up 1.21 0.01 1787670742 btc-updown-5m-1787670300
-BUY Down 1.09 0.01 1787633292 btc-updown-5m-1787632800
-BUY Down 7.22 0.01 1787633275 btc-updown-15m-1787632200
-BUY Up 2.02 0.01 1787622172 btc-updown-5m-1787621700
-BUY Down 1.4 0.01 1787609925 btc-updown-5m-1787609400
-BUY Up 58.48 0.01 1787591557 btc-updown-5m-1787591100
-BUY Up 2.04 0.01 1787522290 eth-updown-5m-1787521800
-BUY Up 1.02 0.01 1787521986 sol-updown-5m-1787521500
-BUY Up 1.07 0.01 1787521984 btc-updown-5m-1787521500
-BUY Up 1.47 0.01 1787520751 btc-updown-5m-1787520300
-BUY Up 1.61 0.01 1787490793 btc-updown-5m-1787490300
-BUY Down 1.29 0.01 1787487172 btc-updown-5m-1787486700
-BUY Down 2.38 0.01 1787485981 btc-updown-5m-1787485500
-BUY Down 11.85 0.01 1787482969 btc-updown-5m-1787482500
-BUY Up 1.0101 0.01 1787478201 btc-updown-5m-1787477700
-BUY Up 1.26 0.01 1787472429 btc-updown-5m-1787472000
-BUY Up 10.95 0.01 1787472426 btc-updown-5m-1787472000
-BUY Up 5 0.01 1787472426 sol-updown-5m-1787472000
-BUY Up 5 0.01 1787472424 sol-updown-5m-1787472000
-BUY Up 1.26 0.01 1787471839 btc-updown-5m-1787471400
-BUY Up 1.03 0.01 1787471836 btc-updown-5m-1787471400
-BUY Up 1.21 0.01 1787459548 hype-updown-5m-1787459100
-BUY Up 6.22 0.01 1787459542 btc-updown-5m-1787459100
-BUY Up 7.57 0.01 1787429899 eth-updown-5m-1787429400
-BUY Up 2 0.01 1787409463 btc-updown-5m-1787409000
-BUY Down 29.41 0.01 1787361493 eth-updown-5m-1787361000
-BUY Up 64.1 0.01 1787361480 btc-updown-5m-1787361000
-BUY Up 1.61 0.01 1787358465 btc-updown-5m-1787358000
-gamma multi 0 []
+################ 0x3750aa21fd677f569b63fde892f773ee7dd02c42
+# Ramasseur d'ordres après la clôture | marches 29 {'tronque': False, 'autres': 10, 'totalTrades': 48, 'btcTrades': 38, 'nonResolus': 0}
+ - Il achète après la fin de la fenêtre sur 29 de ses 29 marchés (100 % de ses achats en $), en médiane 3 min après la clôture, au prix médian de 0.010 $. À ce moment le prix de clôture du BTC est déjà connu ; le marché n'est simplement pas encore réglé. Il ramasse les ordres de vente restés en carnet : 38 de ces 38 achats portent sur le côté qui a effectivement gagné.
+ - 86 % de son gain vient d'un seul marché (01.09, Bitcoin Up or Down - September 1, 1:35AM-1:40AM ET) : $89 misés à 0.043 $ sont devenus $2 070. Sans ce marché, il est à $316 (ROI 2988 %) sur les 28 autres.
+ - Première moitié de la période (jusqu'au 23.08) : ROI 9900 % ; seconde moitié : 2189 %. Gagnant sur les deux : le résultat tient dans le temps.
+ - Actif du 21.08 au 04.09 : 29 marchés BTC (2.2 par jour), mise médiane $0,02 par marché, 29 marchés gagnants, PnL $2 297 pour $99,59 misés (ROI 2307 %). Il trade aussi d'autres marchés (10 trades hors BTC, non comptés).
+ => Non copiable : il n'anticipe rien, il achète un résultat déjà connu. Il faut un automate plus rapide que lui sur les mêmes ordres oubliés, et les quantités disponibles sont minuscules.
+################ 0x355d54242b1fcbc20e6bb3f8d94a1ccaaf5d1c50
+# Achète les deux côtés | marches 400 {'tronque': True, 'autres': 3609, 'totalTrades': 10500, 'btcTrades': 6891, 'nonResolus': 1}
+ - Paris sur un seul côté gardés jusqu'au résultat (168 marchés), par prix payé — 0,50 à 0,70 $ : 25/26 justes pour 17 attendus par le prix ($163) ; 0,70 à 0,90 $ : 69/69 justes pour 56 attendus par le prix ($608) ; 0,90 $ et plus : 72/72 justes pour 68 attendus par le prix ($287). Avantage réel sur 0,50 à 0,70 $ et 0,70 à 0,90 $ et 0,90 $ et plus (écart trop grand pour être du hasard).
+ - Il achète les deux côtés sur 229 marchés, prix combiné médian 1.34 $, sous 1 $ dans 8 cas. Résultat de ces marchés : −$759. Payée plus de 1 $, la paire ne rapporte que si un côté est revendu à temps.
+ - Première moitié de la période (jusqu'au 01.10) : ROI 0 % ; seconde moitié : 2 %. Il gagne seulement depuis peu.
+ - Il entre en médiane 3 min avant la fin du marché : assez tôt pour être suivi.
+ - Ses 42 plus grosses mises (médiane $106) font un ROI de 11 %, ses 42 plus petites 24 % : il perd surtout quand il mise gros.
+ - Pire passage : −$578 perdus depuis un sommet, et 4 marchés perdus d'affilée au maximum. C'est ce que tu dois pouvoir encaisser en le copiant.
+ - Actif du 30.09 au 02.10 : 400 marchés BTC (244.9 par jour), mise médiane $89,4 par marché, 303 marchés gagnants, PnL $384 pour $42 413 misés (ROI 1 %). Il trade aussi d'autres marchés (3609 trades hors BTC, non comptés). Historique limité par Polymarket aux 10 000 derniers trades.
+ => Oui, mais seulement ses paris 0,70 à 0,90 $ : 69 justes sur 69 quand le prix en annonçait 56, pour $608. Il entre 3 min avant la fin en médiane, ce qui laisse le temps de suivre. Tu paieras un peu plus cher que lui : l'avantage doit rester positif après ce surcoût.
+################ 0xacf3c003876576d208fb34aa01a5c294fa0438bd
+# Parieur avec avantage (0,70 à 0,90 $) | marches 3513 {'tronque': False, 'autres': 1167, 'totalTrades': 5471, 'btcTrades': 4304, 'nonResolus': 0}
+ - Paris sur un seul côté gardés jusqu'au résultat (2761 marchés (hors 1 marchés achetés après la clôture)), par prix payé — 0,30 à 0,50 $ : 4/5 justes pour 2 attendus par le prix ($8,87) ; 0,50 à 0,70 $ : 176/191 justes pour 125 attendus par le prix ($504) ; 0,70 à 0,90 $ : 1724/1780 justes pour 1461 attendus par le prix ($2 383) ; 0,90 $ et plus : 775/785 justes pour 725 attendus par le prix ($262). Avantage réel sur 0,50 à 0,70 $ et 0,70 à 0,90 $ et 0,90 $ et plus (écart trop grand pour être du hasard).
+ - Première moitié de la période (jusqu'au 29.08) : ROI 0 % ; seconde moitié : 1 %. Gagnant sur les deux : le résultat tient dans le temps.
+ - Il entre en médiane 10 min avant la fin du marché : assez tôt pour être suivi.
+ - Pire passage : −$414 perdus depuis un sommet, et 5 marchés perdus d'affilée au maximum. C'est ce que tu dois pouvoir encaisser en le copiant.
+ - Par durée de marché : 1h 759 marchés, −$46,91 ; 15m 2754 marchés, $176.
+ - Actif du 23.07 au 02.10 : 3513 marchés BTC (49.3 par jour), mise médiane $6 par marché, 2709 marchés gagnants, PnL $129 pour $24 736 misés (ROI 1 %). Il trade aussi d'autres marchés (1167 trades hors BTC, non comptés).
+ => Oui, mais seulement ses paris 0,70 à 0,90 $ : 1724 justes sur 1780 quand le prix en annonçait 1461, pour $2 383. Il entre 10 min avant la fin en médiane, ce qui laisse le temps de suivre. Tu paieras un peu plus cher que lui : l'avantage doit rester positif après ce surcoût.
+################ 0xf6f6caf3778adc958bf2977c436304f10a904099
+# Parieur avec avantage (0,70 à 0,90 $) | marches 6076 {'tronque': False, 'autres': 51, 'totalTrades': 8351, 'btcTrades': 8300, 'nonResolus': 853}
+ - Paris sur un seul côté gardés jusqu'au résultat (5437 marchés (hors 47 marchés achetés après la clôture)), par prix payé — 0,30 à 0,50 $ : 5/6 justes pour 3 attendus par le prix ($28,27) ; 0,50 à 0,70 $ : 81/85 justes pour 54 attendus par le prix ($180) ; 0,70 à 0,90 $ : 1152/1164 justes pour 980 attendus par le prix ($983) ; 0,90 $ et plus : 4168/4180 justes pour 4000 attendus par le prix ($875). Avantage réel sur 0,30 à 0,50 $ et 0,50 à 0,70 $ et 0,70 à 0,90 $ et 0,90 $ et plus (écart trop grand pour être du hasard).
+ - Première moitié de la période (jusqu'au 07.08) : ROI 0 % ; seconde moitié : 1 %. Gagnant sur les deux : le résultat tient dans le temps.
+ - Il entre en médiane 1 min avant la fin du marché : suivable seulement par un automate.
+ - Pire passage : −$156 perdus depuis un sommet, et 5 marchés perdus d'affilée au maximum. C'est ce que tu dois pouvoir encaisser en le copiant.
+ - L'essentiel de son gain ($214) est fait le soir (18 h–24 h), heure suisse, sur 1526 marchés.
+ - Actif du 20.07 au 24.08 : 6076 marchés BTC (172.6 par jour), mise médiane $3,76 par marché, 5608 marchés gagnants, PnL $244 pour $36 363 misés (ROI 1 %). Il trade aussi d'autres marchés (51 trades hors BTC, non comptés).
+ => Oui, mais seulement ses paris 0,70 à 0,90 $ : 1152 justes sur 1164 quand le prix en annonçait 980, pour $983. Il entre 1 min avant la fin en médiane, ce qui laisse le temps de suivre. Tu paieras un peu plus cher que lui : l'avantage doit rester positif après ce surcoût.
