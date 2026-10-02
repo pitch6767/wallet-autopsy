@@ -120,12 +120,22 @@ export async function etude(env, addr) {
     const deux = A.ap > 0 && B.ap > 0;
     const fin = inf.fin || (typeDepuisSlug(m.slug) || {}).fin;
     const premier = m.achats.length ? Math.min(...m.achats.map((a) => a.ts)) : null;
+    // Première entrée : côté et prix des achats faits dans les 10 s suivant le premier achat
+    let e1 = null;
+    if (premier != null) {
+      const p0 = m.achats.filter((a) => a.ts <= premier + 10);
+      const c0 = p0.find((a) => a.ts === premier).i;
+      const l = p0.filter((a) => a.i === c0);
+      const q = l.reduce((x, a) => x + a.sz, 0);
+      e1 = { cote: c0, prix: q ? l.reduce((x, a) => x + a.sz * a.p, 0) / q : null };
+    }
     marches.push({
       cid: m.cid, slug: m.slug, titre: m.titre, type: inf.type, fin, gagnant: inf.gagnant,
       cout, pnl, roi: pnl / cout, gagne: pnl > 0,
       cote, prixCote: oc.ap ? oc.ac / oc.ap : null, coteGagne: cote === inf.gagnant,
       deux, combine: deux ? A.ac / A.ap + B.ac / B.ap : null,
       revend: oc.vp > 0.1 * oc.ap || k > 0,
+      e1cote: e1 ? e1.cote : null, e1prix: e1 ? e1.prix : null, e1juste: e1 ? e1.cote === inf.gagnant : null,
       avantFin: fin && premier ? fin - premier : null,
       achats: m.achats.map((a) => ({ ...a, avantFin: fin ? fin - a.ts : null, gagnant: a.i === inf.gagnant })),
       ts: premier || 0, ordres: m.n,
@@ -183,35 +193,50 @@ function analyser(addr, ms, meta) {
     }
   }
 
-  // 4. Prix payé contre réussite réelle (paris gardés jusqu'au bout, un seul côté)
-  // Les marchés où il a acheté après la clôture ne sont pas des prédictions : exclus
+  // 4. Première entrée contre résultat réel. On classe chaque marché par le prix
+  // de sa première entrée (ce que verrait quelqu'un qui le copie) et on compte
+  // TOUT ce qu'il fait ensuite dans ce marché (couvertures, reventes comprises).
   const simples = ms.filter((m) => !m.deux && !m.revend && m.prixCote != null && !mApres.has(m.cid));
+  const entrees = ms.filter((m) => m.e1prix != null && !mApres.has(m.cid));
   const tranches = [[0, 0.1, "moins de 0,10 $"], [0.1, 0.3, "0,10 à 0,30 $"], [0.3, 0.5, "0,30 à 0,50 $"], [0.5, 0.7, "0,50 à 0,70 $"], [0.7, 0.9, "0,70 à 0,90 $"], [0.9, 1.01, "0,90 $ et plus"]];
   const lignes = [];
   let meilleure = null;
   for (const [a, b, lib] of tranches) {
-    const l = simples.filter((m) => m.prixCote >= a && m.prixCote < b);
+    const l = entrees.filter((m) => m.e1prix >= a && m.e1prix < b);
     if (l.length < 5) continue;
-    const att = l.reduce((x, m) => x + m.prixCote, 0), ok = l.filter((m) => m.coteGagne).length;
-    const v = l.reduce((x, m) => x + m.prixCote * (1 - m.prixCote), 0);
+    const att = l.reduce((x, m) => x + m.e1prix, 0), ok = l.filter((m) => m.e1juste).length;
+    const v = l.reduce((x, m) => x + m.e1prix * (1 - m.e1prix), 0);
     const z = v > 0 ? (ok - att) / Math.sqrt(v) : 0;
     const p = l.reduce((x, m) => x + m.pnl, 0), c = l.reduce((x, m) => x + m.cout, 0);
     const avant = med(l.filter((m) => m.avantFin != null).map((m) => m.avantFin));
-    const t = { lib, n: l.length, ok, att, z, p, c, avant };
+    const couverts = l.filter((m) => m.deux || m.revend).length;
+    const t = { lib, n: l.length, ok, att, z, p, c, avant, couverts };
     lignes.push(t);
-    // Retenu pour copier seulement si l'avantage est réel, rentable ET pris assez tôt pour être suivi
-    if (z >= 2 && p > 0 && avant != null && avant >= 60 && (!meilleure || z > meilleure.z)) meilleure = t;
+    if (z >= 2 && p > 0 && avant != null && avant >= 60 && (!meilleure || p / c * z > meilleure.p / meilleure.c * meilleure.z)) meilleure = t;
   }
   if (lignes.length) {
     const exclus = mApres.size ? `, hors ${mApres.size} marché${mApres.size > 1 ? "s" : ""} acheté${mApres.size > 1 ? "s" : ""} après la clôture` : "";
-    const txt = lignes.map((l) => `${l.lib} : ${l.ok}/${l.n} justes pour ${Math.round(l.att)} attendus par le prix, ${usd(l.p)}, entrée médiane ${l.avant == null ? "—" : dur(l.avant) + " avant la fin"}`).join(" ; ");
-    const fort = lignes.filter((l) => l.z >= 2);
-    const faible = lignes.filter((l) => l.z <= -2);
-    let conclu = fort.length ? ` <b>Il bat le prix sur ${fort.map((l) => l.lib).join(", ")}</b> (écart trop grand pour être du hasard).` : " Aucune tranche ne bat le prix au-delà du hasard.";
+    const txt = lignes.map((l) => `première entrée ${l.lib} : ${l.n} marchés, bon côté ${l.ok} fois pour ${Math.round(l.att)} attendues par le prix, résultat final ${usd(l.p)} (ROI ${pc(l.p / l.c)})` + (l.couverts ? `, ${l.couverts} rattrapés ensuite en achetant l'autre côté ou en revendant` : "")).join(" ; ");
+    const fort = lignes.filter((l) => l.z >= 2 && l.p > 0);
+    let conclu = fort.length ? ` <b>Sa première entrée bat le prix sur ${fort.map((l) => l.lib).join(", ")}.</b>` : " Le côté qu'il choisit en entrant ne bat le prix du marché sur aucune tranche : son résultat ne vient pas de sa lecture de la direction.";
+    const faux = lignes.filter((l) => l.z >= 2 && l.p <= 0);
+    if (faux.length) conclu += ` Sur ${faux.map((l) => l.lib).join(", ")}, il choisit souvent le bon côté mais perd quand même de l'argent : ses couvertures et reventes coûtent plus que ce qu'elles protègent.`;
     const tard = fort.filter((l) => l.avant != null && l.avant < 60);
-    if (tard.length) conclu += ` Mais sur ${tard.map((l) => l.lib).join(", ")} il entre moins d'une minute avant la fin : le résultat est alors presque joué, et ce n'est pas suivable.`;
-    if (faible.length) conclu += ` Il perd nettement sur ${faible.map((l) => l.lib).join(" et ")}.`;
-    C(fort.length ? 85 : 50, `Paris sur un seul côté gardés jusqu'au résultat (${simples.length} marchés${exclus}), par prix payé — ${txt}.${conclu}`);
+    if (tard.length) conclu += ` Sur ${tard.map((l) => l.lib).join(", ")} il entre moins d'une minute avant la fin : le résultat est alors presque joué, ce n'est pas suivable.`;
+    C(fort.length ? 85 : 60, `Ce que vivrait quelqu'un qui le copie (${entrees.length} marchés${exclus}, classés par le prix de sa première entrée, tout ce qu'il fait ensuite compris) — ${txt}.${conclu}`);
+  }
+
+  // 4b. Où il gagne et où il perd
+  const cats = [
+    ["paris sur un seul côté gardés jusqu'au bout", simples],
+    ["marchés où il achète les deux côtés", ms.filter((m) => m.deux && !mApres.has(m.cid))],
+    ["marchés où il revend avant la fin", ms.filter((m) => !m.deux && m.revend && !mApres.has(m.cid))],
+    ["achats après la clôture", ms.filter((m) => mApres.has(m.cid))],
+  ].filter(([, l]) => l.length).map(([lib, l]) => ({ lib, n: l.length, p: l.reduce((x, m) => x + m.pnl, 0), c: l.reduce((x, m) => x + m.cout, 0) }));
+  if (cats.length >= 2) {
+    const g = cats.filter((c) => c.p > 0), pr = cats.filter((c) => c.p < 0);
+    C(75, "D'où vient son résultat : " + cats.map((c) => `${c.lib} ${usd(c.p)} sur ${c.n} marchés (ROI ${pc(c.p / c.c)})`).join(" ; ") + "."
+      + (g.length && pr.length ? ` Il gagne sur les ${g.map((c) => c.lib).join(" et ")} et le reperd sur les ${pr.map((c) => c.lib).join(" et ")}.` : ""));
   }
 
   // 5. Deux côtés / arbitrage
@@ -298,7 +323,7 @@ function analyser(addr, ms, meta) {
   else if (rev.length >= 0.5 * n) out.titre = "Trader intra-marché";
   else if (mFin10.size >= 0.3 * n) out.titre = "Sniper des dernières secondes";
   else if (meilleure) out.titre = `Parieur avec avantage (${meilleure.lib})`;
-  else if (lignes.some((l) => l.z >= 2)) out.titre = "Bat le prix, mais trop tard pour être suivi";
+  else if (lignes.some((l) => l.z >= 2 && l.p > 0)) out.titre = "Bat le prix, mais trop tard pour être suivi";
   else if (concentre) out.titre = "Un gros coup, le reste au hasard";
   else out.titre = pnl > 0 ? "Gagnant sans avantage démontré" : "Perdant";
 
@@ -309,10 +334,11 @@ function analyser(addr, ms, meta) {
   else if (meilleure) {
     const m = meilleure, roiT = m.p / m.c, marge = (m.ok - m.att) / m.n;
     out.copiable = true;
-    out.verdict = `Oui, mais <b>seulement quand il achète ${m.lib}</b> : ${m.ok} justes sur ${m.n} quand le prix en annonçait ${Math.round(m.att)}, ROI ${pc(roiT)} sur ces paris, entrée médiane ${dur(m.avant)} avant la fin. `
+    out.verdict = `Oui, mais <b>seulement quand sa première entrée est ${m.lib}</b> : bon côté ${m.ok} fois sur ${m.n} quand le prix en annonçait ${Math.round(m.att)}, ROI ${pc(roiT)} sur ces marchés en reproduisant tout ce qu'il fait ensuite, entrée médiane ${dur(m.avant)} avant la fin. `
       + (pnl < 0.5 * m.p ? `Ne copie pas le reste : son résultat global n'est que de ${usd(pnl)} (ROI ${pc(pnl / cout)}) parce qu'il perd ${usd(Math.abs(pnl - m.p))} sur ses autres marchés. ` : "")
-      + `Son avance sur le prix est de ${Math.round(marge * 100)} points : chaque centime payé en plus par part en mange un. En achetant au plus ${Math.max(1, Math.floor(marge * 100 / 2))} centimes au-dessus de son prix, tu gardes au moins la moitié de son avance.`;
-  } else if (lignes.some((l) => l.z >= 2)) out.verdict = "Non : il bat le prix du marché, mais uniquement sur des achats pris dans la dernière minute, quand le résultat est presque connu. Impossible à suivre sans être aussi rapide que lui.";
+      + `Son avance sur le prix est de ${Math.round(marge * 100)} points : chaque centime payé en plus par part en mange un. En achetant au plus ${Math.max(1, Math.floor(marge * 100 / 2))} centimes au-dessus de son prix, tu gardes au moins la moitié de son avance.`
+      + (m.couverts > 0.2 * m.n ? ` Attention : sur ${m.couverts} de ces ${m.n} marchés il agit encore après son entrée (achat de l'autre côté ou revente) ; ce résultat suppose de reproduire aussi ces gestes.` : "");
+  } else if (lignes.some((l) => l.z >= 2 && l.p > 0)) out.verdict = "Non : il bat le prix du marché, mais uniquement sur des achats pris dans la dernière minute, quand le résultat est presque connu. Impossible à suivre sans être aussi rapide que lui.";
   else if (mdAv != null && mdAv < 30) out.verdict = "Non à la main : il entre trop près de la fin pour qu'on ait le temps de le suivre.";
   else out.verdict = pnl > 0 ? "Pas convaincant : il gagne, mais aucune de ses catégories de paris ne bat le prix du marché au-delà du hasard." : "Non : il perd de l'argent sur la période étudiée.";
 
