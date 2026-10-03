@@ -1,6 +1,7 @@
+import concurrent.futures as cf, time, itertools
 import json, subprocess, urllib.request
 UA={"User-Agent":"curl/8.5.0"}
-def op(u,t): return urllib.request.urlopen(urllib.request.Request(u,headers=UA),timeout=t), concurrent.futures as cf, time, itertools
+def op(u,t): return urllib.request.urlopen(urllib.request.Request(u,headers=UA),timeout=t)
 U="https://wallet-autopsy.pitch67.workers.dev"
 rows=json.load(op(U+"/api/btc/copiables",60))[:90]
 def get(a):
