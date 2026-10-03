@@ -288,7 +288,7 @@ export async function tourEtudes(env, etude) {
         ON CONFLICT(wallet) DO UPDATE SET ts=excluded.ts,copiable=excluded.copiable,titre=excluded.titre,marches=excluded.marches,pnl=excluded.pnl,roi=excluded.roi,
           marge=excluded.marge,roi_cible=excluded.roi_cible,n_cible=excluded.n_cible,score=excluded.score,json=excluded.json`)
         .bind(r.wallet, Date.now() / 1000 | 0, e.copiable ? 1 : 0, e.titre, e.marches, e.pnl || 0, e.roi || 0,
-          m ? m.marge : null, m ? m.roi : null, m ? m.n : null, m ? m.marge * Math.sqrt(m.n) : null, JSON.stringify(e)).run();
+          m ? m.marge : null, m ? m.roi : null, m ? m.n : null, m ? m.marge * Math.sqrt(m.n) : null, JSON.stringify({ ...e, cible: undefined })).run();
       faits++;
     } catch (err) {
       await db.prepare("INSERT INTO etudes(wallet,ts,copiable,titre) VALUES(?,?,0,?) ON CONFLICT(wallet) DO UPDATE SET ts=excluded.ts")

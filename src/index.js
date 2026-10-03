@@ -25,7 +25,14 @@ export default {
     } catch (e) {
       return json({ erreur: String(e && e.message ? e.message : e) }, 500);
     }
-    return env.ASSETS.fetch(req);
+    // Page : jamais de copie en cache dans le navigateur
+    const r = await env.ASSETS.fetch(req);
+    if ((r.headers.get("content-type") || "").includes("text/html")) {
+      const h = new Headers(r.headers);
+      h.set("cache-control", "no-store, max-age=0");
+      return new Response(r.body, { status: r.status, headers: h });
+    }
+    return r;
   },
   async scheduled(event, env, ctx) {
     if (event.cron === "*/2 * * * *") ctx.waitUntil(tourEtudes(env, etude).catch((e) => console.log("etudes", e && e.message)));

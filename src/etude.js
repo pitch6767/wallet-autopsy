@@ -351,6 +351,21 @@ function analyser(addr, ms, meta) {
   out.constats.sort((a, b) => b.poids - a.poids);
   out.meilleure = meilleure ? { lib: meilleure.lib, n: meilleure.n, marge: meilleure.marge, roi: meilleure.p / meilleure.c, p: meilleure.p, avant: meilleure.avant } : null;
   out.pnl = pnl; out.roi = cout ? pnl / cout : null;
+  {
+    const h = Math.floor(n / 2), r = (l) => { const c = l.reduce((x, m) => x + m.cout, 0); return c ? l.reduce((x, m) => x + m.pnl, 0) / c : null; };
+    const best = ms.reduce((a, b) => (b.pnl > a.pnl ? b : a));
+    out.stats = { debut, fin: finP, parJour: n / jours, miseMed: coutMed, r1: n >= 20 ? r(ms.slice(0, h)) : null, r2: n >= 20 ? r(ms.slice(h)) : null,
+      partMax: pnl > 0 ? best.pnl / pnl : null, mdAvant: mdAv };
+    if (meilleure) {
+      const [a, b] = tranches.find((t) => t[2] === meilleure.lib);
+      const l = entrees.filter((m) => m.e1prix >= a && m.e1prix < b);
+      const lr = l.slice(-Math.floor(l.length / 3));
+      const cr = lr.reduce((x, m) => x + m.cout, 0);
+      out.stats.roiCibleRecent = cr ? lr.reduce((x, m) => x + m.pnl, 0) / cr : null;
+      out.stats.miseCibleMed = med(l.map((m) => m.cout));
+      out.cible = l.map((m) => [m.cid, m.e1cote, m.ts]);
+    }
+  }
   return out;
 }
 
