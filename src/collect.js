@@ -312,7 +312,8 @@ export async function conseils(env) {
     if (!s || !m || !e.empreinte) continue;
     const raisons = [];
     if (now - s.fin > 3 * 86400) continue;            // n'est plus actif
-    if (!(s.r1 > 0 && s.r2 > 0 && s.roiCibleRecent > 0)) continue; // pas gagnant sur toute la période
+    if (!(s.r1 >= 0.03 && s.r2 >= 0.03 && s.roiCibleRecent >= 0.03)) continue; // pas nettement gagnant sur toute la période
+    if (m.roi < 0.1) continue; // avance trop mince pour survivre au retard d'un copieur
     if (s.partMax != null && s.partMax > 0.3) continue; // dépend d'un coup
     if (m.avant < 150) continue;                      // trop tard pour suivre confortablement
     if (!PURS(e.titre)) continue;                     // reventes ou couvertures à reproduire
