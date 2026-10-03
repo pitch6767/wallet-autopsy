@@ -1,23 +1,5 @@
-      1 Tueurs à copier
-      3 rendreEtude
-etudes 2781 copiables 521
-0xb75d86279aeb4036cfbe08f6ae1482be385575d3 0xb75 0,50 à 0,70 $ 5 pts 6.6 % 2877 / 3654 avant 314 pnl 5477
-0x16217458b59b3458149918058754cd234096b159 096b159 0,50 à 0,70 $ 10 pts 10.0 % 587 / 1265 avant 284 pnl 3159
-0x97e1678857baa09aeeec1ac7c0a4e732ab836825  0,30 à 0,50 $ 12 pts 14.3 % 416 / 1289 avant 168 pnl 4572
-0xc3bc27ad4670daa290c33e5a1a8ebdc8baf680f7 af680f7 0,50 à 0,70 $ 8 pts 9.1 % 965 / 1868 avant 300 pnl 9848
-0xb89d0b6e96e790afa900b53476b8f267a94d1d4f ZCu006 0,30 à 0,50 $ 21 pts 53.3 % 132 / 244 avant 120 pnl 68794
-0xb56613bbc62dc60ce80370f2eb4c9841cd0e6f62  0,30 à 0,50 $ 19 pts 23.1 % 138 / 945 avant 114 pnl 2094
-0x1d2935bbceef7ee7e02adcc1a9292ed2c3005b60 YiFengChiu 0,30 à 0,50 $ 11 pts 11.9 % 420 / 1580 avant 205 pnl 3168
-0xcfd6e34f96759ab638c982abc069bba8a1abb235 1abb235 0,50 à 0,70 $ 8 pts 8.8 % 872 / 1668 avant 304 pnl 5808
-0xa1c19fb7e0396c2b90cb0f12d8939cc78f9a8482 babalaile1 0,50 à 0,70 $ 9 pts 6.7 % 576 / 1557 avant 196 pnl 4558
-0x93eaea7d151aa6848ec9c7f614066021ef79b4e7 tagrecid 0,50 à 0,70 $ 10 pts 14.0 % 479 / 1117 avant 283 pnl 2737
-0xcc286abce88c70bd0045c1ace8a80998cbec5f5d  0,50 à 0,70 $ 22 pts 35.4 % 100 / 244 avant 286 pnl 3263
-0xd9013df863c1ba932780857b020dfdeacedf8e14 PoopStreet 0,50 à 0,70 $ 8 pts 11.2 % 738 / 2657 avant 278 pnl 15066
-0x9bf4ab497adf5bcddcadbf4df761ce73a0680284 kchecko 0,50 à 0,70 $ 14 pts 19.2 % 248 / 1067 avant 186 pnl 10189
-0xbabb6b375fac32b37e8c4356e0cd803b7635db9d MAY52NMLKCD 0,50 à 0,70 $ 11 pts 12.1 % 403 / 813 avant 283 pnl 3833
-0x454c48b436e5dda7a186cc7e0ebeee2a1d1865cf checkr3 0,50 à 0,70 $ 14 pts 18.2 % 250 / 1065 avant 183 pnl 10324
-0xc04707d73b58489cca46ff706831b913b338cce5 rty72 0,50 à 0,70 $ 10 pts 13.1 % 490 / 1030 avant 251 pnl 1393
-0x661d589424bc21a094ad4849063a9e375c141d3e Hazing6648 0,30 à 0,50 $ 11 pts 24.1 % 419 / 1768 avant 281 pnl 26902
-0xff37b71b91c502d6efcc6abaee10aac66e7c2e24  0,50 à 0,70 $ 13 pts 17.1 % 252 / 609 avant 232 pnl 699
-0x1b58d3de60d7f9e1aefdc9449e8d3733ea096f11 PBot-5 0,50 à 0,70 $ 6 pts 5.6 % 1220 / 3899 avant 326 pnl 7807
-0xae34fc7142bf90d630c97e16a55e3bee4583b37d nahhtr 0,50 à 0,70 $ 13 pts 18.0 % 249 / 1066 avant 186 pnl 9860
+Traceback (most recent call last):
+  File "/home/runner/work/wallet-autopsy/wallet-autopsy/diagnostic/selection.py", line 5, in <module>
+    rows=json.loads(out)[0]["results"]
+         ~~~~~~~~~~~~~~~^^^
+KeyError: 0
