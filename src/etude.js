@@ -364,6 +364,7 @@ function analyser(addr, ms, meta) {
       out.stats.roiCibleRecent = cr ? lr.reduce((x, m) => x + m.pnl, 0) / cr : null;
       out.stats.miseCibleMed = med(l.map((m) => m.cout));
       out.cible = l.map((m) => [m.cid, m.e1cote, m.ts]);
+      out.empreinte = l.slice(-400).map((m) => m.cid.slice(2, 12) + m.e1cote);
     }
   }
   return out;

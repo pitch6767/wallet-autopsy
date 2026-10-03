@@ -1,5 +1,5 @@
 import { etude } from "./etude.js";
-import { tourDeCollecte, etatCollecte, classement, tourEtudes } from "./collect.js";
+import { tourDeCollecte, etatCollecte, classement, tourEtudes, conseils } from "./collect.js";
 // wallet-autopsy — profilage de portefeuilles Polymarket
 // Lecture seule : uniquement les API publiques de Polymarket, aucune clé, aucun ordre.
 
@@ -16,8 +16,9 @@ export default {
       if (url.pathname === "/api/etude") return json(await etude(env, url.searchParams.get("addr")));
       if (url.pathname === "/api/btc/classement") return json(await classement(env, url.searchParams));
       if (url.pathname === "/api/btc/tour") return json(await tourDeCollecte(env));
+      if (url.pathname === "/api/btc/conseils") return json(await conseils(env));
       if (url.pathname === "/api/btc/copiables") return json((await env.DB.prepare("SELECT wallet, score, marge, roi_cible, n_cible, marches, pnl FROM etudes WHERE copiable=1 ORDER BY score DESC LIMIT 150").all()).results);
-      if (url.pathname === "/api/btc/etudes") return json({ faites: await tourEtudes(env, etude) });
+      if (url.pathname === "/api/btc/etudes") return json({ faites: await tourEtudes(env, etude, Number(url.searchParams.get("off")) || 0) });
       if (url.pathname === "/api/btc/etat") return json(await etatCollecte(env));
       if (url.pathname === "/api/copier") return json(await copierReport(url.searchParams));
       if (url.pathname === "/api/market") return json(await marketReport(url.searchParams));

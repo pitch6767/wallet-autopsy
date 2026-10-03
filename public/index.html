@@ -79,6 +79,8 @@ tr.det td{white-space:normal;text-align:left;background:var(--bg);padding:10px 1
 .stt{font-weight:700;font-size:14px}
 .verdict{border-left:3px solid var(--line);padding-left:8px}
 .verdict.ok{border-color:var(--ok);color:var(--ink)}
+.cons{border-top:1px solid var(--line);padding:10px 0}
+.cons p{margin:4px 0;font-size:13px;line-height:1.5}
 .lien{border:0;background:none;color:var(--acc);padding:4px 0;cursor:pointer;font-size:13px}
 </style>
 </head>
@@ -109,6 +111,7 @@ tr.det td{white-space:normal;text-align:left;background:var(--bg);padding:10px 1
       </div>
       <div class="note" id="hEtat">Chargement de l'état de la collecte…</div>
     </div>
+    <div id="outC"></div>
     <div id="outH4"></div>
   </section>
 
@@ -487,8 +490,24 @@ function paramsH(tri){
   if ($("hR").value !== "") q.set("roi", $("hR").value);
   return q;
 }
+async function chargerC(){
+  try {
+    const c = await api("/api/btc/conseils");
+    let h = '<div class="card"><div class="mt">Mes conseils : qui copier</div><div class="note">Choisis parmi ' + f0(c.etudies) + ' portefeuilles copiables étudiés. Je ne garde que ceux qui : <b>sont encore actifs</b> (trade dans les 3 derniers jours) ; <b>gagnent sur chaque tiers de leur historique</b>, y compris le plus récent ; ne dépendent pas d\'un coup (aucun marché ne pèse plus de 30 % du gain) ; <b>entrent au moins 2 min 30 avant la fin</b> ; parient sans reventes ni couvertures, donc qu\'on copie sur la seule entrée. Puis <b>un seul par groupe</b> : quand plusieurs portefeuilles prennent le même côté sur plus de 40 % des mêmes marchés (même opérateur ou copieurs du même), je ne garde que le meilleur. Ces règles sont les miennes : dis-moi si tu veux les changer.</div>';
+    if (!c.choix.length) h += '<p class="mute">Personne ne passe encore tous ces filtres : les études se mettent à jour, reviens plus tard.</p>';
+    c.choix.forEach((w, i) => {
+      h += '<div class="cons"><div class="stt">' + (i + 1) + '. ' + esc(w.nom || w.wallet.slice(0, 10) + "…") + ' <span class="addr mute">' + w.wallet + '</span></div>'
+        + '<p><b>Copier uniquement quand il entre entre ' + esc(w.cible.replace(" $", "")) + ' $</b> sur le côté qu\'il choisit. Sur ' + f0(w.n) + ' marchés de ce type, il a choisi le bon côté ' + Math.round(w.marge * 100) + ' points plus souvent que le prix ne l\'annonçait, pour un ROI de ' + roiTxt(w.roi) + ' (' + usd(w.p) + ').</p>'
+        + '<p>Régularité : ROI ' + roiTxt(w.r1) + ' sur la 1re moitié de son historique, ' + roiTxt(w.r2) + ' sur la 2e, ' + roiTxt(w.recent) + ' sur le dernier tiers de ces paris. Il entre en médiane <b>' + sec(Math.round(w.avant)) + ' avant la fin</b>, environ ' + Math.round(w.parJour) + ' marchés par jour, mise médiane ' + usd(w.mise) + '. Dernier trade le ' + new Date(w.fin * 1000).toLocaleString("fr-CH", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) + '.'
+        + (w.clones ? ' <span class="mute">' + w.clones + ' autre' + (w.clones > 1 ? "s" : "") + ' portefeuille' + (w.clones > 1 ? "s" : "") + ' du même groupe écarté' + (w.clones > 1 ? "s" : "") + '.</span>' : "") + '</p>'
+        + '<button class="lien" onclick="versPortefeuille(\'' + w.wallet + '\')">Voir son historique →</button></div>';
+    });
+    if (c.choix.length > 1) h += '<p class="note"><b>Comment les combiner :</b> ils ne jouent pas les mêmes marchés du même côté, donc leurs résultats s\'additionnent sans se doubler. Mets la même petite mise fixe sur chacun (par exemple 1 à 2 % de ton capital par marché), sans augmenter après un gain ni doubler après une perte. Vérifie sur ses 50 prochains marchés que l\'avance tient avant d\'augmenter. Le risque principal : tu achètes quelques secondes après lui, donc un peu plus cher ; plus son avance est faible, plus ce retard compte.</p>';
+    $("outC").innerHTML = h + '</div>';
+  } catch(e) { $("outC").innerHTML = '<div class="card err">Conseils indisponibles : ' + esc(e.message) + '</div>'; }
+}
 async function chargerH(){
-  etatH();
+  etatH(); chargerC();
   $("outH4").innerHTML = '<div class="card mute">Calcul du classement…</div>';
   try { HD = await api("/api/btc/classement?" + paramsH()); rendH(); }
   catch(e){ $("outH4").innerHTML = '<div class="card err">' + esc(e.message) + '</div>'; }

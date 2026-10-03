@@ -270,14 +270,15 @@ export async function etatCollecte(env) {
 const TYPES = ["5m", "15m", "1h", "4h", "1j"];
 
 // ─── Études en tâche de fond ───
-export async function tourEtudes(env, etude) {
+export async function tourEtudes(env, etude, off = 0) {
   const db = env.DB, t0 = Date.now();
   const { results } = await db.prepare(`SELECT s.wallet FROM (
       SELECT wallet, SUM(n_marches) n, SUM(pnl) pnl, SUM(trades) tr, SUM(sum_avant) sa, SUM(n_avant) na FROM stats GROUP BY wallet) s
       LEFT JOIN etudes e ON e.wallet = s.wallet
       WHERE s.n >= 30 AND s.pnl > 0 AND s.tr <= 30 * s.n AND s.na > 0 AND s.sa / s.na >= 60
-        AND (e.ts IS NULL OR e.ts < ?)
-      ORDER BY (e.ts IS NOT NULL), s.pnl DESC LIMIT 4`).bind((t0 / 1000 | 0) - 86400).all();
+        AND (e.ts IS NULL OR e.ts < ? OR (e.copiable = 1 AND e.json NOT LIKE '%"empreinte"%'))
+      ORDER BY (e.copiable = 1 AND e.json NOT LIKE '%"empreinte"%') DESC, (e.ts IS NOT NULL), e.copiable DESC, e.ts ASC, s.pnl DESC
+      LIMIT 4 OFFSET ?`).bind((t0 / 1000 | 0) - 86400, off).all();
   let faits = 0;
   for (const r of results) {
     if (Date.now() - t0 > 40_000) break;
@@ -296,6 +297,50 @@ export async function tourEtudes(env, etude) {
     }
   }
   return faits;
+}
+
+// ─── Mes conseils : sélection diversifiée de portefeuilles à copier ───
+const PURS = (t) => !/intra|deux côtés|Arbitreur/i.test(t || "");
+export async function conseils(env) {
+  const { results } = await env.DB.prepare("SELECT wallet, json FROM etudes WHERE copiable=1 ORDER BY score DESC LIMIT 600").all();
+  const now = Date.now() / 1000;
+  const noms = new Map();
+  const cands = [];
+  for (const r of results) {
+    let e; try { e = JSON.parse(r.json); } catch { continue; }
+    const s = e.stats, m = e.meilleure;
+    if (!s || !m || !e.empreinte) continue;
+    const raisons = [];
+    if (now - s.fin > 3 * 86400) continue;            // n'est plus actif
+    if (!(s.r1 > 0 && s.r2 > 0 && s.roiCibleRecent > 0)) continue; // pas gagnant sur toute la période
+    if (s.partMax != null && s.partMax > 0.3) continue; // dépend d'un coup
+    if (m.avant < 150) continue;                      // trop tard pour suivre confortablement
+    if (!PURS(e.titre)) continue;                     // reventes ou couvertures à reproduire
+    cands.push({ wallet: r.wallet, e, score: m.marge * Math.sqrt(m.n) });
+  }
+  cands.sort((a, b) => b.score - a.score);
+  const choisis = [], doublons = [];
+  for (const c of cands) {
+    const set = new Set(c.e.empreinte);
+    const dup = choisis.find((x) => { let k = 0; for (const v of x.set) if (set.has(v)) k++; return k / Math.min(x.set.size, set.size) > 0.4; });
+    if (dup) { doublons.push({ wallet: c.wallet, de: dup.wallet }); continue; }
+    choisis.push({ ...c, set });
+    if (choisis.length >= 8) break;
+  }
+  if (choisis.length) {
+    const ws = choisis.map((c) => c.wallet);
+    const nn = await env.DB.prepare(`SELECT wallet, MAX(nom) nom FROM stats WHERE wallet IN (${ws.map(() => "?").join(",")}) GROUP BY wallet`).bind(...ws).all();
+    for (const r of nn.results) noms.set(r.wallet, r.nom);
+  }
+  return {
+    candidats: cands.length, etudies: results.length,
+    choix: choisis.map((c) => {
+      const { e } = c, m = e.meilleure, s = e.stats;
+      return { wallet: c.wallet, nom: noms.get(c.wallet) || "", cible: m.lib, marge: m.marge, n: m.n, roi: m.roi, p: m.p, avant: m.avant,
+        r1: s.r1, r2: s.r2, recent: s.roiCibleRecent, mise: s.miseCibleMed, parJour: s.parJour, fin: s.fin,
+        clones: doublons.filter((d) => d.de === c.wallet).length };
+    }),
+  };
 }
 
 export async function classement(env, sp) {
