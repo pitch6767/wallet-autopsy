@@ -1,8 +1,6 @@
 import json, subprocess, urllib.request, concurrent.futures as cf, time, itertools
 U="https://wallet-autopsy.pitch67.workers.dev"
-q="SELECT wallet, score, marge, roi_cible, n_cible, marches, pnl FROM etudes WHERE copiable=1 ORDER BY score DESC LIMIT 90"
-out=subprocess.run(["wrangler","d1","execute","wallet-autopsy","--remote","--json","--command",q],capture_output=True,text=True).stdout
-rows=json.loads(out)[0]["results"]
+rows=json.load(urllib.request.urlopen(U+"/api/btc/copiables",timeout=60))[:90]
 def get(a):
     for k in range(3):
         try:
