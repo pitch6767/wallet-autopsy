@@ -1,10 +1,12 @@
-import json, subprocess, urllib.request, concurrent.futures as cf, time, itertools
+import json, subprocess, urllib.request
+UA={"User-Agent":"curl/8.5.0"}
+def op(u,t): return urllib.request.urlopen(urllib.request.Request(u,headers=UA),timeout=t), concurrent.futures as cf, time, itertools
 U="https://wallet-autopsy.pitch67.workers.dev"
-rows=json.load(urllib.request.urlopen(U+"/api/btc/copiables",timeout=60))[:90]
+rows=json.load(op(U+"/api/btc/copiables",60))[:90]
 def get(a):
     for k in range(3):
         try:
-            with urllib.request.urlopen(f"{U}/api/etude?addr={a}",timeout=120) as r: return json.load(r)
+            with op(f"{U}/api/etude?addr={a}",120) as r: return json.load(r)
         except Exception as e: time.sleep(5)
     return None
 with cf.ThreadPoolExecutor(4) as ex: res=list(ex.map(lambda r:(r,get(r["wallet"])),rows))
