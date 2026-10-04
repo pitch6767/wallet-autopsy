@@ -1,30 +1,30 @@
 
  ⛅️ wrangler 4.147.0
 ────────────────────
-Total Upload: 46.48 KiB / gzip: 14.61 KiB
+Total Upload: 47.06 KiB / gzip: 14.79 KiB
 Worker Startup Time: 1 ms
 Your Worker has access to the following bindings:
 Binding            Resource            
 env.BOT (Bot)      Durable Object      
 
-Uploaded bot95 (1.74 sec)
-Deployed bot95 triggers (0.64 sec)
+Uploaded bot95 (1.72 sec)
+Deployed bot95 triggers (0.63 sec)
   https://bot95.pitch67.workers.dev
   schedule: * * * * *
-Current Version ID: 0b61e4b9-a571-484e-a445-c8175389edb5
+Current Version ID: 0c2b22bb-06e4-4f6a-9868-c126685af281
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 page 200
 === etat 1
-{"flux": {"perp": {"p": 85146.9, "age": 0, "src": "bybit"}, "coinbase": {"p": 85171.33, "age": 0.4, "src": "coinbase"}, "chainlink": {"p": 85169.48368987757, "age": 1.6}, "deseq": 0.3, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791124200", "strike": 85172.55944695503, "reste": 104, "raison": null, "entre": false, "offre": null}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["14:32:15 flux perp binance: pas de websocket (HTTP 403)"]}}
-vetos {'distance trop faible': 3, 'source figée ou absente': 1, "sources pas d'accord": 2, 'aucun vendeur à 0,99 ou moins': 4} trades 0 evenements 23
+{"flux": {"perp": {"p": 85101, "age": 4.7, "src": "bybit"}, "coinbase": {"p": 85117.19, "age": 0.1, "src": "coinbase"}, "chainlink": {"p": 85116.49915871082, "age": 0.6}, "deseq": -0.78, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791124800", "strike": null, "reste": 71, "raison": null, "entre": false, "offre": null}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["14:42:53 flux perp binance: pas de websocket (HTTP 403)"]}}
+vetos {'distance trop faible': 3, 'source figée ou absente': 1, "sources pas d'accord": 2, 'aucun vendeur à 0,99 ou moins': 6} trades 0 evenements 25
 
 === etat 2
-{"flux": {"perp": {"p": 85139.7, "age": 1.7, "src": "bybit"}, "coinbase": {"p": 85162.52, "age": 0.9, "src": "coinbase"}, "chainlink": {"p": 85165.858372196, "age": 0.4}, "deseq": 0.2, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791124200", "strike": 85172.55944695503, "reste": 64, "raison": null, "entre": false, "offre": null}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["14:32:15 flux perp binance: pas de websocket (HTTP 403)"]}}
-vetos {'distance trop faible': 3, 'source figée ou absente': 1, "sources pas d'accord": 2, 'aucun vendeur à 0,99 ou moins': 4} trades 0 evenements 23
+{"flux": {"perp": {"p": 85096.3, "age": 1, "src": "bybit"}, "coinbase": {"p": 85122.97, "age": 0.2, "src": "coinbase"}, "chainlink": {"p": 85117.40256971342, "age": 0.8}, "deseq": -0.95, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791124800", "strike": null, "reste": 31, "raison": null, "entre": false, "offre": null}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["14:42:53 flux perp binance: pas de websocket (HTTP 403)"]}}
+vetos {'distance trop faible': 3, 'source figée ou absente': 1, "sources pas d'accord": 2, 'aucun vendeur à 0,99 ou moins': 6} trades 0 evenements 25
 
 === etat 3
-{"flux": {"perp": {"p": 85146.2, "age": 3.2, "src": "bybit"}, "coinbase": {"p": 85173.13, "age": 0.1, "src": "coinbase"}, "chainlink": {"p": 85169.19513890786, "age": 0.9}, "deseq": -0.52, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791124200", "strike": 85172.55944695503, "reste": 24, "raison": "distance trop faible", "raisonB": "distance trop faible", "dernier": {"tleft": 24, "ask": 0.97, "bid": 0.96, "fav": "Down", "z": 0.31, "proba": 0.6217, "dist": 3.4}, "entre": false, "offre": null}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["14:32:15 flux perp binance: pas de websocket (HTTP 403)"], "vus": ["1791124200 T-24 Up 0.03/0.04 Down 0.96/0.97", "1791124200 T-26 Up 0.04/0.05 Down 0.95/0.96", "1791124200 T-27 Up 0.03/0.04 Down 0.96/0.97", "1791124200 T-28 Up 0.03/0.04 Down 0.96/0.97", "1791124200 T-29 Up 0.03/0.04 Down 0.96/0.97", "1791124200 T-30 Up 0.03/0.04 Down 0.96/0.97"]}}
-vetos {'distance trop faible': 3, 'source figée ou absente': 1, "sources pas d'accord": 2, 'aucun vendeur à 0,99 ou moins': 4} trades 0 evenements 23
+{"flux": {"perp": {"p": 85082.3, "age": 1.1, "src": "bybit"}, "coinbase": {"p": 85117.21, "age": 0.4, "src": "coinbase"}, "chainlink": {"p": 85114.37165709284, "age": 0}, "deseq": -0.41, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791125100", "strike": 85114.47531133675, "reste": 291, "raison": null, "entre": false, "offre": null}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["14:42:53 flux perp binance: pas de websocket (HTTP 403)"], "vus": ["1791124800 T-2 Up 0/0.01 Down 0.99/1", "1791124800 T-3 Up 0/0.01 Down 0.99/1", "1791124800 T-4 Up 0/0.01 Down 0.99/1", "1791124800 T-5 Up 0/0.01 Down 0.99/1", "1791124800 T-6 Up 0/0.01 Down 0.99/1", "1791124800 T-7 Up 0/0.01 Down 0.99/1", "1791124800 T-8 Up 0/0.01 Down 0.99/1", "1791124800 T-9 Up 0/0.01 Down 0.99/1", "1791124800 T-10 Up 0/0.01 Down 0.99/1", "1791124800 T-11 Up 0/0.01 Down 0.99/1", "1791124800 T-12 Up 0/0.01 Down 0.99/1", "1791124800 T-13 Up 0/0.01 Down 0.99/1", "1791124800 T-14 Up 0/0.01 Down 0.99/1", "1791124800 T-15 Up 0/0.01 Down 0.99/1", "1791124800 T-16 Up 0/0.01 Down 0.99/1", "1791124800 T-17 Up 0/0.01 Down 0.99/1", "1791124800 T-18 Up 0/0.01 Down 0.99/1", "1791124800 T-19 Up 0/0.01 Down 0.99/1", "1791124800 T-20 Up 0/0.01 Down 0.99/1", "1791124800 T-21 Up 0/0.01 Down 0.99/1", "1791124800 T-22 Up 0/0.01 Down 0.99/1", "1791124800 T-23 Up 0/0.01 Down 0.99/1", "1791124800 T-24 Up 0/0.01 Down 0.99/1", "1791124800 T-25 Up 0/0.01 Down 0.99/1", "1791124800 T-26 Up 0/0.01 Down 0.99/1", "1791124800 T-28 Up 0/0.01 Down 0.99/1", "1791124800 T-29 Up 0/0.01 Down 0.99/1", "1791124800 T-30 Up 0/0.01 Down 0.99/1"]}}
+vetos {'distance trop faible': 3, 'source figée ou absente': 1, "sources pas d'accord": 2, 'aucun vendeur à 0,99 ou moins': 7} trades 0 evenements 25
 
