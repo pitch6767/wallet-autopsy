@@ -1,9 +1,21 @@
-import io, zipfile, urllib.request
-u="https://data.binance.vision/data/spot/daily/klines/BTCUSDT/1s/BTCUSDT-1s-2026-10-02.zip"
-z=zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(u,timeout=60).read()))
-L=z.read(z.namelist()[0]).decode().splitlines()
-print(len(L)); print("\n".join(L[40000:40012]))
-c=[float(l.split(",")[4]) for l in L]
-print("close identique a t-1 :", sum(1 for i in range(1,len(c)) if c[i]==c[i-1])/len(c))
-print("close identique a t-5 :", sum(1 for i in range(5,len(c)) if c[i]==c[i-5])/len(c))
-v=[float(l.split(",")[5]) for l in L]; print("secondes volume 0 :", sum(1 for x in v if x==0)/len(v))
+import json, urllib.request
+A="https://api.limitless.exchange"
+def g(p):
+    try:
+        r=urllib.request.urlopen(urllib.request.Request(A+p,headers={"User-Agent":"etude","Accept":"application/json"}),timeout=40)
+        return r.read().decode()
+    except Exception as e:
+        return "ERR "+str(e)
+s=g("/markets/active?limit=25&page=1")
+print("ACTIVE", s[:1500])
+try:
+    d=json.loads(s); L=d.get("data", d) if isinstance(d,dict) else d
+except Exception: L=[]
+btc=[m for m in L if "btc" in (m.get("slug","")+m.get("title","")).lower()]
+print("\nBTC actifs:", [(m.get("slug"), m.get("title"), m.get("expirationTimestamp") or m.get("deadline")) for m in btc][:20])
+sl=g("/markets/active/slugs"); print("\nSLUGS", sl[:2500])
+slug = btc[0]["slug"] if btc else ""
+for p in [f"/markets/{slug}", f"/markets/{slug}/historical-price?interval=1h", f"/markets/{slug}/get-feed-events?page=1&limit=10",
+          f"/markets/{slug}/events?page=1&limit=10", f"/markets/{slug}/trades", f"/markets/{slug}/orderbook",
+          "/markets/search?query=btc&limit=10", "/markets?status=RESOLVED&limit=5", "/markets/resolved?limit=5", "/categories"]:
+    print("\n==", p); print(g(p)[:1800])
