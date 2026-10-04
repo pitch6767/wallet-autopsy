@@ -80,6 +80,7 @@ export class Bot {
       return Response.json({ ok: true });
     }
     if (u.pathname === "/api/reveil") return Response.json({ ok: true });
+    if (u.pathname === "/api/verif") return Response.json({ verif: this.e.verif || [] }, { headers: { "cache-control": "no-store" } });
     if (u.pathname === "/api/rapport") return Response.json({ rapport: this.e.rapport || [], encours: this.mkt ? { slug: this.mkt.slug, refus: this.mkt.refus || null, comptes: this.mkt.comptes || null } : null }, { headers: { "cache-control": "no-store" } });
     if (u.pathname === "/rapport") return new Response(RAPPORT, { headers: { "content-type": "text/html; charset=utf-8" } });
     return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8" } });
@@ -485,6 +486,13 @@ export class Bot {
 
   finFenetre() {
     const mk = this.mkt;
+    if (mk && mk.slug) {
+      this.e.verif = this.e.verif || [];
+      const s0 = mk.start, cl0 = this.prixA("cl", s0) , clF = this.prixA("cl", mk.end);
+      this.e.verif.unshift({ start: s0, slug: mk.slug, kBot: mk.strike || mk.ouvCl || null, kSrc: mk.strike ? "polymarket au chargement" : "1er prix Chainlink reçu",
+        clDebut: cl0, clFin: clF, perpFin: this.prixA("perp", mk.end), dernierBid: mk.dernier ? { fav: mk.dernier.fav, bid: mk.dernier.bid } : null, fait: false });
+      this.e.verif.length = Math.min(this.e.verif.length, 100);
+    }
     if (mk && mk.offre && !mk.offre.rempli) { mk.refus = mk.refus || {}; mk.comptes = mk.comptes || { A: {}, B: {} };
       mk.refus.B = { raison: "offre non remplie", explication: `Offre d'achat ${mk.offre.fav} à ${mk.offre.prix} posée, mais aucun vendeur n'a frappé à ce prix avant la fin.`, ...(mk.dernier || {}) }; }
     if (mk && mk.offre) this.figerOffre();
@@ -525,7 +533,7 @@ export class Bot {
 
   async resoudre() {
     const t = now();
-    if (!this.e.attente.length || (this.dernierCheck && t - this.dernierCheck < 15)) return;
+    if ((!this.e.attente.length && !(this.e.verif || []).some((v) => !v.fait)) || (this.dernierCheck && t - this.dernierCheck < 15)) return;
     this.dernierCheck = t;
     const garder = [];
     for (const pos of this.e.attente) {
@@ -543,6 +551,21 @@ export class Bot {
       } catch (err) { garder.push(pos); this.erreur("résolution", err); }
     }
     this.e.attente = garder;
+    for (const v of (this.e.verif || []).filter((v) => !v.fait && t > v.start + 300 + 60).slice(0, 3)) {
+      try {
+        const ev = await (await fetch(`${G}/events?slug=${v.slug}`)).json();
+        const e0 = ev[0], m = e0.markets[0];
+        let meta = e0.eventMetadata || m.eventMetadata || {}; if (typeof meta === "string") meta = JSON.parse(meta);
+        const px = JSON.parse(m.outcomePrices || "[]").map(Number), outs = JSON.parse(m.outcomes || "[]");
+        if (!(px.includes(1) && px.includes(0)) || meta.priceToBeat == null) continue;
+        v.kOfficiel = +meta.priceToBeat; v.finOfficiel = meta.finalPrice != null ? +meta.finalPrice : null;
+        v.gagnant = outs[px.indexOf(1)];
+        v.ecartK = v.kBot ? +(v.kBot - v.kOfficiel).toFixed(2) : null;
+        v.ecartFin = v.clFin && v.finOfficiel ? +(v.clFin - v.finOfficiel).toFixed(2) : null;
+        v.botAuraitDit = v.kBot && v.clFin ? (v.clFin >= v.kBot ? "Up" : "Down") : null;
+        v.fait = true;
+      } catch (err) { this.erreur("vérif", err); }
+    }
     await this.sauver();
   }
 
