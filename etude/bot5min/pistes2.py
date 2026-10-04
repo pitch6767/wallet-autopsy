@@ -66,7 +66,7 @@ def etudier(prefixe, sym, jours, debut, fin):
 
     # ---- A : vrais achats du favori
     A = []
-    for W in (30, 60, 90, 120, 180):
+    for W in ((30, 60, 90, 120, 180) if "--sans-A" not in sys.argv else ()):
         for (pmin, pmax) in ((0.95, 0.999), (0.90, 0.95), (0.85, 0.90)):
             for zmin in (2.5, 3, 4, 5, 6):
                 L = []
@@ -100,7 +100,7 @@ def etudier(prefixe, sym, jours, debut, fin):
                         if ts <= t0 or ts > m["end"] - 1: continue
                         zz = z_de(m, ts, fav_up)
                         if zz is None or zz < zmin: break            # offre annulee
-                        pf = pup if up == fav_up else 1 - pup
+                        pf = pup if fav_up else 1 - pup          # prix du favori (corrige)
                         if side == "SELL" and up == fav_up:
                             if servi_o is None and pf <= P: servi_o = ts
                             if servi_p is None and pf < P - 0.0005: servi_p = ts
@@ -129,7 +129,7 @@ def main():
             if a and isinstance(a[0], str): info += a
         except Exception as e:
             info.append(f"{prefixe.upper()} : erreur {str(e)[:100]}")
-    rap = [f"# Pistes A et B realistes — {JOURS} jours ({jours[0]} -> {jours[-1]}), regle TWAP 60 s\n"] + info
+    rap = [f"# Pistes A et B realistes (B corrige) — {JOURS} jours ({jours[0]} -> {jours[-1]}), regle TWAP 60 s\n"] + info
     rap += ["\n## A — configurations SANS perte, classees par trades/jour (top 40)\n",
             "| Actif | Fenetre | Prix | Distance | Trades | Gain 7 j | Trades/jour |", "|---|---|---|---|---|---|---|"]
     for r in sorted([r for r in TA if r[6] == 0], key=lambda r: -r[5])[:40]:
