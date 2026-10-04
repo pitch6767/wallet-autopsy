@@ -293,6 +293,9 @@ export class Bot {
     const askU = bu.asks[0] ? bu.asks[0][0] : 1, askD = bd.asks[0] ? bd.asks[0][0] : 1;
     const favUp = askU <= askD;
     const bk = favUp ? bu : bd, ask = favUp ? askU : askD;
+    mk.vu = { tleft: Math.round(tleft), askUp: askU, askDown: askD };
+    (this.diag.vus || (this.diag.vus = [])).unshift(mk.slug.slice(-10) + " T-" + Math.round(tleft) + " Up " + askU + " Down " + askD);
+    this.diag.vus.length = Math.min(this.diag.vus.length, 12);
     if (ask < CFG.PRIX_MIN || ask > CFG.PRIX_MAX) return; // pas de candidat
     mk.candidat = true;
     const t = now(), age = (k) => (this.f[k] ? t - this.f[k].t : 1e9);
