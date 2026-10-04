@@ -102,15 +102,37 @@ export class Bot {
   ouvrirFlux() {
     const t = now();
     const age = (k) => (this.f[k] ? t - this.f[k].t : 1e9);
-    if (!this.ws.perp || age("perp") > 15) this.connecter("perp",
-      "https://fstream.binance.com/stream?streams=btcusdt@aggTrade/btcusdt@forceOrder/btcusdt@depth5@100ms", null, (m) => this.surPerp(m));
-    if (!this.ws.cb || age("cb") > 30) this.connecter("cb", "https://ws-feed.exchange.coinbase.com",
-      JSON.stringify({ type: "subscribe", product_ids: ["BTC-USD"], channels: ["ticker"] }), (m) => this.surCb(m));
-    if (!this.ws.cl || age("cl") > 15) this.connecter("cl", "https://ws-live-data.polymarket.com",
-      JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] }), (m) => this.surCl(m), true);
+    const depuis = (k) => t - (this.ws[k + "_ouvert"] || 0);
+    // perp : Binance, sinon Bybit, sinon OKX (bascule si rien reçu en 15 s)
+    if (!this.ws.perp || (age("perp") > 15 && depuis("perp") > 15)) {
+      const srcs = ["binance", "bybit", "okx"];
+      if (this.ws.perp_ouvert && age("perp") > 15) this.perpIdx = ((this.perpIdx || 0) + 1) % srcs.length;
+      this.perpSrc = srcs[this.perpIdx || 0];
+      const P = {
+        binance: ["https://fstream.binance.com/stream?streams=btcusdt@aggTrade/btcusdt@forceOrder/btcusdt@depth5@100ms", null, null],
+        bybit: ["https://stream.bybit.com/v5/public/linear", JSON.stringify({ op: "subscribe", args: ["publicTrade.BTCUSDT", "orderbook.50.BTCUSDT", "allLiquidation.BTCUSDT"] }), JSON.stringify({ op: "ping" })],
+        okx: ["https://ws.okx.com:8443/ws/v5/public", JSON.stringify({ op: "subscribe", args: [{ channel: "trades", instId: "BTC-USDT-SWAP" }, { channel: "books5", instId: "BTC-USDT-SWAP" }, { channel: "liquidation-orders", instType: "SWAP" }] }), "ping"],
+      }[this.perpSrc];
+      this.livre = { b: new Map(), a: new Map() };
+      this.connecter("perp", P[0], P[1], (m) => this.surPerp(m), P[2], 20000);
+    }
+    // deuxième source spot : Coinbase (Advanced Trade), sinon Coinbase Exchange, sinon Kraken
+    if (!this.ws.cb || (age("cb") > 30 && depuis("cb") > 30)) {
+      const srcs = ["coinbase", "coinbase-ex", "kraken"];
+      if (this.ws.cb_ouvert && age("cb") > 30) this.cbIdx = ((this.cbIdx || 0) + 1) % srcs.length;
+      this.cbSrc = srcs[this.cbIdx || 0];
+      const P = {
+        coinbase: ["https://advanced-trade-ws.coinbase.com", JSON.stringify({ type: "subscribe", product_ids: ["BTC-USD"], channel: "ticker" })],
+        "coinbase-ex": ["https://ws-feed.exchange.coinbase.com", JSON.stringify({ type: "subscribe", channels: [{ name: "ticker", product_ids: ["BTC-USD"] }] })],
+        kraken: ["https://ws.kraken.com/v2", JSON.stringify({ method: "subscribe", params: { channel: "ticker", symbol: ["BTC/USD"], event_trigger: "trades" } })],
+      }[this.cbSrc];
+      this.connecter("cb", P[0], P[1], (m) => this.surCb(m));
+    }
+    if (!this.ws.cl || (age("cl") > 15 && depuis("cl") > 15)) this.connecter("cl", "https://ws-live-data.polymarket.com",
+      JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] }), (m) => this.surCl(m), "PING", 5000);
   }
 
-  async connecter(nom, url, abonnement, surMsg, ping) {
+  async connecter(nom, url, abonnement, surMsg, ping, periode) {
     if (this.ws[nom + "_en_cours"]) return;
     this.ws[nom + "_en_cours"] = true;
     try {
@@ -121,14 +143,15 @@ export class Bot {
       if (!ws) throw new Error("pas de websocket (HTTP " + r.status + ")");
       ws.accept();
       ws.addEventListener("message", (ev) => {
-        if (typeof ev.data !== "string" || ev.data === "PONG" || ev.data === "PING") return;
+        if (typeof ev.data !== "string" || ev.data === "PONG" || ev.data === "PING" || ev.data === "pong") return;
         try { surMsg(JSON.parse(ev.data)); } catch (_) {}
       });
       const fin = () => { if (this.ws[nom] === ws) this.ws[nom] = null; };
       ws.addEventListener("close", fin); ws.addEventListener("error", fin);
       if (abonnement) ws.send(abonnement);
-      if (ping) ws.pinger = setInterval(() => { try { ws.send("PING"); } catch (_) { clearInterval(ws.pinger); } }, 5000);
-      this.ws[nom] = ws;
+      if (ping) ws.pinger = setInterval(() => { try { ws.send(ping); } catch (_) { clearInterval(ws.pinger); } }, periode || 5000);
+      ws.addEventListener("close", (ev) => { clearInterval(ws.pinger); this.erreur("flux " + nom + " fermé", "code " + ev.code + " " + (ev.reason || "")); });
+      this.ws[nom] = ws; this.ws[nom + "_ouvert"] = now();
       this.diag.reconnexions[nom] = (this.diag.reconnexions[nom] || 0) + 1;
     } catch (err) { this.erreur("flux " + nom, err); }
     this.ws[nom + "_en_cours"] = false;
@@ -143,19 +166,42 @@ export class Bot {
   }
 
   surPerp(m) {
-    const d = m.data || m, st = m.stream || "";
-    if (st.includes("aggTrade")) this.noter("perp", +d.p, now());
-    else if (st.includes("forceOrder")) {
-      const o = d.o || {};
-      // SELL = position longue liquidée (pression baissière)
-      this.liq.push({ t: now(), cote: o.S, usd: (+o.q) * (+o.ap) });
-      this.liq = this.liq.filter((x) => x.t > now() - 30);
-    } else if (st.includes("depth")) {
-      const b = (d.b || []).reduce((s, x) => s + +x[1], 0), a = (d.a || []).reduce((s, x) => s + +x[1], 0);
+    const t = now();
+    const liq = (cote, usd) => { this.liq.push({ t, cote, usd }); this.liq = this.liq.filter((x) => x.t > t - 30); };
+    const deseq = (bids, asks) => {
+      const b = bids.slice(0, 5).reduce((s, x) => s + +x[1], 0), a = asks.slice(0, 5).reduce((s, x) => s + +x[1], 0);
       if (a + b > 0) this.deseq = (b - a) / (a + b);
+    };
+    if (this.perpSrc === "binance") {
+      const d = m.data || m, st = m.stream || "";
+      if (st.includes("aggTrade")) this.noter("perp", +d.p, t);
+      else if (st.includes("forceOrder")) { const o = d.o || {}; liq(o.S, (+o.q) * (+o.ap)); }  // SELL = longs liquidés
+      else if (st.includes("depth")) deseq(d.b || [], d.a || []);
+    } else if (this.perpSrc === "bybit") {
+      const tp = m.topic || "";
+      if (tp.startsWith("publicTrade")) { const x = (m.data || []).slice(-1)[0]; if (x) this.noter("perp", +x.p, t); }
+      else if (tp.startsWith("allLiquidation")) for (const x of m.data || []) liq(x.S === "Buy" ? "SELL" : "BUY", (+x.v) * (+x.p)); // Buy = long liquidé
+      else if (tp.startsWith("orderbook")) {
+        const d = m.data || {};
+        if (m.type === "snapshot") this.livre = { b: new Map(), a: new Map() };
+        for (const [p, q] of d.b || []) +q ? this.livre.b.set(p, +q) : this.livre.b.delete(p);
+        for (const [p, q] of d.a || []) +q ? this.livre.a.set(p, +q) : this.livre.a.delete(p);
+        deseq([...this.livre.b].sort((x, y) => y[0] - x[0]), [...this.livre.a].sort((x, y) => x[0] - y[0]));
+      }
+    } else if (this.perpSrc === "okx") {
+      const ch = (m.arg || {}).channel;
+      if (ch === "trades") { const x = (m.data || []).slice(-1)[0]; if (x) this.noter("perp", +x.px, t); }
+      else if (ch === "books5") { const d = (m.data || [])[0]; if (d) deseq(d.bids || [], d.asks || []); }
+      else if (ch === "liquidation-orders") for (const d of m.data || []) if (d.instId === "BTC-USDT-SWAP")
+        for (const x of d.details || []) liq(x.posSide === "long" || x.side === "sell" ? "SELL" : "BUY", (+x.sz) * 100 * 0.0001 * (+x.bkPx)); // 1 contrat = 0,01 BTC
     }
   }
-  surCb(m) { if (m.type === "ticker" && m.price) this.noter("cb", +m.price, now()); }
+  surCb(m) {
+    const t = now();
+    if (this.cbSrc === "coinbase" && m.channel === "ticker") { for (const ev of m.events || []) for (const x of ev.tickers || []) if (x.price) this.noter("cb", +x.price, t); }
+    else if (this.cbSrc === "coinbase-ex" && m.type === "ticker" && m.price) this.noter("cb", +m.price, t);
+    else if (this.cbSrc === "kraken" && m.channel === "ticker") { const x = (m.data || [])[0]; if (x && x.last) this.noter("cb", +x.last, t); }
+  }
   surCl(m) {
     if (m.topic !== "crypto_prices_chainlink") return;
     const p = m.payload || {};
@@ -407,7 +453,7 @@ export class Bot {
     const mk = this.mkt || {};
     return {
       mode: "fantôme", e: { ...this.e, trades: this.e.trades.slice(0, 50) },
-      flux: { perp: { p: this.f.perp && this.f.perp.p, age: age("perp") }, coinbase: { p: this.f.cb && this.f.cb.p, age: age("cb") },
+      flux: { perp: { p: this.f.perp && this.f.perp.p, age: age("perp"), src: this.perpSrc }, coinbase: { p: this.f.cb && this.f.cb.p, age: age("cb"), src: this.cbSrc },
         chainlink: { p: this.f.cl && this.f.cl.p, age: age("cl") }, deseq: +this.deseq.toFixed(2),
         liq10s: Math.round(this.liq.filter((x) => x.t > t - 10).reduce((s, x) => s + x.usd, 0)) },
       marche: { slug: mk.slug, strike: mk.strike || mk.ouvCl || null, reste: Math.round((mk.end || 0) - t), raison: mk.raison, dernier: mk.dernier, entre: !!mk.entre },
@@ -445,7 +491,7 @@ $('#app').className='';$('#app').innerHTML=
 '<div><div class=k>Gain total</div><div class="v '+(e.pnl>=0?'ok':'ko')+'">'+usd(e.pnl)+'</div></div><div><div class=k>Gagnés</div><div class="v ok">'+e.gains+'</div></div><div><div class=k>Perdus</div><div class="v ko">'+e.pertes+'</div></div></div></div>'+pos+
 '<div class=card><b>Marché en cours</b><br><span class=mu>'+(m.slug||'—')+' — fin dans '+m.reste+' s — prix d\\'exercice '+f(m.strike)+'</span>'+
 (m.dernier?'<br>Favori '+m.dernier.fav+' à '+m.dernier.ask+' — distance '+m.dernier.dist+' $ — z '+m.dernier.z+' — proba '+m.dernier.proba:'')+(m.raison?'<br>Dernier refus : <b>'+m.raison+'</b>':'')+'</div>'+
-'<div class=card><b>Flux</b><table><tr><td>Chainlink</td><td>'+f(F.chainlink.p)+'</td><td>'+f(F.chainlink.age,1)+' s</td></tr><tr><td>Perp Binance</td><td>'+f(F.perp.p)+'</td><td>'+f(F.perp.age,1)+' s</td></tr><tr><td>Coinbase</td><td>'+f(F.coinbase.p)+'</td><td>'+f(F.coinbase.age,1)+' s</td></tr><tr><td>Déséquilibre carnet</td><td colspan=2>'+F.deseq+'</td></tr><tr><td>Liquidations 10 s</td><td colspan=2>'+F.liq10s+' $</td></tr></table></div>'+
+'<div class=card><b>Flux</b><table><tr><td>Chainlink</td><td>'+f(F.chainlink.p)+'</td><td>'+f(F.chainlink.age,1)+' s</td></tr><tr><td>Perp '+(F.perp.src||'')+'</td><td>'+f(F.perp.p)+'</td><td>'+f(F.perp.age,1)+' s</td></tr><tr><td>Spot '+(F.coinbase.src||'')+'</td><td>'+f(F.coinbase.p)+'</td><td>'+f(F.coinbase.age,1)+' s</td></tr><tr><td>Déséquilibre carnet</td><td colspan=2>'+F.deseq+'</td></tr><tr><td>Liquidations 10 s</td><td colspan=2>'+F.liq10s+' $</td></tr></table></div>'+
 '<div class=card><b>Gros traders du 5 min</b> <span class=mu>(top 10 en volume sur la dernière heure — positions sur le marché en cours)</span><table><tr><th>Trader</th><th>Volume 1 h</th><th>Up</th><th>Down</th></tr>'+
 (d.gros.liste.map(g=>'<tr><td>'+(g.nom||g.w.slice(0,8)+'…')+'</td><td>'+g.vol+' $</td><td>'+g.Up+'</td><td>'+g.Down+'</td></tr>').join('')||'<tr><td colspan=4 class=mu>En cours de collecte</td></tr>')+'</table>'+
 '<table style="margin-top:8px"><tr><th>Heure</th><th>Trader</th><th>Action</th><th>Parts</th><th>Prix</th><th>Fin dans</th></tr>'+
