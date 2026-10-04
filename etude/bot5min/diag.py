@@ -1,21 +1,20 @@
-import json, urllib.request
-A="https://api.limitless.exchange"
-def g(p):
+import json, time, urllib.request
+from datetime import datetime, timezone
+def g(u):
     try:
-        r=urllib.request.urlopen(urllib.request.Request(A+p,headers={"User-Agent":"etude","Accept":"application/json"}),timeout=40)
-        return r.read().decode()
-    except Exception as e:
-        return "ERR "+str(e)
-s=g("/markets/active?limit=25&page=1")
-print("ACTIVE", s[:1500])
-try:
-    d=json.loads(s); L=d.get("data", d) if isinstance(d,dict) else d
-except Exception: L=[]
-btc=[m for m in L if "btc" in (m.get("slug","")+m.get("title","")).lower()]
-print("\nBTC actifs:", [(m.get("slug"), m.get("title"), m.get("expirationTimestamp") or m.get("deadline")) for m in btc][:20])
-sl=g("/markets/active/slugs"); print("\nSLUGS", sl[:2500])
-slug = btc[0]["slug"] if btc else ""
-for p in [f"/markets/{slug}", f"/markets/{slug}/historical-price?interval=1h", f"/markets/{slug}/get-feed-events?page=1&limit=10",
-          f"/markets/{slug}/events?page=1&limit=10", f"/markets/{slug}/trades", f"/markets/{slug}/orderbook",
-          "/markets/search?query=btc&limit=10", "/markets?status=RESOLVED&limit=5", "/markets/resolved?limit=5", "/categories"]:
-    print("\n==", p); print(g(p)[:1800])
+        r=urllib.request.urlopen(urllib.request.Request(u,headers={"User-Agent":"Mozilla/5.0","Accept":"application/json"}),timeout=30)
+        return r.status, r.read().decode()[:1500]
+    except Exception as e: return "ERR", str(e)[:300]
+now=int(time.time()); st=now//300*300; prev=st-300
+iso=lambda t: datetime.fromtimestamp(t,timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+for s0 in (st, prev):
+    print("\n#### fenetre", s0, iso(s0), "maintenant", iso(now))
+    for u in [f"https://polymarket.com/api/crypto/crypto-price?symbol=BTC&eventStartTime={iso(s0)}&variant=fiveminute&endDate={iso(s0+300)}",
+              f"https://polymarket.com/api/crypto/crypto-price?symbol=BTC&eventStartTime={iso(s0)}&variant=fiveminute",
+              f"https://gamma-api.polymarket.com/events?slug=btc-updown-5m-{s0}"]:
+        c,b=g(u); 
+        if "gamma" in u:
+            try: d=json.loads(b) if c==200 else None
+            except Exception: d=None
+            print("GAMMA", c, (d[0].get("eventMetadata") if d else b[:300]))
+        else: print(c, u[:110], "->", b[:600])
