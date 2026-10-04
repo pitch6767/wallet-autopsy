@@ -12,6 +12,7 @@ const CFG = {
   ECART_MAX: 0.02,             // écart achat/vente maxi
   LIQ_CONTRE_USD: 250000,      // liquidations contre nous sur 10 s
   DESEQ_CONTRE: 0.6,           // déséquilibre carnet perp contre nous (top 5)
+  SD_ECART: 4.9,               // incertitude ($) entre notre moyenne et la moyenne Chainlink officielle (mesurée sur 14 jours)
   SORTIE_Z: 1.0,               // sortie d'urgence si la distance passe sous 1 écart-type
   FEE_RATE: 0.072,             // frais taker : parts x 0,072 x p x (1-p)
   B_PRIX_MIN: 0.94,            // option B : offre d'achat posée entre 0,94 et 0,99
@@ -277,7 +278,7 @@ export class Bot {
       this.gros.positions = {}; this.vus = new Set();
     }
     if (!this.mkt.ouvTwap) this.ouverture(this.mkt);
-    if ((!this.mkt.strike || t - start < 90) && t - (this.mkt.essaiOff || 0) > 10) {
+    if (t - (this.mkt.essaiOff || 0) > 15) {
       this.mkt.essaiOff = t;
       try { await this.ouvertureOfficielle(this.mkt); } catch (err) { this.erreur("ouverture", err); }
     }
@@ -313,7 +314,7 @@ export class Bot {
     const nr = Math.max(1, mk.end - Math.max(ts, a - 1));
     const somme = connus.reduce((x, y) => x + y, 0), n = connus.length + nr;
     const E = (somme + nr * S) / n;                                   // moyenne finale attendue
-    const sd = sg * S * Math.sqrt(nr ** 3 / 3) / 60 || 1e-6;          // incertitude de la partie restante
+    const sd = Math.sqrt((sg * S * Math.sqrt(nr ** 3 / 3) / 60) ** 2 + CFG.SD_ECART ** 2);   // partie restante + écart de mesure
     const z = ((E - K) * dir) / sd;
     const p0 = this.prixA("perp", ts), p5 = this.prixA("perp", ts - 5);
     const v = p0 && p5 ? ((p0 - p5) / 5) * dir : 0;                  // $/s, négatif = vers le prix d'exercice
@@ -334,7 +335,10 @@ export class Bot {
     const r = await fetch(`https://polymarket.com/api/crypto/crypto-price?symbol=BTC&eventStartTime=${iso(mk.start)}&variant=fiveminute&endDate=${iso(mk.end)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
     if (!r.ok) throw new Error("prix d'ouverture HTTP " + r.status);
     const d = await r.json();
-    if (d && +d.openPrice > 0) { mk.strike = +d.openPrice; mk.strikeSrc = "polymarket direct"; }
+    if (d && +d.openPrice > 0) {
+      mk.strike = +d.openPrice; mk.strikeSrc = "polymarket direct" + (d.incomplete ? " (provisoire)" : "");
+      (mk.strikeHist = mk.strikeHist || []).push([Math.round(now() - mk.start), +(+d.openPrice).toFixed(2), !!d.incomplete]);
+    }
   }
 
   // contrôles communs ; renvoie la raison du refus ou null
