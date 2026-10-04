@@ -1,0 +1,26 @@
+name: Tests bot 5 min
+on:
+  push:
+    branches: [main]
+    paths: [etude/bot5min/test.py, etude/bot5min/lancer.txt]
+permissions:
+  contents: write
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tests
+        run: |
+          set +e
+          JOURS=$(cat etude/bot5min/lancer.txt 2>/dev/null | grep -o '^[0-9]*' | head -1)
+          python3 -u etude/bot5min/test.py ${JOURS:-10} > etude/bot5min/journal.txt 2>&1
+          echo "code sortie: $?" >> etude/bot5min/journal.txt
+          tail -5 etude/bot5min/journal.txt
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          git add etude/bot5min/
+          git commit -m "Resultats tests bot 5 min [skip ci]"; for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push && break; sleep 5; done
