@@ -24,7 +24,7 @@ jobs:
           npx -y wrangler@4 deploy > /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log
           U=https://bot95.pitch67.workers.dev
           sleep 20; curl -sS -m 20 -o /dev/null -w "page %{http_code}\n" $U/ >> /tmp/c.log
-          for k in 1 2 3; do sleep 40; echo "=== etat $k" >> /tmp/c.log; curl -sS -m 20 $U/api/etat | python3 -c "import json,sys;d=json.load(sys.stdin);print(json.dumps({k:d[k] for k in ('flux','marche','diag')},ensure_ascii=False));print('vetos',d['e']['vetos'],'trades',len(d['e']['trades']),'evenements',len(d['gros']['evenements']))" >> /tmp/c.log 2>&1; echo >> /tmp/c.log; done
+          for k in 1 2 3; do sleep 40; echo "=== etat $k" >> /tmp/c.log; curl -sS -m 20 $U/api/etat | python3 -c "import json,sys;d=json.load(sys.stdin);print(json.dumps({'actifs':d['actifs'],'diag':d['diag'],'vetos':d['e']['vetos'],'candidats':d['e']['candidats'],'trades':len(d['e']['trades'])},ensure_ascii=False))" >> /tmp/c.log 2>&1; echo >> /tmp/c.log; done
           { tail -25 /tmp/d.log; cat /tmp/c.log; } > controle.txt
           cd ..; git config user.name controle; git config user.email bot@users.noreply.github.com
           git add bot95/controle.txt; git commit -m "Controle bot95 [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
