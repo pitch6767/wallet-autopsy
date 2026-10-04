@@ -220,8 +220,17 @@ export class Bot {
     const p = m.payload || {};
     if ((p.symbol || "").toLowerCase() !== "btc/usd" || !(+p.value > 0)) return;
     this.noter("cl", +p.value, now());
-    const ts = (+p.timestamp || Date.now()) / 1000, debut = Math.floor(ts / 300) * 300;
-    if (this.mkt && this.mkt.start === debut && !this.mkt.ouvCl) this.mkt.ouvCl = +p.value;
+    // horodatage Chainlink exact : on garde le premier prix de chaque seconde (pour l'ouverture)
+    const sec = Math.floor((+p.timestamp || Date.now()) / 1000);
+    this.clTs = this.clTs || new Map();
+    if (!this.clTs.has(sec)) { this.clTs.set(sec, +p.value); if (this.clTs.size > 1200) this.clTs.delete(this.clTs.keys().next().value); }
+    if (this.mkt && !this.mkt.ouvClExact) this.ouverture(this.mkt);
+  }
+
+  // prix d'exercice = prix Chainlink horodaté à la seconde d'ouverture (ou le premier juste après)
+  ouverture(mk) {
+    if (!this.clTs) return;
+    for (let k = 0; k <= 3; k++) if (this.clTs.has(mk.start + k)) { mk.ouvCl = this.clTs.get(mk.start + k); mk.ouvClExact = k === 0; mk.ouvDecal = k; return; }
   }
 
   serie(k, n) {   // dernières n valeurs par seconde (remplissage avec la précédente)
@@ -256,11 +265,13 @@ export class Bot {
     if (!this.mkt || this.mkt.start !== start) {
       if (this.mkt) this.finFenetre();
       this.mkt = { start, end: start + 300, charge: false, raison: null, candidat: false };
+      this.ouverture(this.mkt);
       this.vol.push({ start, parWallet: {} }); if (this.vol.length > MEMOIRE_MARCHES) this.vol.shift();
       this.gros.positions = {}; this.vus = new Set();
     }
-    if (!this.mkt.charge || (!this.mkt.strike && tleft < 45 && !this.mkt.essai45)) {
-      if (tleft < 45) this.mkt.essai45 = true;
+    if (!this.mkt.ouvClExact) this.ouverture(this.mkt);
+    if (!this.mkt.charge || (!this.mkt.strike && t - (this.mkt.essai || 0) > 30)) {
+      this.mkt.essai = t;
       try { Object.assign(this.mkt, await this.chargerMarche(start), { charge: true }); } catch (err) { if (tleft < 40) this.erreur("marché", err); }
     }
     await this.resoudre();
@@ -489,7 +500,7 @@ export class Bot {
     if (mk && mk.slug) {
       this.e.verif = this.e.verif || [];
       const s0 = mk.start, cl0 = this.prixA("cl", s0) , clF = this.prixA("cl", mk.end);
-      this.e.verif.unshift({ start: s0, slug: mk.slug, kBot: mk.strike || mk.ouvCl || null, kSrc: mk.strike ? "polymarket au chargement" : "1er prix Chainlink reçu",
+      this.e.verif.unshift({ start: s0, slug: mk.slug, kBot: mk.strike || mk.ouvCl || null, kSrc: mk.strike ? "polymarket" : (mk.ouvCl ? "Chainlink horodaté +" + mk.ouvDecal + " s" : "aucun"),
         clDebut: cl0, clFin: clF, perpFin: this.prixA("perp", mk.end), dernierBid: mk.dernier ? { fav: mk.dernier.fav, bid: mk.dernier.bid } : null, fait: false });
       this.e.verif.length = Math.min(this.e.verif.length, 100);
     }
