@@ -233,6 +233,9 @@ export class Bot {
 
   // prix d'exercice = prix Chainlink horodaté à la seconde d'ouverture (ou le premier juste après)
   ouverture(mk) {
+    const v = [];
+    for (let s2 = mk.start - 59; s2 <= mk.start; s2++) { const x = this.prixA("cl", s2); if (x) v.push(x); }
+    if (v.length >= 40 && now() > mk.start) mk.ouvTwap = v.reduce((a, b) => a + b, 0) / v.length;
     if (!this.clTs) return;
     for (let k = 0; k <= 5; k++) if (this.clTs.has(mk.start + k)) { mk.ouvCl = this.clTs.get(mk.start + k); mk.ouvClExact = k === 0; mk.ouvDecal = k; return; }
   }
@@ -273,10 +276,14 @@ export class Bot {
       this.vol.push({ start, parWallet: {} }); if (this.vol.length > MEMOIRE_MARCHES) this.vol.shift();
       this.gros.positions = {}; this.vus = new Set();
     }
-    if (!this.mkt.ouvClExact) this.ouverture(this.mkt);
+    if (!this.mkt.ouvTwap) this.ouverture(this.mkt);
+    if ((!this.mkt.strike || t - start < 90) && t - (this.mkt.essaiOff || 0) > 10) {
+      this.mkt.essaiOff = t;
+      try { await this.ouvertureOfficielle(this.mkt); } catch (err) { this.erreur("ouverture", err); }
+    }
     if (!this.mkt.charge || (!this.mkt.strike && t - (this.mkt.essai || 0) > 30)) {
       this.mkt.essai = t;
-      try { Object.assign(this.mkt, await this.chargerMarche(start), { charge: true }); } catch (err) { if (tleft < 40) this.erreur("marché", err); }
+      try { const d = await this.chargerMarche(start); if (!d.strike) delete d.strike; Object.assign(this.mkt, d, { charge: true }); } catch (err) { if (tleft < 40) this.erreur("marché", err); }
     }
     await this.resoudre();
     try { await this.suivreGros(tleft); } catch (err) { this.erreur("gros traders", err); }
@@ -288,8 +295,10 @@ export class Bot {
     if (tleft < 1 && this.mkt.offre) this.figerOffre();
   }
 
+  // Règle Polymarket : Up si moyenne Chainlink 60 s à la fin >= moyenne 60 s au début (prix d'exercice).
   calcul(tleft, favUp) {
-    const K = this.mkt.strike || this.mkt.ouvCl;
+    const mk = this.mkt;
+    const K = mk.strike || mk.ouvTwap;
     const S = this.f.cl && this.f.cl.p;
     const perp = this.serie("perp", 300);
     if (!K || !S || perp.length < 60) return null;
@@ -298,19 +307,34 @@ export class Bot {
     const m = r.reduce((a, b) => a + b, 0) / r.length;
     const sg = Math.sqrt(r.reduce((a, b) => a + (b - m) ** 2, 0) / r.length) || 1e-6;
     const dir = favUp ? 1 : -1;
-    const z = (Math.log(S / K) * dir) / (sg * Math.sqrt(Math.max(tleft, 1)));
-    const ts = Math.floor(now());
+    const ts = Math.floor(now()), a = mk.end - 59;
+    const connus = [];
+    for (let s = a; s <= ts; s++) { const v = this.prixA("cl", s); if (v) connus.push(v); }
+    const nr = Math.max(1, mk.end - Math.max(ts, a - 1));
+    const somme = connus.reduce((x, y) => x + y, 0), n = connus.length + nr;
+    const E = (somme + nr * S) / n;                                   // moyenne finale attendue
+    const sd = sg * S * Math.sqrt(nr ** 3 / 3) / 60 || 1e-6;          // incertitude de la partie restante
+    const z = ((E - K) * dir) / sd;
     const p0 = this.prixA("perp", ts), p5 = this.prixA("perp", ts - 5);
-    const v = p0 && p5 ? ((p0 - p5) / 5) * dir : 0;          // $/s, négatif = vers le strike
-    const dist = (S - K) * dir;
-    // base perp/coinbase vs chainlink (médiane 120 s)
-    const base = (k) => med(this.serie(k, 120).map(([s, p]) => { const c = this.prixA("cl", s); return c ? p - c : null; }).filter((x) => x != null));
+    const v = p0 && p5 ? ((p0 - p5) / 5) * dir : 0;                  // $/s, négatif = vers le prix d'exercice
+    const vE = v * nr / 60;                                           // effet sur la moyenne finale
+    const dist = (E - K) * dir;
+    const base = (k) => med(this.serie(k, 120).map(([s2, p]) => { const c = this.prixA("cl", s2); return c ? p - c : null; }).filter((x) => x != null));
     const bp = base("perp"), bc = base("cb");
-    const cote = (p, b) => (p == null || b == null ? null : ((p - b - K) * dir > 0));
+    const cote = (p, b) => (p == null || b == null ? null : (((somme + nr * (p - b)) / n - K) * dir > 0));
     return {
-      K, S, z, proba: phi(z), dist, v, tStrike: v < 0 ? dist / -v : 999, sg,
+      K, S, E, z, proba: phi(z), dist, v, tStrike: vE < 0 ? dist / -vE : 999, sg,
       accordPerp: cote(this.f.perp && this.f.perp.p, bp), accordCb: cote(this.f.cb && this.f.cb.p, bc),
     };
+  }
+
+  // prix d'exercice officiel publié en direct par Polymarket (moyenne Chainlink 60 s à l'ouverture)
+  async ouvertureOfficielle(mk) {
+    const iso = (t) => new Date(t * 1000).toISOString().replace(".000", "");
+    const r = await fetch(`https://polymarket.com/api/crypto/crypto-price?symbol=BTC&eventStartTime=${iso(mk.start)}&variant=fiveminute&endDate=${iso(mk.end)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
+    if (!r.ok) throw new Error("prix d'ouverture HTTP " + r.status);
+    const d = await r.json();
+    if (d && +d.openPrice > 0) { mk.strike = +d.openPrice; mk.strikeSrc = "polymarket direct"; }
   }
 
   // contrôles communs ; renvoie la raison du refus ou null
@@ -332,9 +356,9 @@ export class Bot {
       X(`Chainlink est ${r1(Math.abs(c.dist))} $ ${cote} du prix d'exercice, mais ${k.join(" et ")}.`); return "sources pas d'accord";
     }
     const zmin = prix < 0.97 ? CFG.Z_MIN_BAS : CFG.Z_MIN_HAUT;
-    if (c.z < zmin) { X(`BTC est à ${r1(c.dist)} $ du prix d'exercice, soit ${c.z.toFixed(2)} écart-type compte tenu de la volatilité et des ${Math.round(tleft)} s restantes ; il en faut au moins ${zmin} à un prix de ${prix}.`); return "distance trop faible"; }
+    if (c.z < zmin) { X(`La moyenne finale attendue est à ${r1(c.dist)} $ du prix d'exercice, soit ${c.z.toFixed(2)} écart-type compte tenu de la partie déjà connue, de la volatilité et des ${Math.round(tleft)} s restantes ; il en faut au moins ${zmin} à un prix de ${prix}.`); return "distance trop faible"; }
     if (c.proba < prix + CFG.MARGE_MODELE) { X(`Probabilité calculée ${(c.proba * 100).toFixed(1)} % ; il faut au moins le prix + 1 point, soit ${((prix + CFG.MARGE_MODELE) * 100).toFixed(1)} %.`); return "modèle pas assez sûr"; }
-    if (c.tStrike <= CFG.COURSE_FACTEUR * tleft) { X(`BTC se rapproche du prix d'exercice à ${r1(-c.v)} $/s : il l'atteindrait en ${r1(c.tStrike)} s, alors qu'il reste ${Math.round(tleft)} s (il faut plus du double).`); return "course vers le strike"; }
+    if (c.tStrike <= CFG.COURSE_FACTEUR * tleft) { X(`BTC va vers le prix d'exercice à ${r1(-c.v)} $/s : la moyenne finale l'atteindrait en ${r1(c.tStrike)} s, alors qu'il reste ${Math.round(tleft)} s (il faut plus du double).`); return "course vers le strike"; }
     const contre = this.liq.filter((x) => x.t > t - 10 && (favUp ? x.cote === "SELL" : x.cote === "BUY")).reduce((s, x) => s + x.usd, 0);
     if (contre >= CFG.LIQ_CONTRE_USD) { X(`${Math.round(contre).toLocaleString("fr-CH")} $ de liquidations contre le favori en 10 s (seuil ${CFG.LIQ_CONTRE_USD.toLocaleString("fr-CH")} $).`); return "liquidations contre nous"; }
     const dq = favUp ? -this.deseq : this.deseq;
@@ -504,7 +528,8 @@ export class Bot {
     if (mk && mk.slug) {
       this.e.verif = this.e.verif || [];
       const s0 = mk.start, cl0 = this.prixA("cl", s0) , clF = this.prixA("cl", mk.end);
-      this.e.verif.unshift({ start: s0, slug: mk.slug, kBot: mk.strike || mk.ouvCl || null, kSrc: mk.strike ? "polymarket" : (mk.ouvCl ? "Chainlink horodaté +" + mk.ouvDecal + " s" : "aucun"),
+      this.e.verif.unshift({ start: s0, slug: mk.slug, kBot: mk.strike || mk.ouvTwap || null, kSrc: mk.strike ? (mk.strikeSrc || "polymarket") : (mk.ouvTwap ? "moyenne Chainlink calculée" : "aucun"),
+        finBot: (() => { const v = []; for (let s2 = mk.end - 59; s2 <= mk.end; s2++) { const x = this.prixA("cl", s2); if (x) v.push(x); } return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; })(),
         clDebut: cl0, clFin: clF, perpFin: this.prixA("perp", mk.end), dernierBid: mk.dernier ? { fav: mk.dernier.fav, bid: mk.dernier.bid } : null, fait: false });
       this.e.verif.length = Math.min(this.e.verif.length, 100);
     }
@@ -577,7 +602,8 @@ export class Bot {
         v.gagnant = outs[px.indexOf(1)];
         v.ecartK = v.kBot ? +(v.kBot - v.kOfficiel).toFixed(2) : null;
         v.ecartFin = v.clFin && v.finOfficiel ? +(v.clFin - v.finOfficiel).toFixed(2) : null;
-        v.botAuraitDit = v.kBot && v.clFin ? (v.clFin >= v.kBot ? "Up" : "Down") : null;
+        v.botAuraitDit = v.kBot && v.finBot ? (v.finBot >= v.kBot ? "Up" : "Down") : null;
+        v.ecartFin = v.finBot && v.finOfficiel ? +(v.finBot - v.finOfficiel).toFixed(2) : null;
         v.fait = true;
       } catch (err) { this.erreur("vérif", err); }
     }
@@ -609,7 +635,7 @@ export class Bot {
       flux: { perp: { p: this.f.perp && this.f.perp.p, age: age("perp"), src: this.perpSrc }, coinbase: { p: this.f.cb && this.f.cb.p, age: age("cb"), src: this.cbSrc },
         chainlink: { p: this.f.cl && this.f.cl.p, age: age("cl") }, deseq: +this.deseq.toFixed(2),
         liq10s: Math.round(this.liq.filter((x) => x.t > t - 10).reduce((s, x) => s + x.usd, 0)) },
-      marche: { slug: mk.slug, strike: mk.strike || mk.ouvCl || null, reste: Math.round((mk.end || 0) - t), raison: mk.raison, raisonB: mk.raisonB, dernier: mk.dernier, entre: !!mk.entre, offre: mk.offre || null },
+      marche: { slug: mk.slug, strike: mk.strike || mk.ouvTwap || null, strikeSrc: mk.strikeSrc || null, reste: Math.round((mk.end || 0) - t), raison: mk.raison, raisonB: mk.raisonB, dernier: mk.dernier, entre: !!mk.entre, offre: mk.offre || null },
       gros: { liste: this.gros.liste.map((g) => ({ ...g, nom: (this.gros.positions[g.w] || {}).nom || "", Up: Math.round((this.gros.positions[g.w] || {}).Up || 0), Down: Math.round((this.gros.positions[g.w] || {}).Down || 0) })),
         evenements: this.gros.evenements.slice(0, 25) },
       regles: CFG, diag: this.diag,
