@@ -194,12 +194,14 @@ def pnl(p, gagne, sortie=None):
 
 def resume(nom, L, fn=None):
     if not L:
-        return f"| {nom} | 0 | - | - | - | - | - |"
+        return f"| {nom} | 0 | - | - | - | - | - | - |"
     res = [fn(x) if fn else pnl(x["p"], x["gagne"]) for x in L]
     pertes = sum(1 for r in res if r < 0)
-    jours = JOURS
-    return "| %s | %d | %d | %.2f %% | %+.0f $ | %+.2f $ | %.1f |" % (
-        nom, len(L), pertes, 100 * (1 - pertes / len(L)), sum(res), statistics.mean(res), len(L) / jours)
+    cum = pic = dd = 0.0
+    for x, r in sorted(zip(L, res), key=lambda z: z[0]["ts"]):
+        cum += r; pic = max(pic, cum); dd = max(dd, pic - cum)
+    return "| %s | %d | %d | %.2f %% | %+.0f $ | %+.2f $ | %.1f | -%.0f $ |" % (
+        nom, len(L), pertes, 100 * (1 - pertes / len(L)), sum(res), statistics.mean(res), len(L) / JOURS, dd)
 
 
 def main():
@@ -232,6 +234,17 @@ def main():
     print("executions chargees (%.0fs)" % (time.time() - t0)); sys.stdout.flush()
 
     # strike : priceToBeat de Polymarket si dispo, sinon ouverture Binance a la seconde du debut
+    M.sort(key=lambda m: m["start"])
+    hist = []
+    for m in M:
+        kb = BTC.get(m["start"], (None,))[0]
+        try:
+            kp = float(m["strike"]) if m["strike"] is not None else None
+        except Exception:
+            kp = None
+        m["base"] = statistics.median(hist[-12:]) if len(hist) >= 3 else 0.0
+        if kb and kp:
+            hist.append(kb - kp)
     accord = desac = 0
     for m in M:
         kb = BTC.get(m["start"], (None,))[0]
@@ -240,11 +253,11 @@ def main():
             k = float(k) if k is not None else None
         except Exception:
             k = None
-        m["strike_ok"] = k or kb
+        m["strike_ok"] = (k + m["base"]) if k else kb   # strike exprime en prix Binance
         m["strike_src"] = "polymarket" if k else "binance"
         fb = prix(BTC, m["end"])
-        if kb and fb:
-            if (fb > kb) == m["up_gagne"]:
+        if m["strike_ok"] and fb:
+            if (fb > m["strike_ok"]) == m["up_gagne"]:
                 accord += 1
             else:
                 desac += 1
@@ -255,92 +268,95 @@ def main():
     L = []
     rap = []
     rap.append(f"# Tests bot BTC 5 min — {len(M)} marches sur {JOURS} jours ({jours[0]} -> {jours[-1]})\n")
-    rap.append(f"Strike : {dict(sources)}. Binance seul donne le bon gagnant dans {accord}/{accord + desac} marches "
+    rap.append(f"Strike : {dict(sources)}. Binance (strike corrige de l'ecart USDT/USD) donne le bon gagnant dans {accord}/{accord + desac} marches "
                f"({100 * accord / max(1, accord + desac):.2f} %) — le reste = ecart Binance/Chainlink.\n")
     rap.append(f"Mise {MISE:.0f} $, frais taker {FEE_RATE} x p x (1-p) par part.\n")
 
     # ---- grille de base
     rap.append("\n## 1. Strategie de base (acheter le favori, garder jusqu'a la fin)\n")
-    rap.append("| Fenetre / prix | Trades | Pertes | Reussite | PnL total | PnL moyen | Trades/jour |\n|---|---|---|---|---|---|---|")
+    rap.append("| Fenetre / prix | Trades | Pertes | Reussite | PnL total | PnL moyen | Trades/jour | Pire baisse |\n|---|---|---|---|---|---|---|---|")
     grille = {}
     for W in (60, 30):
         for (a, b) in ((0.90, 0.99), (0.93, 0.99), (0.95, 0.99), (0.95, 0.97), (0.97, 0.99)):
             R = [x for x in (analyser(m, BTC, ETH, SOL, W, a, b) for m in M if m["trades"]) if x]
             grille[(W, a, b)] = R
             rap.append(resume(f"{W}s, {a:.2f}-{b:.2f}", R))
-    base = grille[(60, 0.95, 0.99)]
+    TOUS = []
+    for WB in (60, 30):
+        base = grille[(WB, 0.95, 0.99)]
 
-    # ---- filtres
-    B = [x for x in base if "z" in x]
-    rap.append(f"\n## 2. Filtres (base : 60 s, 0,95-0,99 ; {len(B)} trades avec donnees completes)\n")
-    rap.append("| Filtre | Trades | Pertes | Reussite | PnL total | PnL moyen | Trades/jour |\n|---|---|---|---|---|---|---|")
-    rap.append(resume("Base", B))
-    F = {
-        "6 modele >= prix + 1 pt": lambda x: x["proba_modele"] >= x["p"] + 0.01,
-        "6 modele >= prix + 2 pts": lambda x: x["proba_modele"] >= x["p"] + 0.02,
-        "3 z >= 2,5": lambda x: x["z"] >= 2.5,
-        "3 z >= 3": lambda x: x["z"] >= 3,
-        "19 pas de course vers le strike (t_strike > 2x temps restant)": lambda x: x["t_strike"] > 2 * x["tleft"],
-        "23 ETH et SOL pas contre (z > -1,5)": lambda x: not (x["eth_z"] < -1.5 and x["sol_z"] < -1.5),
-        "BTC 10 s pas contre (z > -1,5)": lambda x: x["btc10_z"] > -1.5,
-        "22 pas de gros achat en face (< 500 $ / 60 s)": lambda x: x["gros_contre"] < 500,
-        "17 nuit/week-end seulement": lambda x: (datetime.fromtimestamp(x["ts"], timezone.utc).weekday() >= 5 or datetime.fromtimestamp(x["ts"], timezone.utc).hour < 6),
-        "17 hors nuit/week-end": lambda x: not (datetime.fromtimestamp(x["ts"], timezone.utc).weekday() >= 5 or datetime.fromtimestamp(x["ts"], timezone.utc).hour < 6),
-    }
-    for nom, fn in F.items():
-        rap.append(resume(nom, [x for x in B if fn(x)]))
+        # ---- filtres
+        B = [x for x in base if "z" in x]
+        rap.append(f"\n## 2.{WB}s Filtres (base : {WB} s, 0,95-0,99 ; {len(B)} trades avec donnees completes)\n")
+        rap.append("| Filtre | Trades | Pertes | Reussite | PnL total | PnL moyen | Trades/jour | Pire baisse |\n|---|---|---|---|---|---|---|---|")
+        rap.append(resume("Base", B))
+        F = {
+            "6 modele >= prix + 1 pt": lambda x: x["proba_modele"] >= x["p"] + 0.01,
+            "6 modele >= prix + 2 pts": lambda x: x["proba_modele"] >= x["p"] + 0.02,
+            "3 z >= 2,5": lambda x: x["z"] >= 2.5,
+            "3 z >= 3": lambda x: x["z"] >= 3,
+            "19 pas de course vers le strike (t_strike > 2x temps restant)": lambda x: x["t_strike"] > 2 * x["tleft"],
+            "23 ETH et SOL pas contre (z > -1,5)": lambda x: not (x["eth_z"] < -1.5 and x["sol_z"] < -1.5),
+            "BTC 10 s pas contre (z > -1,5)": lambda x: x["btc10_z"] > -1.5,
+            "22 pas de gros achat en face (< 500 $ / 60 s)": lambda x: x["gros_contre"] < 500,
+            "17 nuit/week-end seulement": lambda x: (datetime.fromtimestamp(x["ts"], timezone.utc).weekday() >= 5 or datetime.fromtimestamp(x["ts"], timezone.utc).hour < 6),
+            "17 hors nuit/week-end": lambda x: not (datetime.fromtimestamp(x["ts"], timezone.utc).weekday() >= 5 or datetime.fromtimestamp(x["ts"], timezone.utc).hour < 6),
+        }
+        for nom, fn in F.items():
+            rap.append(resume(nom, [x for x in B if fn(x)]))
 
-    # ---- sorties
-    rap.append("\n## 3. Sorties (sur la base)\n")
-    rap.append("| Sortie | Trades | Pertes | Reussite | PnL total | PnL moyen | Trades/jour |\n|---|---|---|---|---|---|---|")
-    rap.append(resume("Garder jusqu'a la fin", B))
+        # ---- sorties
+        rap.append(f"\n## 3.{WB}s Sorties (sur la base)\n")
+        rap.append("| Sortie | Trades | Pertes | Reussite | PnL total | PnL moyen | Trades/jour | Pire baisse |\n|---|---|---|---|---|---|---|---|")
+        rap.append(resume("Garder jusqu'a la fin", B))
 
-    def s99(x):
-        return pnl(x["p"], x["gagne"], 0.99) if x["max_apres"] >= 0.99 else pnl(x["p"], x["gagne"])
-    rap.append(resume("8 revente a 0,99 si atteint", B, s99))
+        def s99(x):
+            return pnl(x["p"], x["gagne"], 0.99) if (x["max_apres"] >= 0.99 and x["p"] < 0.985) else pnl(x["p"], x["gagne"])
+        rap.append(resume("8 revente a 0,99 si atteint", B, s99))
 
-    def t5(seuil):
-        def f(x):
-            if x.get("proba_T5") is not None and x.get("px_T5") and x["proba_T5"] < seuil:
-                return pnl(x["p"], x["gagne"], x["px_T5"])
-            return pnl(x["p"], x["gagne"])
-        return f
-    for s in (0.90, 0.80):
-        rap.append(resume(f"20 sortie T-5 s si modele < {s:.2f}", B, t5(s)))
+        def t5(seuil):
+            def f(x):
+                if x.get("proba_T5") is not None and x.get("px_T5") and x["proba_T5"] < seuil:
+                    return pnl(x["p"], x["gagne"], x["px_T5"])
+                return pnl(x["p"], x["gagne"])
+            return f
+        for s in (0.90, 0.80):
+            rap.append(resume(f"20 sortie T-5 s si modele < {s:.2f}", B, t5(s)))
 
-    # ---- combinaison
-    combo = lambda x: (x["proba_modele"] >= x["p"] + 0.01 and x["t_strike"] > 2 * x["tleft"]
-                       and not (x["eth_z"] < -1.5 and x["sol_z"] < -1.5) and x["btc10_z"] > -1.5)
-    C = [x for x in B if combo(x)]
-    rap.append("\n## 4. Combinaison 6 + 19 + 23 + BTC 10 s\n")
-    rap.append("| Version | Trades | Pertes | Reussite | PnL total | PnL moyen | Trades/jour |\n|---|---|---|---|---|---|---|")
-    rap.append(resume("Combinaison, garder", C))
-    rap.append(resume("Combinaison + revente 0,99", C, s99))
-    rap.append(resume("Combinaison + sortie T-5 (<0,90)", C, t5(0.90)))
+        # ---- combinaison
+        combo = lambda x: (x["proba_modele"] >= x["p"] + 0.01 and x["t_strike"] > 2 * x["tleft"]
+                           and not (x["eth_z"] < -1.5 and x["sol_z"] < -1.5) and x["btc10_z"] > -1.5)
+        C = [x for x in B if combo(x)]
+        rap.append(f"\n## 4.{WB}s Combinaison 6 + 19 + 23 + BTC 10 s\n")
+        rap.append("| Version | Trades | Pertes | Reussite | PnL total | PnL moyen | Trades/jour | Pire baisse |\n|---|---|---|---|---|---|---|---|")
+        rap.append(resume("Combinaison, garder", C))
+        rap.append(resume("Combinaison + revente 0,99", C, s99))
+        rap.append(resume("Combinaison + sortie T-5 (<0,90)", C, t5(0.90)))
 
-    # ---- autopsie des pertes (18)
-    P = [x for x in B if not x["gagne"]]
-    G_ = [x for x in B if x["gagne"]]
-    rap.append(f"\n## 5. Autopsie des pertes (18) : {len(P)} pertes contre {len(G_)} gains\n")
-    rap.append("| Indicateur (mediane) | Gains | Pertes |\n|---|---|---|")
-    for k in ("tleft", "p", "dist_usd", "z", "proba_modele", "vitesse", "vol_s", "btc10_z", "eth_z", "sol_z", "gros_contre"):
-        a = [x[k] for x in G_ if k in x]; b = [x[k] for x in P if k in x]
-        if a and b:
-            rap.append(f"| {k} | {statistics.median(a)} | {statistics.median(b)} |")
-    rap.append("\n### Detail des pertes\n")
-    rap.append("| Debut (UTC) | Temps restant | Prix | Favori | Distance $ | z | Proba modele | Vitesse $/s | ETH z | SOL z |\n|---|---|---|---|---|---|---|---|---|---|")
-    for x in sorted(P, key=lambda x: x["ts"]):
-        rap.append("| %s | %d s | %.3f | %s | %s | %s | %s | %s | %s | %s |" % (
-            datetime.fromtimestamp(x["start"], timezone.utc).strftime("%m-%d %H:%M"), x["tleft"], x["p"], x["fav"],
-            x.get("dist_usd"), x.get("z"), x.get("proba_modele"), x.get("vitesse"), x.get("eth_z"), x.get("sol_z")))
+        # ---- autopsie des pertes (18)
+        P = [x for x in B if not x["gagne"]]
+        G_ = [x for x in B if x["gagne"]]
+        rap.append(f"\n## 5.{WB}s Autopsie des pertes (18) : {len(P)} pertes contre {len(G_)} gains\n")
+        rap.append("| Indicateur (mediane) | Gains | Pertes |\n|---|---|---|")
+        for k in ("tleft", "p", "dist_usd", "z", "proba_modele", "vitesse", "vol_s", "btc10_z", "eth_z", "sol_z", "gros_contre"):
+            a = [x[k] for x in G_ if k in x]; b = [x[k] for x in P if k in x]
+            if a and b:
+                rap.append(f"| {k} | {statistics.median(a)} | {statistics.median(b)} |")
+        rap.append("\n### Detail des pertes\n")
+        rap.append("| Debut (UTC) | Temps restant | Prix | Favori | Distance $ | z | Proba modele | Vitesse $/s | ETH z | SOL z |\n|---|---|---|---|---|---|---|---|---|---|")
+        for x in sorted(P, key=lambda x: x["ts"]):
+            rap.append("| %s | %d s | %.3f | %s | %s | %s | %s | %s | %s | %s |" % (
+                datetime.fromtimestamp(x["start"], timezone.utc).strftime("%m-%d %H:%M"), x["tleft"], x["p"], x["fav"],
+                x.get("dist_usd"), x.get("z"), x.get("proba_modele"), x.get("vitesse"), x.get("eth_z"), x.get("sol_z")))
 
+        TOUS += B
     rap.append(f"\nDuree du calcul : {time.time() - t0:.0f} s")
     open(OUT + "resultat.md", "w").write("\n".join(rap))
     with open(OUT + "trades.csv", "w", newline="") as fh:
-        cols = sorted({k for x in B for k in x})
+        cols = sorted({k for x in TOUS for k in x})
         w = csv.DictWriter(fh, cols)
         w.writeheader()
-        for x in B:
+        for x in TOUS:
             w.writerow(x)
     print("\n".join(rap))
 
