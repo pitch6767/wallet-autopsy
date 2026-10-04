@@ -1,8 +1,3 @@
-Binance... 2026-09-20 -> 2026-10-03
-  BTC secondes : 1209600 (13s)
-marches resolus : 3892 / 3892 (122s)
-  cles metadata exemple : ['finalPrice', 'priceToBeat'] strike 80449.93438176927
-executions chargees (547s)
 # Tests bot BTC 5 min (ACHATS REELS du favori seulement) — 3892 marches sur 14 jours (2026-09-20 -> 2026-10-03)
 
 Strike : {'polymarket': 3892}. Binance (strike corrige de l'ecart USDT/USD) donne le bon gagnant dans 3555/3892 marches (91.34 %) — le reste = ecart Binance/Chainlink.
@@ -236,4 +231,3 @@ Mise 50 $, frais taker 0.072 x p x (1-p) par part.
 | 10-03 21:50 | 29 s | 0.950 | Up | 2.2 | 0.32 | 0.6266 | -0.0 | 1.59 | 0.0 |
 
 Duree du calcul : 574 s
-code sortie: 0
