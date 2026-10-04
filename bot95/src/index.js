@@ -318,15 +318,13 @@ export class Bot {
     const top = new Set(this.gros.liste.map((x) => x.w));
     for (const n of nouveaux) {
       if (!top.has(n.w)) continue;
+      if (n.size < 1) continue;
       let type = null;
       if (n.side === "SELL" && n.avant > 0) type = "SORT (vend " + n.issue + ")";
-      else if (n.side === "BUY") {
-        const p = this.gros.positions[n.w], autre = n.issue === "Up" ? "Down" : "Up";
-        type = p[autre] > 0 ? "SE COUVRE (achète " + n.issue + ")" : "achète " + n.issue;
-      }
+      else if (n.side === "BUY") type = "achète " + n.issue;
       if (!type) continue;
       this.gros.evenements.unshift({ heure: new Date(n.t * 1000).toISOString().slice(11, 19), w: n.w, nom: (this.gros.positions[n.w] || {}).nom,
-        type, parts: Math.round(n.size), prix: n.prix, reste: Math.round(mk.end - n.t), alerte: type.startsWith("SORT") || type.startsWith("SE COUVRE") });
+        type, parts: Math.round(n.size), prix: n.prix, reste: Math.round(mk.end - n.t), alerte: type.startsWith("SORT") });
     }
     this.gros.evenements.length = Math.min(this.gros.evenements.length, 40);
     // alerte si un gros trader sort du côté de notre position
