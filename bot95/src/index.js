@@ -291,11 +291,12 @@ export class Bot {
     if (this.e.pause) return this.veto("pause après perte (à reprendre)");
     const [bu, bd] = await Promise.all([this.carnet(mk.up), this.carnet(mk.down)]);
     const askU = bu.asks[0] ? bu.asks[0][0] : 1, askD = bd.asks[0] ? bd.asks[0][0] : 1;
-    const favUp = askU <= askD;
+    const bidU = bu.bids[0] ? bu.bids[0][0] : 0, bidD = bd.bids[0] ? bd.bids[0][0] : 0;
+    const favUp = bidU + (askU < 1 ? askU : bidU) >= bidD + (askD < 1 ? askD : bidD);   // favori = côté le plus cher
     const bk = favUp ? bu : bd, ask = favUp ? askU : askD;
     mk.vu = { tleft: Math.round(tleft), askUp: askU, askDown: askD };
-    (this.diag.vus || (this.diag.vus = [])).unshift(mk.slug.slice(-10) + " T-" + Math.round(tleft) + " Up " + askU + " Down " + askD);
-    this.diag.vus.length = Math.min(this.diag.vus.length, 12);
+    (this.diag.vus || (this.diag.vus = [])).unshift(mk.slug.slice(-10) + " T-" + Math.round(tleft) + " Up " + bidU + "/" + askU + " Down " + bidD + "/" + askD);
+    this.diag.vus.length = Math.min(this.diag.vus.length, 35);
     if (ask < CFG.PRIX_MIN || ask > CFG.PRIX_MAX) return; // pas de candidat
     mk.candidat = true;
     const t = now(), age = (k) => (this.f[k] ? t - this.f[k].t : 1e9);
