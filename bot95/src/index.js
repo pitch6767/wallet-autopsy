@@ -80,6 +80,8 @@ export class Bot {
       return Response.json({ ok: true });
     }
     if (u.pathname === "/api/reveil") return Response.json({ ok: true });
+    if (u.pathname === "/api/rapport") return Response.json({ rapport: this.e.rapport || [], encours: this.mkt ? { slug: this.mkt.slug, refus: this.mkt.refus || null, comptes: this.mkt.comptes || null } : null }, { headers: { "cache-control": "no-store" } });
+    if (u.pathname === "/rapport") return new Response(RAPPORT, { headers: { "content-type": "text/html; charset=utf-8" } });
     return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8" } });
   }
 
@@ -297,19 +299,39 @@ export class Bot {
 
   // contrôles communs ; renvoie la raison du refus ou null
   protections(tleft, favUp, prix, c) {
-    const t = now(), age = (k) => (this.f[k] ? t - this.f[k].t : 1e9);
-    if (age("perp") > CFG.FRAICHEUR_S || age("cl") > CFG.FRAICHEUR_S || age("cb") > CFG.FRAICHEUR_S) return "source figée ou absente";
+    const t = now(), age = (k) => (this.f[k] ? t - this.f[k].t : 1e9), r1 = (x) => Math.round(x * 10) / 10;
+    const X = (txt) => { this._expl = txt; };
+    this._expl = "";
+    const ages = { Chainlink: age("cl"), "perp": age("perp"), "spot": age("cb") };
+    const vieilles = Object.entries(ages).filter(([, a]) => a > CFG.FRAICHEUR_S);
+    if (vieilles.length) { X(vieilles.map(([k, a]) => `${k} sans nouveau prix depuis ${a > 1e8 ? "toujours" : r1(a) + " s"}`).join(", ") + ` (maximum autorisé ${CFG.FRAICHEUR_S} s).`); return "source figée ou absente"; }
     const minute = new Date().getUTCHours() * 60 + new Date().getUTCMinutes(), jour = new Date().getUTCDay();
-    if (jour >= 1 && jour <= 5 && CFG.ANNONCES.some(([a, b]) => minute >= a && minute <= b)) return "annonce économique";
-    if (!c) return "données insuffisantes";
-    if (c.accordPerp !== true || c.accordCb !== true) return "sources pas d'accord";
-    if (c.z < (prix < 0.97 ? CFG.Z_MIN_BAS : CFG.Z_MIN_HAUT)) return "distance trop faible";
-    if (c.proba < prix + CFG.MARGE_MODELE) return "modèle pas assez sûr";
-    if (c.tStrike <= CFG.COURSE_FACTEUR * tleft) return "course vers le strike";
+    if (jour >= 1 && jour <= 5 && CFG.ANNONCES.some(([a, b]) => minute >= a && minute <= b)) { X("Créneau d'annonce économique américaine (jours ouvrés, 12h28-12h40, 13h58-14h10 ou 17h58-18h10 UTC)."); return "annonce économique"; }
+    if (!c) { X("Pas encore assez d'historique de prix (5 minutes de perp ou prix d'exercice manquants)."); return "données insuffisantes"; }
+    if (c.accordPerp !== true || c.accordCb !== true) {
+      const cote = favUp ? "au-dessus" : "en dessous";
+      const k = [];
+      if (c.accordPerp !== true) k.push("le perp (corrigé de son écart habituel avec Chainlink) " + (c.accordPerp == null ? "n'a pas d'écart mesurable" : "n'est pas " + cote));
+      if (c.accordCb !== true) k.push("le spot (corrigé) " + (c.accordCb == null ? "n'a pas d'écart mesurable" : "n'est pas " + cote));
+      X(`Chainlink est ${r1(Math.abs(c.dist))} $ ${cote} du prix d'exercice, mais ${k.join(" et ")}.`); return "sources pas d'accord";
+    }
+    const zmin = prix < 0.97 ? CFG.Z_MIN_BAS : CFG.Z_MIN_HAUT;
+    if (c.z < zmin) { X(`BTC est à ${r1(c.dist)} $ du prix d'exercice, soit ${c.z.toFixed(2)} écart-type compte tenu de la volatilité et des ${Math.round(tleft)} s restantes ; il en faut au moins ${zmin} à un prix de ${prix}.`); return "distance trop faible"; }
+    if (c.proba < prix + CFG.MARGE_MODELE) { X(`Probabilité calculée ${(c.proba * 100).toFixed(1)} % ; il faut au moins le prix + 1 point, soit ${((prix + CFG.MARGE_MODELE) * 100).toFixed(1)} %.`); return "modèle pas assez sûr"; }
+    if (c.tStrike <= CFG.COURSE_FACTEUR * tleft) { X(`BTC se rapproche du prix d'exercice à ${r1(-c.v)} $/s : il l'atteindrait en ${r1(c.tStrike)} s, alors qu'il reste ${Math.round(tleft)} s (il faut plus du double).`); return "course vers le strike"; }
     const contre = this.liq.filter((x) => x.t > t - 10 && (favUp ? x.cote === "SELL" : x.cote === "BUY")).reduce((s, x) => s + x.usd, 0);
-    if (contre >= CFG.LIQ_CONTRE_USD) return "liquidations contre nous";
-    if ((favUp ? -this.deseq : this.deseq) >= CFG.DESEQ_CONTRE) return "carnet perp contre nous";
+    if (contre >= CFG.LIQ_CONTRE_USD) { X(`${Math.round(contre).toLocaleString("fr-CH")} $ de liquidations contre le favori en 10 s (seuil ${CFG.LIQ_CONTRE_USD.toLocaleString("fr-CH")} $).`); return "liquidations contre nous"; }
+    const dq = favUp ? -this.deseq : this.deseq;
+    if (dq >= CFG.DESEQ_CONTRE) { X(`Le carnet du perp penche à ${Math.round(dq * 100)} % contre le favori sur les 5 premiers niveaux (seuil ${CFG.DESEQ_CONTRE * 100} %).`); return "carnet perp contre nous"; }
     return null;
+  }
+
+  // mémorise un refus détaillé pour le rapport
+  noterRefus(strat, raison, extra) {
+    const mk = this.mkt; if (!mk) return;
+    mk.refus = mk.refus || {}; mk.comptes = mk.comptes || { A: {}, B: {} };
+    mk.comptes[strat][raison] = (mk.comptes[strat][raison] || 0) + 1;
+    mk.refus[strat] = { raison, explication: extra || this._expl || "", ...(mk.dernier || {}) };
   }
 
   async decider(tleft) {
@@ -333,10 +355,10 @@ export class Bot {
     // ---- option B : offre d'achat posée (fantôme : remplie si un vendeur frappe à notre prix)
     if (candB) {
       const r = B.pause ? "pause après perte (à reprendre)" : this.protections(tleft, favUp, prixB, c);
-      if (r) { this.annulerOffre(); mk.raisonB = r; }
+      if (r) { this.annulerOffre(); mk.raisonB = r; this.noterRefus("B", r); }
       else {
         const mise = Math.min(B.mise, B.capital - B.reserve);
-        if (mise < 1) { this.annulerOffre(); mk.raisonB = "capital épuisé"; }
+        if (mise < 1) { this.annulerOffre(); mk.raisonB = "capital épuisé"; this.noterRefus("B", "capital épuisé", "Plus de capital disponible hors réserve."); }
         else if (!mk.offre || mk.offre.prix !== prixB || mk.offre.fav !== (favUp ? "Up" : "Down")) {
           const deja = mk.offre ? mk.offre.rempli : 0, cout = mk.offre ? mk.offre.cout : 0;
           if (!mk.offre) B.offres++;
@@ -347,13 +369,17 @@ export class Bot {
     }
 
     // ---- option A : achat immédiat au prix affiché
-    if (!candA) return;
-    if (this.e.pause) return this.veto("pause après perte (à reprendre)");
+    if (!candA) {
+      if (!mk.entre && bid >= CFG.PRIX_MIN) { mk.raison = "aucun vendeur à 0,99 ou moins"; this.noterRefus("A", mk.raison, `Le favori ${favUp ? "Up" : "Down"} n'a aucun vendeur entre ${CFG.PRIX_MIN} et ${CFG.PRIX_MAX} (meilleur vendeur : ${ask >= 1 ? "aucun" : ask}, meilleur acheteur : ${bid}).`); }
+      return;
+    }
+    const refusA = (r, txt) => { this.veto(r); this.noterRefus("A", r, txt); };
+    if (this.e.pause) return refusA("pause après perte (à reprendre)", "Une perte a eu lieu : le bot attend que tu cliques sur « Reprendre A ».");
     const r = this.protections(tleft, favUp, ask, c);
-    if (r) return this.veto(r);
-    if (ask - bid > CFG.ECART_MAX) return this.veto("écart achat/vente trop large");
+    if (r) return refusA(r);
+    if (ask - bid > CFG.ECART_MAX) return refusA("écart achat/vente trop large", `Vendeur à ${ask}, acheteur à ${bid} : écart de ${(ask - bid).toFixed(3)}, maximum ${CFG.ECART_MAX}.`);
     const mise = Math.min(this.e.mise, this.e.capital - this.e.reserve);
-    if (mise < 1) return this.veto("capital épuisé");
+    if (mise < 1) return refusA("capital épuisé", "Plus de capital disponible hors réserve.");
     let reste = mise, parts = 0, cout = 0;
     for (const [p, sz] of bk.asks) {
       if (p > CFG.PRIX_MAX) break;
@@ -361,7 +387,7 @@ export class Bot {
       parts += prendre; cout += prendre * p; reste -= prendre * p;
       if (reste < 0.01) break;
     }
-    if (reste >= 0.01) return this.veto("pas assez de parts au prix");
+    if (reste >= 0.01) return refusA("pas assez de parts au prix", `Seulement ${parts.toFixed(1)} parts disponibles jusqu'à ${CFG.PRIX_MAX} pour une mise de ${mise.toFixed(2)} $ (achat « tout ou rien »).`);
     const pm = cout / parts;
     mk.entre = true;
     this.e.position = {
@@ -459,7 +485,15 @@ export class Bot {
 
   finFenetre() {
     const mk = this.mkt;
+    if (mk && mk.offre && !mk.offre.rempli) { mk.refus = mk.refus || {}; mk.comptes = mk.comptes || { A: {}, B: {} };
+      mk.refus.B = { raison: "offre non remplie", explication: `Offre d'achat ${mk.offre.fav} à ${mk.offre.prix} posée, mais aucun vendeur n'a frappé à ce prix avant la fin.`, ...(mk.dernier || {}) }; }
     if (mk && mk.offre) this.figerOffre();
+    if (mk && mk.candidat && (mk.refus && (mk.refus.A || mk.refus.B))) {
+      this.e.rapport = this.e.rapport || [];
+      this.e.rapport.unshift({ heure: new Date(mk.start * 1000).toISOString(), slug: mk.slug, strike: mk.strike || mk.ouvCl || null,
+        A: mk.entre ? { raison: "acheté" } : (mk.refus.A || null), B: mk.entreB ? { raison: "offre remplie" } : (mk.refus.B || null), comptes: mk.comptes });
+      this.e.rapport.length = Math.min(this.e.rapport.length, 300);
+    }
     if (mk && mk.candidat && !mk.entre && mk.raison) {
       this.e.vetos[mk.raison] = (this.e.vetos[mk.raison] || 0) + 1;
     }
@@ -558,6 +592,7 @@ button{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:10px 1
 @media(max-width:420px){.g{grid-template-columns:repeat(2,1fr)}}
 </style></head><body>
 <h1>Bot 95 <span class="badge">mode fantôme</span></h1><div class="mu">BTC 5 min Polymarket — 30 dernières secondes — aucun argent réel</div>
+<div style="margin-top:8px"><a href="/rapport" style="color:var(--ac)">→ Rapport détaillé des refus</a></div>
 <div id="app" class="mu" style="margin-top:12px">Chargement…</div>
 <script>
 const $=s=>document.querySelector(s);const f=(x,d=2)=>x==null?'—':Number(x).toFixed(d);const usd=x=>(x>=0?'+':'')+f(x)+' $';
@@ -585,4 +620,27 @@ bloc('A — achat immédiat',e,'A')+bloc('B — offre posée',e.B,'B','<span cla
 (d.diag.erreurs.length?'<div class=card><b>Journal technique</b><div class=mu>'+d.diag.erreurs.join('<br>')+'</div></div>':'');
 }catch(err){$('#app').textContent='Erreur de chargement : '+err}}
 go();setInterval(go,2000);
+</script></body></html>`;
+
+const RAPPORT = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rapport des refus</title><style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#171a21;--tx:#e8eaee;--mu:#98a2b3;--bd:#262b35;--ok:#3ccf91;--ko:#f0705f;--ac:#7c9cff;--wa:#f5a524}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 -apple-system,system-ui,sans-serif;padding:16px;max-width:760px;margin:auto}
+h1{font-size:20px;margin:0 0 4px}a{color:var(--ac)}.mu{color:var(--mu);font-size:13px}.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:12px 0}
+.l{margin-top:8px;padding-left:10px;border-left:3px solid var(--bd)}.r{font-weight:600}.ok{color:var(--ok)}.wa{color:var(--wa)}.chips{font-size:12px;color:var(--mu);margin-top:4px}
+</style></head><body><h1>Rapport des refus</h1><div class="mu">Un bloc par marché où le favori était entre 0,94 et 0,99 dans les 30 dernières secondes. Pour chaque option, le dernier refus avec ses chiffres, puis le nombre de secondes bloquées par motif.</div>
+<div style="margin-top:8px"><a href="/">← Tableau de bord</a></div><div id="app" class="mu" style="margin-top:12px">Chargement…</div>
+<script>
+const nb=c=>c?Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+' : '+v+' s').join(' · '):'';
+function opt(n,x,c){if(!x)return '<div class=l><span class=mu>'+n+' : pas concerné</span></div>';
+const ok=x.raison==='acheté'||x.raison==='offre remplie';
+return '<div class=l><span class="r '+(ok?'ok':'wa')+'">'+n+' — '+x.raison+'</span>'+(x.explication?'<br>'+x.explication:'')+
+(x.fav?'<div class=chips>Favori '+x.fav+' · vendeur '+x.ask+' · acheteur '+x.bid+' · T-'+x.tleft+' s · distance '+x.dist+' $ · z '+x.z+' · proba '+(x.proba*100).toFixed(1)+' %</div>':'')+
+(c&&Object.keys(c).length?'<div class=chips>Secondes bloquées : '+nb(c)+'</div>':'')+'</div>'}
+async function go(){const d=await (await fetch('/api/rapport')).json();
+document.getElementById('app').className='';
+document.getElementById('app').innerHTML=(d.rapport.length?d.rapport.map(m=>'<div class=card><b>'+new Date(m.heure).toLocaleString('fr-CH',{weekday:'short',hour:'2-digit',minute:'2-digit'})+'</b> <span class=mu>'+m.slug+(m.strike?' · prix d\\'exercice '+Number(m.strike).toFixed(2):'')+'</span>'+
+opt('A (achat immédiat)',m.A,m.comptes&&m.comptes.A)+opt('B (offre posée)',m.B,m.comptes&&m.comptes.B)+'</div>').join(''):'<div class=card>Aucun marché candidat enregistré depuis la mise en route du rapport.</div>')}
+go();setInterval(go,10000);
 </script></body></html>`;
