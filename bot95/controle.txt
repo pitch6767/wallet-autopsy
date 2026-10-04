@@ -1,30 +1,30 @@
 
  ⛅️ wrangler 4.147.0
 ────────────────────
-Total Upload: 31.11 KiB / gzip: 10.51 KiB
+Total Upload: 31.32 KiB / gzip: 10.56 KiB
 Worker Startup Time: 2 ms
 Your Worker has access to the following bindings:
 Binding            Resource            
 env.BOT (Bot)      Durable Object      
 
-Uploaded bot95 (2.01 sec)
-Deployed bot95 triggers (0.61 sec)
+Uploaded bot95 (1.64 sec)
+Deployed bot95 triggers (0.52 sec)
   https://bot95.pitch67.workers.dev
   schedule: * * * * *
-Current Version ID: 9971474b-9079-4170-a1ca-1de50d821b9b
+Current Version ID: 62dfab0f-150f-4490-90e0-21a09360b2f7
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 page 200
 === etat 1
-{"flux": {"perp": {"p": null, "age": null, "src": "binance"}, "coinbase": {"p": 85277.37, "age": 0.7, "src": "coinbase"}, "chainlink": {"p": 85268.61279535892, "age": 0.5}, "deseq": 0, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791112500", "strike": 85259.75927988786, "reste": 213, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1}, "erreurs": ["11:16:26 flux perp: pas de websocket (HTTP 403)", "11:16:25 flux perp: pas de websocket (HTTP 403)", "11:16:24 flux perp: pas de websocket (HTTP 403)", "11:16:23 flux perp: pas de websocket (HTTP 403)", "11:16:22 flux perp: pas de websocket (HTTP 403)", "11:16:21 flux perp: pas de websocket (HTTP 403)", "11:16:21 flux perp: pas de websocket (HTTP 403)", "11:16:19 flux perp: pas de websocket (HTTP 403)", "11:16:18 flux perp: pas de websocket (HTTP 403)", "11:16:17 flux perp: pas de websocket (HTTP 403)", "11:16:16 flux perp: pas de websocket (HTTP 403)", "11:16:16 flux perp: pas de websocket (HTTP 403)", "11:16:14 flux perp: pas de websocket (HTTP 403)", "11:16:13 flux perp: pas de websocket (HTTP 403)", "11:16:12 flux perp: pas de websocket (HTTP 403)"]}}
+{"flux": {"perp": {"p": 85244.8, "age": 1, "src": "bybit"}, "coinbase": {"p": 85267.88, "age": 0.2, "src": "coinbase"}, "chainlink": {"p": 85262.66115626499, "age": 0.9}, "deseq": -0.71, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791112500", "strike": 85262.99668207389, "reste": 33, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["11:18:46 flux perp binance: pas de websocket (HTTP 403)"]}}
 vetos {} trades 0 evenements 25
 
 === etat 2
-{"flux": {"perp": {"p": null, "age": null, "src": "binance"}, "coinbase": {"p": 85272.38, "age": 0.1, "src": "coinbase"}, "chainlink": {"p": 85268.43935473706, "age": 0.4}, "deseq": 0, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791112500", "strike": 85259.75927988786, "reste": 173, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1}, "erreurs": ["11:17:05 flux perp: pas de websocket (HTTP 403)", "11:17:04 flux perp: pas de websocket (HTTP 403)", "11:17:03 flux perp: pas de websocket (HTTP 403)", "11:17:02 flux perp: pas de websocket (HTTP 403)", "11:17:01 flux perp: pas de websocket (HTTP 403)", "11:17:00 flux perp: pas de websocket (HTTP 403)", "11:16:59 flux perp: pas de websocket (HTTP 403)", "11:16:58 flux perp: pas de websocket (HTTP 403)", "11:16:57 flux perp: pas de websocket (HTTP 403)", "11:16:56 flux perp: pas de websocket (HTTP 403)", "11:16:55 flux perp: pas de websocket (HTTP 403)", "11:16:54 flux perp: pas de websocket (HTTP 403)", "11:16:53 flux perp: pas de websocket (HTTP 403)", "11:16:52 flux perp: pas de websocket (HTTP 403)", "11:16:51 flux perp: pas de websocket (HTTP 403)"]}}
+{"flux": {"perp": {"p": 85240.9, "age": 2.4, "src": "bybit"}, "coinbase": {"p": 85264.09, "age": 0.2, "src": "coinbase"}, "chainlink": {"p": 85254.46047360018, "age": 0.5}, "deseq": 0.82, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791112800", "strike": 85256.83678383104, "reste": 292, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["11:18:46 flux perp binance: pas de websocket (HTTP 403)"]}}
 vetos {} trades 0 evenements 25
 
 === etat 3
-{"flux": {"perp": {"p": null, "age": null, "src": "binance"}, "coinbase": {"p": 85267.88, "age": 0.2, "src": "coinbase"}, "chainlink": {"p": 85261.44323379999, "age": 0.4}, "deseq": 0, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791112500", "strike": 85259.75927988786, "reste": 133, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1}, "erreurs": ["11:17:46 flux perp: pas de websocket (HTTP 403)", "11:17:45 flux perp: pas de websocket (HTTP 403)", "11:17:44 flux perp: pas de websocket (HTTP 403)", "11:17:43 flux perp: pas de websocket (HTTP 403)", "11:17:42 flux perp: pas de websocket (HTTP 403)", "11:17:41 flux perp: pas de websocket (HTTP 403)", "11:17:40 flux perp: pas de websocket (HTTP 403)", "11:17:39 flux perp: pas de websocket (HTTP 403)", "11:17:38 flux perp: pas de websocket (HTTP 403)", "11:17:37 flux perp: pas de websocket (HTTP 403)", "11:17:36 flux perp: pas de websocket (HTTP 403)", "11:17:35 flux perp: pas de websocket (HTTP 403)", "11:17:34 flux perp: pas de websocket (HTTP 403)", "11:17:33 flux perp: pas de websocket (HTTP 403)", "11:17:32 flux perp: pas de websocket (HTTP 403)"]}}
+{"flux": {"perp": {"p": 85248.5, "age": 0, "src": "bybit"}, "coinbase": {"p": 85274.41, "age": 0.4, "src": "coinbase"}, "chainlink": {"p": 85265.27656197408, "age": 0.4}, "deseq": 0.66, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791112800", "strike": 85256.83678383104, "reste": 252, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["11:18:46 flux perp binance: pas de websocket (HTTP 403)"]}}
 vetos {} trades 0 evenements 25
 
