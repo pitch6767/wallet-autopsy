@@ -8,7 +8,7 @@ const CFG = {
   Z_MIN_BAS: 3.0,              // distance mini si prix < 0,97 (on risque plus)
   MARGE_MODELE: 0.01,          // proba calculée >= prix + 1 pt
   COURSE_FACTEUR: 2,           // temps pour atteindre le strike > 2 x temps restant
-  FRAICHEUR_S: 2,              // une source plus vieille que 2 s = pas de trade
+  FRAICHEUR_S: 5,              // une source plus vieille que 5 s = pas de trade (validé le 04.10.2026)
   ECART_MAX: 0.02,             // écart achat/vente maxi
   LIQ_CONTRE_USD: 250000,      // liquidations contre nous sur 10 s
   DESEQ_CONTRE: 0.6,           // déséquilibre carnet perp contre nous (top 5)
