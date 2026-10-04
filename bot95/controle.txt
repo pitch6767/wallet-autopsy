@@ -1,30 +1,30 @@
 
  ⛅️ wrangler 4.147.0
 ────────────────────
-Total Upload: 31.58 KiB / gzip: 10.63 KiB
+Total Upload: 31.74 KiB / gzip: 10.68 KiB
 Worker Startup Time: 1 ms
 Your Worker has access to the following bindings:
 Binding            Resource            
 env.BOT (Bot)      Durable Object      
 
-Uploaded bot95 (1.57 sec)
-Deployed bot95 triggers (0.64 sec)
+Uploaded bot95 (1.64 sec)
+Deployed bot95 triggers (0.58 sec)
   https://bot95.pitch67.workers.dev
   schedule: * * * * *
-Current Version ID: 9afe9a67-ccd5-42ac-be8a-5f0339051d27
+Current Version ID: 32365221-c9c3-4e21-aa41-d9663ba04ace
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 page 200
 === etat 1
-{"flux": {"perp": {"p": 85285.7, "age": 1.6, "src": "bybit"}, "coinbase": {"p": 85307.23, "age": 0, "src": "coinbase"}, "chainlink": {"p": 85297.64827629484, "age": 0.2}, "deseq": 0.77, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791113400", "strike": 85297.61998854236, "reste": 297, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["11:29:03 flux perp binance: pas de websocket (HTTP 403)"], "vus": ["1791113100 T-2 Up 1 Down 0.01", "1791113100 T-3 Up 1 Down 0.01", "1791113100 T-4 Up 1 Down 0.01", "1791113100 T-5 Up 1 Down 0.01", "1791113100 T-6 Up 1 Down 0.01", "1791113100 T-7 Up 1 Down 0.01", "1791113100 T-8 Up 1 Down 0.01", "1791113100 T-9 Up 1 Down 0.01", "1791113100 T-10 Up 1 Down 0.01", "1791113100 T-11 Up 1 Down 0.01", "1791113100 T-12 Up 1 Down 0.01", "1791113100 T-13 Up 1 Down 0.01"]}}
+{"flux": {"perp": {"p": 85257.8, "age": 6.3, "src": "bybit"}, "coinbase": {"p": 85286.5, "age": 0.2, "src": "coinbase"}, "chainlink": {"p": 85284.21929164618, "age": 1.3}, "deseq": -0.56, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791113700", "strike": 85284.75122349811, "reste": 181, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["11:36:05 flux perp binance: pas de websocket (HTTP 403)"]}}
 vetos {} trades 0 evenements 25
 
 === etat 2
-{"flux": {"perp": {"p": 85284.6, "age": 0.9, "src": "bybit"}, "coinbase": {"p": 85307.24, "age": 1, "src": "coinbase"}, "chainlink": {"p": 85299.84865195451, "age": 0.3}, "deseq": -0.27, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791113400", "strike": 85297.61998854236, "reste": 256, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["11:29:03 flux perp binance: pas de websocket (HTTP 403)"], "vus": ["1791113100 T-2 Up 1 Down 0.01", "1791113100 T-3 Up 1 Down 0.01", "1791113100 T-4 Up 1 Down 0.01", "1791113100 T-5 Up 1 Down 0.01", "1791113100 T-6 Up 1 Down 0.01", "1791113100 T-7 Up 1 Down 0.01", "1791113100 T-8 Up 1 Down 0.01", "1791113100 T-9 Up 1 Down 0.01", "1791113100 T-10 Up 1 Down 0.01", "1791113100 T-11 Up 1 Down 0.01", "1791113100 T-12 Up 1 Down 0.01", "1791113100 T-13 Up 1 Down 0.01"]}}
+{"flux": {"perp": {"p": 85257.8, "age": 1.1, "src": "bybit"}, "coinbase": {"p": 85286.49, "age": 0.1, "src": "coinbase"}, "chainlink": {"p": 85283.3456497884, "age": 0.1}, "deseq": -0.46, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791113700", "strike": 85284.75122349811, "reste": 140, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["11:36:05 flux perp binance: pas de websocket (HTTP 403)"]}}
 vetos {} trades 0 evenements 25
 
 === etat 3
-{"flux": {"perp": {"p": 85287.7, "age": 1.8, "src": "bybit"}, "coinbase": {"p": 85313.77, "age": 0.2, "src": "coinbase"}, "chainlink": {"p": 85302.00523169682, "age": 0.2}, "deseq": -0.94, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791113400", "strike": 85297.61998854236, "reste": 216, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["11:29:03 flux perp binance: pas de websocket (HTTP 403)"], "vus": ["1791113100 T-2 Up 1 Down 0.01", "1791113100 T-3 Up 1 Down 0.01", "1791113100 T-4 Up 1 Down 0.01", "1791113100 T-5 Up 1 Down 0.01", "1791113100 T-6 Up 1 Down 0.01", "1791113100 T-7 Up 1 Down 0.01", "1791113100 T-8 Up 1 Down 0.01", "1791113100 T-9 Up 1 Down 0.01", "1791113100 T-10 Up 1 Down 0.01", "1791113100 T-11 Up 1 Down 0.01", "1791113100 T-12 Up 1 Down 0.01", "1791113100 T-13 Up 1 Down 0.01"]}}
+{"flux": {"perp": {"p": 85242.2, "age": 0.5, "src": "bybit"}, "coinbase": {"p": 85271.06, "age": 0.3, "src": "coinbase"}, "chainlink": {"p": 85268.38674749984, "age": 0.2}, "deseq": -0.81, "liq10s": 0}, "marche": {"slug": "btc-updown-5m-1791113700", "strike": 85284.75122349811, "reste": 100, "raison": null, "entre": false}, "diag": {"reconnexions": {"cl": 1, "cb": 1, "perp": 1}, "erreurs": ["11:36:05 flux perp binance: pas de websocket (HTTP 403)"]}}
 vetos {} trades 0 evenements 25
 
