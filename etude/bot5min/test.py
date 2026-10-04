@@ -15,6 +15,7 @@ JOURS = int(sys.argv[1]) if len(sys.argv) > 1 else 10
 MISE = 50.0
 FEE_RATE = 0.072          # frais taker crypto : parts x 0,072 x p x (1-p)
 OUT = "etude/bot5min/"
+ACHAT_REEL = True
 
 
 def get(url, tries=5, raw=False):
@@ -134,6 +135,8 @@ def analyser(m, BTC, ETH, SOL, W, PMIN, PMAX):
             continue
         fav_up = pup >= 0.5
         pf = pup if fav_up else 1 - pup
+        if ACHAT_REEL and not (side == "BUY" and up == fav_up):
+            continue            # seulement un vrai achat du favori a ce prix
         if PMIN <= pf <= PMAX:
             entree = (ts, pf, fav_up)
             break
@@ -267,7 +270,7 @@ def main():
 
     L = []
     rap = []
-    rap.append(f"# Tests bot BTC 5 min — {len(M)} marches sur {JOURS} jours ({jours[0]} -> {jours[-1]})\n")
+    rap.append(f"# Tests bot BTC 5 min (ACHATS REELS du favori seulement) — {len(M)} marches sur {JOURS} jours ({jours[0]} -> {jours[-1]})\n")
     rap.append(f"Strike : {dict(sources)}. Binance (strike corrige de l'ecart USDT/USD) donne le bon gagnant dans {accord}/{accord + desac} marches "
                f"({100 * accord / max(1, accord + desac):.2f} %) — le reste = ecart Binance/Chainlink.\n")
     rap.append(f"Mise {MISE:.0f} $, frais taker {FEE_RATE} x p x (1-p) par part.\n")
@@ -351,7 +354,7 @@ def main():
 
         TOUS += B
     rap.append(f"\nDuree du calcul : {time.time() - t0:.0f} s")
-    open(OUT + "resultat.md", "w").write("\n".join(rap))
+    open(OUT + "resultat_achats_reels.md", "w").write("\n".join(rap))
     with open(OUT + "trades.csv", "w", newline="") as fh:
         cols = sorted({k for x in TOUS for k in x})
         w = csv.DictWriter(fh, cols)
