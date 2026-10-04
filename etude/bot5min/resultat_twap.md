@@ -1,52 +1,50 @@
-# Re-test REGLE TWAP 60 s — 3851 marches, 14 jours (2026-09-20 -> 2026-10-03)
+# Re-test REGLE TWAP 60 s — 3848 marches, 14 jours (2026-09-20 -> 2026-10-03)
 
-Controle : la moyenne Binance 60 s (corrigee) donne le bon gagnant dans 3765/3851 marches (97.77 %).
+Controle : la moyenne Binance 60 s (corrigee) donne le bon gagnant dans 0/0 marches (0.00 %).
+
+Derive moyenne de l'ecart Binance/Chainlink pendant un marche : 4.91 $ (ecart-type), ajoutee a l'incertitude.
 
 Gain avec mise fixe 50 $ ; colonne « avec 1/3 réinvesti » = capital 200 $, 1/3 du gain ajouté à la mise, 2/3 en réserve.
 
 
 ## A — vrais achats du favori (prix vendeur), 30 dernieres secondes
 
-| Distance mini (TWAP) | Trades | Pertes | Gain mise fixe | Gain avec 1/3 réinvesti | Trades/jour |
+| Distance mini (TWAP) | Trades | Pertes | Gain mise fixe | Gain avec 1/3 réinvesti (mise max 500 $) | Trades/jour |
 |---|---|---|---|---|---|
-| 1.0 | 552 | 9 | +508 $ | -5333 $ | 39.4 |
-| 1.5 | 552 | 9 | +508 $ | -5333 $ | 39.4 |
-| 2.0 | 547 | 8 | +501 $ | +73 $ | 39.1 |
-| 2.5 | 519 | 8 | +387 $ | +96 $ | 37.1 |
-| 3.0 | 451 | 7 | +307 $ | +67 $ | 32.2 |
-| 4.0 | 354 | 4 | +286 $ | +387 $ | 25.3 |
+| 1.0 | 246 | 1 | +388 $ | +2154 $ | 17.6 |
+| 1.5 | 246 | 1 | +388 $ | +2154 $ | 17.6 |
+| 2.0 | 219 | 1 | +303 $ | +1321 $ | 15.6 |
+| 2.5 | 150 | 0 | +200 $ | +415 $ | 10.7 |
+| 3.0 | 92 | 0 | +123 $ | +189 $ | 6.6 |
 
 ## A — vrais achats du favori (prix vendeur), 60 dernieres secondes
 
-| Distance mini (TWAP) | Trades | Pertes | Gain mise fixe | Gain avec 1/3 réinvesti | Trades/jour |
+| Distance mini (TWAP) | Trades | Pertes | Gain mise fixe | Gain avec 1/3 réinvesti (mise max 500 $) | Trades/jour |
 |---|---|---|---|---|---|
-| 1.0 | 1759 | 49 | +1020 $ | +21405062265385365504 $ | 125.6 |
-| 1.5 | 1759 | 49 | +1020 $ | +21405062265385365504 $ | 125.6 |
-| 2.0 | 1716 | 45 | +883 $ | +221404018911229088 $ | 122.6 |
-| 2.5 | 1605 | 30 | +1092 $ | +4434744195871977 $ | 114.6 |
-| 3.0 | 1324 | 18 | +1105 $ | +13286605638 $ | 94.6 |
-| 4.0 | 830 | 11 | +613 $ | +754 $ | 59.3 |
+| 1.0 | 1406 | 36 | +944 $ | -1416569030072997 $ | 100.4 |
+| 1.5 | 1406 | 36 | +944 $ | -1416569030072997 $ | 100.4 |
+| 2.0 | 1308 | 27 | +964 $ | -38163064759325 $ | 93.4 |
+| 2.5 | 1067 | 8 | +1181 $ | -1682087467 $ | 76.2 |
+| 3.0 | 715 | 5 | +729 $ | +5240 $ | 51.1 |
 
 ## B — offre posée remplie par un vendeur, 30 dernieres secondes
 
-| Distance mini (TWAP) | Trades | Pertes | Gain mise fixe | Gain avec 1/3 réinvesti | Trades/jour |
+| Distance mini (TWAP) | Trades | Pertes | Gain mise fixe | Gain avec 1/3 réinvesti (mise max 500 $) | Trades/jour |
 |---|---|---|---|---|---|
-| 1.0 | 2766 | 7 | +1802 $ | +712 $ | 197.6 |
-| 1.5 | 2766 | 7 | +1802 $ | +712 $ | 197.6 |
-| 2.0 | 2765 | 7 | +1774 $ | +699 $ | 197.5 |
-| 2.5 | 2758 | 7 | +1676 $ | +592 $ | 197.0 |
-| 3.0 | 2752 | 5 | +1683 $ | +5176 $ | 196.6 |
-| 4.0 | 2745 | 4 | +1580 $ | +3797 $ | 196.1 |
+| 1.0 | 1490 | 1 | +1055 $ | +8312 $ | 106.4 |
+| 1.5 | 1490 | 1 | +1055 $ | +8312 $ | 106.4 |
+| 2.0 | 1472 | 1 | +991 $ | +7746 $ | 105.1 |
+| 2.5 | 1406 | 0 | +880 $ | +6687 $ | 100.4 |
+| 3.0 | 1329 | 0 | +766 $ | +5545 $ | 94.9 |
 
 ## B — offre posée remplie par un vendeur, 60 dernieres secondes
 
-| Distance mini (TWAP) | Trades | Pertes | Gain mise fixe | Gain avec 1/3 réinvesti | Trades/jour |
+| Distance mini (TWAP) | Trades | Pertes | Gain mise fixe | Gain avec 1/3 réinvesti (mise max 500 $) | Trades/jour |
 |---|---|---|---|---|---|
-| 1.0 | 3146 | 45 | +2096 $ | +26 $ | 224.7 |
-| 1.5 | 3146 | 45 | +2096 $ | +26 $ | 224.7 |
-| 2.0 | 3143 | 40 | +2163 $ | +19 $ | 224.5 |
-| 2.5 | 3127 | 24 | +2518 $ | +3 $ | 223.4 |
-| 3.0 | 3094 | 19 | +2292 $ | +1018 $ | 221.0 |
-| 4.0 | 3054 | 12 | +1925 $ | +818 $ | 218.1 |
+| 1.0 | 2514 | 33 | +1795 $ | +6 $ | 179.6 |
+| 1.5 | 2514 | 33 | +1795 $ | +6 $ | 179.6 |
+| 2.0 | 2462 | 23 | +2008 $ | -24 $ | 175.9 |
+| 2.5 | 2265 | 7 | +2135 $ | +19662 $ | 161.8 |
+| 3.0 | 1982 | 6 | +1524 $ | +12220 $ | 141.6 |
 
-Duree : 1007 s
+Duree : 533 s
