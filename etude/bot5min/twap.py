@@ -44,6 +44,16 @@ def main():
             hist.append(tb - kp)
         m["K"] = (kp + m["base"]) if kp else None
         tf = twap(BTC, m["end"] - 59, m["end"])
+        # derive de l'ecart Binance/Chainlink pendant le marche (mesuree apres coup, utilisee seulement pour les marches suivants)
+        fo = float(m["final"]) if m.get("final") is not None else None
+        m["derive"] = ((tf - tb) - (fo - kp)) if (tf and tb and fo and kp) else None
+    derives = []
+    for m in M:
+        m["sd_b"] = statistics.pstdev(derives[-50:]) if len(derives) >= 10 else 5.0
+        if m["derive"] is not None: derives.append(m["derive"])
+    rap_derive = statistics.pstdev(derives) if derives else None
+    if False:
+        tf = None
         if m["K"] and tf:
             if (tf >= m["K"]) == m["up_gagne"]: ok += 1
             else: ko += 1
@@ -72,17 +82,18 @@ def main():
         connus = [x for x in connus if x]
         nr = m["end"] - max(ts, a - 1)
         E = (sum(connus) + nr * P) / (len(connus) + nr)
-        sd = sg * P * math.sqrt(nr ** 3 / 3) / 60
+        sd = math.sqrt((sg * P * math.sqrt(nr ** 3 / 3) / 60) ** 2 + m["sd_b"] ** 2)
         return ((E - K) / sd) * (1 if fav_up else -1)
 
     rap = [f"# Re-test REGLE TWAP 60 s — {len(M)} marches, {JOURS} jours ({jours[0]} -> {jours[-1]})\n",
            f"Controle : la moyenne Binance 60 s (corrigee) donne le bon gagnant dans {ok}/{ok + ko} marches ({100 * ok / max(1, ok + ko):.2f} %).\n",
+           f"Derive moyenne de l'ecart Binance/Chainlink pendant un marche : {rap_derive:.2f} $ (ecart-type), ajoutee a l'incertitude.\n",
            "Gain avec mise fixe 50 $ ; colonne « avec 1/3 réinvesti » = capital 200 $, 1/3 du gain ajouté à la mise, 2/3 en réserve.\n"]
     for nom, reel in (("A — vrais achats du favori (prix vendeur)", True), ("B — offre posée remplie par un vendeur", False)):
         for W in (30, 60):
             rap.append(f"\n## {nom}, {W} dernieres secondes\n")
-            rap.append("| Distance mini (TWAP) | Trades | Pertes | Gain mise fixe | Gain avec 1/3 réinvesti | Trades/jour |\n|---|---|---|---|---|---|")
-            for zmin in (1.0, 1.5, 2.0, 2.5, 3.0, 4.0):
+            rap.append("| Distance mini (TWAP) | Trades | Pertes | Gain mise fixe | Gain avec 1/3 réinvesti (mise max 500 $) | Trades/jour |\n|---|---|---|---|---|---|")
+            for zmin in (1.0, 1.5, 2.0, 2.5, 3.0):
                 L = []
                 for m in M:
                     for (ts, p, fav_up) in entrees(m, W, reel):
@@ -97,7 +108,7 @@ def main():
                     net = (parts * (1 - p) if g else -mm) - (parts * T.FEE_RATE * p * (1 - p) if r else 0)
                     cap += net
                     if net >= 0: res += net * 2 / 3; mise += net / 3
-                    mise = min(mise, cap - res)
+                    mise = min(mise, cap - res, 500)
                 rap.append("| %.1f | %d | %d | %+.0f $ | %+.0f $ | %.1f |" % (zmin, len(L), sum(1 for x in L if not x[2]), fixe, cap - 200, len(L) / JOURS))
     rap.append(f"\nDuree : {time.time() - t0:.0f} s")
     open(OUT + "resultat_twap.md", "w").write("\n".join(rap))
