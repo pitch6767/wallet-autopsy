@@ -193,6 +193,9 @@ export class Bot {
         if (m.type === "snapshot") this.livre = { b: new Map(), a: new Map() };
         for (const [p, q] of d.b || []) +q ? this.livre.b.set(p, +q) : this.livre.b.delete(p);
         for (const [p, q] of d.a || []) +q ? this.livre.a.set(p, +q) : this.livre.a.delete(p);
+        // retirer les niveaux périmés (croisés avec le dernier prix échangé)
+        const px = this.f.perp ? this.f.perp.p : null;
+        if (px) { for (const k of [...this.livre.b.keys()]) if (+k > px + 1) this.livre.b.delete(k); for (const k of [...this.livre.a.keys()]) if (+k < px - 1) this.livre.a.delete(k); }
         deseq([...this.livre.b].sort((x, y) => y[0] - x[0]), [...this.livre.a].sort((x, y) => x[0] - y[0]));
       }
     } else if (this.perpSrc === "okx") {
