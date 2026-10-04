@@ -153,7 +153,11 @@ export class Bot {
       ws.addEventListener("close", (ev) => { clearInterval(ws.pinger); this.erreur("flux " + nom + " fermé", "code " + ev.code + " " + (ev.reason || "")); });
       this.ws[nom] = ws; this.ws[nom + "_ouvert"] = now();
       this.diag.reconnexions[nom] = (this.diag.reconnexions[nom] || 0) + 1;
-    } catch (err) { this.erreur("flux " + nom, err); }
+    } catch (err) {
+      this.erreur("flux " + nom + (nom === "perp" ? " " + this.perpSrc : nom === "cb" ? " " + this.cbSrc : ""), err);
+      if (nom === "perp") this.perpIdx = ((this.perpIdx || 0) + 1) % 3;   // essayer la source suivante
+      if (nom === "cb") this.cbIdx = ((this.cbIdx || 0) + 1) % 3;
+    }
     this.ws[nom + "_en_cours"] = false;
   }
 
