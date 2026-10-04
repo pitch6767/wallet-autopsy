@@ -532,7 +532,7 @@ export class Bot {
     if (mk && mk.slug) {
       this.e.verif = this.e.verif || [];
       const s0 = mk.start, cl0 = this.prixA("cl", s0) , clF = this.prixA("cl", mk.end);
-      this.e.verif.unshift({ start: s0, slug: mk.slug, kBot: mk.strike || mk.ouvTwap || null, kSrc: mk.strike ? (mk.strikeSrc || "polymarket") : (mk.ouvTwap ? "moyenne Chainlink calculée" : "aucun"),
+      this.e.verif.unshift({ start: s0, slug: mk.slug, kBot: mk.strike || mk.ouvTwap || null, kTwap: mk.ouvTwap || null, kSrc: mk.strike ? (mk.strikeSrc || "polymarket") : (mk.ouvTwap ? "moyenne Chainlink calculée" : "aucun"),
         finBot: (() => { const v = []; for (let s2 = mk.end - 59; s2 <= mk.end; s2++) { const x = this.prixA("cl", s2); if (x) v.push(x); } return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; })(),
         clDebut: cl0, clFin: clF, perpFin: this.prixA("perp", mk.end), dernierBid: mk.dernier ? { fav: mk.dernier.fav, bid: mk.dernier.bid } : null, fait: false });
       this.e.verif.length = Math.min(this.e.verif.length, 100);
@@ -605,6 +605,7 @@ export class Bot {
         v.kOfficiel = +meta.priceToBeat; v.finOfficiel = meta.finalPrice != null ? +meta.finalPrice : null;
         v.gagnant = outs[px.indexOf(1)];
         v.ecartK = v.kBot ? +(v.kBot - v.kOfficiel).toFixed(2) : null;
+        v.ecartKTwap = v.kTwap ? +(v.kTwap - v.kOfficiel).toFixed(2) : null;
         v.ecartFin = v.clFin && v.finOfficiel ? +(v.clFin - v.finOfficiel).toFixed(2) : null;
         v.botAuraitDit = v.kBot && v.finBot ? (v.finBot >= v.kBot ? "Up" : "Down") : null;
         v.ecartFin = v.finBot && v.finOfficiel ? +(v.finBot - v.finOfficiel).toFixed(2) : null;
