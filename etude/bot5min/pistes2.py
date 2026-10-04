@@ -48,7 +48,13 @@ def etudier(prefixe, sym, jours, debut, fin):
         if tf and tb and fo and kp: derives.append((tf - tb) - (fo - kp))
     print(prefixe, len(M), "marches"); sys.stdout.flush()
 
+    cache = {}
     def z_de(m, ts, fav_up):
+        cle = (m["start"], ts, fav_up)
+        if cle not in cache: cache[cle] = z_calc(m, ts, fav_up)
+        return cache[cle]
+
+    def z_calc(m, ts, fav_up):
         K = m["K"]; P = T.prix(PX, ts); sg = T.sigma_s(PX, ts)
         if not (K and P and sg and m["sd_b"]): return None
         a = m["end"] - 59
