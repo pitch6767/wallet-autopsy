@@ -4,7 +4,7 @@
 const CFG = {
   FENETRE: 30,                 // s avant la fin
   PRIX_MIN: 0.95, PRIX_MAX: 0.99,
-  Z_MIN_HAUT: 2.5,             // distance mini (écarts-types) si prix >= 0,97
+  Z_MIN_HAUT: 1.5,             // distance mini (écarts-types) si prix >= 0,97 (option A validée : 1,5)
   Z_MIN_BAS: 3.0,              // distance mini si prix < 0,97 (on risque plus)
   MARGE_MODELE: 0.01,          // proba calculée >= prix + 1 pt
   COURSE_FACTEUR: 2,           // temps pour atteindre le strike > 2 x temps restant
@@ -14,6 +14,7 @@ const CFG = {
   DESEQ_CONTRE: 0.6,           // déséquilibre carnet perp contre nous (top 5)
   SORTIE_Z: 1.0,               // sortie d'urgence si la distance passe sous 1 écart-type
   FEE_RATE: 0.072,             // frais taker : parts x 0,072 x p x (1-p)
+  B_PRIX_MIN: 0.94,            // option B : offre d'achat posée entre 0,94 et 0,99
   CAPITAL: 200, MISE: 50, PART_REINVEST: 1 / 3, PART_RESERVE: 2 / 3,
   // annonces : jours ouvrés, heures UTC [début, fin] en minutes
   ANNONCES: [[12 * 60 + 28, 12 * 60 + 40], [13 * 60 + 58, 14 * 60 + 10], [17 * 60 + 58, 18 * 60 + 10]],
@@ -63,6 +64,7 @@ export class Bot {
         capital: CFG.CAPITAL, mise: CFG.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0,
         pause: false, position: null, attente: [], trades: [], vetos: {}, fenetres: 0, depuis: now(),
       };
+      if (!this.e.B) this.e.B = { capital: CFG.CAPITAL, mise: CFG.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, pause: false, position: null, vetos: {}, offres: 0, remplies: 0 };
     });
   }
 
@@ -73,7 +75,8 @@ export class Bot {
     const u = new URL(req.url);
     if (u.pathname === "/api/etat") return Response.json(this.vue(), { headers: { "cache-control": "no-store" } });
     if (u.pathname === "/api/reprendre" && req.method === "POST") {
-      this.e.pause = false; await this.sauver();
+      if (u.searchParams.get("s") === "B") this.e.B.pause = false; else this.e.pause = false;
+      await this.sauver();
       return Response.json({ ok: true });
     }
     if (u.pathname === "/api/reveil") return Response.json({ ok: true });
@@ -256,9 +259,12 @@ export class Bot {
     }
     await this.resoudre();
     try { await this.suivreGros(tleft); } catch (err) { this.erreur("gros traders", err); }
-    const pos = this.e.position;
+    const pos = this.e.position, posB = this.e.B.position;
     if (pos && pos.start === start) await this.surveiller(pos, tleft);
-    else if (tleft <= CFG.FENETRE && tleft >= 1 && this.mkt.charge && !this.mkt.entre) await this.decider(tleft);
+    if (posB && posB.start === start) await this.surveiller(posB, tleft);
+    if (tleft <= CFG.FENETRE && tleft >= 1 && this.mkt.charge && (!this.mkt.entre || !this.mkt.entreB)) await this.decider(tleft);
+    if (this.mkt.offre) try { await this.remplirOffre(); } catch (err) { this.erreur("offre B", err); }
+    if (tleft < 1 && this.mkt.offre) this.figerOffre();
   }
 
   calcul(tleft, favUp) {
@@ -286,57 +292,117 @@ export class Bot {
     };
   }
 
+  // contrôles communs ; renvoie la raison du refus ou null
+  protections(tleft, favUp, prix, c) {
+    const t = now(), age = (k) => (this.f[k] ? t - this.f[k].t : 1e9);
+    if (age("perp") > CFG.FRAICHEUR_S || age("cl") > CFG.FRAICHEUR_S || age("cb") > CFG.FRAICHEUR_S) return "source figée ou absente";
+    const minute = new Date().getUTCHours() * 60 + new Date().getUTCMinutes(), jour = new Date().getUTCDay();
+    if (jour >= 1 && jour <= 5 && CFG.ANNONCES.some(([a, b]) => minute >= a && minute <= b)) return "annonce économique";
+    if (!c) return "données insuffisantes";
+    if (c.accordPerp !== true || c.accordCb !== true) return "sources pas d'accord";
+    if (c.z < (prix < 0.97 ? CFG.Z_MIN_BAS : CFG.Z_MIN_HAUT)) return "distance trop faible";
+    if (c.proba < prix + CFG.MARGE_MODELE) return "modèle pas assez sûr";
+    if (c.tStrike <= CFG.COURSE_FACTEUR * tleft) return "course vers le strike";
+    const contre = this.liq.filter((x) => x.t > t - 10 && (favUp ? x.cote === "SELL" : x.cote === "BUY")).reduce((s, x) => s + x.usd, 0);
+    if (contre >= CFG.LIQ_CONTRE_USD) return "liquidations contre nous";
+    if ((favUp ? -this.deseq : this.deseq) >= CFG.DESEQ_CONTRE) return "carnet perp contre nous";
+    return null;
+  }
+
   async decider(tleft) {
-    const mk = this.mkt;
-    if (this.e.pause) return this.veto("pause après perte (à reprendre)");
+    const mk = this.mkt, B = this.e.B;
     const [bu, bd] = await Promise.all([this.carnet(mk.up), this.carnet(mk.down)]);
     const askU = bu.asks[0] ? bu.asks[0][0] : 1, askD = bd.asks[0] ? bd.asks[0][0] : 1;
     const bidU = bu.bids[0] ? bu.bids[0][0] : 0, bidD = bd.bids[0] ? bd.bids[0][0] : 0;
     const favUp = bidU + (askU < 1 ? askU : bidU) >= bidD + (askD < 1 ? askD : bidD);   // favori = côté le plus cher
-    const bk = favUp ? bu : bd, ask = favUp ? askU : askD;
-    mk.vu = { tleft: Math.round(tleft), askUp: askU, askDown: askD };
+    const bk = favUp ? bu : bd, ask = favUp ? askU : askD, bid = favUp ? bidU : bidD;
     (this.diag.vus || (this.diag.vus = [])).unshift(mk.slug.slice(-10) + " T-" + Math.round(tleft) + " Up " + bidU + "/" + askU + " Down " + bidD + "/" + askD);
     this.diag.vus.length = Math.min(this.diag.vus.length, 35);
-    if (ask < CFG.PRIX_MIN || ask > CFG.PRIX_MAX) return; // pas de candidat
+    const candA = !mk.entre && ask >= CFG.PRIX_MIN && ask <= CFG.PRIX_MAX;
+    const tick = bid >= 0.96 ? 0.001 : 0.01;
+    const prixB = +Math.min(CFG.PRIX_MAX, bid + tick).toFixed(3);
+    const candB = !mk.entreB && bid >= CFG.B_PRIX_MIN && prixB <= CFG.PRIX_MAX;
+    if (!candA && !candB) { this.annulerOffre(); return; }
     mk.candidat = true;
-    const t = now(), age = (k) => (this.f[k] ? t - this.f[k].t : 1e9);
-    if (age("perp") > CFG.FRAICHEUR_S || age("cl") > CFG.FRAICHEUR_S || age("cb") > CFG.FRAICHEUR_S) return this.veto("source figée ou absente");
-    const minute = new Date().getUTCHours() * 60 + new Date().getUTCMinutes(), jour = new Date().getUTCDay();
-    if (jour >= 1 && jour <= 5 && CFG.ANNONCES.some(([a, b]) => minute >= a && minute <= b)) return this.veto("annonce économique");
     const c = this.calcul(tleft, favUp);
-    if (!c) return this.veto("données insuffisantes");
-    mk.dernier = { tleft: Math.round(tleft), ask, fav: favUp ? "Up" : "Down", z: +c.z.toFixed(2), proba: +c.proba.toFixed(4), dist: +c.dist.toFixed(1) };
-    if (c.accordPerp === false || c.accordCb === false || c.accordPerp == null || c.accordCb == null) return this.veto("sources pas d'accord");
-    const zmin = ask < 0.97 ? CFG.Z_MIN_BAS : CFG.Z_MIN_HAUT;
-    if (c.z < zmin) return this.veto("distance trop faible");
-    if (c.proba < ask + CFG.MARGE_MODELE) return this.veto("modèle pas assez sûr");
-    if (c.tStrike <= CFG.COURSE_FACTEUR * tleft) return this.veto("course vers le strike");
-    const contre = this.liq.filter((x) => x.t > t - 10 && (favUp ? x.cote === "SELL" : x.cote === "BUY")).reduce((s, x) => s + x.usd, 0);
-    if (contre >= CFG.LIQ_CONTRE_USD) return this.veto("liquidations contre nous");
-    if ((favUp ? -this.deseq : this.deseq) >= CFG.DESEQ_CONTRE) return this.veto("carnet perp contre nous");
-    const bid = bk.bids[0] ? bk.bids[0][0] : 0;
+    if (c) mk.dernier = { tleft: Math.round(tleft), ask, bid, fav: favUp ? "Up" : "Down", z: +c.z.toFixed(2), proba: +c.proba.toFixed(4), dist: +c.dist.toFixed(1) };
+
+    // ---- option B : offre d'achat posée (fantôme : remplie si un vendeur frappe à notre prix)
+    if (candB) {
+      const r = B.pause ? "pause après perte (à reprendre)" : this.protections(tleft, favUp, prixB, c);
+      if (r) { this.annulerOffre(); mk.raisonB = r; }
+      else {
+        const mise = Math.min(B.mise, B.capital - B.reserve);
+        if (mise < 1) { this.annulerOffre(); mk.raisonB = "capital épuisé"; }
+        else if (!mk.offre || mk.offre.prix !== prixB || mk.offre.fav !== (favUp ? "Up" : "Down")) {
+          const deja = mk.offre ? mk.offre.rempli : 0, cout = mk.offre ? mk.offre.cout : 0;
+          if (!mk.offre) B.offres++;
+          mk.offre = { prix: prixB, fav: favUp ? "Up" : "Down", token: favUp ? mk.up : mk.down, mise, rempli: deja, cout, depuis: now(),
+            tleft: Math.round(tleft), z: c ? +c.z.toFixed(2) : null, proba: c ? +c.proba.toFixed(4) : null, dist: c ? +c.dist.toFixed(1) : null };
+        }
+      }
+    }
+
+    // ---- option A : achat immédiat au prix affiché
+    if (!candA) return;
+    if (this.e.pause) return this.veto("pause après perte (à reprendre)");
+    const r = this.protections(tleft, favUp, ask, c);
+    if (r) return this.veto(r);
     if (ask - bid > CFG.ECART_MAX) return this.veto("écart achat/vente trop large");
-    // remplissage « tout ou rien » dans la bande de prix
-    const disponible = this.e.capital - this.e.reserve;
-    const mise = Math.min(this.e.mise, disponible);
+    const mise = Math.min(this.e.mise, this.e.capital - this.e.reserve);
     if (mise < 1) return this.veto("capital épuisé");
     let reste = mise, parts = 0, cout = 0;
-    for (const [p, s] of bk.asks) {
+    for (const [p, sz] of bk.asks) {
       if (p > CFG.PRIX_MAX) break;
-      const prendre = Math.min(s, reste / p);
+      const prendre = Math.min(sz, reste / p);
       parts += prendre; cout += prendre * p; reste -= prendre * p;
       if (reste < 0.01) break;
     }
     if (reste >= 0.01) return this.veto("pas assez de parts au prix");
     const pm = cout / parts;
-    const frais = parts * CFG.FEE_RATE * pm * (1 - pm);
     mk.entre = true;
     this.e.position = {
-      start: mk.start, end: mk.end, slug: mk.slug, fav: favUp ? "Up" : "Down", token: favUp ? mk.up : mk.down,
-      prix: +pm.toFixed(4), parts: +parts.toFixed(2), mise: +cout.toFixed(2), frais: +frais.toFixed(3),
+      strat: "A", start: mk.start, end: mk.end, slug: mk.slug, fav: favUp ? "Up" : "Down", token: favUp ? mk.up : mk.down,
+      prix: +pm.toFixed(4), parts: +parts.toFixed(2), mise: +cout.toFixed(2), frais: +(parts * CFG.FEE_RATE * pm * (1 - pm)).toFixed(3),
       tleft: Math.round(tleft), z: +c.z.toFixed(2), proba: +c.proba.toFixed(4), dist: +c.dist.toFixed(1), heure: new Date().toISOString(),
     };
     await this.sauver();
+  }
+
+  annulerOffre() { const mk = this.mkt; if (mk && mk.offre && !mk.offre.rempli) mk.offre = null; else if (mk && mk.offre) this.figerOffre(); }
+
+  // l'offre (partiellement) remplie devient la position B
+  figerOffre() {
+    const mk = this.mkt, o = mk && mk.offre;
+    if (!o || !o.rempli) { if (mk) mk.offre = null; return; }
+    mk.entreB = true; mk.offre = null;
+    this.e.B.remplies++;
+    this.e.B.position = {
+      strat: "B", start: mk.start, end: mk.end, slug: mk.slug, fav: o.fav, token: o.token,
+      prix: +(o.cout / o.rempli).toFixed(4), parts: +o.rempli.toFixed(2), mise: +o.cout.toFixed(2), frais: 0,
+      tleft: o.tleft, z: o.z, proba: o.proba, dist: o.dist, heure: new Date().toISOString(),
+    };
+    this.sauver();
+  }
+
+  // remplissage fantôme : un vendeur (taker) du favori à un prix <= notre offre
+  async remplirOffre() {
+    const mk = this.mkt, o = mk && mk.offre;
+    if (!o || !mk.cid) return;
+    const lot = await (await fetch(`${D}/trades?market=${mk.cid}&limit=200&takerOnly=true`)).json();
+    if (!Array.isArray(lot)) return;
+    this.vusB = this.vusB || new Set();
+    for (const x of lot) {
+      const cle = (x.transactionHash || "") + x.asset + x.side + x.size;
+      if (this.vusB.has(cle)) continue;
+      this.vusB.add(cle);
+      if (+x.timestamp < o.depuis - 1 || x.side !== "SELL" || String(x.outcome) !== o.fav || +x.price > o.prix) continue;
+      const voulu = o.mise / o.prix - o.rempli;
+      if (voulu <= 0) break;
+      const v = Math.min(+x.size, voulu);
+      o.rempli += v; o.cout += v * o.prix;
+    }
+    if (o.rempli >= o.mise / o.prix - 0.01) this.figerOffre();
   }
 
   veto(raison) { if (this.mkt) this.mkt.raison = raison; }
@@ -390,9 +456,13 @@ export class Bot {
 
   finFenetre() {
     const mk = this.mkt;
+    if (mk && mk.offre) this.figerOffre();
     if (mk && mk.candidat && !mk.entre && mk.raison) {
       this.e.vetos[mk.raison] = (this.e.vetos[mk.raison] || 0) + 1;
     }
+    if (mk && mk.candidat && !mk.entreB && mk.raisonB) this.e.B.vetos[mk.raisonB] = (this.e.B.vetos[mk.raisonB] || 0) + 1;
+    const pb = this.e.B.position;
+    if (pb && pb.start === (mk && mk.start)) { this.e.attente.push(pb); this.e.B.position = null; }
     if (mk && mk.candidat) this.e.fenetres++;
     const pos = this.e.position;
     if (pos && pos.start === (mk && mk.start)) { this.e.attente.push(pos); this.e.position = null; }
@@ -412,7 +482,7 @@ export class Bot {
     pos.sorti = { prix: +ps.toFixed(4), z: +c.z.toFixed(2), tleft: Math.round(tleft) };
     pos.net = +(recu - pos.mise - pos.frais - fraisS).toFixed(2);
     this.cloturer(pos, "sortie d'urgence");
-    this.e.position = null;
+    if (pos.strat === "B") this.e.B.position = null; else this.e.position = null;
     await this.sauver();
   }
 
@@ -440,7 +510,7 @@ export class Bot {
   }
 
   cloturer(pos, resultat) {
-    const e = this.e;
+    const e = pos.strat === "B" ? this.e.B : this.e;
     pos.resultat = resultat;
     e.capital += pos.net; e.pnl += pos.net;
     if (pos.net >= 0) {
@@ -452,8 +522,8 @@ export class Bot {
       e.pause = true;                         // pause jusqu'à ta validation
     }
     e.mise = Math.min(e.mise, Math.max(0, e.capital - e.reserve));
-    e.trades.unshift(pos);
-    e.trades.length = Math.min(e.trades.length, 300);
+    this.e.trades.unshift(pos);
+    this.e.trades.length = Math.min(this.e.trades.length, 300);
   }
 
   vue() {
@@ -464,7 +534,7 @@ export class Bot {
       flux: { perp: { p: this.f.perp && this.f.perp.p, age: age("perp"), src: this.perpSrc }, coinbase: { p: this.f.cb && this.f.cb.p, age: age("cb"), src: this.cbSrc },
         chainlink: { p: this.f.cl && this.f.cl.p, age: age("cl") }, deseq: +this.deseq.toFixed(2),
         liq10s: Math.round(this.liq.filter((x) => x.t > t - 10).reduce((s, x) => s + x.usd, 0)) },
-      marche: { slug: mk.slug, strike: mk.strike || mk.ouvCl || null, reste: Math.round((mk.end || 0) - t), raison: mk.raison, dernier: mk.dernier, entre: !!mk.entre },
+      marche: { slug: mk.slug, strike: mk.strike || mk.ouvCl || null, reste: Math.round((mk.end || 0) - t), raison: mk.raison, raisonB: mk.raisonB, dernier: mk.dernier, entre: !!mk.entre, offre: mk.offre || null },
       gros: { liste: this.gros.liste.map((g) => ({ ...g, nom: (this.gros.positions[g.w] || {}).nom || "", Up: Math.round((this.gros.positions[g.w] || {}).Up || 0), Down: Math.round((this.gros.positions[g.w] || {}).Down || 0) })),
         evenements: this.gros.evenements.slice(0, 25) },
       regles: CFG, diag: this.diag,
@@ -488,24 +558,27 @@ button{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:10px 1
 <div id="app" class="mu" style="margin-top:12px">Chargement…</div>
 <script>
 const $=s=>document.querySelector(s);const f=(x,d=2)=>x==null?'—':Number(x).toFixed(d);const usd=x=>(x>=0?'+':'')+f(x)+' $';
-async function rep(){await fetch('/api/reprendre',{method:'POST'});go()}
+async function rep(x){await fetch('/api/reprendre'+(x?'?s='+x:''),{method:'POST'});go()}
+function bloc(t,e,x,extra){return (e.pause?'<div class=card style="border-color:var(--ko)"><b class=ko>'+t+' en pause après une perte.</b><br>Plus aucun trade jusqu\'à ce que tu valides.<button onclick="rep(\''+x+'\')">Reprendre '+t+'</button></div>':'')+
+'<div class=card><b>'+t+'</b>'+(extra||'')+'<div class=g style="margin-top:8px"><div><div class=k>Capital</div><div class=v>'+f(e.capital)+' $</div></div><div><div class=k>Réserve (2/3)</div><div class=v>'+f(e.reserve)+' $</div></div><div><div class=k>Mise</div><div class=v>'+f(e.mise)+' $</div></div>'+
+'<div><div class=k>Gain total</div><div class="v '+(e.pnl>=0?'ok':'ko')+'">'+usd(e.pnl)+'</div></div><div><div class=k>Gagnés</div><div class="v ok">'+e.gains+'</div></div><div><div class=k>Perdus</div><div class="v ko">'+e.pertes+'</div></div></div>'+
+(e.position?'<div style="margin-top:8px">Position : '+e.position.fav+' à '+f(e.position.prix,3)+' — '+f(e.position.parts,1)+' parts'+(e.position.alerteGros?' <b class=ko>⚠️ '+e.position.alerteGros+' sortie(s) de gros traders</b>':'')+'</div>':'')+'</div>'}
 async function go(){try{const d=await (await fetch('/api/etat')).json();const e=d.e,m=d.marche,F=d.flux;
 const vt=Object.entries(e.vetos).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<tr><td>'+k+'</td><td>'+v+'</td></tr>').join('')||'<tr><td colspan=2 class=mu>Aucun encore</td></tr>';
-const tr=e.trades.map(t=>'<tr><td>'+t.heure.slice(5,16).replace('T',' ')+'</td><td>'+t.fav+'</td><td>'+f(t.prix,3)+'</td><td>'+f(t.z)+'</td><td>'+t.resultat+'</td><td class="'+(t.net>=0?'ok':'ko')+'">'+usd(t.net)+'</td></tr>').join('')||'<tr><td colspan=6 class=mu>Aucun trade encore</td></tr>';
+const tr=e.trades.map(t=>'<tr><td>'+(t.strat||'A')+' '+t.heure.slice(5,16).replace('T',' ')+'</td><td>'+t.fav+'</td><td>'+f(t.prix,3)+'</td><td>'+f(t.z)+'</td><td>'+t.resultat+'</td><td class="'+(t.net>=0?'ok':'ko')+'">'+usd(t.net)+'</td></tr>').join('')||'<tr><td colspan=6 class=mu>Aucun trade encore</td></tr>';
 const pos=e.position?'<div class=card><b>Position en cours</b><br>'+e.position.fav+' à '+f(e.position.prix,3)+' — '+f(e.position.parts,1)+' parts — z '+f(e.position.z)+'</div>':'';
 $('#app').className='';$('#app').innerHTML=
-(e.pause?'<div class=card style="border-color:var(--ko)"><b class=ko>En pause après une perte.</b><br>Le bot ne prend plus de trade jusqu\\'à ce que tu valides.<button onclick="rep()">Reprendre</button></div>':'')+
-'<div class=card><div class=g><div><div class=k>Capital</div><div class=v>'+f(e.capital)+' $</div></div><div><div class=k>Réserve (2/3)</div><div class=v>'+f(e.reserve)+' $</div></div><div><div class=k>Mise</div><div class=v>'+f(e.mise)+' $</div></div>'+
-'<div><div class=k>Gain total</div><div class="v '+(e.pnl>=0?'ok':'ko')+'">'+usd(e.pnl)+'</div></div><div><div class=k>Gagnés</div><div class="v ok">'+e.gains+'</div></div><div><div class=k>Perdus</div><div class="v ko">'+e.pertes+'</div></div></div></div>'+pos+
+bloc('A — achat immédiat',e,'A')+bloc('B — offre posée',e.B,'B','<span class=mu> — '+e.B.offres+' offres, '+e.B.remplies+' remplies</span>')+
 '<div class=card><b>Marché en cours</b><br><span class=mu>'+(m.slug||'—')+' — fin dans '+m.reste+' s — prix d\\'exercice '+f(m.strike)+'</span>'+
-(m.dernier?'<br>Favori '+m.dernier.fav+' à '+m.dernier.ask+' — distance '+m.dernier.dist+' $ — z '+m.dernier.z+' — proba '+m.dernier.proba:'')+(m.raison?'<br>Dernier refus : <b>'+m.raison+'</b>':'')+'</div>'+
+(m.dernier?'<br>Favori '+m.dernier.fav+' à '+m.dernier.ask+' — distance '+m.dernier.dist+' $ — z '+m.dernier.z+' — proba '+m.dernier.proba:'')+(m.raison?'<br>Dernier refus A : <b>'+m.raison+'</b>':'')+(m.raisonB?'<br>Dernier refus B : <b>'+m.raisonB+'</b>':'')+(m.offre?'<br>Offre B posée : '+m.offre.fav+' à '+m.offre.prix+' — rempli '+f(m.offre.rempli,1)+' parts':'')+'</div>'+
 '<div class=card><b>Flux</b><table><tr><td>Chainlink</td><td>'+f(F.chainlink.p)+'</td><td>'+f(F.chainlink.age,1)+' s</td></tr><tr><td>Perp '+(F.perp.src||'')+'</td><td>'+f(F.perp.p)+'</td><td>'+f(F.perp.age,1)+' s</td></tr><tr><td>Spot '+(F.coinbase.src||'')+'</td><td>'+f(F.coinbase.p)+'</td><td>'+f(F.coinbase.age,1)+' s</td></tr><tr><td>Déséquilibre carnet</td><td colspan=2>'+F.deseq+'</td></tr><tr><td>Liquidations 10 s</td><td colspan=2>'+F.liq10s+' $</td></tr></table></div>'+
 '<div class=card><b>Gros traders du 5 min</b> <span class=mu>(top 10 en volume sur la dernière heure — positions sur le marché en cours)</span><table><tr><th>Trader</th><th>Volume 1 h</th><th>Up</th><th>Down</th></tr>'+
 (d.gros.liste.map(g=>'<tr><td>'+(g.nom||g.w.slice(0,8)+'…')+'</td><td>'+g.vol+' $</td><td>'+g.Up+'</td><td>'+g.Down+'</td></tr>').join('')||'<tr><td colspan=4 class=mu>En cours de collecte</td></tr>')+'</table>'+
 '<table style="margin-top:8px"><tr><th>Heure</th><th>Trader</th><th>Action</th><th>Parts</th><th>Prix</th><th>Fin dans</th></tr>'+
 (d.gros.evenements.map(x=>'<tr'+(x.alerte?' class=ko':'')+'><td>'+x.heure+'</td><td>'+(x.nom||x.w.slice(0,8)+'…')+'</td><td>'+(x.alerte?'⚠️ ':'')+x.type+'</td><td>'+x.parts+'</td><td>'+x.prix+'</td><td>'+x.reste+' s</td></tr>').join('')||'<tr><td colspan=6 class=mu>Aucun mouvement encore</td></tr>')+'</table></div>'+
 '<div class=card><b>Trades</b><table><tr><th>Heure UTC</th><th>Côté</th><th>Prix</th><th>z</th><th>Résultat</th><th>Net</th></tr>'+tr+'</table></div>'+
-'<div class=card><b>Occasions refusées</b> <span class=mu>('+e.fenetres+' marchés avec un favori à 0,95–0,99)</span><table>'+vt+'</table></div>'+
+'<div class=card><b>Occasions refusées A</b> <span class=mu>('+e.fenetres+' marchés candidats)</span><table>'+vt+'</table></div>'+
+'<div class=card><b>Occasions refusées B</b><table>'+(Object.entries(e.B.vetos).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<tr><td>'+k+'</td><td>'+v+'</td></tr>').join('')||'<tr><td class=mu>Aucun encore</td></tr>')+'</table></div>'+
 (d.diag.erreurs.length?'<div class=card><b>Journal technique</b><div class=mu>'+d.diag.erreurs.join('<br>')+'</div></div>':'');
 }catch(err){$('#app').textContent='Erreur de chargement : '+err}}
 go();setInterval(go,2000);
