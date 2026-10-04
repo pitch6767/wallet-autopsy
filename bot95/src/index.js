@@ -221,7 +221,11 @@ export class Bot {
     if ((p.symbol || "").toLowerCase() !== "btc/usd" || !(+p.value > 0)) return;
     this.noter("cl", +p.value, now());
     // horodatage Chainlink exact : on garde le premier prix de chaque seconde (pour l'ouverture)
-    const sec = Math.floor((+p.timestamp || Date.now()) / 1000);
+    let ts = +p.timestamp || +m.timestamp || Date.now();
+    if (ts > 1e14) ts /= 1000;            // microsecondes
+    if (ts < 1e11) ts *= 1000;            // secondes
+    const sec = Math.floor(ts / 1000);
+    this.diag.clTs = { brut: p.timestamp, msg: m.timestamp, sec, local: Math.floor(Date.now() / 1000) };
     this.clTs = this.clTs || new Map();
     if (!this.clTs.has(sec)) { this.clTs.set(sec, +p.value); if (this.clTs.size > 1200) this.clTs.delete(this.clTs.keys().next().value); }
     if (this.mkt && !this.mkt.ouvClExact) this.ouverture(this.mkt);
@@ -230,7 +234,7 @@ export class Bot {
   // prix d'exercice = prix Chainlink horodaté à la seconde d'ouverture (ou le premier juste après)
   ouverture(mk) {
     if (!this.clTs) return;
-    for (let k = 0; k <= 3; k++) if (this.clTs.has(mk.start + k)) { mk.ouvCl = this.clTs.get(mk.start + k); mk.ouvClExact = k === 0; mk.ouvDecal = k; return; }
+    for (let k = 0; k <= 5; k++) if (this.clTs.has(mk.start + k)) { mk.ouvCl = this.clTs.get(mk.start + k); mk.ouvClExact = k === 0; mk.ouvDecal = k; return; }
   }
 
   serie(k, n) {   // dernières n valeurs par seconde (remplissage avec la précédente)
