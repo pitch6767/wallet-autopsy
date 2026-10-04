@@ -2,6 +2,7 @@ name: Deploy Cloudflare
 on:
   push:
     branches: [main]
+    paths-ignore: [bot95/**, etude/**, .github/workflows/bot95.yml, .github/workflows/bot5min.yml]
   workflow_dispatch:
 permissions:
   contents: write

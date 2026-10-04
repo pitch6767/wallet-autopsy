@@ -1,0 +1,30 @@
+name: Deploy bot95
+on:
+  push:
+    branches: [main]
+    paths: [bot95/src/**, bot95/wrangler.jsonc, .github/workflows/bot95.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deployer et controler
+        run: |
+          set +e
+          cd bot95
+          npx -y wrangler@4 deploy > /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log
+          U=https://bot95.pitch67.workers.dev
+          sleep 20; curl -sS -m 20 -o /dev/null -w "page %{http_code}\n" $U/ >> /tmp/c.log
+          for k in 1 2 3 4; do sleep 45; echo "=== etat $k" >> /tmp/c.log; curl -sS -m 20 $U/api/etat | head -c 2500 >> /tmp/c.log; echo >> /tmp/c.log; done
+          { tail -25 /tmp/d.log; cat /tmp/c.log; } > controle.txt
+          cd ..; git config user.name controle; git config user.email bot@users.noreply.github.com
+          git add bot95/controle.txt; git commit -m "Controle bot95 [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
