@@ -105,6 +105,7 @@ export class Bot {
     if (u.pathname === "/api/reprendre" && req.method === "POST") { this.e.pause = false; await this.sauver(); return json({ ok: true }); }
     if (u.pathname === "/api/reveil") return json({ ok: true });
     if (u.pathname === "/api/verif") return json({ verif: this.e.verif });
+    if (u.pathname === "/api/v1/trades") return json({ BTC: this.e.V1.trades, ETH: this.e.V1x.ETH.trades });
     if (u.pathname === "/api/reel/etat") {
       const r = { configure: this.reel.configure(), modeReel: this.reel.modeReel(), arret: !!this.e.reelStop, mise: +this.env.MISE_REEL || null,
         signataire: this.reel.signataire || null, portefeuille: this.env.POLY_ADRESSE_PORTEFEUILLE || null, journal: this.reel.journal.slice(0, 20) };
@@ -520,13 +521,44 @@ export class Bot {
       const L = livre(m.asset_id); L.bids = new Map((m.bids || []).map((x) => [+x.price, +x.size])); L.asks = new Map((m.asks || []).map((x) => [+x.price, +x.size]));
     } else if (ev === "price_change") {
       const ch = m.price_changes || (m.changes || []).map((c) => ({ ...c, asset_id: m.asset_id }));
-      for (const c of ch) { const L = livre(c.asset_id), cote = c.side === "BUY" ? L.bids : L.asks; +c.size ? cote.set(+c.price, +c.size) : cote.delete(+c.price); }
+      for (const c of ch) {
+        const L = livre(c.asset_id), cote = c.side === "BUY" ? L.bids : L.asks, avant = cote.get(+c.price) || 0, apres = +c.size;
+        if (apres < avant) this.noterFlux(c.asset_id, "retrait_" + (c.side === "BUY" ? "achat" : "vente"), (avant - apres) * +c.price, t);
+        apres ? cote.set(+c.price, apres) : cote.delete(+c.price);
+      }
     } else if (ev === "last_trade_price") {
+      this.noterFlux(m.asset_id, "echange_" + (m.side === "BUY" ? "achat" : "vente"), +m.price * +m.size, t);
       this.v1Echange(m.asset_id, m.side, +m.price, +m.size);
     } else return;
     const id = m.asset_id || ((m.price_changes || [])[0] || {}).asset_id;
     const a = this.actifDuJeton(id);
     if (a) try { this.v1Eval("poly", ts || t, a); } catch (err) { this.erreur("V1", err); }
+  }
+
+  // flux du carnet Polymarket par jeton (10 dernières secondes) : retraits d'ordres et échanges
+  noterFlux(id, type, usd, t) {
+    const L = ((this.fluxPm = this.fluxPm || {})[id] = this.fluxPm[id] || []);
+    L.push([t, type, usd]);
+    while (L.length && L[0][0] < t - 30) L.shift();
+  }
+  sommeFlux(id, type, sec) { const t = now(); return (((this.fluxPm || {})[id]) || []).filter((x) => x[1] === type && x[0] > t - sec).reduce((a2, x) => a2 + x[2], 0); }
+
+  // photo des signaux non historisés au moment d'une entrée (pour l'analyse ultérieure)
+  signauxEntree(a, up, id, autre) {
+    const t = now(), d = up ? 1 : -1;
+    const liq = (sec, contre) => this.liq[a].filter((x) => x.t > t - sec && (contre ? (up ? x.cote === "SELL" : x.cote === "BUY") : (up ? x.cote === "BUY" : x.cote === "SELL"))).reduce((s2, x) => s2 + x.usd, 0);
+    const prof = (jid, cote, n) => this.livreTrie(jid, cote).slice(0, n).reduce((s2, x) => s2 + x[0] * x[1], 0);
+    const r = (x) => Math.round(x);
+    return {
+      liq10_contre: r(liq(10, true)), liq10_pour: r(liq(10, false)), liq30_contre: r(liq(30, true)),
+      deseq_perp: +(d * this.deseq[a]).toFixed(2),
+      pm_notre_achats_5niv: r(prof(id, "bids", 5)), pm_notre_ventes_5niv: r(prof(id, "asks", 5)),
+      pm_autre_achats_5niv: r(prof(autre, "bids", 5)), pm_autre_ventes_5niv: r(prof(autre, "asks", 5)),
+      pm_retraits_achat_notre10: r(this.sommeFlux(id, "retrait_achat", 10)), pm_retraits_vente_notre10: r(this.sommeFlux(id, "retrait_vente", 10)),
+      pm_retraits_achat_autre10: r(this.sommeFlux(autre, "retrait_achat", 10)), pm_retraits_vente_autre10: r(this.sommeFlux(autre, "retrait_vente", 10)),
+      pm_achats_notre10: r(this.sommeFlux(id, "echange_achat", 10)), pm_achats_autre10: r(this.sommeFlux(autre, "echange_achat", 10)),
+      source_rapide: (this.sourceRapideA || {})[a] || null,
+    };
   }
 
   actifDuJeton(id) { return V1.ACTIFS.find((a) => { const m = this.mk[a]; return m && (m.up === id || m.down === id); }) || null; }
@@ -612,7 +644,7 @@ export class Bot {
         const pm = cout / parts;
         if (this.enReel(a)) { V.dernierCycle = mk.start; this.v1EntreeReelle(a, mk, up, id, fair, delai, source); return; }
         V.dernierCycle = mk.start; V.entrees++;
-        V.pos = { actif: a, start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up, prix: +pm.toFixed(4), parts: +parts.toFixed(2),
+        V.pos = { signaux: this.signauxEntree(a, up, id, up ? mk.down : mk.up), actif: a, start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up, prix: +pm.toFixed(4), parts: +parts.toFixed(2),
           mise: +cout.toFixed(2), frais: +(parts * CFG.FEE_RATE * pm * (1 - pm)).toFixed(3), proba: +fair.toFixed(3), heure: new Date().toISOString(),
           delai: delai != null ? +delai.toFixed(3) : null, source, B: { parts: 0, cout: 0 }, offre: null };
         this.notelat(delai); this.sauver();
@@ -681,7 +713,7 @@ export class Bot {
       const r = await this.reel.acheter(id, V1.PMAX, +this.env.MISE_REEL);
       if (!(r.parts > 0)) { V.reelRates = (V.reelRates || 0) + 1; return; }
       V.entrees++;
-      V.pos = { reel: true, actif: a, start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up,
+      V.pos = { signaux: this.signauxEntree(a, up, id, up ? mk.down : mk.up), reel: true, actif: a, start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up,
         prix: +(r.usd / r.parts).toFixed(4), parts: +r.parts.toFixed(2), mise: +r.usd.toFixed(2), frais: 0, proba: +fair.toFixed(3), heure: new Date().toISOString(),
         delai: delai != null ? +delai.toFixed(3) : null, msOrdre: r.ms, source, B: { parts: 0, cout: 0 }, offre: null, offreId: null, offrePrix: null };
       this.notelat(delai); await this.sauver();
