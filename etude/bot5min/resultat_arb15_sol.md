@@ -2,9 +2,9 @@
 
 Ecart median entre les deux prix d'exercice : 0.114 % du prix
 Cycles avec prix des deux jambes observables : 652
-**Cycles avec un moment SANS RISQUE (cout + frais < 1,00) : 36 (5.5 %)**
+**Cycles avec un moment SANS RISQUE (cout + frais < 1,00) : 37 (5.7 %)**
 Gain sans risque (premier moment, taille limitee aux echanges vus, max 100 parts) : +10.3 $ sur 7 jours, soit +1.5 $/jour
-Gain reel de ces memes achats (bonus quand les deux jambes gagnent) : +30.6 $ sur 7 jours
+Gain reel de ces memes achats (bonus quand les deux jambes gagnent) : +30.7 $ sur 7 jours
 Taille mediane disponible au moment sans risque : 5 parts
 Cout + frais le plus bas observe, mediane par cycle : 1.187
 Les deux jambes gagnent (paie 2) : 236 cycles sur 652 (36.2 %)
@@ -12,11 +12,33 @@ Les deux jambes gagnent (paie 2) : 236 cycles sur 652 (36.2 %)
 | Seuil d'achat (cout + frais) | Cycles achetes | Gain reel 100 parts | Gain/jour | Pire cycle |
 |---|---|---|---|---|
 | < 0.98 | 26 | +537 $ | +77 $ | +2 $ |
-| < 1.00 | 36 | +645 $ | +92 $ | +0 $ |
-| < 1.02 | 68 | +712 $ | +102 $ | -2 $ |
-| < 1.05 | 120 | +948 $ | +135 $ | -5 $ |
-| < 1.10 | 205 | +725 $ | +104 $ | -10 $ |
+| < 1.00 | 37 | +646 $ | +92 $ | +0 $ |
+| < 1.02 | 69 | +712 $ | +102 $ | -2 $ |
+| < 1.05 | 120 | +951 $ | +136 $ | -5 $ |
+| < 1.10 | 206 | +719 $ | +103 $ | -10 $ |
 
-(Le tableau achete au MEILLEUR prix du cycle : c'est un plafond optimiste, connu seulement apres coup.)
+**Achat a un instant fixe (realiste, sans regarder l'avenir), 100 parts par cycle**
 
-Duree : 64 s
+| Instant (avant la fin) | Cycles | Cout moyen | Paiement moyen | Gain/cycle | Gain/jour | Perte max par cycle |
+|---|---|---|---|---|---|---|
+| 300 s | 1 | 1.434 | 1.000 | -43.45 $ | -6 $ | -43 $ |
+| 240 s | 46 | 1.350 | 1.478 | +12.82 $ | +84 $ | -62 $ |
+| 180 s | 46 | 1.336 | 1.348 | +1.16 $ | +8 $ | -73 $ |
+| 120 s | 78 | 1.391 | 1.385 | -0.59 $ | -7 $ | -87 $ |
+| 90 s | 103 | 1.490 | 1.485 | -0.43 $ | -6 $ | -91 $ |
+| 60 s | 89 | 1.493 | 1.506 | +1.28 $ | +16 $ | -98 $ |
+| 30 s | 14 | 1.526 | 1.429 | -9.74 $ | -19 $ | -94 $ |
+
+**Premier instant ou cout + frais passe sous un seuil (realiste)**
+
+| Seuil | Cycles | Gain total 100 parts | Gain/jour |
+|---|---|---|---|
+| < 1.00 | 6 | +40 $ | +6 $ |
+| < 1.05 | 27 | +87 $ | +12 $ |
+| < 1.10 | 46 | +247 $ | +35 $ |
+| < 1.15 | 72 | +88 $ | +13 $ |
+| < 1.20 | 90 | +144 $ | +21 $ |
+
+(Le premier tableau achete au MEILLEUR prix du cycle : c'est un plafond optimiste, connu seulement apres coup.)
+
+Duree : 80 s
