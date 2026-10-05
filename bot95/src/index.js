@@ -29,7 +29,8 @@ const CFG = {
 };
 // V1 — stratégie de Pitch filtrée (validée le 05.10.2026) : jambe à 0,55–0,56 si proba >= 0,55 + marge, offre opposée à valeur (<= 0,43),
 // stop si la proba de la jambe passe sous 0,50, sortie à 0,90 si jambe seule, fusion si paire. BTC 5 min, décisions à chaque message (temps réel).
-const V1 = { ACTIF: "BTC", MARGE: 0.08, PMIN: 0.55, PMAX: 0.56, OPP_MAX: 0.43, STOP: 0.50, TP: 0.90, CAPITAL: 200, MISE: 50 };
+// Réglage A (validé le 05.10.2026) : élan du perp sur 5 s dans le sens de la jambe + stop si la proba perd 15 points depuis l'entrée.
+const V1 = { ACTIF: "BTC", MARGE: 0.08, PMIN: 0.55, PMAX: 0.56, OPP_MAX: 0.43, STOP_REL: 0.15, ELAN_S: 5, TP: 0.90, CAPITAL: 200, MISE: 50 };
 const WMAX = (a) => Math.max(...ACTIFS[a].regles.map((r) => r.W));
 
 const G = "https://gamma-api.polymarket.com";
@@ -51,6 +52,25 @@ const med = (a) => { if (!a.length) return null; const b = [...a].sort((x, y) =>
 const now = () => Date.now() / 1000;
 const r1 = (x) => Math.round(x * 10) / 10;
 const fmt = (x, p) => (Math.abs(p) >= 100 ? x.toFixed(2) : Math.abs(p) >= 1 ? x.toFixed(4) : x.toFixed(6));
+
+// temps d'aller-retour (ms) vers Polymarket depuis l'endroit où tourne le code
+async function mesurerLatence() {
+  const cibles = { carnet: `${C}/time`, gamma: `${G}/events?limit=1` };
+  const out = {};
+  for (const [k, url] of Object.entries(cibles)) {
+    const v = [];
+    for (let i = 0; i < 6; i++) { const t0 = Date.now(); try { await (await fetch(url, { headers: { "User-Agent": "sonde" } })).text(); v.push(Date.now() - t0); } catch (_) {} }
+    v.sort((x, y) => x - y);
+    out[k] = { min: v[0], mediane: v[Math.floor(v.length / 2)], max: v[v.length - 1] };
+  }
+  try { const cf = await (await fetch("https://cloudflare.com/cdn-cgi/trace")).text(); out.lieu = (cf.match(/colo=(\w+)/) || [])[1]; } catch (_) {}
+  return out;
+}
+
+export class Sonde {
+  constructor(state, env) { this.state = state; }
+  async fetch() { return Response.json(await mesurerLatence()); }
+}
 
 export class Bot {
   constructor(state, env) {
@@ -80,6 +100,15 @@ export class Bot {
     if (u.pathname === "/api/reprendre" && req.method === "POST") { this.e.pause = false; await this.sauver(); return json({ ok: true }); }
     if (u.pathname === "/api/reveil") return json({ ok: true });
     if (u.pathname === "/api/verif") return json({ verif: this.e.verif });
+    if (u.pathname === "/api/sondes") {
+      const regions = ["weur", "eeur", "enam", "wnam", "apac"];
+      const r = await Promise.all(regions.map(async (rg) => {
+        try { return [rg, await (await this.env.SONDE.get(this.env.SONDE.idFromName("sonde-" + rg), { locationHint: rg }).fetch("https://sonde/")).json()]; }
+        catch (err) { return [rg, { erreur: String(err) }]; }
+      }));
+      r.push(["bot actuel", await mesurerLatence()]);
+      return json(Object.fromEntries(r));
+    }
     if (u.pathname === "/api/v1debug") {
       const mb = this.mk.BTC || {};
       return json({ maintenant: now(), polyCycle: this.polyCycle, mk: { start: mb.start, slug: mb.slug, up: mb.up, down: mb.down, strike: mb.strike }, wsPoly: !!this.ws.poly, ouvert: this.ws.poly_ouvert,
@@ -120,6 +149,12 @@ export class Bot {
       const ids = LISTE.map((a) => ACTIFS[a].spot).filter(Boolean);
       this.connecter("cb", "https://advanced-trade-ws.coinbase.com", [JSON.stringify({ type: "subscribe", product_ids: ids, channel: "ticker" })], (m) => this.surCb(m));
     }
+    const ageOkx = this.f.BTC.okx ? t - this.f.BTC.okx.t : 1e9;
+    if (!this.ws.okx || (ageOkx > 20 && depuis("okx") > 20))
+      this.connecter("okx", "https://ws.okx.com:8443/ws/v5/public", [JSON.stringify({ op: "subscribe", args: [{ channel: "trades", instId: "BTC-USDT-SWAP" }] })], (m) => {
+        const ch = (m.arg || {}).channel, x = (m.data || []).slice(-1)[0];
+        if (ch === "trades" && x) { const tt = now(); this.noter("BTC", "okx", +x.px, tt); if (tt - (this._v1t || 0) > 0.2) { this._v1t = tt; try { this.v1Eval("okx", +x.ts / 1000); } catch (err) { this.erreur("V1", err); } } }
+      }, "ping", 20000);
     const mb = this.mk.BTC;
     const jetons = [];
     if (mb && mb.up) jetons.push(mb.up, mb.down);
@@ -476,7 +511,8 @@ export class Bot {
       this._sg = { t, v: Math.sqrt(r.reduce((x, y) => x + (y - mo) ** 2, 0) / r.length) || 1e-6, base };
     }
     if (this._sg.base == null) return null;
-    const S = perp.p - this._sg.base;                       // prix le plus rapide (perp), ramené au niveau Chainlink
+    const S = this.prixRapide();                             // prix le plus récent (Bybit ou OKX), ramené au niveau Chainlink
+    if (S == null) return null;
     const sg = this._sg.v, ts = Math.floor(t), deb = mk.end - 59;
     let E, v;
     if (ts >= deb) {
@@ -485,6 +521,30 @@ export class Bot {
       E = (connus.reduce((x, y) => x + y, 0) + nr * S) / (connus.length + nr); v = (sg * S) ** 2 * nr ** 3 / 3 / 3600;
     } else { E = S; v = (sg * S) ** 2 * ((deb - ts) + 20); }
     return phi((E - K) / Math.sqrt(v + (CFG.SD_ECART_REL * S) ** 2));
+  }
+
+  prixRapide() {
+    const a = V1.ACTIF, b = this.f[a].perp, o = this.f[a].okx;
+    if (o && this._sgOkx == null || (o && now() - (this._sgOkxT || 0) > 5)) {
+      this._sgOkxT = now();
+      this._sgOkx = med(this.serie(a, "okx", 120).map(([s2, p]) => { const c = this.prixA(a, "cl", s2); return c ? p - c : null; }).filter((x) => x != null));
+    }
+    const cands = [];
+    if (b && this._sg && this._sg.base != null) cands.push([b.t, b.p - this._sg.base, "bybit"]);
+    if (o && this._sgOkx != null) cands.push([o.t, o.p - this._sgOkx, "okx"]);
+    if (!cands.length) return null;
+    cands.sort((x, y) => y[0] - x[0]);
+    this.sourceRapide = cands[0][2]; (this.compteSource = this.compteSource || {})[cands[0][2]] = (this.compteSource[cands[0][2]] || 0) + 1;
+    return cands[0][1];
+  }
+
+  // élan : variation du prix rapide sur les 5 dernières secondes (positif = hausse)
+  elanV1() {
+    const a = V1.ACTIF, ts = Math.floor(now());
+    const p0 = this.prixA(a, "perp", ts), p5 = this.prixA(a, "perp", ts - V1.ELAN_S);
+    const o0 = this.prixA(a, "okx", ts), o5 = this.prixA(a, "okx", ts - V1.ELAN_S);
+    if (o0 && o5 && this.sourceRapide === "okx") return o0 - o5;
+    return p0 && p5 ? p0 - p5 : null;
   }
 
   livreTrie(id, cote) { const L = this.pb[id]; if (!L) return []; return [...L[cote]].filter((x) => x[1] > 0).sort((x, y) => (cote === "asks" ? x[0] - y[0] : y[0] - x[0])); }
@@ -503,6 +563,7 @@ export class Bot {
       for (const up of [true, false]) {
         const id = up ? mk.up : mk.down, asks = this.livreTrie(id, "asks"), fair = up ? pu : 1 - pu;
         if (!asks.length || asks[0][0] < V1.PMIN || asks[0][0] > V1.PMAX || fair < V1.PMIN + V1.MARGE) continue;
+        const el = this.elanV1(); if (el == null || el * (up ? 1 : -1) <= 0) { V.refusElan = (V.refusElan || 0) + 1; continue; }
         const mise = Math.min(V.mise, V.capital - V.reserve);
         let reste = mise, parts = 0, cout = 0;
         for (const [p, sz] of asks) { if (p > V1.PMAX) break; const k = Math.min(sz, reste / p); parts += k; cout += k * p; reste -= k * p; if (reste < 0.01) break; }
@@ -521,7 +582,7 @@ export class Bot {
     pos.offre = Math.min(Math.floor(((1 - fairA) - V1.MARGE) * 100) / 100, V1.OPP_MAX);
     pos.probaActuelle = +fairA.toFixed(3);
     const bids = this.livreTrie(pos.token, "bids");
-    if (fairA < V1.STOP) { this.v1Vendre(pos, bids, "stop", delai); return; }
+    if (fairA < pos.proba - V1.STOP_REL) { this.v1Vendre(pos, bids, "stop", delai); return; }
     if (pos.B.parts < 1e-9 && bids.length && bids[0][0] >= V1.TP) this.v1Vendre(pos, bids, "sortie 90", delai);
   }
 
@@ -597,7 +658,7 @@ export class Bot {
       v1: (() => {
         const V = this.e.V1, q = (L, x) => { if (!L.length) return null; const b = [...L].sort((a2, b2) => a2 - b2); return +b[Math.min(b.length - 1, Math.floor(b.length * x))].toFixed(3); };
         return { ...V, trades: V.trades.slice(0, 40), latPolyMed: q(this.latPoly, 0.5), latPolyP90: q(this.latPoly, 0.9), latDecMed: q(this.latDec, 0.5), latDecP90: q(this.latDec, 0.9),
-          polyOk: !!this.ws.poly, livre: this.mk.BTC && this.mk.BTC.up ? { up: (this.livreTrie(this.mk.BTC.up, "asks")[0] || [null])[0], down: (this.livreTrie(this.mk.BTC.down, "asks")[0] || [null])[0] } : null };
+          polyOk: !!this.ws.poly, sources: this.compteSource || {}, okxOk: !!this.ws.okx, livre: this.mk.BTC && this.mk.BTC.up ? { up: (this.livreTrie(this.mk.BTC.up, "asks")[0] || [null])[0], down: (this.livreTrie(this.mk.BTC.down, "asks")[0] || [null])[0] } : null };
       })(),
       diag: this.diag,
     };
@@ -636,7 +697,7 @@ $('#app').className='';$('#app').innerHTML=
 const tv=V.trades.map(t=>'<tr><td>'+t.heure.slice(5,16).replace('T',' ')+'</td><td>'+t.cote+'</td><td>'+f(t.prix,3)+'</td><td>'+f(t.proba,2)+'</td><td>'+(t.B&&t.B.parts?f(t.B.parts,0)+' à '+f(t.B.cout/t.B.parts,2):'—')+'</td><td>'+t.issue+'</td><td class="'+(t.net>=0?'ok':'ko')+'">'+usd(t.net)+'</td></tr>').join('')||'<tr><td colspan=7 class=mu>Aucun trade encore</td></tr>';
 const p=V.pos?'<div style="margin-top:8px">En cours : '+V.pos.cote+' à '+f(V.pos.prix,3)+' · proba '+f(V.pos.probaActuelle,2)+' · offre opposée '+f(V.pos.offre,2)+' · servie '+f(V.pos.B.parts,0)+'/'+f(V.pos.parts,0)+'</div>':'';
 return '<div class=card><b>V1 — paires BTC (jambe 55 filtrée)</b> <span class=mu>temps réel'+(V.polyOk?'':' — <span class=ko>carnet en direct déconnecté</span>')+'</span><div class=g style="margin-top:8px"><div><div class=k>Capital</div><div class=v>'+f(V.capital)+' $</div></div><div><div class=k>Gain</div><div class="v '+(V.pnl>=0?'ok':'ko')+'">'+usd(V.pnl)+'</div></div><div><div class=k>Gagnés / perdus</div><div class=v><span class=ok>'+V.gains+'</span> / <span class=ko>'+V.pertes+'</span></div></div></div>'+
-'<div class=mu style="margin-top:6px">Issues : '+it+'</div><div class=mu>Réaction : message Polymarket reçu en '+f(V.latPolyMed,3)+' s (90 % sous '+f(V.latPolyP90,3)+' s) · décisions en '+f(V.latDecMed,3)+' s (90 % sous '+f(V.latDecP90,3)+' s)</div>'+p+
+'<div class=mu style="margin-top:6px">Réglage A : élan 5 s + stop à −15 points · entrées refusées par l\'élan : '+(V.refusElan||0)+' · source la plus rapide : '+Object.entries(V.sources||{}).map(([k,n])=>k+' '+n).join(', ')+'</div><div class=mu>Issues : '+it+'</div><div class=mu>Réaction : message Polymarket reçu en '+f(V.latPolyMed,3)+' s (90 % sous '+f(V.latPolyP90,3)+' s) · décisions en '+f(V.latDecMed,3)+' s (90 % sous '+f(V.latDecP90,3)+' s)</div>'+p+
 '<table style="margin-top:8px"><tr><th>Heure UTC</th><th>Jambe</th><th>Prix</th><th>Proba</th><th>Autre jambe</th><th>Issue</th><th>Net</th></tr>'+tv+'</table></div>'})()+
 '<div class=card><b>Par crypto</b><table><tr><th>Crypto</th><th>Candidats</th><th>Trades</th><th>Gagnés</th><th>Perdus</th><th>Gain</th><th>Refus le plus fréquent</th></tr>'+pa+'</table></div>'+
 '<div class=card><b>Trades</b><table><tr><th>Heure UTC</th><th>Crypto</th><th>Côté</th><th>Prix</th><th>z</th><th>Résultat</th><th>Net</th></tr>'+tr+'</table></div>'+
