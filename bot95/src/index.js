@@ -31,7 +31,7 @@ const CFG = {
 // V1 — stratégie de Pitch filtrée (validée le 05.10.2026) : jambe à 0,55–0,56 si proba >= 0,55 + marge, offre opposée à valeur (<= 0,43),
 // stop si la proba de la jambe passe sous 0,50, sortie à 0,90 si jambe seule, fusion si paire. BTC 5 min, décisions à chaque message (temps réel).
 // Réglage A (validé le 05.10.2026) : élan du perp sur 5 s dans le sens de la jambe + stop si la proba perd 15 points depuis l'entrée.
-const V1 = { ACTIF: "BTC", MARGE: 0.08, PMIN: 0.55, PMAX: 0.56, OPP_MAX: 0.43, STOP_REL: 0.15, ELAN_S: 5, TP: 0.90, CAPITAL: 200, MISE: 50 };
+const V1 = { ACTIFS: ["BTC", "ETH"], REEL: ["BTC"], OKX: { BTC: "BTC-USDT-SWAP", ETH: "ETH-USDT-SWAP" }, ACTIF: "BTC", MARGE: 0.08, PMIN: 0.55, PMAX: 0.56, OPP_MAX: 0.43, STOP_REL: 0.15, ELAN_S: 5, TP: 0.90, CAPITAL: 200, MISE: 50 };
 const WMAX = (a) => Math.max(...ACTIFS[a].regles.map((r) => r.W));
 
 const G = "https://gamma-api.polymarket.com";
@@ -82,12 +82,15 @@ export class Bot {
     this.diag = { reconnexions: {}, erreurs: [] };
     this.pb = {}; this.latPoly = []; this.latDec = [];
     this.reel = new Reel(env);
+    this._v1t = {}; this._sgA = {}; this._okxB = {}; this.mkNx = {};
     this.ready = this.state.blockConcurrencyWhile(async () => {
       this.e = (await this.state.storage.get("etat2")) || {
         capital: CFG.CAPITAL, mise: CFG.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, pause: false,
         positions: [], attente: [], trades: [], vetos: {}, candidats: {}, parActif: {}, refus: [], verif: [], depuis: now(),
       };
       this.e.pause = false;   // plus de pause après perte (décision du 05.10.2026)
+      if (!this.e.V1x) this.e.V1x = {};
+      for (const a of ["ETH"]) if (!this.e.V1x[a]) this.e.V1x[a] = { capital: V1.CAPITAL, mise: V1.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, entrees: 0, pos: null, attente: [], trades: [], issues: {}, depuis: now() };
       if (!this.e.V1) this.e.V1 = { capital: V1.CAPITAL, mise: V1.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, entrees: 0, pos: null, attente: [], trades: [], issues: {}, depuis: now() };
     });
   }
@@ -132,7 +135,7 @@ export class Bot {
       const mb = this.mk.BTC || {};
       return json({ maintenant: now(), polyCycle: this.polyCycle, mk: { start: mb.start, slug: mb.slug, up: mb.up, down: mb.down, strike: mb.strike }, wsPoly: !!this.ws.poly, ouvert: this.ws.poly_ouvert,
         livres: Object.fromEntries(Object.keys(this.pb).map((id) => [id.slice(0, 8), { bids: this.livreTrie(id, "bids").slice(0, 4), asks: this.livreTrie(id, "asks").slice(0, 4) }])),
-        derniers: this.polyRaw || [], proba: mb.up ? this.probaV1(mb) : null, sg: this._sg || null });
+        derniers: this.polyRaw || [], proba: mb.up ? this.probaV1("BTC", mb) : null, sg: this._sg || null });
     }
     if (u.pathname === "/api/rapport") return json({ refus: this.e.refus });
     if (u.pathname === "/rapport") return new Response(RAPPORT, { headers: { "content-type": "text/html; charset=utf-8" } });
@@ -168,16 +171,19 @@ export class Bot {
       const ids = LISTE.map((a) => ACTIFS[a].spot).filter(Boolean);
       this.connecter("cb", "https://advanced-trade-ws.coinbase.com", [JSON.stringify({ type: "subscribe", product_ids: ids, channel: "ticker" })], (m) => this.surCb(m));
     }
-    const ageOkx = this.f.BTC.okx ? t - this.f.BTC.okx.t : 1e9;
+    const ageOkx = Math.max(...V1.ACTIFS.map((a) => (this.f[a].okx ? t - this.f[a].okx.t : 1e9)));
     if (!this.ws.okx || (ageOkx > 20 && depuis("okx") > 20))
-      this.connecter("okx", "https://ws.okx.com:8443/ws/v5/public", [JSON.stringify({ op: "subscribe", args: [{ channel: "trades", instId: "BTC-USDT-SWAP" }] })], (m) => {
-        const ch = (m.arg || {}).channel, x = (m.data || []).slice(-1)[0];
-        if (ch === "trades" && x) { const tt = now(); this.noter("BTC", "okx", +x.px, tt); if (tt - (this._v1t || 0) > 0.2) { this._v1t = tt; try { this.v1Eval("okx", +x.ts / 1000); } catch (err) { this.erreur("V1", err); } } }
+      this.connecter("okx", "https://ws.okx.com:8443/ws/v5/public", [JSON.stringify({ op: "subscribe", args: V1.ACTIFS.map((a) => ({ channel: "trades", instId: V1.OKX[a] })) })], (m) => {
+        const arg = m.arg || {}, x = (m.data || []).slice(-1)[0], a = V1.ACTIFS.find((k) => V1.OKX[k] === arg.instId);
+        if (arg.channel === "trades" && x && a) { const tt = now(); this.noter(a, "okx", +x.px, tt); this.v1Declencher(a, "okx", +x.ts / 1000, tt); }
       }, "ping", 20000);
     const mb = this.mk.BTC;
     const jetons = [];
-    if (mb && mb.up) jetons.push(mb.up, mb.down);
-    if (this.mkNext && this.mkNext.up && (!mb || this.mkNext.start > mb.start)) jetons.push(this.mkNext.up, this.mkNext.down);
+    for (const a of V1.ACTIFS) {
+      const mc = this.mk[a], nx = this.mkNx[a];
+      if (mc && mc.up) jetons.push(mc.up, mc.down);
+      if (nx && nx.up && (!mc || nx.start > mc.start)) jetons.push(nx.up, nx.down);
+    }
     const cle = jetons.join(",");
     if (jetons.length && (this.polyCle !== cle || (!this.ws.poly && depuis("poly") > 3))) {
       this.polyCle = cle; this.polyCycle = mb && mb.start;
@@ -228,7 +234,7 @@ export class Bot {
     if (!a) return;
     if (tp.startsWith("publicTrade")) {
       const x = (m.data || []).slice(-1)[0];
-      if (x) { this.noter(a, "perp", +x.p, t); if (a === V1.ACTIF && t - (this._v1t || 0) > 0.2) { this._v1t = t; try { this.v1Eval("perp", +x.T / 1000); } catch (err) { this.erreur("V1", err); } } }
+      if (x) { this.noter(a, "perp", +x.p, t); if (V1.ACTIFS.includes(a)) this.v1Declencher(a, "perp", +x.T / 1000, t); }
     }
     else if (tp.startsWith("allLiquidation")) {
       for (const x of m.data || []) this.liq[a].push({ t, cote: x.S === "Buy" ? "SELL" : "BUY", usd: (+x.v) * (+x.p) });   // Buy = position longue liquidée
@@ -300,7 +306,7 @@ export class Bot {
       let mk = this.mk[a];
       if (!mk || mk.start !== start) {
         if (mk) this.finFenetre(a, mk);
-        mk = this.mk[a] = (a === V1.ACTIF && this.mkNext && this.mkNext.start === start) ? { ...this.mkNext } : { start, end: start + 300 };
+        mk = this.mk[a] = (V1.ACTIFS.includes(a) && this.mkNx[a] && this.mkNx[a].start === start) ? { ...this.mkNx[a] } : { start, end: start + 300 };
       }
       try {
         if (!mk.slug && t - (mk.essai || 0) > 10) { mk.essai = t; Object.assign(mk, await this.chargerMarche(a, start)); }
@@ -309,9 +315,9 @@ export class Bot {
     }));
     // V1 : préchargement du cycle BTC suivant (carnet en direct prêt dès la première seconde)
     const nx = start + 300;
-    if (tleft < 150 && (!this.mkNext || this.mkNext.start !== nx) && t - (this._nxEssai || 0) > 10) {
+    if (tleft < 150 && t - (this._nxEssai || 0) > 10) {
       this._nxEssai = t;
-      try { this.mkNext = { start: nx, end: nx + 300, ...(await this.chargerMarche(V1.ACTIF, nx)) }; } catch (_) {}
+      for (const a of V1.ACTIFS) if (!this.mkNx[a] || this.mkNx[a].start !== nx) { try { this.mkNx[a] = { start: nx, end: nx + 300, ...(await this.chargerMarche(a, nx)) }; } catch (_) {} }
     }
     for (const p of this.e.positions.filter((x) => x.end <= t)) this.e.attente.push(p);
     this.e.positions = this.e.positions.filter((x) => x.end > t);
@@ -320,7 +326,7 @@ export class Bot {
       if (t - (this._chaud || 0) > 20) { this._chaud = t; this.reel.rechauffer(); }
       const pv = this.e.V1.pos; if (pv && pv.reel && pv.offreId) this.v1SuivreOffre(pv);
     }
-    if (t - (this._v1r || 0) > 15 || (this.e.V1.pos && t >= this.e.V1.pos.end)) { this._v1r = t; await this.v1Regler(); }
+    if (t - (this._v1r || 0) > 15 || V1.ACTIFS.some((a) => { const P = this.v1Etat(a).pos; return P && t >= P.end; })) { this._v1r = t; for (const a of V1.ACTIFS) await this.v1Regler(a); }
     // carnets des marchés dans leur fenêtre d'achat ou avec une position ouverte
     const actifs = LISTE.filter((a) => { const mk = this.mk[a]; return mk.slug && tleft >= 1 && (tleft <= WMAX(a) || this.e.positions.some((p) => p.actif === a && p.start === start)); });
     if (!actifs.length) return;
@@ -518,25 +524,37 @@ export class Bot {
     } else if (ev === "last_trade_price") {
       this.v1Echange(m.asset_id, m.side, +m.price, +m.size);
     } else return;
-    try { this.v1Eval("poly", ts || t); } catch (err) { this.erreur("V1", err); }
+    const id = m.asset_id || ((m.price_changes || [])[0] || {}).asset_id;
+    const a = this.actifDuJeton(id);
+    if (a) try { this.v1Eval("poly", ts || t, a); } catch (err) { this.erreur("V1", err); }
   }
 
-  probaV1(mk) {
-    const a = V1.ACTIF, K = mk.strike, perp = this.f[a].perp, cl = this.f[a].cl;
+  actifDuJeton(id) { return V1.ACTIFS.find((a) => { const m = this.mk[a]; return m && (m.up === id || m.down === id); }) || null; }
+  v1Etat(a) { return a === "BTC" ? this.e.V1 : this.e.V1x[a]; }
+  v1Declencher(a, source, ts, t) {
+    if (t - (this._v1t[a] || 0) <= 0.2) return;
+    this._v1t[a] = t;
+    try { this.v1Eval(source, ts, a); } catch (err) { this.erreur("V1 " + a, err); }
+  }
+
+  probaV1(a, mk) {
+    const K = mk.strike, perp = this.f[a].perp, cl = this.f[a].cl;
     if (!K || !perp || !cl) return null;
     const t = now();
-    if (!this._sg || t - this._sg.t > 5) {
+    let sgc = this._sgA[a];
+    if (!sgc || t - sgc.t > 5) {
       const ser = this.serie(a, "perp", 300);
       if (ser.length < 60) return null;
       const r = []; for (let i = 1; i < ser.length; i++) r.push(Math.log(ser[i][1] / ser[i - 1][1]));
       const mo = r.reduce((x, y) => x + y, 0) / r.length;
       const base = med(this.serie(a, "perp", 120).map(([s2, p]) => { const c = this.prixA(a, "cl", s2); return c ? p - c : null; }).filter((x) => x != null));
-      this._sg = { t, v: Math.sqrt(r.reduce((x, y) => x + (y - mo) ** 2, 0) / r.length) || 1e-6, base };
+      sgc = this._sgA[a] = { t, v: Math.sqrt(r.reduce((x, y) => x + (y - mo) ** 2, 0) / r.length) || 1e-6, base };
+      if (a === "BTC") this._sg = sgc;
     }
-    if (this._sg.base == null) return null;
-    const S = this.prixRapide();                             // prix le plus récent (Bybit ou OKX), ramené au niveau Chainlink
+    if (sgc.base == null) return null;
+    const S = this.prixRapide(a);                             // prix le plus récent (Bybit ou OKX), ramené au niveau Chainlink
     if (S == null) return null;
-    const sg = this._sg.v, ts = Math.floor(t), deb = mk.end - 59;
+    const sg = sgc.v, ts = Math.floor(t), deb = mk.end - 59;
     let E, v;
     if (ts >= deb) {
       const connus = []; for (let s2 = deb; s2 <= ts; s2++) { const x = this.prixA(a, "cl", s2); if (x) connus.push(x); }
@@ -546,38 +564,38 @@ export class Bot {
     return phi((E - K) / Math.sqrt(v + (CFG.SD_ECART_REL * S) ** 2));
   }
 
-  prixRapide() {
-    const a = V1.ACTIF, b = this.f[a].perp, o = this.f[a].okx;
-    if (o && this._sgOkx == null || (o && now() - (this._sgOkxT || 0) > 5)) {
-      this._sgOkxT = now();
-      this._sgOkx = med(this.serie(a, "okx", 120).map(([s2, p]) => { const c = this.prixA(a, "cl", s2); return c ? p - c : null; }).filter((x) => x != null));
+  prixRapide(a) {
+    const b = this.f[a].perp, o = this.f[a].okx, ob = (this._okxB[a] = this._okxB[a] || {});
+    if (o && (ob.v == null || now() - (ob.t || 0) > 5)) {
+      ob.t = now();
+      ob.v = med(this.serie(a, "okx", 120).map(([s2, p]) => { const c = this.prixA(a, "cl", s2); return c ? p - c : null; }).filter((x) => x != null));
     }
-    const cands = [];
-    if (b && this._sg && this._sg.base != null) cands.push([b.t, b.p - this._sg.base, "bybit"]);
-    if (o && this._sgOkx != null) cands.push([o.t, o.p - this._sgOkx, "okx"]);
+    const sgc = this._sgA[a], cands = [];
+    if (b && sgc && sgc.base != null) cands.push([b.t, b.p - sgc.base, "bybit"]);
+    if (o && ob.v != null) cands.push([o.t, o.p - ob.v, "okx"]);
     if (!cands.length) return null;
     cands.sort((x, y) => y[0] - x[0]);
-    this.sourceRapide = cands[0][2]; (this.compteSource = this.compteSource || {})[cands[0][2]] = (this.compteSource[cands[0][2]] || 0) + 1;
+    (this.sourceRapideA = this.sourceRapideA || {})[a] = cands[0][2]; this.sourceRapide = cands[0][2]; (this.compteSource = this.compteSource || {})[cands[0][2]] = (this.compteSource[cands[0][2]] || 0) + 1;
     return cands[0][1];
   }
 
   // élan : variation du prix rapide sur les 5 dernières secondes (positif = hausse)
-  elanV1() {
-    const a = V1.ACTIF, ts = Math.floor(now());
+  elanV1(a) {
+    const ts = Math.floor(now());
     const p0 = this.prixA(a, "perp", ts), p5 = this.prixA(a, "perp", ts - V1.ELAN_S);
     const o0 = this.prixA(a, "okx", ts), o5 = this.prixA(a, "okx", ts - V1.ELAN_S);
-    if (o0 && o5 && this.sourceRapide === "okx") return o0 - o5;
+    if (o0 && o5 && (this.sourceRapideA || {})[a] === "okx") return o0 - o5;
     return p0 && p5 ? p0 - p5 : null;
   }
 
   livreTrie(id, cote) { const L = this.pb[id]; if (!L) return []; return [...L[cote]].filter((x) => x[1] > 0).sort((x, y) => (cote === "asks" ? x[0] - y[0] : y[0] - x[0])); }
 
-  v1Eval(source, tsSource) {
-    const V = this.e.V1, mk = this.mk[V1.ACTIF];
+  v1Eval(source, tsSource, a = "BTC") {
+    const V = this.v1Etat(a), mk = this.mk[a];
     if (!V || !mk || !mk.up || !mk.strike) return;
     const t = now();
     if (t < mk.start || t > mk.end - 1) return;
-    const pu = this.probaV1(mk);
+    const pu = this.probaV1(a, mk);
     if (pu == null) return;
     const delai = tsSource ? t - tsSource : null;
     let pos = V.pos && V.pos.start === mk.start && !V.pos.fini ? V.pos : null;
@@ -586,15 +604,15 @@ export class Bot {
       for (const up of [true, false]) {
         const id = up ? mk.up : mk.down, asks = this.livreTrie(id, "asks"), fair = up ? pu : 1 - pu;
         if (!asks.length || asks[0][0] < V1.PMIN || asks[0][0] > V1.PMAX || fair < V1.PMIN + V1.MARGE) continue;
-        const el = this.elanV1(); if (el == null || el * (up ? 1 : -1) <= 0) { V.refusElan = (V.refusElan || 0) + 1; continue; }
+        const el = this.elanV1(a); if (el == null || el * (up ? 1 : -1) <= 0) { V.refusElan = (V.refusElan || 0) + 1; continue; }
         const mise = Math.min(V.mise, V.capital - V.reserve);
         let reste = mise, parts = 0, cout = 0;
         for (const [p, sz] of asks) { if (p > V1.PMAX) break; const k = Math.min(sz, reste / p); parts += k; cout += k * p; reste -= k * p; if (reste < 0.01) break; }
         if (reste >= 0.01 || parts <= 0) continue;
         const pm = cout / parts;
-        if (this.enReel()) { V.dernierCycle = mk.start; this.v1EntreeReelle(mk, up, id, fair, delai, source); return; }
+        if (this.enReel(a)) { V.dernierCycle = mk.start; this.v1EntreeReelle(a, mk, up, id, fair, delai, source); return; }
         V.dernierCycle = mk.start; V.entrees++;
-        V.pos = { start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up, prix: +pm.toFixed(4), parts: +parts.toFixed(2),
+        V.pos = { actif: a, start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up, prix: +pm.toFixed(4), parts: +parts.toFixed(2),
           mise: +cout.toFixed(2), frais: +(parts * CFG.FEE_RATE * pm * (1 - pm)).toFixed(3), proba: +fair.toFixed(3), heure: new Date().toISOString(),
           delai: delai != null ? +delai.toFixed(3) : null, source, B: { parts: 0, cout: 0 }, offre: null };
         this.notelat(delai); this.sauver();
@@ -613,7 +631,9 @@ export class Bot {
 
   // un vendeur de l'autre côté passe au moins 1 cent sous notre offre => offre servie (version prudente)
   v1Echange(id, side, p, size) {
-    const V = this.e.V1, pos = V && V.pos;
+    const a = V1.ACTIFS.find((k) => { const P = this.v1Etat(k).pos; return P && (P.token === id || P.autre === id); });
+    if (!a) return;
+    const V = this.v1Etat(a), pos = V && V.pos;
     if (!pos || pos.fini || pos.offre == null || pos.offre < 0.02) return;
     if (pos.reel) { if (pos.offreId && Math.min(p, 1 - p) <= pos.offre + 0.01) this.v1SuivreOffre(pos); return; }
     let q = null;
@@ -641,7 +661,7 @@ export class Bot {
 
   // net = fusions (1 $ par paire) + produit des ventes - coûts
   v1Clore(pos, paires, produit, issue) {
-    const V = this.e.V1;
+    const V = this.v1Etat(pos.actif || "BTC");
     pos.fini = true; pos.issue = issue;
     pos.net = +(paires + produit - pos.mise - pos.B.cout - pos.frais).toFixed(2);
     V.capital += pos.net; V.pnl += pos.net;
@@ -652,16 +672,16 @@ export class Bot {
     V.pos = null;
   }
 
-  enReel() { return this.reel.modeReel() && !this.e.reelStop && +this.env.MISE_REEL > 0; }
+  enReel(a = "BTC") { return V1.REEL.includes(a) && this.reel.modeReel() && !this.e.reelStop && +this.env.MISE_REEL > 0; }
 
-  async v1EntreeReelle(mk, up, id, fair, delai, source) {
-    const V = this.e.V1;
+  async v1EntreeReelle(a, mk, up, id, fair, delai, source) {
+    const V = this.v1Etat(a);
     if (this.v1Occupe) return; this.v1Occupe = true;
     try {
       const r = await this.reel.acheter(id, V1.PMAX, +this.env.MISE_REEL);
       if (!(r.parts > 0)) { V.reelRates = (V.reelRates || 0) + 1; return; }
       V.entrees++;
-      V.pos = { reel: true, start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up,
+      V.pos = { reel: true, actif: a, start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up,
         prix: +(r.usd / r.parts).toFixed(4), parts: +r.parts.toFixed(2), mise: +r.usd.toFixed(2), frais: 0, proba: +fair.toFixed(3), heure: new Date().toISOString(),
         delai: delai != null ? +delai.toFixed(3) : null, msOrdre: r.ms, source, B: { parts: 0, cout: 0 }, offre: null, offreId: null, offrePrix: null };
       this.notelat(delai); await this.sauver();
@@ -714,8 +734,8 @@ export class Bot {
 
   notelat(d) { if (d == null) return; this.latDec.push(d); if (this.latDec.length > 200) this.latDec.shift(); }
 
-  async v1Regler() {
-    const V = this.e.V1, t = now();
+  async v1Regler(a = "BTC") {
+    const V = this.v1Etat(a), t = now();
     if (V.pos && t >= V.pos.end && !V.pos.fini) {
       if (V.pos.reel && V.pos.offreId) { try { await this.v1SuivreOffre(V.pos); await this.reel.annuler(V.pos.offreId); } catch (_) {} V.pos.offreId = null; }
       if (V.pos && !V.pos.fini) { V.attente.push(V.pos); V.pos = null; }
@@ -749,7 +769,7 @@ export class Bot {
         const V = this.e.V1, q = (L, x) => { if (!L.length) return null; const b = [...L].sort((a2, b2) => a2 - b2); return +b[Math.min(b.length - 1, Math.floor(b.length * x))].toFixed(3); };
         return { ...V, trades: V.trades.slice(0, 40), latPolyMed: q(this.latPoly, 0.5), latPolyP90: q(this.latPoly, 0.9), latDecMed: q(this.latDec, 0.5), latDecP90: q(this.latDec, 0.9),
           reel: { configure: this.reel.configure(), actif: this.enReel(), arret: !!this.e.reelStop, mise: +this.env.MISE_REEL || null },
-          polyOk: !!this.ws.poly, sources: this.compteSource || {}, okxOk: !!this.ws.okx, livre: this.mk.BTC && this.mk.BTC.up ? { up: (this.livreTrie(this.mk.BTC.up, "asks")[0] || [null])[0], down: (this.livreTrie(this.mk.BTC.down, "asks")[0] || [null])[0] } : null };
+          polyOk: !!this.ws.poly, sources: this.compteSource || {}, eth: { ...this.e.V1x.ETH, trades: this.e.V1x.ETH.trades.slice(0, 40) }, okxOk: !!this.ws.okx, livre: this.mk.BTC && this.mk.BTC.up ? { up: (this.livreTrie(this.mk.BTC.up, "asks")[0] || [null])[0], down: (this.livreTrie(this.mk.BTC.down, "asks")[0] || [null])[0] } : null };
       })(),
       diag: this.diag,
     };
@@ -790,6 +810,11 @@ const p=V.pos?'<div style="margin-top:8px">En cours : '+V.pos.cote+' à '+f(V.po
 const R=V.reel||{};const bandeau=R.actif?'<div class=card style="border-color:var(--ko)"><b class=ko>ARGENT RÉEL ACTIF</b> — mise '+R.mise+' $ par entrée<button onclick="fetch(\'/api/reel/arret\',{method:\'POST\'}).then(go)">ARRÊT D\'URGENCE</button></div>':(R.arret?'<div class=card><b>Réel à l\'arrêt</b><button onclick="fetch(\'/api/reel/reprise\',{method:\'POST\'}).then(go)">Reprendre le réel</button></div>':'');
 return bandeau+'<div class=card><b>V1 — paires BTC (jambe 55 filtrée)</b> <span class=mu>'+(R.actif?'RÉEL':'fantôme')+' · </span> <span class=mu>temps réel'+(V.polyOk?'':' — <span class=ko>carnet en direct déconnecté</span>')+'</span><div class=g style="margin-top:8px"><div><div class=k>Capital</div><div class=v>'+f(V.capital)+' $</div></div><div><div class=k>Gain</div><div class="v '+(V.pnl>=0?'ok':'ko')+'">'+usd(V.pnl)+'</div></div><div><div class=k>Gagnés / perdus</div><div class=v><span class=ok>'+V.gains+'</span> / <span class=ko>'+V.pertes+'</span></div></div></div>'+
 '<div class=mu style="margin-top:6px">Réglage A : élan 5 s + stop à −15 points · entrées refusées par l\'élan : '+(V.refusElan||0)+' · source la plus rapide : '+Object.entries(V.sources||{}).map(([k,n])=>k+' '+n).join(', ')+'</div><div class=mu>Issues : '+it+'</div><div class=mu>Réaction : message Polymarket reçu en '+f(V.latPolyMed,3)+' s (90 % sous '+f(V.latPolyP90,3)+' s) · décisions en '+f(V.latDecMed,3)+' s (90 % sous '+f(V.latDecP90,3)+' s)</div>'+p+
+'<table style="margin-top:8px"><tr><th>Heure UTC</th><th>Jambe</th><th>Prix</th><th>Proba</th><th>Autre jambe</th><th>Issue</th><th>Net</th></tr>'+tv+'</table></div>'})()+
+(()=>{const V=d.v1.eth;if(!V)return '';const it=Object.entries(V.issues||{}).map(([k,x])=>k+' '+x.n+' ('+usd(x.pnl)+')').join(' · ')||'—';
+const tv=V.trades.map(t=>'<tr><td>'+t.heure.slice(5,16).replace('T',' ')+'</td><td>'+t.cote+'</td><td>'+f(t.prix,3)+'</td><td>'+f(t.proba,2)+'</td><td>'+(t.B&&t.B.parts?f(t.B.parts,0)+' à '+f(t.B.cout/t.B.parts,2):'—')+'</td><td>'+t.issue+'</td><td class="'+(t.net>=0?'ok':'ko')+'">'+usd(t.net)+'</td></tr>').join('')||'<tr><td colspan=7 class=mu>Aucun trade encore</td></tr>';
+const p=V.pos?'<div style="margin-top:8px">En cours : '+V.pos.cote+' à '+f(V.pos.prix,3)+' · proba '+f(V.pos.probaActuelle,2)+' · offre opposée '+f(V.pos.offre,2)+'</div>':'';
+return '<div class=card><b>V1 — paires ETH (jambe 55 filtrée)</b> <span class=mu>fantôme</span><div class=g style="margin-top:8px"><div><div class=k>Capital</div><div class=v>'+f(V.capital)+' $</div></div><div><div class=k>Gain</div><div class="v '+(V.pnl>=0?'ok':'ko')+'">'+usd(V.pnl)+'</div></div><div><div class=k>Gagnés / perdus</div><div class=v><span class=ok>'+V.gains+'</span> / <span class=ko>'+V.pertes+'</span></div></div></div><div class=mu style="margin-top:6px">Entrées refusées par l\'élan : '+(V.refusElan||0)+' · Issues : '+it+'</div>'+p+
 '<table style="margin-top:8px"><tr><th>Heure UTC</th><th>Jambe</th><th>Prix</th><th>Proba</th><th>Autre jambe</th><th>Issue</th><th>Net</th></tr>'+tv+'</table></div>'})()+
 '<div class=card><b>Par crypto</b><table><tr><th>Crypto</th><th>Candidats</th><th>Trades</th><th>Gagnés</th><th>Perdus</th><th>Gain</th><th>Refus le plus fréquent</th></tr>'+pa+'</table></div>'+
 '<div class=card><b>Trades</b><table><tr><th>Heure UTC</th><th>Crypto</th><th>Côté</th><th>Prix</th><th>z</th><th>Résultat</th><th>Net</th></tr>'+tr+'</table></div>'+
