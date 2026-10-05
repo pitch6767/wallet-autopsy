@@ -1,41 +1,41 @@
-cycles 1929 (519s)
-# Paires BTC 5 min « a valeur » — 1929 cycles, 7 jours (2026-09-28 -> 2026-10-04)
+cycles 1926 (286s)
+# Paires BTC 5 min « a valeur » — 1926 cycles, 7 jours (2026-09-28 -> 2026-10-04)
 
-100 parts par jambe. Remplissage prudent sauf mention. Frais taker 0,072 x p x (1-p) ; maker 0.
+Retard = la proba est calculee avec le prix Binance de L secondes AVANT l'echange (temps de reaction du bot). 100 parts par jambe. Remplissage prudent sauf mention. Frais taker 0,072 x p x (1-p) ; maker 0.
 
 | Strategie | Marge | Cycles trades | Paires | Gain total | Gain/jour | Gain moyen/cycle trade | Pire cycle | Pire baisse |
 |---|---|---|---|---|---|---|---|---|
-| V1 Pitch filtre (55 si proba >= 55+marge, offre opposee a valeur <= 43) | 0.05 | 1305 (186/j) | 511 | +12519 $ | +1788 $ | +9.59 $ | -58 $ | -131 $ |
-| V1 Pitch filtre (55 si proba >= 55+marge, offre opposee a valeur <= 43) | 0.08 | 1124 (161/j) | 301 | +12435 $ | +1776 $ | +11.06 $ | -58 $ | -140 $ |
-| V1 Pitch filtre (55 si proba >= 55+marge, offre opposee a valeur <= 43) | 0.10 | 1011 (144/j) | 203 | +11632 $ | +1662 $ | +11.51 $ | -58 $ | -118 $ |
-| V1 Pitch filtre (55 si proba >= 55+marge, offre opposee a valeur <= 43) | 0.15 | 692 (99/j) | 74 | +9810 $ | +1401 $ | +14.18 $ | -58 $ | -141 $ |
-| V2 offres a valeur des 2 cotes, jambe gardee | 0.05 | 1916 (274/j) | 94 | +29068 $ | +4153 $ | +15.17 $ | -249 $ | -2043 $ |
-| V2 offres a valeur, sortie 90 | 0.05 | 1916 (274/j) | 151 | +16175 $ | +2311 $ | +8.44 $ | -194 $ | -3500 $ |
-| V2 offres a valeur des 2 cotes, jambe gardee | 0.08 | 1906 (272/j) | 108 | +31875 $ | +4554 $ | +16.72 $ | -198 $ | -794 $ |
-| V2 offres a valeur, sortie 90 | 0.08 | 1906 (272/j) | 134 | +18057 $ | +2580 $ | +9.47 $ | -149 $ | -1601 $ |
-| V2 offres a valeur des 2 cotes, jambe gardee | 0.10 | 1885 (269/j) | 143 | +31123 $ | +4446 $ | +16.51 $ | -199 $ | -622 $ |
-| V2 offres a valeur, sortie 90 | 0.10 | 1885 (269/j) | 159 | +17946 $ | +2564 $ | +9.52 $ | -154 $ | -874 $ |
-| V2 offres a valeur des 2 cotes, jambe gardee | 0.15 | 1694 (242/j) | 113 | +26421 $ | +3774 $ | +15.60 $ | -161 $ | -421 $ |
-| V2 offres a valeur, sortie 90 | 0.15 | 1694 (242/j) | 113 | +16059 $ | +2294 $ | +9.48 $ | -126 $ | -463 $ |
-| V2 offres a valeur, OPTIMISTE (premier dans la file) | 0.08 | 1909 (273/j) | 103 | +40820 $ | +5831 $ | +21.38 $ | -185 $ | -812 $ |
-| V1 Pitch filtre, OPTIMISTE | 0.08 | 1124 (161/j) | 345 | +12797 $ | +1828 $ | +11.38 $ | -58 $ | -112 $ |
+| V1 Pitch filtre, retard 0 s | 0.08 | 1123 (160/j) | 301 | +12403 $ | +1772 $ | +11.04 $ | -58 $ | -140 $ |
+| V2 jambe gardee, retard 0 s | 0.08 | 1903 (272/j) | 107 | +31752 $ | +4536 $ | +16.69 $ | -198 $ | -794 $ |
+| V2 sortie 90, retard 0 s | 0.10 | 1882 (269/j) | 159 | +17862 $ | +2552 $ | +9.49 $ | -154 $ | -874 $ |
+| V1 Pitch filtre, retard 1 s | 0.08 | 1057 (151/j) | 229 | +10002 $ | +1429 $ | +9.46 $ | -58 $ | -154 $ |
+| V2 jambe gardee, retard 1 s | 0.08 | 1898 (271/j) | 122 | +20638 $ | +2948 $ | +10.87 $ | -165 $ | -1283 $ |
+| V2 sortie 90, retard 1 s | 0.10 | 1871 (267/j) | 157 | +10116 $ | +1445 $ | +5.41 $ | -131 $ | -1776 $ |
+| V1 Pitch filtre, retard 2 s | 0.08 | 1000 (143/j) | 181 | +5407 $ | +772 $ | +5.41 $ | -58 $ | -314 $ |
+| V2 jambe gardee, retard 2 s | 0.08 | 1892 (270/j) | 139 | +8689 $ | +1241 $ | +4.59 $ | -165 $ | -2322 $ |
+| V2 sortie 90, retard 2 s | 0.10 | 1844 (263/j) | 164 | +3558 $ | +508 $ | +1.93 $ | -138 $ | -2069 $ |
+| V1 Pitch filtre, retard 5 s | 0.08 | 967 (138/j) | 252 | -3691 $ | -527 $ | -3.82 $ | -58 $ | -3739 $ |
+| V2 jambe gardee, retard 5 s | 0.08 | 1904 (272/j) | 163 | -47702 $ | -6815 $ | -25.05 $ | -252 $ | -47702 $ |
+| V2 sortie 90, retard 5 s | 0.10 | 1892 (270/j) | 230 | -33477 $ | -4782 $ | -17.69 $ | -203 $ | -33477 $ |
+| V2 jambe gardee, retard 2 s | 0.15 | 1564 (223/j) | 111 | +11183 $ | +1598 $ | +7.15 $ | -124 $ | -835 $ |
+| V2 jambe gardee, retard 5 s | 0.15 | 1746 (249/j) | 119 | -24466 $ | -3495 $ | -14.01 $ | -168 $ | -24466 $ |
 
 ## Detail par issue
 
-- V1 Pitch filtre (55 si proba >= 55+marge, offre opposee a valeur <= 43), marge 0.05 : sortie 90 375 (+31.95 $) ; stop 373 (-12.43 $) ; paire 362 (+11.94 $) ; stop+paire partielle 149 (-1.22 $) ; fin gagnee 41 (+32.25 $) ; fin perdue 5 (-57.42 $)
-- V1 Pitch filtre (55 si proba >= 55+marge, offre opposee a valeur <= 43), marge 0.08 : sortie 90 436 (+31.96 $) ; stop 362 (-12.90 $) ; paire 187 (+14.65 $) ; stop+paire partielle 114 (+0.43 $) ; fin gagnee 20 (+33.42 $) ; fin perdue 5 (-57.42 $)
-- V1 Pitch filtre (55 si proba >= 55+marge, offre opposee a valeur <= 43), marge 0.1 : sortie 90 424 (+31.95 $) ; stop 357 (-12.47 $) ; paire 120 (+16.14 $) ; stop+paire partielle 83 (+1.57 $) ; fin gagnee 22 (+34.45 $) ; fin perdue 5 (-57.42 $)
-- V1 Pitch filtre (55 si proba >= 55+marge, offre opposee a valeur <= 43), marge 0.15 : sortie 90 376 (+31.95 $) ; stop 227 (-13.07 $) ; paire 38 (+16.60 $) ; stop+paire partielle 36 (+6.59 $) ; fin gagnee 8 (+36.92 $) ; fin perdue 7 (-57.46 $)
-- V2 offres a valeur des 2 cotes, jambe gardee, marge 0.05 : jambe+seule gagnee 1311 (+26.84 $) ; jambe+seule perdue 511 (-11.57 $) ; paire+seule perdue 60 (-11.66 $) ; paire+seule gagnee 30 (+15.05 $) ; paire 4 (+9.84 $)
-- V2 offres a valeur, sortie 90, marge 0.05 : jambe+90 1507 (+15.02 $) ; jambe+seule perdue 258 (-25.97 $) ; paire+90 109 (+10.82 $) ; paire+seule perdue 40 (-25.45 $) ; paire 2 (+35.75 $)
-- V2 offres a valeur des 2 cotes, jambe gardee, marge 0.08 : jambe+seule gagnee 1312 (+29.13 $) ; jambe+seule perdue 486 (-12.75 $) ; paire+seule perdue 71 (-10.13 $) ; paire+seule gagnee 34 (+19.67 $) ; paire 3 (-32.08 $)
-- V2 offres a valeur, sortie 90, marge 0.08 : jambe+90 1489 (+17.19 $) ; jambe+seule perdue 283 (-25.70 $) ; paire+90 81 (+9.72 $) ; paire+seule perdue 51 (-19.35 $) ; paire 2 (-35.00 $)
-- V2 offres a valeur des 2 cotes, jambe gardee, marge 0.1 : jambe+seule gagnee 1289 (+29.86 $) ; jambe+seule perdue 453 (-14.99 $) ; paire+seule perdue 96 (-16.27 $) ; paire+seule gagnee 44 (+22.56 $) ; paire 3 (-0.68 $)
-- V2 offres a valeur, sortie 90, marge 0.1 : jambe+90 1445 (+17.86 $) ; jambe+seule perdue 281 (-26.21 $) ; paire+90 84 (+13.74 $) ; paire+seule perdue 75 (-21.94 $)
-- V2 offres a valeur des 2 cotes, jambe gardee, marge 0.15 : jambe+seule gagnee 1152 (+31.42 $) ; jambe+seule perdue 429 (-18.60 $) ; paire+seule perdue 76 (-30.88 $) ; paire+seule gagnee 33 (+19.73 $) ; paire 4 (-23.44 $)
-- V2 offres a valeur, sortie 90, marge 0.15 : jambe+90 1285 (+20.13 $) ; jambe+seule perdue 296 (-29.90 $) ; paire+seule perdue 57 (-31.33 $) ; paire+90 53 (+17.89 $) ; paire 3 (-38.79 $)
-- V2 offres a valeur, OPTIMISTE (premier dans la file), marge 0.08 : jambe+seule gagnee 1318 (+32.54 $) ; jambe+seule perdue 488 (-4.96 $) ; paire+seule perdue 66 (-5.88 $) ; paire+seule gagnee 32 (+23.73 $) ; paire 5 (-4.20 $)
-- V1 Pitch filtre, OPTIMISTE, marge 0.08 : sortie 90 415 (+31.96 $) ; stop 341 (-13.04 $) ; paire 231 (+15.50 $) ; stop+paire partielle 114 (+0.73 $) ; fin gagnee 18 (+33.57 $) ; fin perdue 5 (-57.42 $)
+- V1 Pitch filtre, retard 0 s, marge 0.08 : sortie 90 435 (+31.96 $) ; stop 362 (-12.90 $) ; paire 187 (+14.65 $) ; stop+paire partielle 114 (+0.43 $) ; fin gagnee 20 (+33.42 $) ; fin perdue 5 (-57.42 $)
+- V2 jambe gardee, retard 0 s, marge 0.08 : jambe+seule gagnee 1310 (+29.09 $) ; jambe+seule perdue 486 (-12.75 $) ; paire+seule perdue 70 (-10.43 $) ; paire+seule gagnee 34 (+19.67 $) ; paire 3 (-32.08 $)
+- V2 sortie 90, retard 0 s, marge 0.1 : jambe+90 1442 (+17.84 $) ; jambe+seule perdue 281 (-26.24 $) ; paire+90 84 (+13.72 $) ; paire+seule perdue 75 (-21.94 $)
+- V1 Pitch filtre, retard 1 s, marge 0.08 : sortie 90 403 (+31.98 $) ; stop 400 (-13.79 $) ; paire 151 (+15.45 $) ; stop+paire partielle 78 (-1.31 $) ; fin gagnee 20 (+34.32 $) ; fin perdue 5 (-57.42 $)
+- V2 jambe gardee, retard 1 s, marge 0.08 : jambe+seule gagnee 1249 (+24.85 $) ; jambe+seule perdue 527 (-17.73 $) ; paire+seule perdue 78 (-20.03 $) ; paire+seule gagnee 39 (+12.56 $) ; paire 5 (+3.50 $)
+- V2 sortie 90, retard 1 s, marge 0.1 : jambe+90 1382 (+15.70 $) ; jambe+seule perdue 332 (-30.15 $) ; paire+90 89 (+3.34 $) ; paire+seule perdue 68 (-27.53 $)
+- V1 Pitch filtre, retard 2 s, marge 0.08 : stop 437 (-18.83 $) ; sortie 90 366 (+31.96 $) ; paire 128 (+16.70 $) ; stop+paire partielle 53 (-5.93 $) ; fin gagnee 11 (+36.52 $) ; fin perdue 5 (-57.42 $)
+- V2 jambe gardee, retard 2 s, marge 0.08 : jambe+seule gagnee 1173 (+21.99 $) ; jambe+seule perdue 580 (-25.39 $) ; paire+seule perdue 80 (-28.37 $) ; paire+seule gagnee 48 (+1.44 $) ; paire 11 (-16.74 $)
+- V2 sortie 90, retard 2 s, marge 0.1 : jambe+90 1303 (+13.88 $) ; jambe+seule perdue 377 (-32.00 $) ; paire+90 91 (+1.14 $) ; paire+seule perdue 70 (-35.66 $) ; paire 3 (-24.05 $)
+- V1 Pitch filtre, retard 5 s, marge 0.08 : stop 515 (-23.08 $) ; paire 207 (+13.37 $) ; sortie 90 164 (+31.88 $) ; stop+paire partielle 45 (-8.63 $) ; fin gagnee 30 (+30.86 $) ; fin perdue 6 (-56.87 $)
+- V2 jambe gardee, retard 5 s, marge 0.08 : jambe+seule gagnee 872 (+5.57 $) ; jambe+seule perdue 869 (-55.23 $) ; paire+seule perdue 94 (-34.91 $) ; paire+seule gagnee 64 (-16.42 $) ; paire 5 (-46.74 $)
+- V2 sortie 90, retard 5 s, marge 0.1 : jambe+90 1034 (+0.46 $) ; jambe+seule perdue 628 (-48.79 $) ; paire+90 154 (-3.68 $) ; paire+seule perdue 71 (-36.52 $) ; paire 5 (-30.42 $)
+- V2 jambe gardee, retard 2 s, marge 0.15 : jambe+seule gagnee 940 (+28.14 $) ; jambe+seule perdue 513 (-25.15 $) ; paire+seule perdue 78 (-33.52 $) ; paire+seule gagnee 26 (+12.34 $) ; paire 7 (-10.56 $)
+- V2 jambe gardee, retard 5 s, marge 0.15 : jambe+seule perdue 934 (-40.32 $) ; jambe+seule gagnee 693 (+20.95 $) ; paire+seule perdue 74 (-25.90 $) ; paire+seule gagnee 38 (+19.66 $) ; paire 7 (-22.76 $)
 
-Duree : 749 s
+Duree : 426 s
 code sortie: 0
