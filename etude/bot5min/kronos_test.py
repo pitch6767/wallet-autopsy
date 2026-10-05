@@ -18,7 +18,7 @@ import solutions as S
 from sorties import spot_jour, charger, dernier
 
 JOURS = int(sys.argv[1]) if len(sys.argv) > 1 else 12
-ESSAI = len(sys.argv) > 2 and sys.argv[2] == "essai"
+ESSAI = False
 K = 8            # chemins par prevision
 LOOK = 240       # bougies d'historique
 L = 1
@@ -27,13 +27,19 @@ FEE = lambda p: T.FEE_RATE * p * (1 - p)
 OUT = "etude/bot5min/"
 LIMITE_S = 4.6 * 3600
 
-sys.path.insert(0, "/tmp/Kronos")
-import torch
-from model import Kronos, KronosTokenizer, KronosPredictor
-torch.set_num_threads(os.cpu_count() or 2)
-TOK = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base")
-MOD = Kronos.from_pretrained("NeoQuasar/Kronos-small")
-PRED = KronosPredictor(MOD, TOK, device="cpu", max_context=512)
+PRED = None
+def charger_kronos():
+    global PRED
+    sys.path.insert(0, "/tmp/Kronos")
+    import torch
+    from model import Kronos, KronosTokenizer, KronosPredictor
+    torch.set_num_threads(os.cpu_count() or 2)
+    TOK = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base")
+    MOD = Kronos.from_pretrained("NeoQuasar/Kronos-small")
+    PRED = KronosPredictor(MOD, TOK, device="cpu", max_context=512)
+
+MODE = sys.argv[2] if len(sys.argv) > 2 else "analyser"     # "prevoir" (un jour, un actif) ou "analyser" (tout)
+DOSSIER = OUT + "kronos/"
 
 
 def bougies_jour(sym, jour):
@@ -127,19 +133,14 @@ def etudier(prefixe, sym, jours, debut, fin, coupe, t_dep):
         cache[ts] = r
         return r
 
-    # ---------- predictions Kronos (ouverture et +2 min), par paquets, avec limite de temps
+    # ---------- previsions Kronos calculees en parallele (un fichier par jour)
+    import glob, csv
+    PK = {}
+    for f in glob.glob(DOSSIER + f"pred_{prefixe}_*.csv"):
+        for r in csv.reader(open(f)):
+            if r and r[0].isdigit(): PK[int(r[0])] = ((float(r[1]), float(r[2])), (float(r[3]), float(r[4])))
     for m in M:
-        c0 = BG.get(m["start"] - 60)
-        m["ref"] = (c0[0] + c0[1] + c0[2] + c0[3]) / 4 if c0 else None   # moyenne de la minute avant l'ouverture (= prix a battre, en prix Binance)
-    paquet = 40
-    for i in range(0, len(M), paquet):
-        if time.time() - t_dep > LIMITE_S * (1.0 if prefixe == "eth" else 0.5): print("limite de temps atteinte", prefixe, i); break
-        G = [m for m in M[i:i + paquet] if m["ref"]]
-        r0 = kronos_proba(BG, [(m["start"], m["ref"]) for m in G], 5)
-        r2 = kronos_proba(BG, [(m["start"] + 120, m["ref"]) for m in G], 3)
-        for m, a, b in zip(G, r0, r2):
-            m["k0"], m["k2"] = a, b
-        if i % 400 == 0: print(prefixe, "kronos", i, "/", len(M), "(%.0fs)" % (time.time() - t0)); sys.stdout.flush()
+        if m["start"] in PK: m["k0"], m["k2"] = PK[m["start"]]
     E = [m for m in M if m.get("k0") and m.get("k2")]
     for m in E:
         m["p0"] = proba_up(m, m["start"] - L); m["p2"] = proba_up(m, m["start"] + 120 - L)
@@ -238,23 +239,51 @@ def etudier(prefixe, sym, jours, debut, fin, coupe, t_dep):
     return rap
 
 
-def main():
-    t0 = time.time()
-    fin = int(time.time()) // 300 * 300 - 900
-    debut = fin - JOURS * 86400
+def fenetre():
+    fin = int(time.time()) // 86400 * 86400 - 300
+    debut = fin + 300 - JOURS * 86400
     jours = sorted({datetime.fromtimestamp(t, timezone.utc).strftime("%Y-%m-%d") for t in range(debut - LOOK * 60 - 3700, fin + 600, 3600)})
     jours = [j for j in jours if j < datetime.now(timezone.utc).strftime("%Y-%m-%d")]
-    fin = min(fin, int(datetime.strptime(jours[-1], "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp()) + 86400 - 300)
     coupe = debut + int(JOURS * 2 / 3) * 86400
-    rap = [f"# Kronos (IA de prevision de bougies) sur les marches 5 min — {JOURS} jours ({jours[0]} -> {jours[-1]})" + (" — ESSAI" if ESSAI else ""),
+    return debut, fin, jours, coupe
+
+
+def prevoir(prefixe, sym, idx):
+    debut, fin, jours, coupe = fenetre()
+    a, b = debut + idx * 86400, debut + (idx + 1) * 86400
+    j_ = [j for j in jours if datetime.strptime(j, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp() >= a - 86400 and datetime.strptime(j, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp() < b]
+    BG = charger(bougies_jour, sym, j_)
+    charger_kronos()
+    t0 = time.time(); lignes = []
+    starts = list(range(a, min(b, fin + 1), 300))
+    for i in range(0, len(starts), 36):
+        G = []
+        for st in starts[i:i + 36]:
+            c0 = BG.get(st - 60)
+            if c0: G.append((st, (c0[0] + c0[1] + c0[2] + c0[3]) / 4))
+        r0 = kronos_proba(BG, G, 5); r2 = kronos_proba(BG, [(st + 120, ref) for st, ref in G], 3)
+        for (st, ref), x, y in zip(G, r0, r2):
+            if x and y: lignes.append(f"{st},{x[0]:.4f},{x[1]:.7f},{y[0]:.4f},{y[1]:.7f}")
+        print(prefixe, idx, i, "/", len(starts), "(%.0fs)" % (time.time() - t0)); sys.stdout.flush()
+    os.makedirs(DOSSIER, exist_ok=True)
+    open(DOSSIER + f"pred_{prefixe}_{idx:02d}.csv", "w").write("start,k0_pup,k0_ecart,k2_pup,k2_ecart\n" + "\n".join(lignes) + "\n")
+
+
+def main():
+    t0 = time.time()
+    debut, fin, jours, coupe = fenetre()
+    rap = [f"# Kronos (IA de prevision de bougies) sur les marches 5 min — {JOURS} jours ({jours[1] if len(jours) > 1 else jours[0]} -> {jours[-1]})",
            f"Kronos-small, {LOOK} bougies 1 min d'historique, {K} chemins par prevision. Comparaison au resultat officiel Polymarket."]
     for prefixe, sym in (("btc", "BTCUSDT"), ("eth", "ETHUSDT")):
         rap += etudier(prefixe, sym, jours, debut, fin, coupe, t0)
-        if not ESSAI: open(OUT + "resultat_kronos.md", "w").write("\n".join(rap))
+        open(OUT + "resultat_kronos_complet.md", "w").write("\n".join(rap))
     rap.append(f"\nDuree : {time.time() - t0:.0f} s")
-    open(OUT + ("resultat_kronos_essai.md" if ESSAI else "resultat_kronos.md"), "w").write("\n".join(rap))
+    open(OUT + "resultat_kronos_complet.md", "w").write("\n".join(rap))
     print("\n".join(rap))
 
 
 if __name__ == "__main__":
-    main()
+    if MODE == "prevoir":
+        prevoir(sys.argv[3], sys.argv[4], int(sys.argv[5]))
+    else:
+        main()
