@@ -1,0 +1,109 @@
+# Autopsie des pertes de V1 (reglage A, retard 1 s) — 12 jours (2026-09-23 -> 2026-10-04)
+
+## BTC — 1516 trades, 558 perdants, net +18090 $ (100 parts)
+
+Issues : fin gagnee 26 (+939 $), fin perdue 4 (-230 $), paire 147 (+2430 $), sortie90 640 (+20471 $), stop 699 (-5521 $)
+
+### Ce qui distingue les perdants (medianes)
+
+| Signal | Gagnants | Perdants | Ecart (en ecarts-types) |
+|---|---|---|---|
+| temps_restant_s | 239 | 265 | 0.36 |
+| temps_ecoule_s | 61 | 35 | 0.36 |
+| perp_flux5 | 0.784 | 0.637 | 0.26 |
+| proba_entree | 0.691 | 0.67 | 0.24 |
+| pm_depuis_055_s | 52 | 35 | 0.24 |
+| perp_flux60 | 0.227 | 0.141 | 0.23 |
+| spot_flux10 | 0.755 | 0.632 | 0.22 |
+| spot_echanges_pic30 | 1.2 | 1.06 | 0.19 |
+| vol60_vs300 | 1.04 | 0.953 | 0.18 |
+| perp_flux10 | 0.606 | 0.513 | 0.17 |
+| heure_utc | 12 | 13 | 0.15 |
+| perp_r5 | 1.74 | 1.49 | 0.13 |
+| spot_accel | 1.43 | 1.16 | 0.12 |
+| spot_r5 | 1.52 | 1.31 | 0.11 |
+| spot_volume_pic30 | 1.07 | 0.942 | 0.11 |
+| spot_flux30 | 0.472 | 0.418 | 0.11 |
+| perp_flux30 | 0.344 | 0.296 | 0.11 |
+| vol300_bp | 0.297 | 0.324 | 0.11 |
+| spot_flux60 | 0.312 | 0.268 | 0.10 |
+| pm_vitesse30 | 0.05 | 0.0321 | 0.10 |
+| base_var30 | 0.102 | 0.0302 | 0.10 |
+| autre_r15 | 1.7 | 1.37 | 0.09 |
+| spot_r2 | 0.583 | 0.467 | 0.09 |
+| distance_bp | 1.93 | 2.09 | 0.09 |
+| perp_r2 | 0.535 | 0.418 | 0.09 |
+
+### Meilleurs filtres (seuil choisi sur la periode 1, VERIFIE sur la periode 2 jamais vue)
+
+| Refuser si | Seuil | Gain net periode 1 | **Gain net periode 2** | Pertes evitees periode 2 | Trades refuses periode 2 |
+|---|---|---|---|---|---|
+
+### Modele combine (appris periode 1, teste periode 2)
+
+| Refuser si risque de perte > | Trades refuses | Gain net periode 2 (avant -> apres) | Pertes periode 2 (avant -> apres) |
+|---|---|---|---|
+| 0.5 | 112 / 516 | +6819 -> +5972 $ | -2386 -> -1765 $ |
+| 0.6 | 42 / 516 | +6819 -> +6529 $ | -2386 -> -2145 $ |
+| 0.7 | 10 / 516 | +6819 -> +6728 $ | -2386 -> -2345 $ |
+| 0.8 | 1 / 516 | +6819 -> +6831 $ | -2386 -> -2373 $ |
+
+Signaux les plus utiles au modele : proba_entree (0.08), temps_restant_s (0.05), spot_accel (0.04), vol300_bp (0.04), perp_avance5 (0.04), vol60_vs300 (0.03), perp_flux60 (0.03), spot_r120 (0.03), spot_flux10 (0.03), perp_r5 (0.03), spot_volume_pic30 (0.03), temps_ecoule_s (0.03)
+
+## ETH — 633 trades, 262 perdants, net +6520 $ (100 parts)
+
+Issues : fin gagnee 31 (+1097 $), fin perdue 5 (-286 $), paire 28 (+567 $), sortie90 246 (+7865 $), stop 323 (-2723 $)
+
+### Ce qui distingue les perdants (medianes)
+
+| Signal | Gagnants | Perdants | Ecart (en ecarts-types) |
+|---|---|---|---|
+| temps_restant_s | 195 | 247 | 0.61 |
+| temps_ecoule_s | 105 | 53 | 0.61 |
+| pm_depuis_055_s | 74 | 39 | 0.43 |
+| spot_flux10 | 0.725 | 0.576 | 0.27 |
+| proba_entree | 0.685 | 0.665 | 0.25 |
+| perp_flux10 | 0.588 | 0.499 | 0.19 |
+| vol60_vs300 | 1.06 | 0.989 | 0.18 |
+| spot_r2 | 1.01 | 0.741 | 0.18 |
+| perp_flux5 | 0.735 | 0.648 | 0.17 |
+| vol300_bp | 0.409 | 0.453 | 0.13 |
+| perp_r2 | 0.907 | 0.706 | 0.13 |
+| perp_flux60 | 0.167 | 0.208 | 0.12 |
+| distance_bp | 2.28 | 2.5 | 0.11 |
+| pm_vitesse30 | 0.08 | 0.06 | 0.11 |
+| spot_flux60 | 0.207 | 0.248 | 0.10 |
+| pm_n30 | 18 | 16 | 0.09 |
+| spot_flux30 | 0.413 | 0.37 | 0.09 |
+| perp_r30 | 2.42 | 2.09 | 0.09 |
+| perp_flux30 | 0.298 | 0.264 | 0.08 |
+| perp_r15 | 2.25 | 2.02 | 0.07 |
+| spot_r15 | 2.16 | 1.95 | 0.06 |
+| spot_r30 | 2.26 | 2.02 | 0.06 |
+| perp_gros_contre60_k$ | 210 | 275 | 0.06 |
+| base_var30 | 0.0403 | 7.32e-05 | 0.06 |
+| autre_r15 | 1 | 0.876 | 0.04 |
+
+### Meilleurs filtres (seuil choisi sur la periode 1, VERIFIE sur la periode 2 jamais vue)
+
+| Refuser si | Seuil | Gain net periode 1 | **Gain net periode 2** | Pertes evitees periode 2 | Trades refuses periode 2 |
+|---|---|---|---|---|---|
+| spot_r2 < | -0.0373 | +64 $ | **+11 $** | +20 $ | 4 / 216 |
+| pm_flux30_$ < | -157 | +30 $ | **-137 $** | +154 $ | 19 / 216 |
+| temps_ecoule_s < | 4 | +25 $ | **-90 $** | +8 $ | 5 / 216 |
+| temps_restant_s > | 296 | +25 $ | **-90 $** | +8 $ | 5 / 216 |
+| vol60_vs300 < | 0.64 | +21 $ | **-258 $** | +159 $ | 29 / 216 |
+| vol60_vs300 < | 0.515 | +12 $ | **-74 $** | +141 $ | 19 / 216 |
+
+### Modele combine (appris periode 1, teste periode 2)
+
+| Refuser si risque de perte > | Trades refuses | Gain net periode 2 (avant -> apres) | Pertes periode 2 (avant -> apres) |
+|---|---|---|---|
+| 0.5 | 74 / 216 | +2687 -> +2083 $ | -1041 -> -566 $ |
+| 0.6 | 38 / 216 | +2687 -> +2399 $ | -1041 -> -822 $ |
+| 0.7 | 22 / 216 | +2687 -> +2482 $ | -1041 -> -930 $ |
+| 0.8 | 7 / 216 | +2687 -> +2660 $ | -1041 -> -1004 $ |
+
+Signaux les plus utiles au modele : proba_entree (0.07), perp_avance5 (0.05), pm_flux30_$ (0.05), perp_flux10 (0.04), perp_volume_pic30 (0.04), pm_depuis_055_s (0.04), temps_ecoule_s (0.04), spot_r2 (0.04), perp_flux5 (0.03), base_var30 (0.03), distance_bp (0.03), heure_utc (0.03)
+
+Duree : 1286 s
