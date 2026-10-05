@@ -285,7 +285,7 @@ export class Bot {
       });
     if (!this.ws.perp || (this.ageMax("perp") > 20 && depuis("perp") > 20)) {
       for (const a of LISTE) this.livre[a] = { b: new Map(), a: new Map() };
-      const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`, `orderbook.50.${ACTIFS[a].bybit}`, `allLiquidation.${ACTIFS[a].bybit}`]);
+      const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`, (V1.ACTIFS.includes(a) ? `orderbook.500.${ACTIFS[a].bybit}` : `orderbook.50.${ACTIFS[a].bybit}`), `allLiquidation.${ACTIFS[a].bybit}`]);
       this.connecter("perp", "https://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args })], (m) => this.surPerp(m), JSON.stringify({ op: "ping" }), 10000);
     }
     if (!this.ws.cb || (this.ageMax("cb") > 30 && depuis("cb") > 30)) {
