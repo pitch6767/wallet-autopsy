@@ -14,6 +14,11 @@ const ACTIFS = {
   HYPE: { bybit: "HYPEUSDT", spot: null, regles: [{ W: 60, pmin: 0.95, pmax: 0.999, z: 3 }] },
 };
 const LISTE = Object.keys(ACTIFS);
+const BB_COLONNES = ["t", "bybit_perp", "okx_perp", "coinbase", "binance_spot", "chainlink", "bybit_meilleur_achat", "bybit_meilleure_vente",
+  "prof_achat_1pb", "prof_vente_1pb", "prof_achat_3pb", "prof_vente_3pb", "prof_achat_5pb", "prof_vente_5pb", "prof_achat_10pb", "prof_vente_10pb", "niveaux_achat", "niveaux_vente",
+  "perp_achats_usd", "perp_ventes_usd", "perp_plus_gros_achat", "perp_plus_grosse_vente", "perp_nb_echanges", "liq_longs_usd", "liq_courts_usd",
+  "pm_up_achats_top3", "pm_up_ventes_top3", "pm_down_achats_top3", "pm_down_ventes_top3",
+  "pm_up_flux[retrait_achat,retrait_vente,ajout_achat,ajout_vente,echange_achat,echange_vente]", "pm_down_flux[idem]"];
 
 const CFG = {
   MARGE_MODELE: 0.01,          // proba calculée >= prix + 1 pt (au-dessus de 0,98 : prix + la moitié de ce qui reste jusqu'à 1)
@@ -196,6 +201,17 @@ export class Bot {
         livres: Object.fromEntries(Object.keys(this.pb).map((id) => [id.slice(0, 8), { bids: this.livreTrie(id, "bids").slice(0, 4), asks: this.livreTrie(id, "asks").slice(0, 4) }])),
         derniers: this.polyRaw || [], proba: mb.up ? this.probaV1("BTC", mb) : null, sg: this._sg || null });
     }
+    if (u.pathname === "/api/boite") {
+      const n = Math.min(40, +(u.searchParams.get("n") || 20)), apres = u.searchParams.get("apres");
+      const m = await this.state.storage.list({ prefix: "bb:", limit: n, ...(apres ? { startAfter: apres } : {}) });
+      const ks = [...m.keys()];
+      return json({ cles: ks, docs: [...m.values()], suivant: ks.length ? ks[ks.length - 1] : null });
+    }
+    if (u.pathname === "/api/boite/compte") {
+      const m = await this.state.storage.list({ prefix: "bb:", limit: 5000 }), par = {};
+      for (const k of m.keys()) { const [, , a, ty] = k.split(":"); par[a + " " + ty] = (par[a + " " + ty] || 0) + 1; }
+      return json({ total: m.size, par, echantillons_en_memoire: Object.fromEntries(Object.entries(this.bbR || {}).map(([a, R]) => [a, R.length])), derniere_ligne: this.bbR && this.bbR.BTC ? this.bbR.BTC.slice(-1)[0] : null });
+    }
     if (u.pathname === "/api/rapport") return json({ refus: this.e.refus });
     if (u.pathname === "/rapport") return new Response(RAPPORT, { headers: { "content-type": "text/html; charset=utf-8" } });
     return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8" } });
@@ -205,6 +221,45 @@ export class Bot {
     this.ouvrirFlux();
     this.state.storage.getAlarm().then((a) => { if (!a || a < Date.now() - 5000) this.state.storage.setAlarm(Date.now() + 1000); });
   }
+  // ------------------------------------------------------------------ boîte noire (enregistrement seulement)
+  // toutes les 100 ms : prix de chaque bourse, carnet Bybit (profondeur à 1/3/5/10 pb), flux et liquidations, carnets et flux Polymarket.
+  // On garde 10 s en mémoire ; sauvegarde à l'entrée, à la première alerte (proba -8 pts) et au stop de chaque trade V1.
+  bbAcc(a) { return ((this.bbA = this.bbA || {})[a] = this.bbA[a] || { ach: 0, ven: 0, max_ach: 0, max_ven: 0, n: 0, liq_longs: 0, liq_courts: 0 }); }
+  pmAcc(id) { return ((this.pmA = this.pmA || {})[id] = this.pmA[id] || { retrait_achat: 0, retrait_vente: 0, ajout_achat: 0, ajout_vente: 0, echange_achat: 0, echange_vente: 0 }); }
+  echantillonner() {
+    const t = now();
+    for (const a of V1.ACTIFS) {
+      const L = this.livre[a], mk = this.mk[a] || {};
+      const b = [...L.b].map(([p, q2]) => [+p, q2]).sort((x, y) => y[0] - x[0]), k = [...L.a].map(([p, q2]) => [+p, q2]).sort((x, y) => x[0] - y[0]);
+      const mid = b.length && k.length ? (b[0][0] + k[0][0]) / 2 : null;
+      const prof = (cote, bps) => mid ? Math.round(cote.filter(([p]) => Math.abs(p / mid - 1) * 1e4 <= bps).reduce((s2, [p, q2]) => s2 + p * q2, 0)) : null;
+      const px = (src) => (this.f[a][src] ? this.f[a][src].p : null);
+      const ac = this.bbAcc(a);
+      const pmTop = (id, cote) => this.livreTrie(id, cote).slice(0, 3).map(([p, s2]) => [p, Math.round(s2)]);
+      const pmF = (id) => { if (!id) return null; const z = this.pmAcc(id), r = Object.values(z).map(Math.round); for (const kk of Object.keys(z)) z[kk] = 0; return r; };
+      const ligne = [+t.toFixed(2), px("perp"), px("okx"), px("cb"), px("bn"), px("cl"),
+        b.length ? b[0][0] : null, k.length ? k[0][0] : null, prof(b, 1), prof(k, 1), prof(b, 3), prof(k, 3), prof(b, 5), prof(k, 5), prof(b, 10), prof(k, 10), b.length, k.length,
+        Math.round(ac.ach), Math.round(ac.ven), Math.round(ac.max_ach), Math.round(ac.max_ven), ac.n, Math.round(ac.liq_longs), Math.round(ac.liq_courts),
+        mk.up ? pmTop(mk.up, "bids") : null, mk.up ? pmTop(mk.up, "asks") : null, mk.down ? pmTop(mk.down, "bids") : null, mk.down ? pmTop(mk.down, "asks") : null,
+        pmF(mk.up), pmF(mk.down)];
+      for (const kk of Object.keys(ac)) ac[kk] = 0;
+      const R = ((this.bbR = this.bbR || {})[a] = this.bbR[a] || []);
+      R.push(ligne); if (R.length > 100) R.shift();
+    }
+  }
+  bbSauver(pos, type) {
+    try {
+      const a = pos.actif || "BTC", R = (this.bbR || {})[a];
+      if (!R || !R.length) return;
+      const t = now(), cle = "bb:" + Math.floor(t * 1000).toString().padStart(14, "0") + ":" + a + ":" + type;
+      const doc = { actif: a, type, t, start: pos.start, cote: pos.cote, prixEntree: pos.prix, probaEntree: pos.proba, probaActuelle: pos.probaActuelle, heure: pos.heure,
+        colonnes: BB_COLONNES, lignes: R.slice() };
+      this.state.storage.put(cle, doc).catch(() => {});
+      this.bbN = (this.bbN || 0) + 1;
+      if (this.bbN % 50 === 0) this.state.storage.list({ prefix: "bb:", limit: 5000 }).then((m) => { const ks = [...m.keys()]; if (ks.length > 3000) this.state.storage.delete(ks.slice(0, ks.length - 3000).slice(0, 128)); }).catch(() => {});
+    } catch (err) { this.erreur("boîte noire", err); }
+  }
+
   async alarm() {
     await this.ready;
     try { await this.tick(); } catch (err) { this.erreur("tick", err); }
@@ -221,6 +276,13 @@ export class Bot {
   ageMax(src) { const t = now(); let m = 0; for (const a of LISTE) { const x = this.f[a][src]; if (src === "cb" && !ACTIFS[a].spot) continue; m = Math.max(m, x ? t - x.t : 1e9); } return m; }
   ouvrirFlux() {
     const t = now(), depuis = (k) => t - (this.ws[k + "_ouvert"] || 0);
+    if (!this.bbI) this.bbI = setInterval(() => { try { this.echantillonner(); } catch (_) {} }, 100);
+    const ageBn = Math.max(...V1.ACTIFS.map((a) => (this.f[a].bn ? t - this.f[a].bn.t : 1e9)));
+    if (!this.ws.bn || (ageBn > 30 && depuis("bn") > 30))
+      this.connecter("bn", "https://stream.binance.com:443/stream?streams=" + V1.ACTIFS.map((a) => a.toLowerCase() + "usdt@trade").join("/"), [], (m) => {
+        const d = m.data || {}, a = V1.ACTIFS.find((k) => k + "USDT" === d.s);
+        if (a && +d.p > 0) this.noter(a, "bn", +d.p, now());
+      });
     if (!this.ws.perp || (this.ageMax("perp") > 20 && depuis("perp") > 20)) {
       for (const a of LISTE) this.livre[a] = { b: new Map(), a: new Map() };
       const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`, `orderbook.50.${ACTIFS[a].bybit}`, `allLiquidation.${ACTIFS[a].bybit}`]);
@@ -292,11 +354,13 @@ export class Bot {
     const a = this.actifBybit(tp.split(".").pop());
     if (!a) return;
     if (tp.startsWith("publicTrade")) {
+      if (V1.ACTIFS.includes(a)) { const ac = this.bbAcc(a); for (const y of m.data || []) { const u2 = +y.v * +y.p; ac.n++; if (y.S === "Buy") { ac.ach += u2; ac.max_ach = Math.max(ac.max_ach, u2); } else { ac.ven += u2; ac.max_ven = Math.max(ac.max_ven, u2); } } }
       const x = (m.data || []).slice(-1)[0];
       if (x) { this.noter(a, "perp", +x.p, t); if (V1.ACTIFS.includes(a)) this.v1Declencher(a, "perp", +x.T / 1000, t); }
     }
     else if (tp.startsWith("allLiquidation")) {
       for (const x of m.data || []) this.liq[a].push({ t, cote: x.S === "Buy" ? "SELL" : "BUY", usd: (+x.v) * (+x.p) });   // Buy = position longue liquidée
+      if (V1.ACTIFS.includes(a)) { const ac = this.bbAcc(a); for (const x of m.data || []) { if (x.S === "Buy") ac.liq_longs += (+x.v) * (+x.p); else ac.liq_courts += (+x.v) * (+x.p); } }
       this.liq[a] = this.liq[a].filter((x) => x.t > t - 30);
     } else if (tp.startsWith("orderbook")) {
       const d = m.data || {}, L = m.type === "snapshot" ? (this.livre[a] = { b: new Map(), a: new Map() }) : this.livre[a];
@@ -582,10 +646,12 @@ export class Bot {
       for (const c of ch) {
         const L = livre(c.asset_id), cote = c.side === "BUY" ? L.bids : L.asks, avant = cote.get(+c.price) || 0, apres = +c.size;
         if (apres < avant) this.noterFlux(c.asset_id, "retrait_" + (c.side === "BUY" ? "achat" : "vente"), (avant - apres) * +c.price, t);
+        { const z = this.pmAcc(c.asset_id), cs = c.side === "BUY" ? "achat" : "vente"; if (apres < avant) z["retrait_" + cs] += (avant - apres) * +c.price; else z["ajout_" + cs] += (apres - avant) * +c.price; }
         apres ? cote.set(+c.price, apres) : cote.delete(+c.price);
       }
     } else if (ev === "last_trade_price") {
       this.noterFlux(m.asset_id, "echange_" + (m.side === "BUY" ? "achat" : "vente"), +m.price * +m.size, t);
+      this.pmAcc(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size;
       this.v1Echange(m.asset_id, m.side, +m.price, +m.size);
     } else return;
     const id = m.asset_id || ((m.price_changes || [])[0] || {}).asset_id;
@@ -731,7 +797,9 @@ export class Bot {
     try { this.v1Alertes(pos); } catch (_) {}
     if (pos.reel) this.v1OffreReelle(pos);
     const bids = this.livreTrie(pos.token, "bids");
-    if (fairA < pos.proba - V1.STOP_REL) { this.v1Vendre(pos, bids, "stop", delai); return; }
+    if (!pos.bbEntree) { pos.bbEntree = true; this.bbSauver(pos, "entree"); }
+    if (!pos.bbAlerte && fairA < pos.proba - 0.08) { pos.bbAlerte = true; this.bbSauver(pos, "alerte"); }
+    if (fairA < pos.proba - V1.STOP_REL) { if (!pos.bbStop) { pos.bbStop = true; this.bbSauver(pos, "stop"); } this.v1Vendre(pos, bids, "stop", delai); return; }
     if (pos.B.parts < 1e-9 && bids.length && bids[0][0] >= V1.TP) this.v1Vendre(pos, bids, "sortie 90", delai);
   }
 
