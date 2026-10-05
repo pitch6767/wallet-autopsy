@@ -1,7 +1,18 @@
-U=https://wallet-autopsy.pitch67.workers.dev
-sleep 150
-# Remise à jour accélérée des études copiables (4 files en parallèle, ~45 min)
-for o in 0 4 8 12; do ( for i in $(seq 1 60); do curl -sS -m 120 -A curl "$U/api/btc/etudes?off=$o" >/dev/null; done ) & done; wait
-curl -sS -m 60 -A curl "$U/api/btc/conseils" | python3 -c "
-import json,sys; d=json.load(sys.stdin); print('candidats',d['candidats'],'etudies',d['etudies'])
-for w in d['choix']: print(w['wallet'], (w['nom'] or '')[:16], w['cible'], round(w['marge']*100),'pts', w['n'], round(w['roi']*100,1),'%', int(w['avant']),'s', round(w['r1']*100,1), round(w['r2']*100,1), round(w['recent']*100,1), 'mise', round(w['mise'] or 0), 'clones', w['clones'])"
+U=https://bot95.pitch67.workers.dev
+curl -sS -m 30 "$U/api/etat" -o /tmp/e.json
+python3 - <<'PY'
+import json,time
+d=json.load(open('/tmp/e.json'));e=d['e']
+print("now",time.strftime('%Y-%m-%d %H:%M:%S',time.gmtime()),"UTC")
+for k in ['capital','mise','reserve','pnl','gains','pertes','pause','depuis','vetos','candidats','parActif','positions','attente']:
+  print(k,json.dumps(e.get(k),ensure_ascii=False))
+print("ntrades",len(e['trades']))
+for t in e['trades'][:60]: print(json.dumps(t,ensure_ascii=False))
+for a in d['actifs']: print(json.dumps(a,ensure_ascii=False))
+print(json.dumps(d['diag'],ensure_ascii=False))
+PY
+echo "=== rapport refus"
+curl -sS -m 30 "$U/api/rapport" | python3 -c "
+import json,sys,collections;r=json.load(sys.stdin)['refus'];print('n',len(r));c=collections.Counter()
+for x in r: c[(x.get('a'),x.get('raison') or x.get('motif'))]+=1
+[print(k,v) for k,v in c.most_common(40)];print(json.dumps(r[:5],ensure_ascii=False))"
