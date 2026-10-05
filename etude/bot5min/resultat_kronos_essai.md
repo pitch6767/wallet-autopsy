@@ -1,0 +1,77 @@
+# Kronos (IA de prevision de bougies) sur les marches 5 min — 12 jours (2026-09-23 -> 2026-10-04) — ESSAI
+Kronos-small, 240 bougies 1 min d'historique, 8 chemins par prevision. Comparaison au resultat officiel Polymarket.
+
+## BTC — 30 cycles avec prevision Kronos (sur 30)
+
+### 1. Direction annoncee contre vrai resultat Polymarket
+
+| Qui predit | Moment | Bonne direction | Cycles |
+|---|---|---|---|
+| Kronos | ouverture | 53.8 % | 26 |
+| Kronos | +2 min | 74.1 % | 27 |
+| Elan des 5 dernieres minutes | ouverture | 46.7 % | 30 |
+| Elan de la minute 1-2 | +2 min | 56.7 % | 30 |
+| Notre modele | ouverture | 65.0 % | 20 |
+| Notre modele | +2 min | 75.0 % | 20 |
+
+### Kronos quand il est sur de lui (ouverture)
+
+| Kronos dit | Cycles | Bonne direction |
+|---|---|---|
+| P(Up) 0.00-0.12 | 5 | 60.0 % |
+| P(Up) 0.12-0.38 | 10 | 60.0 % |
+| P(Up) 0.38-0.62 | 11 | 72.7 % (part de Up) |
+| P(Up) 0.62-0.88 | 4 | 100.0 % |
+
+### 2. Kronos apporte-t-il quelque chose en plus de notre modele ? (appris jours 1-8, juge jours 9-12)
+
+| Moment | Erreur notre modele seul | Erreur notre modele + Kronos | Bonne direction seul | Bonne direction + Kronos |
+|---|---|---|---|---|
+
+### 3. Kronos comme filtre de V1 (avis de Kronos sur le cote achete)
+
+| Regle | Trades | Gain net | Pertes | Gain/jour jours 1-8 | **Gain/jour jours 9-12** |
+|---|---|---|---|---|---|
+| V1 sans filtre | 9 | +183 $ | -22 $ | +0 $ | **+54 $** |
+| Refuser si Kronos donne < 50 % a notre cote | 3 | +29 $ | -17 $ | +0 $ | **+9 $** |
+| Refuser si Kronos donne < 25 % a notre cote | 4 | +61 $ | -17 $ | +0 $ | **+18 $** |
+| Refuser si Kronos donne < 13 % (presque tous les chemins contre) | 4 | +61 $ | -17 $ | +0 $ | **+18 $** |
+
+## ETH — 30 cycles avec prevision Kronos (sur 30)
+
+### 1. Direction annoncee contre vrai resultat Polymarket
+
+| Qui predit | Moment | Bonne direction | Cycles |
+|---|---|---|---|
+| Kronos | ouverture | 53.6 % | 28 |
+| Kronos | +2 min | 61.5 % | 26 |
+| Elan des 5 dernieres minutes | ouverture | 43.3 % | 30 |
+| Elan de la minute 1-2 | +2 min | 63.3 % | 30 |
+| Notre modele | ouverture | 50.0 % | 20 |
+| Notre modele | +2 min | 80.0 % | 20 |
+
+### Kronos quand il est sur de lui (ouverture)
+
+| Kronos dit | Cycles | Bonne direction |
+|---|---|---|
+| P(Up) 0.00-0.12 | 7 | 57.1 % |
+| P(Up) 0.12-0.38 | 12 | 58.3 % |
+| P(Up) 0.38-0.62 | 8 | 75.0 % (part de Up) |
+| P(Up) 0.62-0.88 | 3 | 66.7 % |
+
+### 2. Kronos apporte-t-il quelque chose en plus de notre modele ? (appris jours 1-8, juge jours 9-12)
+
+| Moment | Erreur notre modele seul | Erreur notre modele + Kronos | Bonne direction seul | Bonne direction + Kronos |
+|---|---|---|---|---|
+
+### 3. Kronos comme filtre de V1 (avis de Kronos sur le cote achete)
+
+| Regle | Trades | Gain net | Pertes | Gain/jour jours 1-8 | **Gain/jour jours 9-12** |
+|---|---|---|---|---|---|
+| V1 sans filtre | 4 | +63 $ | -14 $ | +0 $ | **+19 $** |
+| Refuser si Kronos donne < 50 % a notre cote | 1 | -14 $ | -14 $ | +0 $ | **-4 $** |
+| Refuser si Kronos donne < 25 % a notre cote | 2 | +19 $ | -14 $ | +0 $ | **+6 $** |
+| Refuser si Kronos donne < 13 % (presque tous les chemins contre) | 2 | +19 $ | -14 $ | +0 $ | **+6 $** |
+| Garder seulement si Kronos donne >= 75 % | 1 | -14 $ | -14 $ | +0 $ | **-4 $** |
+
+Duree : 2065 s
