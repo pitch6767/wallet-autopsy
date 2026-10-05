@@ -121,9 +121,14 @@ export class Bot {
       this.connecter("cb", "https://advanced-trade-ws.coinbase.com", [JSON.stringify({ type: "subscribe", product_ids: ids, channel: "ticker" })], (m) => this.surCb(m));
     }
     const mb = this.mk.BTC;
-    if (mb && mb.up && (this.polyCycle !== mb.start || (!this.ws.poly && depuis("poly") > 3))) {
-      this.polyCycle = mb.start; this.pb = {};
-      this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: [mb.up, mb.down], type: "market" })], (m) => this.surPoly(m), "PING", 10000);
+    const jetons = [];
+    if (mb && mb.up) jetons.push(mb.up, mb.down);
+    if (this.mkNext && this.mkNext.up && (!mb || this.mkNext.start > mb.start)) jetons.push(this.mkNext.up, this.mkNext.down);
+    const cle = jetons.join(",");
+    if (jetons.length && (this.polyCle !== cle || (!this.ws.poly && depuis("poly") > 3))) {
+      this.polyCle = cle; this.polyCycle = mb && mb.start;
+      for (const id of Object.keys(this.pb)) if (!jetons.includes(id)) delete this.pb[id];
+      this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPoly(m), "PING", 10000);
     }
     if (!this.ws.cl || (this.ageMax("cl") > 20 && depuis("cl") > 20)) this.connecter("cl", "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surCl(m), "PING", 5000);
@@ -241,13 +246,19 @@ export class Bot {
       let mk = this.mk[a];
       if (!mk || mk.start !== start) {
         if (mk) this.finFenetre(a, mk);
-        mk = this.mk[a] = { start, end: start + 300 };
+        mk = this.mk[a] = (a === V1.ACTIF && this.mkNext && this.mkNext.start === start) ? { ...this.mkNext } : { start, end: start + 300 };
       }
       try {
         if (!mk.slug && t - (mk.essai || 0) > 10) { mk.essai = t; Object.assign(mk, await this.chargerMarche(a, start)); }
         if (!mk.strike && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); }
       } catch (err) { if (tleft < 200) this.erreur(a, err); }
     }));
+    // V1 : préchargement du cycle BTC suivant (carnet en direct prêt dès la première seconde)
+    const nx = start + 300;
+    if (tleft < 150 && (!this.mkNext || this.mkNext.start !== nx) && t - (this._nxEssai || 0) > 10) {
+      this._nxEssai = t;
+      try { this.mkNext = { start: nx, end: nx + 300, ...(await this.chargerMarche(V1.ACTIF, nx)) }; } catch (_) {}
+    }
     for (const p of this.e.positions.filter((x) => x.end <= t)) this.e.attente.push(p);
     this.e.positions = this.e.positions.filter((x) => x.end > t);
     await this.resoudre();
