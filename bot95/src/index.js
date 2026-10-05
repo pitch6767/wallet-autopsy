@@ -5,9 +5,9 @@
 const ACTIFS = {
   // règles validées le 04.10.2026 (test 7 jours, zéro perte) : fenêtre (s avant la fin), prix du favori, distance mini (écarts-types)
   BTC: { bybit: "BTCUSDT", spot: "BTC-USD", regles: [{ W: 90, pmin: 0.95, pmax: 0.999, z: 6 }] },
-  ETH: { bybit: "ETHUSDT", spot: "ETH-USD", regles: [{ W: 120, pmin: 0.95, pmax: 0.999, z: 6 }, { W: 60, pmin: 0.90, pmax: 0.95, z: 2.5 }] },
-  SOL: { bybit: "SOLUSDT", spot: "SOL-USD", regles: [{ W: 90, pmin: 0.95, pmax: 0.999, z: 4 }, { W: 90, pmin: 0.90, pmax: 0.95, z: 2.5 }] },
-  XRP: { bybit: "XRPUSDT", spot: "XRP-USD", regles: [{ W: 30, pmin: 0.95, pmax: 0.999, z: 2.5 }, { W: 90, pmin: 0.90, pmax: 0.95, z: 3 }, { W: 180, pmin: 0.85, pmax: 0.90, z: 4 }] },
+  ETH: { bybit: "ETHUSDT", spot: "ETH-USD", regles: [{ W: 120, pmin: 0.95, pmax: 0.999, z: 6 }] },
+  SOL: { bybit: "SOLUSDT", spot: "SOL-USD", regles: [{ W: 90, pmin: 0.95, pmax: 0.999, z: 4 }] },
+  XRP: { bybit: "XRPUSDT", spot: "XRP-USD", regles: [{ W: 30, pmin: 0.95, pmax: 0.999, z: 2.5 }] },
   DOGE: { bybit: "DOGEUSDT", spot: "DOGE-USD", regles: [{ W: 90, pmin: 0.95, pmax: 0.999, z: 4 }] },
   BNB: { bybit: "BNBUSDT", spot: null, regles: [{ W: 30, pmin: 0.95, pmax: 0.999, z: 2.5 }] },
   HYPE: { bybit: "HYPEUSDT", spot: null, regles: [{ W: 60, pmin: 0.95, pmax: 0.999, z: 3 }] },
