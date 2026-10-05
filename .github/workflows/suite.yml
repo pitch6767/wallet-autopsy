@@ -1,0 +1,29 @@
+name: Suite de tests (sequentielle)
+on:
+  push:
+    branches: [main]
+    paths: [etude/bot5min/suite.txt]
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tests
+        run: |
+          set +e
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          while read -r script actif sym; do
+            [ -z "$script" ] && continue
+            out=etude/bot5min/journal_${script%.py}_${actif}.txt
+            [ "$script" = "v1_autres.py" ] && out=etude/bot5min/journal_v1_${actif}.txt
+            [ "$script" = "arb15.py" ] && out=etude/bot5min/journal_arb15_${actif}.txt
+            timeout 2400 python3 -u etude/bot5min/$script 7 $actif $sym > $out 2>&1; echo "code sortie: $?" >> $out
+            git add etude/bot5min/; git commit -q -m "Resultats $script $actif [skip ci]"
+            for k in $(seq 1 25); do git pull --rebase -q origin main && git push -q && break; sleep 7; done
+          done < etude/bot5min/suite.txt
