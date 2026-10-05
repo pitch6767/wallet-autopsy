@@ -1,3 +1,4 @@
+import { Reel } from "./reel.js";
 // bot95 v2 — option A sur les 7 cryptos 5 min de Polymarket (BTC, ETH, SOL, XRP, DOGE, BNB, HYPE).
 // MODE FANTÔME : aucun ordre réel, aucune clé. Le bot note ce qu'il aurait fait.
 // Règle Polymarket : Up si moyenne Chainlink 60 s à la fin >= moyenne 60 s au début (prix d'exercice publié par Polymarket).
@@ -80,6 +81,7 @@ export class Bot {
     this.ws = {};
     this.diag = { reconnexions: {}, erreurs: [] };
     this.pb = {}; this.latPoly = []; this.latDec = [];
+    this.reel = new Reel(env);
     this.ready = this.state.blockConcurrencyWhile(async () => {
       this.e = (await this.state.storage.get("etat2")) || {
         capital: CFG.CAPITAL, mise: CFG.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, pause: false,
@@ -100,6 +102,23 @@ export class Bot {
     if (u.pathname === "/api/reprendre" && req.method === "POST") { this.e.pause = false; await this.sauver(); return json({ ok: true }); }
     if (u.pathname === "/api/reveil") return json({ ok: true });
     if (u.pathname === "/api/verif") return json({ verif: this.e.verif });
+    if (u.pathname === "/api/reel/etat") {
+      const r = { configure: this.reel.configure(), modeReel: this.reel.modeReel(), arret: !!this.e.reelStop, mise: +this.env.MISE_REEL || null,
+        signataire: this.reel.signataire || null, portefeuille: this.env.POLY_ADRESSE_PORTEFEUILLE || null, journal: this.reel.journal.slice(0, 20) };
+      if (r.configure) { try { r.solde = await this.reel.solde(); } catch (err) { r.erreurSolde = String(err.message || err).slice(0, 200); } }
+      return json(r);
+    }
+    if (u.pathname === "/api/reel/test" && req.method === "POST") {
+      if (!this.reel.configure()) return json({ ok: false, erreur: "clés absentes" });
+      const mb = this.mk.BTC; if (!mb || !mb.up) return json({ ok: false, erreur: "marché BTC pas encore chargé" });
+      return json(await this.reel.test(mb.up));
+    }
+    if (u.pathname === "/api/reel/arret" && req.method === "POST") {
+      this.e.reelStop = true; await this.sauver();
+      let r = null; try { if (this.reel.configure()) r = await this.reel.toutAnnuler(); } catch (err) { r = String(err); }
+      return json({ ok: true, arret: true, annulation: r });
+    }
+    if (u.pathname === "/api/reel/reprise" && req.method === "POST") { this.e.reelStop = false; await this.sauver(); return json({ ok: true, arret: false }); }
     if (u.pathname === "/api/sondes") {
       const regions = ["weur", "eeur", "enam", "wnam", "apac"];
       const r = await Promise.all(regions.map(async (rg) => {
@@ -297,6 +316,10 @@ export class Bot {
     for (const p of this.e.positions.filter((x) => x.end <= t)) this.e.attente.push(p);
     this.e.positions = this.e.positions.filter((x) => x.end > t);
     await this.resoudre();
+    if (this.enReel()) {
+      if (t - (this._chaud || 0) > 20) { this._chaud = t; this.reel.rechauffer(); }
+      const pv = this.e.V1.pos; if (pv && pv.reel && pv.offreId) this.v1SuivreOffre(pv);
+    }
     if (t - (this._v1r || 0) > 15 || (this.e.V1.pos && t >= this.e.V1.pos.end)) { this._v1r = t; await this.v1Regler(); }
     // carnets des marchés dans leur fenêtre d'achat ou avec une position ouverte
     const actifs = LISTE.filter((a) => { const mk = this.mk[a]; return mk.slug && tleft >= 1 && (tleft <= WMAX(a) || this.e.positions.some((p) => p.actif === a && p.start === start)); });
@@ -569,6 +592,7 @@ export class Bot {
         for (const [p, sz] of asks) { if (p > V1.PMAX) break; const k = Math.min(sz, reste / p); parts += k; cout += k * p; reste -= k * p; if (reste < 0.01) break; }
         if (reste >= 0.01 || parts <= 0) continue;
         const pm = cout / parts;
+        if (this.enReel()) { V.dernierCycle = mk.start; this.v1EntreeReelle(mk, up, id, fair, delai, source); return; }
         V.dernierCycle = mk.start; V.entrees++;
         V.pos = { start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up, prix: +pm.toFixed(4), parts: +parts.toFixed(2),
           mise: +cout.toFixed(2), frais: +(parts * CFG.FEE_RATE * pm * (1 - pm)).toFixed(3), proba: +fair.toFixed(3), heure: new Date().toISOString(),
@@ -581,6 +605,7 @@ export class Bot {
     const up = pos.cote === "Up", fairA = up ? pu : 1 - pu;
     pos.offre = Math.min(Math.floor(((1 - fairA) - V1.MARGE) * 100) / 100, V1.OPP_MAX);
     pos.probaActuelle = +fairA.toFixed(3);
+    if (pos.reel) this.v1OffreReelle(pos);
     const bids = this.livreTrie(pos.token, "bids");
     if (fairA < pos.proba - V1.STOP_REL) { this.v1Vendre(pos, bids, "stop", delai); return; }
     if (pos.B.parts < 1e-9 && bids.length && bids[0][0] >= V1.TP) this.v1Vendre(pos, bids, "sortie 90", delai);
@@ -590,6 +615,7 @@ export class Bot {
   v1Echange(id, side, p, size) {
     const V = this.e.V1, pos = V && V.pos;
     if (!pos || pos.fini || pos.offre == null || pos.offre < 0.02) return;
+    if (pos.reel) { if (pos.offreId && Math.min(p, 1 - p) <= pos.offre + 0.01) this.v1SuivreOffre(pos); return; }
     let q = null;
     if (id === pos.autre && side === "SELL") q = p;            // vendeur de l'autre côté
     else if (id === pos.token && side === "BUY") q = 1 - p;     // acheteur de notre côté = vendeur de l'autre (appariement)
@@ -602,6 +628,7 @@ export class Bot {
   }
 
   v1Vendre(pos, bids, issue, delai) {
+    if (pos.reel) { this.v1VenteReelle(pos, bids, issue, delai); return; }
     const q = pos.parts - pos.B.parts;
     let reste = q, recu = 0, frais = 0;
     for (const [p, sz] of bids) { const k = Math.min(sz, reste); recu += k * p; frais += k * CFG.FEE_RATE * p * (1 - p); reste -= k; if (reste <= 1e-9) break; }
@@ -625,11 +652,74 @@ export class Bot {
     V.pos = null;
   }
 
+  enReel() { return this.reel.modeReel() && !this.e.reelStop && +this.env.MISE_REEL > 0; }
+
+  async v1EntreeReelle(mk, up, id, fair, delai, source) {
+    const V = this.e.V1;
+    if (this.v1Occupe) return; this.v1Occupe = true;
+    try {
+      const r = await this.reel.acheter(id, V1.PMAX, +this.env.MISE_REEL);
+      if (!(r.parts > 0)) { V.reelRates = (V.reelRates || 0) + 1; return; }
+      V.entrees++;
+      V.pos = { reel: true, start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up,
+        prix: +(r.usd / r.parts).toFixed(4), parts: +r.parts.toFixed(2), mise: +r.usd.toFixed(2), frais: 0, proba: +fair.toFixed(3), heure: new Date().toISOString(),
+        delai: delai != null ? +delai.toFixed(3) : null, msOrdre: r.ms, source, B: { parts: 0, cout: 0 }, offre: null, offreId: null, offrePrix: null };
+      this.notelat(delai); await this.sauver();
+    } catch (err) { this.erreur("réel achat", err); }
+    finally { this.v1Occupe = false; }
+  }
+
+  // garde l'offre réelle sur l'autre côté alignée sur pos.offre (remplacement au plus une fois par seconde)
+  async v1OffreReelle(pos) {
+    const voulu = pos.offre != null && pos.offre >= 0.02 ? pos.offre : null, reste = pos.parts - pos.B.parts;
+    if (pos.offrePrix === voulu || this.offreOccupee || now() - (pos.offreT || 0) < 1) return;
+    this.offreOccupee = true; pos.offreT = now();
+    try {
+      if (pos.offreId) { await this.v1SuivreOffre(pos); await this.reel.annuler(pos.offreId); pos.offreId = null; pos.offrePrix = null; }
+      if (voulu != null && reste >= 5 && !pos.fini) { const o = await this.reel.poserOffre(pos.autre, voulu, reste); if (o.id) { pos.offreId = o.id; pos.offrePrix = voulu; pos.offreDeja = 0; } }
+    } catch (err) { this.erreur("réel offre", err); }
+    finally { this.offreOccupee = false; }
+  }
+
+  // lit la quantité servie de l'offre réelle
+  async v1SuivreOffre(pos) {
+    if (!pos.offreId || this.suiviOccupe) return; this.suiviOccupe = true;
+    try {
+      const o = await this.reel.etatOrdre(pos.offreId);
+      const servi = +(o && (o.size_matched || o.sizeMatched) || 0), neuf = servi - (pos.offreDeja || 0);
+      if (neuf > 0) { pos.offreDeja = servi; pos.B.parts += neuf; pos.B.cout += neuf * pos.offrePrix; }
+      if (pos.B.parts >= pos.parts - 0.01 && !pos.fini) { pos.offreId = null; this.v1Clore(pos, pos.parts, 0, "paire"); }
+      await this.sauver();
+    } catch (err) { this.erreur("réel suivi offre", err); }
+    finally { this.suiviOccupe = false; }
+  }
+
+  async v1VenteReelle(pos, bids, issue, delai) {
+    if (this.venteOccupee || pos.fini) return; this.venteOccupee = true;
+    try {
+      if (pos.offreId) { await this.v1SuivreOffre(pos); try { await this.reel.annuler(pos.offreId); } catch (_) {} pos.offreId = null; }
+      const q = pos.parts - pos.B.parts;
+      const plancher = Math.max(0.01, Math.floor(((bids[0] && bids[0][0]) || 0.02) * 100) / 100 - 0.03);
+      const r = await this.reel.vendre(pos.token, plancher, q);
+      if (!(r.parts > 0)) return;                        // rien de vendu : on réessaie au prochain message
+      pos.vendu = (pos.vendu || 0) + r.parts; pos.venteUsd = (pos.venteUsd || 0) + r.usd;
+      pos.sortie = { prix: +(pos.venteUsd / pos.vendu).toFixed(4), delai: delai != null ? +delai.toFixed(3) : null, ms: r.ms };
+      this.notelat(delai);
+      if (pos.vendu < pos.parts - pos.B.parts - 0.01) { pos.parts = +(pos.parts - r.parts).toFixed(2); pos.mise = +(pos.mise * (pos.parts / (pos.parts + r.parts))).toFixed(2); await this.sauver(); return; }   // vente partielle : le reste au prochain message
+      this.v1Clore(pos, pos.B.parts, pos.venteUsd, issue);
+      await this.sauver();
+    } catch (err) { this.erreur("réel vente", err); }
+    finally { this.venteOccupee = false; }
+  }
+
   notelat(d) { if (d == null) return; this.latDec.push(d); if (this.latDec.length > 200) this.latDec.shift(); }
 
   async v1Regler() {
     const V = this.e.V1, t = now();
-    if (V.pos && t >= V.pos.end && !V.pos.fini) { V.attente.push(V.pos); V.pos = null; }
+    if (V.pos && t >= V.pos.end && !V.pos.fini) {
+      if (V.pos.reel && V.pos.offreId) { try { await this.v1SuivreOffre(V.pos); await this.reel.annuler(V.pos.offreId); } catch (_) {} V.pos.offreId = null; }
+      if (V.pos && !V.pos.fini) { V.attente.push(V.pos); V.pos = null; }
+    }
     const garder = [];
     for (const pos of V.attente) {
       if (t < pos.end + 20) { garder.push(pos); continue; }
@@ -658,6 +748,7 @@ export class Bot {
       v1: (() => {
         const V = this.e.V1, q = (L, x) => { if (!L.length) return null; const b = [...L].sort((a2, b2) => a2 - b2); return +b[Math.min(b.length - 1, Math.floor(b.length * x))].toFixed(3); };
         return { ...V, trades: V.trades.slice(0, 40), latPolyMed: q(this.latPoly, 0.5), latPolyP90: q(this.latPoly, 0.9), latDecMed: q(this.latDec, 0.5), latDecP90: q(this.latDec, 0.9),
+          reel: { configure: this.reel.configure(), actif: this.enReel(), arret: !!this.e.reelStop, mise: +this.env.MISE_REEL || null },
           polyOk: !!this.ws.poly, sources: this.compteSource || {}, okxOk: !!this.ws.okx, livre: this.mk.BTC && this.mk.BTC.up ? { up: (this.livreTrie(this.mk.BTC.up, "asks")[0] || [null])[0], down: (this.livreTrie(this.mk.BTC.down, "asks")[0] || [null])[0] } : null };
       })(),
       diag: this.diag,
@@ -696,7 +787,8 @@ $('#app').className='';$('#app').innerHTML=
 (()=>{const V=d.v1;const it=Object.entries(V.issues||{}).map(([k,x])=>k+' '+x.n+' ('+usd(x.pnl)+')').join(' · ')||'—';
 const tv=V.trades.map(t=>'<tr><td>'+t.heure.slice(5,16).replace('T',' ')+'</td><td>'+t.cote+'</td><td>'+f(t.prix,3)+'</td><td>'+f(t.proba,2)+'</td><td>'+(t.B&&t.B.parts?f(t.B.parts,0)+' à '+f(t.B.cout/t.B.parts,2):'—')+'</td><td>'+t.issue+'</td><td class="'+(t.net>=0?'ok':'ko')+'">'+usd(t.net)+'</td></tr>').join('')||'<tr><td colspan=7 class=mu>Aucun trade encore</td></tr>';
 const p=V.pos?'<div style="margin-top:8px">En cours : '+V.pos.cote+' à '+f(V.pos.prix,3)+' · proba '+f(V.pos.probaActuelle,2)+' · offre opposée '+f(V.pos.offre,2)+' · servie '+f(V.pos.B.parts,0)+'/'+f(V.pos.parts,0)+'</div>':'';
-return '<div class=card><b>V1 — paires BTC (jambe 55 filtrée)</b> <span class=mu>temps réel'+(V.polyOk?'':' — <span class=ko>carnet en direct déconnecté</span>')+'</span><div class=g style="margin-top:8px"><div><div class=k>Capital</div><div class=v>'+f(V.capital)+' $</div></div><div><div class=k>Gain</div><div class="v '+(V.pnl>=0?'ok':'ko')+'">'+usd(V.pnl)+'</div></div><div><div class=k>Gagnés / perdus</div><div class=v><span class=ok>'+V.gains+'</span> / <span class=ko>'+V.pertes+'</span></div></div></div>'+
+const R=V.reel||{};const bandeau=R.actif?'<div class=card style="border-color:var(--ko)"><b class=ko>ARGENT RÉEL ACTIF</b> — mise '+R.mise+' $ par entrée<button onclick="fetch(\'/api/reel/arret\',{method:\'POST\'}).then(go)">ARRÊT D\'URGENCE</button></div>':(R.arret?'<div class=card><b>Réel à l\'arrêt</b><button onclick="fetch(\'/api/reel/reprise\',{method:\'POST\'}).then(go)">Reprendre le réel</button></div>':'');
+return bandeau+'<div class=card><b>V1 — paires BTC (jambe 55 filtrée)</b> <span class=mu>'+(R.actif?'RÉEL':'fantôme')+' · </span> <span class=mu>temps réel'+(V.polyOk?'':' — <span class=ko>carnet en direct déconnecté</span>')+'</span><div class=g style="margin-top:8px"><div><div class=k>Capital</div><div class=v>'+f(V.capital)+' $</div></div><div><div class=k>Gain</div><div class="v '+(V.pnl>=0?'ok':'ko')+'">'+usd(V.pnl)+'</div></div><div><div class=k>Gagnés / perdus</div><div class=v><span class=ok>'+V.gains+'</span> / <span class=ko>'+V.pertes+'</span></div></div></div>'+
 '<div class=mu style="margin-top:6px">Réglage A : élan 5 s + stop à −15 points · entrées refusées par l\'élan : '+(V.refusElan||0)+' · source la plus rapide : '+Object.entries(V.sources||{}).map(([k,n])=>k+' '+n).join(', ')+'</div><div class=mu>Issues : '+it+'</div><div class=mu>Réaction : message Polymarket reçu en '+f(V.latPolyMed,3)+' s (90 % sous '+f(V.latPolyP90,3)+' s) · décisions en '+f(V.latDecMed,3)+' s (90 % sous '+f(V.latDecP90,3)+' s)</div>'+p+
 '<table style="margin-top:8px"><tr><th>Heure UTC</th><th>Jambe</th><th>Prix</th><th>Proba</th><th>Autre jambe</th><th>Issue</th><th>Net</th></tr>'+tv+'</table></div>'})()+
 '<div class=card><b>Par crypto</b><table><tr><th>Crypto</th><th>Candidats</th><th>Trades</th><th>Gagnés</th><th>Perdus</th><th>Gain</th><th>Refus le plus fréquent</th></tr>'+pa+'</table></div>'+

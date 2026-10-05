@@ -2,8 +2,10 @@
   "name": "bot95",
   "main": "src/index.js",
   "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "durable_objects": { "bindings": [{ "name": "BOT", "class_name": "Bot" }, { "name": "SONDE", "class_name": "Sonde" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Bot"] }, { "tag": "v2", "new_sqlite_classes": ["Sonde"] }],
+  "vars": { "MODE_REEL": "non", "MISE_REEL": "0" },
   "triggers": { "crons": ["* * * * *"] }
 }

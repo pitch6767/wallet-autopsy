@@ -2,7 +2,7 @@ name: Deploy bot95
 on:
   push:
     branches: [main]
-    paths: [bot95/src/**, bot95/wrangler.jsonc, .github/workflows/bot95.yml]
+    paths: [bot95/src/**, bot95/wrangler.jsonc, bot95/package.json, .github/workflows/bot95.yml]
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,6 +12,8 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      POLY_CLE_PRIVEE: ${{ secrets.POLY_CLE_PRIVEE }}
+      POLY_ADRESSE_PORTEFEUILLE: ${{ secrets.POLY_ADRESSE_PORTEFEUILLE }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,7 +23,11 @@ jobs:
         run: |
           set +e
           cd bot95
+          npm install --no-audit --no-fund > /tmp/npm.log 2>&1; tail -3 /tmp/npm.log
           npx -y wrangler@4 deploy > /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log
+          # clés du portefeuille (secrets GitHub -> secrets Cloudflare), jamais écrites dans le dépôt
+          if [ -n "$POLY_CLE_PRIVEE" ]; then echo "$POLY_CLE_PRIVEE" | npx -y wrangler@4 secret put POLY_CLE_PRIVEE >> /tmp/d.log 2>&1; echo "cle: $?" >> /tmp/d.log; fi
+          if [ -n "$POLY_ADRESSE_PORTEFEUILLE" ]; then echo "$POLY_ADRESSE_PORTEFEUILLE" | npx -y wrangler@4 secret put POLY_ADRESSE_PORTEFEUILLE >> /tmp/d.log 2>&1; echo "adresse: $?" >> /tmp/d.log; fi
           U=https://bot95.pitch67.workers.dev
           sleep 20; curl -sS -m 20 -o /dev/null -w "page %{http_code}\n" $U/ >> /tmp/c.log
           for k in 1 2 3; do sleep 40; echo "=== etat $k" >> /tmp/c.log; curl -sS -m 20 $U/api/etat | python3 -c "import json,sys;d=json.load(sys.stdin);print(json.dumps({'actifs':d['actifs'],'diag':d['diag'],'vetos':d['e']['vetos'],'candidats':d['e']['candidats'],'trades':len(d['e']['trades'])},ensure_ascii=False))" >> /tmp/c.log 2>&1; echo >> /tmp/c.log; done
