@@ -80,6 +80,12 @@ export class Bot {
     if (u.pathname === "/api/reprendre" && req.method === "POST") { this.e.pause = false; await this.sauver(); return json({ ok: true }); }
     if (u.pathname === "/api/reveil") return json({ ok: true });
     if (u.pathname === "/api/verif") return json({ verif: this.e.verif });
+    if (u.pathname === "/api/v1debug") {
+      const mb = this.mk.BTC || {};
+      return json({ maintenant: now(), polyCycle: this.polyCycle, mk: { start: mb.start, slug: mb.slug, up: mb.up, down: mb.down, strike: mb.strike }, wsPoly: !!this.ws.poly, ouvert: this.ws.poly_ouvert,
+        livres: Object.fromEntries(Object.keys(this.pb).map((id) => [id.slice(0, 8), { bids: this.livreTrie(id, "bids").slice(0, 4), asks: this.livreTrie(id, "asks").slice(0, 4) }])),
+        derniers: this.polyRaw || [], proba: mb.up ? this.probaV1(mb) : null, sg: this._sg || null });
+    }
     if (u.pathname === "/api/rapport") return json({ refus: this.e.refus });
     if (u.pathname === "/rapport") return new Response(RAPPORT, { headers: { "content-type": "text/html; charset=utf-8" } });
     return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8" } });
@@ -430,6 +436,7 @@ export class Bot {
   // ------------------------------------------------------------------ V1 temps réel
   surPoly(m) {
     if (Array.isArray(m)) { for (const x of m) this.surPoly(x); return; }
+    (this.polyRaw = this.polyRaw || []).unshift(JSON.stringify(m).slice(0, 300)); this.polyRaw.length = Math.min(this.polyRaw.length, 6);
     const t = now(), ts = +m.timestamp > 1e12 ? +m.timestamp / 1000 : +m.timestamp;
     if (ts) { this.latPoly.push(t - ts); if (this.latPoly.length > 400) this.latPoly.shift(); }
     const livre = (id) => (this.pb[id] = this.pb[id] || { bids: new Map(), asks: new Map() });
