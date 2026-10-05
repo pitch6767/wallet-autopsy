@@ -1,0 +1,25 @@
+name: Analyse Kronos
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/kronos_analyse.yml]
+permissions:
+  contents: write
+jobs:
+  analyser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Analyse
+        run: |
+          set +e
+          pip install -q pandas scikit-learn
+          ls etude/bot5min/kronos/ > etude/bot5min/journal_kronos_complet.txt
+          python3 -u etude/bot5min/kronos_test.py 12 analyser >> etude/bot5min/journal_kronos_complet.txt 2>&1
+          echo "code sortie: $?" >> etude/bot5min/journal_kronos_complet.txt
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          git add etude/bot5min/; git commit -m "Resultats Kronos complets [skip ci]"; for k in $(seq 1 25); do git pull --rebase -q origin main && git push && break; sleep 7; done
