@@ -78,14 +78,14 @@ def main():
         cache[ts] = r
         return r
 
-    def v2(m, Mg, sortie90, prudent=True):
+    def v2(m, Mg, sortie90, prudent=True, L=0):
         cache = {}
         inv = {True: [0.0, 0.0], False: [0.0, 0.0]}     # parts, cout
         pnl, etat, fini = 0.0, "rien", False
         dec = 0.01 if prudent else 0.0
         for (ts, up, p, size, side) in m["tr"]:
             if ts < m["start"] or ts > m["end"] - 1 or fini: continue
-            pu = proba_up(m, ts, cache)
+            pu = proba_up(m, ts - L, cache)
             if pu is None: continue
             # vendeur de l'issue O a prix q
             if side == "SELL": O, q = up, p
@@ -111,14 +111,14 @@ def main():
                 pnl += (inv[c][0] if g else 0) - inv[c][1]; etat += "+seule " + ("gagnee" if g else "perdue")
         return pnl, etat
 
-    def v1(m, Mg, prudent=True):
+    def v1(m, Mg, prudent=True, L=0):
         cache = {}
         dec = 0.01 if prudent else 0.0
         A = None; invB = [0.0, 0.0]; pnl = 0.0; etat = "rien"; dernier = {True: 0.5, False: 0.5}
         for (ts, up, p, size, side) in m["tr"]:
             if ts < m["start"] or ts > m["end"] - 1: continue
             dernier[up] = p; dernier[not up] = 1 - p
-            pu = proba_up(m, ts, cache)
+            pu = proba_up(m, ts - L, cache)
             if pu is None: continue
             if A is None:
                 if side == "BUY" and 0.55 <= p <= 0.56:
@@ -154,7 +154,7 @@ def main():
         return pnl, etat
 
     rap = [f"# Paires BTC 5 min « a valeur » — {len(M)} cycles, {JOURS} jours ({jours[0]} -> {jours[-1]})\n",
-           "100 parts par jambe. Remplissage prudent sauf mention. Frais taker 0,072 x p x (1-p) ; maker 0.\n",
+           "Retard = la proba est calculee avec le prix Binance de L secondes AVANT l'echange (temps de reaction du bot). 100 parts par jambe. Remplissage prudent sauf mention. Frais taker 0,072 x p x (1-p) ; maker 0.\n",
            "| Strategie | Marge | Cycles trades | Paires | Gain total | Gain/jour | Gain moyen/cycle trade | Pire cycle | Pire baisse |", "|---|---|---|---|---|---|---|---|---|"]
     detail = []
     def ligne(nom, Mg, R):
@@ -168,14 +168,12 @@ def main():
         par = {}
         for p, e in R2: par.setdefault(e, []).append(p)
         detail.append(f"- {nom}, marge {Mg} : " + " ; ".join(f"{k} {len(L)} ({statistics.mean(L):+.2f} $)" for k, L in sorted(par.items(), key=lambda x: -len(x[1]))))
-    for Mg in (0.05, 0.08, 0.10, 0.15):
-        ligne("V1 Pitch filtre (55 si proba >= 55+marge, offre opposee a valeur <= 43)", Mg, [v1(m, Mg) for m in M])
-    for Mg in (0.05, 0.08, 0.10, 0.15):
-        ligne("V2 offres a valeur des 2 cotes, jambe gardee", Mg, [v2(m, Mg, False) for m in M])
-        ligne("V2 offres a valeur, sortie 90", Mg, [v2(m, Mg, True) for m in M])
-    for Mg in (0.08,):
-        ligne("V2 offres a valeur, OPTIMISTE (premier dans la file)", Mg, [v2(m, Mg, False, prudent=False) for m in M])
-        ligne("V1 Pitch filtre, OPTIMISTE", Mg, [v1(m, Mg, prudent=False) for m in M])
+    for L in (0, 1, 2, 5):
+        ligne(f"V1 Pitch filtre, retard {L} s", 0.08, [v1(m, 0.08, L=L) for m in M])
+        ligne(f"V2 jambe gardee, retard {L} s", 0.08, [v2(m, 0.08, False, L=L) for m in M])
+        ligne(f"V2 sortie 90, retard {L} s", 0.10, [v2(m, 0.10, True, L=L) for m in M])
+    for L in (2, 5):
+        ligne(f"V2 jambe gardee, retard {L} s", 0.15, [v2(m, 0.15, False, L=L) for m in M])
     rap += ["\n## Detail par issue\n"] + detail + [f"\nDuree : {time.time() - t0:.0f} s"]
     open("etude/bot5min/resultat_paires2.md", "w").write("\n".join(rap))
     print("\n".join(rap))
