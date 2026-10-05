@@ -1,0 +1,14 @@
+cycles 1887 (178s)
+## ETH — 1887 cycles, 7 jours
+
+| Version | Retard | Trades/j | Gain/j | Cycles perdants | Pertes totales | Perte moyenne | Pire baisse |
+|---|---|---|---|---|---|---|---|
+| Reference (sans elan, stop proba<0,50) | 1 s | 69 | +651 $ | 43 % | -3425 $ | -16.5 $ | -138 $ |
+| Reference (sans elan, stop proba<0,50) | 2 s | 62 | +376 $ | 47 % | -4186 $ | -20.3 $ | -220 $ |
+| Reglage A (elan + stop -15 pts) | 1 s | 48 | +491 $ | 42 % | -1925 $ | -13.5 $ | -104 $ |
+| Reglage A (elan + stop -15 pts) | 2 s | 38 | +229 $ | 49 % | -2346 $ | -17.8 $ | -147 $ |
+| Reglage A, marge 0,12 | 1 s | 30 | +378 $ | 36 % | -1117 $ | -14.5 $ | -73 $ |
+| Reglage A, marge 0,12 | 2 s | 22 | +166 $ | 44 % | -1375 $ | -20.2 $ | -185 $ |
+
+Duree : 206 s
+code sortie: 0
