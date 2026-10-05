@@ -1,0 +1,24 @@
+sol paires 672 (64s)
+## SOL — 672 paires 15 min / 5 min sur 7 jours (fenetre : 5 dernieres minutes)
+
+Ecart median entre les deux prix d'exercice : 0.114 % du prix
+Cycles avec prix des deux jambes observables : 652
+**Cycles avec un moment SANS RISQUE (cout + frais < 1,00) : 36 (5.5 %)**
+Gain sans risque (premier moment, taille limitee aux echanges vus, max 100 parts) : +10.3 $ sur 7 jours, soit +1.5 $/jour
+Gain reel de ces memes achats (bonus quand les deux jambes gagnent) : +30.6 $ sur 7 jours
+Taille mediane disponible au moment sans risque : 5 parts
+Cout + frais le plus bas observe, mediane par cycle : 1.187
+Les deux jambes gagnent (paie 2) : 236 cycles sur 652 (36.2 %)
+
+| Seuil d'achat (cout + frais) | Cycles achetes | Gain reel 100 parts | Gain/jour | Pire cycle |
+|---|---|---|---|---|
+| < 0.98 | 26 | +537 $ | +77 $ | +2 $ |
+| < 1.00 | 36 | +645 $ | +92 $ | +0 $ |
+| < 1.02 | 68 | +712 $ | +102 $ | -2 $ |
+| < 1.05 | 120 | +948 $ | +135 $ | -5 $ |
+| < 1.10 | 205 | +725 $ | +104 $ | -10 $ |
+
+(Le tableau achete au MEILLEUR prix du cycle : c'est un plafond optimiste, connu seulement apres coup.)
+
+Duree : 64 s
+code sortie: 0
