@@ -16,6 +16,7 @@ import solutions as S
 from sorties import spot_jour, perp_jour, charger, dernier
 
 JOURS = int(sys.argv[1]) if len(sys.argv) > 1 else 12
+REGLE = len(sys.argv) > 2 and sys.argv[2] == "regle"
 L = 1
 N = 100.0
 FEE = lambda p: T.FEE_RATE * p * (1 - p)
@@ -333,6 +334,19 @@ def etudier(prefixe, sym, jours, debut, fin, coupe):
         ("Combo : mise 1,5x + fragilite refusee + graduee + monetiser", {"mise": mise15, "refuser": ref_frag(fe90), "couv": dict(G, monet=0.08)}, score),
         ("Combo : mise 1,5x + SANS STOP + graduee", {"mise": mise15, "stop": False, "couv": G}, score),
     ]
+    if REGLE:
+        def sc_drop(m, s, A):
+            f_ = fair(m, s, A["d"])
+            return None if f_ is None else A["fair0"] - f_
+        def RG(a_, b_, c_, retrait=0.03):
+            return {"niveaux": [(a_, 0.25), (b_, 0.5), (c_, 1.0)], "retrait": retrait, "calme_s": 2}
+        variantes = [("Reference V1", {}, None)]
+        for (a_, b_, c_) in ((0.05, 0.08, 0.11), (0.06, 0.09, 0.12), (0.07, 0.10, 0.13), (0.08, 0.11, 0.14), (0.04, 0.07, 0.10)):
+            variantes.append((f"Regle simple sans stop : baisse {int(a_*100)}/{int(b_*100)}/{int(c_*100)} pts -> 25/50/100 %, retrait < 3 pts", {"stop": False, "couv": RG(a_, b_, c_)}, sc_drop))
+        variantes.append(("Regle 6/9/12 sans retrait, sans stop", {"stop": False, "couv": {"niveaux": RG(0.06, 0.09, 0.12)["niveaux"]}}, sc_drop))
+        variantes.append(("Regle 6/9/12 AVEC le stop -15 en plus", {"couv": RG(0.06, 0.09, 0.12)}, sc_drop))
+        variantes.append(("Mise 1,5x + regle 6/9/12 sans stop", {"mise": mise15, "stop": False, "couv": RG(0.06, 0.09, 0.12)}, sc_drop))
+        variantes.append(("Modele de danger (pour comparer) : graduee sans stop", {"stop": False, "couv": G}, score))
     jours_a = (coupe - debut) / 86400; jours_b = (fin - coupe) / 86400
     rap = [f"\n## {prefixe.upper()} — {len(M)} cycles, {len(REF)} trades V1\n",
            "### Peut-on voir venir le stop ? (modele appris jours 1-8, juge jours 9-12 ; AUC 0,5 = hasard, 1 = parfait)\n",
@@ -372,9 +386,9 @@ def main():
            "Tout est choisi sur les jours 1-8 ; les jours 9-12 servent de juge. Prix Polymarket = dernier echange +/- 1 cent, frais taker, retard 1 s."]
     for prefixe, sym in (("btc", "BTCUSDT"), ("eth", "ETHUSDT")):
         rap += etudier(prefixe, sym, jours, debut, fin, coupe)
-        open(OUT + "resultat_danger.md", "w").write("\n".join(rap))
+        open(OUT + ("resultat_danger_regle.md" if REGLE else "resultat_danger.md"), "w").write("\n".join(rap))
     rap.append(f"\nDuree : {time.time() - t0:.0f} s")
-    open(OUT + "resultat_danger.md", "w").write("\n".join(rap))
+    open(OUT + ("resultat_danger_regle.md" if REGLE else "resultat_danger.md"), "w").write("\n".join(rap))
     print("\n".join(rap))
 
 

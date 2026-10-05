@@ -14,6 +14,12 @@ const ACTIFS = {
   HYPE: { bybit: "HYPEUSDT", spot: null, regles: [{ W: 60, pmin: 0.95, pmax: 0.999, z: 3 }] },
 };
 const LISTE = Object.keys(ACTIFS);
+// ---- stratégies fantômes ajoutées le 05.10.2026 (idées 19-25, 29, 30), aucun argent réel
+const NV = {
+  ASSUR: { NIVEAUX: [[0.06, 0.25], [0.09, 0.5], [0.12, 1.0]], RETRAIT: 0.03, CALME_S: 2, OPP_MAX: 0.95 },   // assurance graduée à la place du stop (baisse de proba -> part couverte)
+  FIN: { BTC: { W: 180, LO: 0.70, HI: 0.85, SEUIL: 0.95 }, ETH: { W: 90, LO: 0.70, HI: 0.90, SEUIL: 0.93 }, MISE: 50 },
+  MM: { ACTIFS: ["BTC"], MARGE: 0.12, DESEQ: 50, MAXI: 100, ARRET_S: 10 },
+};
 const BB_COLONNES = ["t", "bybit_perp", "okx_perp", "coinbase", "binance_spot", "chainlink", "bybit_meilleur_achat", "bybit_meilleure_vente",
   "prof_achat_1pb", "prof_vente_1pb", "prof_achat_3pb", "prof_vente_3pb", "prof_achat_5pb", "prof_vente_5pb", "prof_achat_10pb", "prof_vente_10pb", "niveaux_achat", "niveaux_vente",
   "perp_achats_usd", "perp_ventes_usd", "perp_plus_gros_achat", "perp_plus_grosse_vente", "perp_nb_echanges", "liq_longs_usd", "liq_courts_usd",
@@ -146,6 +152,7 @@ export class Bot {
     this.reel = new Reel(env);
     this._v1t = {}; this._sgA = {}; this._okxB = {}; this.mkNx = {};
     this.ready = this.state.blockConcurrencyWhile(async () => {
+      this.N = (await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
       this.e = (await this.state.storage.get("etat2")) || {
         capital: CFG.CAPITAL, mise: CFG.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, pause: false,
         positions: [], attente: [], trades: [], vetos: {}, candidats: {}, parActif: {}, refus: [], verif: [], depuis: now(),
@@ -212,6 +219,8 @@ export class Bot {
       for (const k of m.keys()) { const [, , a, ty] = k.split(":"); par[a + " " + ty] = (par[a + " " + ty] || 0) + 1; }
       return json({ total: m.size, par, echantillons_en_memoire: Object.fromEntries(Object.entries(this.bbR || {}).map(([a, R]) => [a, R.length])), derniere_ligne: this.bbR && this.bbR.BTC ? this.bbR.BTC.slice(-1)[0] : null });
     }
+    if (u.pathname === "/api/nouveaux") return json(this.nVue());
+    if (u.pathname === "/nouveaux") return new Response(PAGE_N, { headers: { "content-type": "text/html; charset=utf-8" } });
     if (u.pathname === "/api/rapport") return json({ refus: this.e.refus });
     if (u.pathname === "/rapport") return new Response(RAPPORT, { headers: { "content-type": "text/html; charset=utf-8" } });
     return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8" } });
@@ -449,6 +458,7 @@ export class Bot {
       if (t - (this._chaud || 0) > 20) { this._chaud = t; this.reel.rechauffer(); }
       const pv = this.e.V1.pos; if (pv && pv.reel && pv.offreId) this.v1SuivreOffre(pv);
     }
+    if (t - (this._nr || 0) > 15) { this._nr = t; await this.nRegler(); }
     if (t - (this._v1r || 0) > 15 || V1.ACTIFS.some((a) => { const P = this.v1Etat(a).pos; return P && t >= P.end; })) { this._v1r = t; for (const a of V1.ACTIFS) await this.v1Regler(a); }
     // carnets des marchés dans leur fenêtre d'achat ou avec une position ouverte
     const actifs = LISTE.filter((a) => { const mk = this.mk[a]; return mk.slug && tleft >= 1 && (tleft <= WMAX(a) || this.e.positions.some((p) => p.actif === a && p.start === start)); });
@@ -768,6 +778,7 @@ export class Bot {
     if (t < mk.start || t > mk.end - 1) return;
     const pu = this.probaV1(a, mk);
     if (pu == null) return;
+    try { this.nEval(a, mk, pu); } catch (err) { this.erreur("fantômes", err); }
     const delai = tsSource ? t - tsSource : null;
     let pos = V.pos && V.pos.start === mk.start && !V.pos.fini ? V.pos : null;
     if (!pos) {
@@ -786,6 +797,7 @@ export class Bot {
         V.pos = { signaux: this.signauxEntree(a, up, id, up ? mk.down : mk.up), actif: a, start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up, prix: +pm.toFixed(4), parts: +parts.toFixed(2),
           mise: +cout.toFixed(2), frais: +(parts * CFG.FEE_RATE * pm * (1 - pm)).toFixed(3), proba: +fair.toFixed(3), heure: new Date().toISOString(),
           delai: delai != null ? +delai.toFixed(3) : null, source, B: { parts: 0, cout: 0 }, offre: null };
+        try { this.gOuvrir(a, mk, V.pos); } catch (err) { this.erreur("assurance", err); }
         this.notelat(delai); this.sauver();
         return;
       }
@@ -805,6 +817,7 @@ export class Bot {
 
   // un vendeur de l'autre côté passe au moins 1 cent sous notre offre => offre servie (version prudente)
   v1Echange(id, side, p, size) {
+    try { this.nEchange(id, side, p, size); } catch (_) {}
     const a = V1.ACTIFS.find((k) => { const P = this.v1Etat(k).pos; return P && (P.token === id || P.autre === id); });
     if (!a) return;
     const V = this.v1Etat(a), pos = V && V.pos;
@@ -908,6 +921,165 @@ export class Bot {
 
   notelat(d) { if (d == null) return; this.latDec.push(d); if (this.latDec.length > 200) this.latDec.shift(); }
 
+  // ================================================================== stratégies fantômes (aucun argent réel)
+  // Une position = parts Up (U) et Down (D) détenues + trésorerie (cash). Règlement : cash + U si Up gagne, + D si Down gagne.
+  nStrat(k) { return (this.N.strats[k] = this.N.strats[k] || { pnl: 0, n: 0, gains: 0, pertes: 0, issues: {}, trades: [] }); }
+  nSauver() { if (!this._nsv) { this._nsv = setTimeout(() => { this._nsv = null; this.state.storage.put("nouveaux", this.N).catch(() => {}); }, 1000); } }
+  // achat fantôme en remontant le carnet (frais taker), au plus `maxParts` et jusqu'à `maxPrix`
+  nAcheter(id, maxParts, maxPrix) {
+    let parts = 0, cout = 0;
+    for (const [p, sz] of this.livreTrie(id, "asks")) { if (p > maxPrix + 1e-9) break; const k = Math.min(sz, maxParts - parts); if (k <= 0) break; parts += k; cout += k * p + k * CFG.FEE_RATE * p * (1 - p); }
+    return { parts, cout };
+  }
+  nVendre(id, parts) {
+    let reste = parts, recu = 0;
+    for (const [p, sz] of this.livreTrie(id, "bids")) { const k = Math.min(sz, reste); recu += k * p - k * CFG.FEE_RATE * p * (1 - p); reste -= k; if (reste <= 1e-9) break; }
+    return { vendu: parts - reste, recu };
+  }
+  nPos(strat, a, mk, extra) {
+    const P = { strat, actif: a, start: mk.start, end: mk.end, slug: mk.slug, up: mk.up, down: mk.down, U: 0, D: 0, cash: 0, heure: new Date().toISOString(), journal: [], ...extra };
+    this.N.ouvertes.push(P); return P;
+  }
+  nNote(P, x) { P.journal.push((now() - P.start).toFixed(1) + "s " + x); if (P.journal.length > 30) P.journal.shift(); }
+  nClore(P, issue) {
+    P.fini = true; P.issue = issue; P.net = +P.cash.toFixed(2);
+    const S2 = this.nStrat(P.strat + " " + P.actif);
+    S2.n++; S2.pnl += P.net; if (P.net >= 0) S2.gains++; else S2.pertes++;
+    (S2.issues[issue] = S2.issues[issue] || { n: 0, pnl: 0 }).n++; S2.issues[issue].pnl += P.net;
+    S2.trades.unshift(P); S2.trades.length = Math.min(S2.trades.length, 120);
+    this.N.ouvertes = this.N.ouvertes.filter((x) => x !== P);
+    this.nSauver();
+  }
+
+  // ---- 1. V1 avec assurance graduée à la place du stop : même entrée que V1
+  gOuvrir(a, mk, vpos) {
+    const up = vpos.cote === "Up";
+    const P = this.nPos("assurance", a, mk, { cote: vpos.cote, prix: vpos.prix, parts: vpos.parts, proba0: vpos.proba, H: 0, B: 0, calmeDepuis: null, offre: null });
+    if (up) P.U = vpos.parts; else P.D = vpos.parts;
+    P.cash = -(vpos.mise + vpos.frais);
+    this.nNote(P, `entrée ${vpos.cote} ${vpos.parts.toFixed(1)} parts à ${vpos.prix} (proba ${vpos.proba})`);
+    this.nSauver();
+  }
+  gGerer(P, pu) {
+    const up = P.cote === "Up", fair = up ? pu : 1 - pu, d = P.proba0 - fair, nous = up ? P.up : P.down, autre = up ? P.down : P.up;
+    const main = up ? P.U : P.D, opp = up ? P.D : P.U;
+    P.offre = Math.min(Math.floor(((1 - fair) - V1.MARGE) * 100) / 100, V1.OPP_MAX);
+    P.probaActuelle = +fair.toFixed(3);
+    if (opp >= main - 1e-6) return;                                   // paire complète : rien à faire jusqu'à la fin
+    // sortie à 0,90 si aucune offre maker servie (comme V1) : on revend aussi l'assurance
+    const bb = this.livreTrie(nous, "bids")[0];
+    if (P.B < 1e-9 && bb && bb[0] >= V1.TP) {
+      const v = this.nVendre(nous, main); if (v.vendu < main - 1e-6) return;
+      P.cash += v.recu; if (up) P.U = 0; else P.D = 0;
+      if (opp > 0) { const w = this.nVendre(autre, opp); P.cash += w.recu; if (up) P.D -= w.vendu; else P.U -= w.vendu; }
+      this.nNote(P, "sortie 0,90"); this.nClore(P, "sortie 90"); return;
+    }
+    // assurance graduée
+    let cible = 0; for (const [seuil, fr] of NV.ASSUR.NIVEAUX) if (d >= seuil) cible = fr;
+    const manque = cible * main - opp;
+    if (manque > 0.5) {
+      const r = this.nAcheter(autre, manque, NV.ASSUR.OPP_MAX);
+      if (r.parts > 0) { P.cash -= r.cout; P.H += r.parts; if (up) P.D += r.parts; else P.U += r.parts; this.nNote(P, `assurance +${r.parts.toFixed(1)} à ${(r.cout / r.parts).toFixed(3)} (baisse ${(100 * d).toFixed(0)} pts)`); this.nSauver(); }
+    }
+    // retrait de l'assurance quand l'alerte retombe
+    if (P.H > 0 && d < NV.ASSUR.RETRAIT) {
+      if (P.calmeDepuis == null) P.calmeDepuis = now();
+      else if (now() - P.calmeDepuis >= NV.ASSUR.CALME_S) {
+        const w = this.nVendre(autre, P.H);
+        if (w.vendu > 0) { P.cash += w.recu; P.H -= w.vendu; if (up) P.D -= w.vendu; else P.U -= w.vendu; this.nNote(P, `assurance retirée ${w.vendu.toFixed(1)} parts`); this.nSauver(); }
+        P.calmeDepuis = null;
+      }
+    } else P.calmeDepuis = null;
+  }
+
+  // ---- évaluation à chaque message (après la proba de V1)
+  nEval(a, mk, pu) {
+    const t = now(), tleft = mk.end - t;
+    for (const P of this.N.ouvertes) if (P.strat === "assurance" && P.actif === a && P.start === mk.start && !P.fini) this.gGerer(P, pu);
+    // ---- 2. fin de cycle : acheter 0,70-0,90 quand le modèle est très sûr, garder jusqu'à la fin
+    const F = NV.FIN[a];
+    if (F && tleft <= F.W && tleft >= 1 && !this.N.ouvertes.some((P) => P.strat === "fin" && P.actif === a && P.start === mk.start)
+        && (this._finFait || {})[a] !== mk.start) {
+      for (const up of [true, false]) {
+        const id = up ? mk.up : mk.down, ask = this.livreTrie(id, "asks")[0], fair = up ? pu : 1 - pu;
+        if (!ask || ask[0] < F.LO || ask[0] > F.HI || fair < F.SEUIL) continue;
+        const r = this.nAcheter(id, NV.FIN.MISE / ask[0], F.HI);
+        if (r.parts < 1) continue;
+        (this._finFait = this._finFait || {})[a] = mk.start;
+        const P = this.nPos("fin", a, mk, { cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0) });
+        P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
+        this.nNote(P, `achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix} (modèle ${P.proba0}, ${P.restant_s} s restantes)`);
+        this.nSauver();
+        break;
+      }
+    }
+    // ---- 3. teneur de marché : offres d'achat Up et Down à valeur - marge (mises à jour à chaque message)
+    if (NV.MM.ACTIFS.includes(a)) {
+      const q = (this._mmQ = this._mmQ || {})[a] = { start: mk.start, up: mk.up, down: mk.down, actif: tleft > NV.MM.ARRET_S,
+        bidU: Math.floor((pu - NV.MM.MARGE) * 100) / 100, bidD: Math.floor((1 - pu - NV.MM.MARGE) * 100) / 100 };
+    }
+  }
+
+  // ---- échanges Polymarket : remplissage prudent des offres maker (un vendeur doit passer 1 cent sous notre offre)
+  nEchange(id, side, p, size) {
+    // vendeur du jeton X au prix px (une vente de X, ou un achat de l'autre jeton apparié)
+    const vendeur = (X, autre) => (id === X && side === "SELL" ? p : id === autre && side === "BUY" ? 1 - p : null);
+    for (const P of this.N.ouvertes) {
+      if (P.strat !== "assurance" || P.fini || P.offre == null || P.offre < 0.02) continue;
+      const up = P.cote === "Up", X = up ? P.down : P.up, Y = up ? P.up : P.down, px = vendeur(X, Y);
+      if (px == null || px > P.offre - 0.01 + 1e-9) continue;
+      const main = up ? P.U : P.D, opp = up ? P.D : P.U, k = Math.min(size, main - opp);
+      if (k <= 0) continue;
+      P.cash -= k * P.offre; P.B += k; if (up) P.D += k; else P.U += k;
+      this.nNote(P, `offre opposée servie ${k.toFixed(1)} à ${P.offre}`); this.nSauver();
+    }
+    for (const a of NV.MM.ACTIFS) {
+      const q = (this._mmQ || {})[a]; if (!q || !q.actif || (id !== q.up && id !== q.down)) continue;
+      const mk = this.mk[a]; if (!mk || mk.start !== q.start) continue;
+      let P = this.N.ouvertes.find((x) => x.strat === "mm" && x.actif === a && x.start === q.start);
+      for (const [X, Y, bid, cle] of [[q.up, q.down, q.bidU, "U"], [q.down, q.up, q.bidD, "D"]]) {
+        const px = vendeur(X, Y);
+        if (px == null || bid < 0.02 || px > bid - 0.01 + 1e-9) continue;
+        const inv = P ? P[cle] : 0, autreInv = P ? P[cle === "U" ? "D" : "U"] : 0;
+        const k = Math.min(size, NV.MM.MAXI - inv, NV.MM.DESEQ - (inv - autreInv));
+        if (k <= 0) continue;
+        if (!P) P = this.nPos("mm", a, mk, {});
+        P[cle] += k; P.cash -= k * bid;
+        this.nNote(P, `achat ${cle === "U" ? "Up" : "Down"} ${k.toFixed(1)} à ${bid}`); this.nSauver();
+      }
+    }
+  }
+
+  // ---- règlement : résultat officiel Polymarket (20 s après la fin)
+  async nRegler() {
+    const t = now();
+    for (const P of this.N.ouvertes.filter((x) => t >= x.end)) { this.N.ouvertes = this.N.ouvertes.filter((x) => x !== P); this.N.attente.push(P); }
+    const garder = [], cache = {};
+    for (const P of this.N.attente) {
+      if (t < P.end + 20 || !P.slug) { garder.push(P); continue; }
+      try {
+        if (!(P.slug in cache)) {
+          const ev = await (await fetch(`${G}/events?slug=${P.slug}`)).json();
+          const m = ev[0].markets[0], px = JSON.parse(m.outcomePrices || "[]").map(Number), outs = JSON.parse(m.outcomes || "[]");
+          cache[P.slug] = (px.includes(1) && px.includes(0)) ? String(outs[px.indexOf(1)]) : null;
+        }
+        const g = cache[P.slug];
+        if (!g) { garder.push(P); continue; }
+        P.cash += g === "Up" ? P.U : P.D; P.gagnant = g;
+        const issue = P.strat === "assurance" ? ((P.U > 0 && P.D > 0 && Math.min(P.U, P.D) >= Math.max(P.U, P.D) - 1e-6) ? "paire" : (P.H > 0 ? "fin couverte" : (g === P.cote ? "fin gagnée" : "fin perdue")))
+          : P.strat === "fin" ? (g === P.cote ? "gagné" : "perdu") : (P.U > 0 && P.D > 0 ? "paires + reste" : "une seule jambe");
+        this.nClore(P, issue);
+      } catch (err) { garder.push(P); this.erreur("fantômes règlement", err); }
+    }
+    this.N.attente = garder;
+    this.nSauver();
+  }
+
+  nVue() {
+    return { depuis: this.N.depuis, reglages: NV, strats: Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { ...v, trades: v.trades.slice(0, 60) }])),
+      ouvertes: this.N.ouvertes, attente: this.N.attente.length, offresMM: this._mmQ || {} };
+  }
+
   async v1Regler(a = "BTC") {
     const V = this.v1Etat(a), t = now();
     if (V.pos && t >= V.pos.end && !V.pos.fini) {
@@ -962,7 +1134,7 @@ button{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:10px 1
 
 const PAGE = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title>${STYLE}</head><body>
 <h1>Bot 95 <span class="badge">mode fantôme</span></h1><div class="mu">7 cryptos 5 min Polymarket — achat immédiat (A) + V1 paires BTC — aucun argent réel</div>
-<div style="margin-top:8px"><a href="/rapport">→ Rapport détaillé des refus</a></div>
+<div style="margin-top:8px"><a href="/rapport">→ Rapport détaillé des refus</a> · <a href="/nouveaux">→ Nouvelles stratégies fantômes (assurance, fin de cycle, teneur de marché)</a></div>
 <div id="app" class="mu" style="margin-top:12px">Chargement…</div>
 <script>
 const $=s=>document.querySelector(s);const f=(x,d=2)=>x==null?'—':Number(x).toFixed(d);const usd=x=>(x>=0?'+':'')+f(x)+' $';
@@ -998,6 +1170,22 @@ return '<div class=card><b>V1 — paires ETH (jambe 55 filtrée)</b> <span class
 go();setInterval(go,3000);
 </script></body></html>`;
 
+const PAGE_N = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes</title>${STYLE}</head><body>
+<h1>Nouvelles stratégies — mode fantôme</h1>
+<div class="mu">Aucun argent réel. Assurance graduée = V1 sans stop, on achète l'autre côté par paliers quand la proba baisse (6 / 9 / 12 pts → 25 / 50 / 100 %). Fin de cycle = achat 0,70–0,90 quand le modèle est très sûr, gardé jusqu'à la fin. Teneur de marché = offres d'achat Up et Down au prix du modèle moins 12 cents, sur BTC.</div>
+<div style="margin-top:8px"><a href="/">← Tableau de bord</a></div><div id="app" style="margin-top:12px">Chargement…</div>
+<script>
+const f=(x)=>(x>=0?"+":"")+x.toFixed(2)+" $";
+async function maj(){try{const d=await (await fetch("/api/nouveaux",{cache:"no-store"})).json();let h="<div class='mu'>Depuis "+new Date(d.depuis*1000).toLocaleString("fr-CH")+" · "+d.ouvertes.length+" position(s) ouverte(s), "+d.attente+" en attente du résultat</div>";
+const noms={"assurance":"V1 + assurance graduée (sans stop)","fin":"Fin de cycle 0,70–0,90","mm":"Teneur de marché"};
+const cles=Object.keys(d.strats).sort();
+if(!cles.length)h+="<p>Aucun trade terminé pour l'instant.</p>";
+for(const k of cles){const S=d.strats[k],[st,a]=k.split(" ");h+="<div class='card' style='margin-top:12px'><h2>"+(noms[st]||st)+" — "+a+"</h2><div>Trades : <b>"+S.n+"</b> · gagnés "+S.gains+" · perdus "+S.pertes+" · résultat <b>"+f(S.pnl)+"</b></div><div class='mu'>"+Object.entries(S.issues).map(([i,v])=>i+" : "+v.n+" ("+f(v.pnl)+")").join(" · ")+"</div>";
+h+="<table style='margin-top:6px'><tr><th>Heure</th><th>Côté</th><th>Issue</th><th>Résultat</th><th>Détail</th></tr>"+S.trades.slice(0,25).map(T=>"<tr><td>"+new Date(T.heure).toLocaleTimeString("fr-CH")+"</td><td>"+(T.cote||"Up "+(T.U||0).toFixed(0)+" / Down "+(T.D||0).toFixed(0))+"</td><td>"+T.issue+"</td><td>"+f(T.net)+"</td><td class='mu' style='font-size:11px'>"+T.journal.slice(-4).join(" · ")+"</td></tr>").join("")+"</table></div>";}
+if(d.ouvertes.length)h+="<div class='card' style='margin-top:12px'><h2>Positions ouvertes</h2>"+d.ouvertes.map(P=>"<div>"+(noms[P.strat]||P.strat)+" "+P.actif+" — "+P.journal.slice(-3).join(" · ")+"</div>").join("")+"</div>";
+document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
+maj();setInterval(maj,5000);
+</script></body></html>`;
 const RAPPORT = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rapport des refus</title>${STYLE}</head><body>
 <h1>Rapport des refus</h1><div class="mu">Un bloc par marché candidat non tradé : le dernier refus avec ses chiffres, puis le nombre de secondes bloquées par motif.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a></div><div id="app" class="mu" style="margin-top:12px">Chargement…</div>
