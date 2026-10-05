@@ -79,13 +79,22 @@ def main():
             cout = pa + pb + FEE(pa) + FEE(pb)
             if meilleur is None or cout < meilleur[0]: meilleur = (cout, s, pa, pb, min(lastA[2], lastB[2]))
             if premier is None and cout < 1: premier = (cout, s, pa, pb, min(lastA[2], lastB[2]))
+        # prix a des instants fixes (sans regarder l'avenir)
+        fixes = {}
+        la = lb = None
+        for s in range(b["start"], fin_c):
+            if s in A and A[s][0] is not None: la = (s, *A[s])
+            if s in B and B[s][0] is not None: lb = (s, *B[s])
+            reste = fin_c - s
+            if reste in (300, 240, 180, 120, 90, 60, 30) and la and lb and s - la[0] <= 5 and s - lb[0] <= 5:
+                fixes[reste] = la[1] + lb[1] + FEE(la[1]) + FEE(lb[1])
         if meilleur is None: continue
         # paiement reel
         F = b["F"] if b["F"] is not None else a["F"]
         jA = a["up_gagne"] if bas15 else not a["up_gagne"]      # notre jambe 15 min gagne ?
         jB = (not b["up_gagne"]) if bas15 else b["up_gagne"]    # notre jambe 5 min gagne ?
         paie = int(jA) + int(jB)
-        rows.append({"meilleur": meilleur, "premier": premier, "paie": paie, "ecart": abs(a["K"] - b["K"]) / a["K"], "fin": fin_c})
+        rows.append({"fixes": fixes, "meilleur": meilleur, "premier": premier, "paie": paie, "ecart": abs(a["K"] - b["K"]) / a["K"], "fin": fin_c})
     n = len(rows)
     sans = [r for r in rows if r["premier"]]
     gain_sur = sum((1 - r["premier"][0]) * min(100, r["premier"][4]) for r in sans)
@@ -105,7 +114,22 @@ def main():
         L = [r for r in rows if r["meilleur"][0] < seuil]
         g = [(r["paie"] - r["meilleur"][0]) * 100 for r in L]
         rap.append(f"| < {seuil:.2f} | {len(L)} | {sum(g):+.0f} $ | {sum(g) / JOURS:+.0f} $ | {min(g, default=0):+.0f} $ |")
-    rap.append("\n(Le tableau achete au MEILLEUR prix du cycle : c'est un plafond optimiste, connu seulement apres coup.)")
+    rap.append("\n**Achat a un instant fixe (realiste, sans regarder l'avenir), 100 parts par cycle**\n")
+    rap += ["| Instant (avant la fin) | Cycles | Cout moyen | Paiement moyen | Gain/cycle | Gain/jour | Perte max par cycle |", "|---|---|---|---|---|---|---|"]
+    for reste in (300, 240, 180, 120, 90, 60, 30):
+        L = [(r["fixes"][reste], r["paie"]) for r in rows if reste in r["fixes"]]
+        if not L: continue
+        g = [(pa - c) * 100 for c, pa in L]
+        rap.append(f"| {reste} s | {len(L)} | {statistics.mean(c for c, _ in L):.3f} | {statistics.mean(pa for _, pa in L):.3f} | {statistics.mean(g):+.2f} $ | {sum(g) / JOURS:+.0f} $ | {min(g):+.0f} $ |")
+    rap.append("\n**Premier instant ou cout + frais passe sous un seuil (realiste)**\n")
+    rap += ["| Seuil | Cycles | Gain total 100 parts | Gain/jour |", "|---|---|---|---|"]
+    for seuil in (1.00, 1.05, 1.10, 1.15, 1.20):
+        g = []
+        for r in rows:
+            c = next((v for k, v in sorted(r["fixes"].items(), reverse=True) if v < seuil), None)
+            if c is not None: g.append((r["paie"] - c) * 100)
+        rap.append(f"| < {seuil:.2f} | {len(g)} | {sum(g):+.0f} $ | {sum(g) / JOURS:+.0f} $ |")
+    rap.append("\n(Le premier tableau achete au MEILLEUR prix du cycle : c'est un plafond optimiste, connu seulement apres coup.)")
     rap.append(f"\nDuree : {time.time() - t0:.0f} s")
     open(f"etude/bot5min/resultat_arb15_{PREFIXE}.md", "w").write("\n".join(rap))
     print("\n".join(rap))

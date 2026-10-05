@@ -1,4 +1,4 @@
-"""Reduction des pertes de V1 (paires BTC 5 min) — (05.10.2026) — vrais echanges Polymarket + Binance 1 s, regle TWAP 60 s.
+"""V1 sur chaque crypto (relance) — Reduction des pertes de V1 (paires BTC 5 min) — (05.10.2026) — vrais echanges Polymarket + Binance 1 s, regle TWAP 60 s.
 V1 (Pitch filtre) : jambe 1 achetee (taker) a 0,55-0,56 seulement si proba calculee >= 0,55 + M ; offre maker sur l'autre cote a min(proba - M, 0,43) ;
     sortie si proba de la jambe < 0,50 ; sortie a 0,90 si jambe seule ; fusion si paire.
 V2 (valeur seule) : offres maker des deux cotes a proba - M, deplacees en continu ; fusion si paire ; jambe seule gardee (ou sortie 0,90).

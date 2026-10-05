@@ -25,4 +25,4 @@ jobs:
           echo "code sortie: $?" >> etude/bot5min/journal_arb15_${{ matrix.actif }}.txt
           git config user.name tests; git config user.email bot@users.noreply.github.com
           git add etude/bot5min/
-          git commit -m "Resultats arb15 ${{ matrix.actif }} [skip ci]"; for k in 1 2 3 4 5 6 7 8; do git pull --rebase -q origin main && git push && break; sleep $((RANDOM % 20 + 5)); done
+          git commit -m "Resultats arb15 ${{ matrix.actif }} [skip ci]"; for k in $(seq 1 25); do git pull --rebase -q origin main && git push && break; sleep $((RANDOM % 20 + 5)); done
