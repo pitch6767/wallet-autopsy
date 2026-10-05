@@ -46,7 +46,7 @@ def echanges(m):
     return res, tronque
 
 
-def simuler(m, X, declencheur, sortie90, garder_bid_meme_cote=True):
+def simuler(m, X, declencheur, sortie90, garder_bid_meme_cote=True, stop_apres_paire=False):
     """renvoie (pnl, etat) pour un cycle"""
     inv = {True: [], False: []}            # liste de prix de revient par issue (parts de N)
     reste_bid = {True: N, False: N}        # parts encore a acheter par offre maker
@@ -82,6 +82,7 @@ def simuler(m, X, declencheur, sortie90, garder_bid_meme_cote=True):
                 inv[cote] = nouv
             pnl += k          # 1 $ par paire fusionnee
             etat = "paire"
+            if stop_apres_paire: reste_bid = {True: 0, False: 0}
         # --- jambe seule : sortie a 0,90
         if sortie90:
             for cote in (True, False):
@@ -127,7 +128,11 @@ def main():
            f"Taille : {N:.0f} parts par jambe. Offres maker sans frais ; achats/ventes immediats avec frais 0,072 x p x (1-p).\n",
            "| Strategie | Cycles | Paire (gain bloque) | Sortie 90 | Jambe seule gagnee | Jambe seule perdue | Rien | Gain total | Gain/jour | Pire cycle | Pire baisse |",
            "|---|---|---|---|---|---|---|---|---|---|---|"]
-    variantes = [("Pitch : declencheur 55 + offres 40 des 2 cotes, sortie 90", 0.40, True, True),
+    variantes = [("Pitch : declencheur 55 + offre 40 du cote oppose seulement, arret apres paire, sortie 90", 0.40, True, True, False, True),
+                 ("Declencheur 55 + offre 45 cote oppose, arret apres paire", 0.45, True, True, False, True),
+                 ("Offres 40 des 2 cotes, arret apres paire", 0.40, False, True, True, True),
+                 ("Offres 45 des 2 cotes, arret apres paire", 0.45, False, True, True, True),
+                 ("Pitch : declencheur 55 + offres 40 des 2 cotes, sortie 90", 0.40, True, True),
                  ("Pitch sans sortie 90", 0.40, True, False),
                  ("Declencheur 55 + offres 42", 0.42, True, True),
                  ("Declencheur 55 + offres 45", 0.45, True, True),
@@ -137,8 +142,13 @@ def main():
                  ("Offres 45 seules, sortie 90", 0.45, False, True),
                  ("Offres 45 seules, sans sortie", 0.45, False, False),
                  ("Offres 48 seules, sans sortie", 0.48, False, False)]
-    for nom, X, dec, s90 in variantes:
-        R = [simuler(m, X, dec, s90) for m in M]
+    detail = []
+    for v in variantes:
+        nom, X, dec, s90 = v[:4]; extra = v[4:]
+        R = [simuler(m, X, dec, s90, *extra) for m in M]
+        par = {}
+        for p, e in R: par.setdefault(e, []).append(p)
+        detail.append(f"- {nom} : " + " ; ".join(f"{k} {len(L)} cycles, moyenne {statistics.mean(L):+.2f} $" for k, L in sorted(par.items(), key=lambda x: -len(x[1]))))
         c = {}
         for _, e in R:
             k = ("paire" if e.startswith("paire") else e)
@@ -149,6 +159,7 @@ def main():
         n = len(R); pc = lambda k: f"{100 * c.get(k, 0) / n:.1f} %"
         tot = sum(p for p, _ in R)
         rap.append(f"| {nom} | {n} | {pc('paire')} | {pc('sortie 90')} | {pc('jambe gagnee')} | {pc('jambe perdue')} | {pc('rien')} | {tot:+.0f} $ | {tot / JOURS:+.0f} $ | {min(p for p, _ in R):+.0f} $ | -{dd:.0f} $ |")
+    rap.append("\n## Detail par issue\n"); rap += detail
     rap.append(f"\nDuree : {time.time() - t0:.0f} s")
     open("etude/bot5min/resultat_paires.md", "w").write("\n".join(rap))
     print("\n".join(rap))
