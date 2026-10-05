@@ -1,0 +1,44 @@
+## BTC — 672 paires 15 min / 5 min sur 7 jours (fenetre : 5 dernieres minutes)
+
+Ecart median entre les deux prix d'exercice : 0.060 % du prix
+Cycles avec prix des deux jambes observables : 671
+**Cycles avec un moment SANS RISQUE (cout + frais < 1,00) : 61 (9.1 %)**
+Gain sans risque (premier moment, taille limitee aux echanges vus, max 100 parts) : +22.6 $ sur 7 jours, soit +3.2 $/jour
+Gain reel de ces memes achats (bonus quand les deux jambes gagnent) : +40.8 $ sur 7 jours
+Taille mediane disponible au moment sans risque : 5 parts
+Cout + frais le plus bas observe, mediane par cycle : 1.137
+Les deux jambes gagnent (paie 2) : 210 cycles sur 671 (31.3 %)
+
+| Seuil d'achat (cout + frais) | Cycles achetes | Gain reel 100 parts | Gain/jour | Pire cycle |
+|---|---|---|---|---|
+| < 0.98 | 34 | +615 $ | +88 $ | +2 $ |
+| < 1.00 | 61 | +742 $ | +106 $ | +0 $ |
+| < 1.02 | 120 | +790 $ | +113 $ | -2 $ |
+| < 1.05 | 201 | +818 $ | +117 $ | -5 $ |
+| < 1.10 | 295 | +1309 $ | +187 $ | -10 $ |
+
+**Achat a un instant fixe (realiste, sans regarder l'avenir), 100 parts par cycle**
+
+| Instant (avant la fin) | Cycles | Cout moyen | Paiement moyen | Gain/cycle | Gain/jour | Perte max par cycle |
+|---|---|---|---|---|---|---|
+| 300 s | 52 | 1.360 | 1.308 | -5.24 $ | -39 $ | -59 $ |
+| 240 s | 391 | 1.338 | 1.304 | -3.41 $ | -190 $ | -82 $ |
+| 180 s | 368 | 1.373 | 1.318 | -5.49 $ | -289 $ | -93 $ |
+| 120 s | 319 | 1.420 | 1.361 | -5.92 $ | -270 $ | -97 $ |
+| 90 s | 271 | 1.476 | 1.421 | -5.58 $ | -216 $ | -92 $ |
+| 60 s | 188 | 1.498 | 1.431 | -6.75 $ | -181 $ | -94 $ |
+| 30 s | 36 | 1.491 | 1.500 | +0.94 $ | +5 $ | -92 $ |
+
+**Premier instant ou cout + frais passe sous un seuil (realiste)**
+
+| Seuil | Cycles | Gain total 100 parts | Gain/jour |
+|---|---|---|---|
+| < 1.00 | 11 | +123 $ | +18 $ |
+| < 1.05 | 71 | +39 $ | +6 $ |
+| < 1.10 | 134 | -373 $ | -53 $ |
+| < 1.15 | 196 | -515 $ | -74 $ |
+| < 1.20 | 231 | -559 $ | -80 $ |
+
+(Le premier tableau achete au MEILLEUR prix du cycle : c'est un plafond optimiste, connu seulement apres coup.)
+
+Duree : 280 s
