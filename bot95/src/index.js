@@ -27,6 +27,9 @@ const CFG = {
   CAPITAL: 200, MISE: 50, PART_REINVEST: 1 / 3, PART_RESERVE: 2 / 3,
   ANNONCES: [[12 * 60 + 28, 12 * 60 + 40], [13 * 60 + 58, 14 * 60 + 10], [17 * 60 + 58, 18 * 60 + 10]],  // jours ouvrés, UTC
 };
+// V1 — stratégie de Pitch filtrée (validée le 05.10.2026) : jambe à 0,55–0,56 si proba >= 0,55 + marge, offre opposée à valeur (<= 0,43),
+// stop si la proba de la jambe passe sous 0,50, sortie à 0,90 si jambe seule, fusion si paire. BTC 5 min, décisions à chaque message (temps réel).
+const V1 = { ACTIF: "BTC", MARGE: 0.08, PMIN: 0.55, PMAX: 0.56, OPP_MAX: 0.43, STOP: 0.50, TP: 0.90, CAPITAL: 200, MISE: 50 };
 const WMAX = (a) => Math.max(...ACTIFS[a].regles.map((r) => r.W));
 
 const G = "https://gamma-api.polymarket.com";
@@ -56,12 +59,14 @@ export class Bot {
     for (const a of LISTE) { this.f[a] = {}; this.sec[a] = new Map(); this.liq[a] = []; this.deseq[a] = 0; this.livre[a] = { b: new Map(), a: new Map() }; }
     this.ws = {};
     this.diag = { reconnexions: {}, erreurs: [] };
+    this.pb = {}; this.latPoly = []; this.latDec = [];
     this.ready = this.state.blockConcurrencyWhile(async () => {
       this.e = (await this.state.storage.get("etat2")) || {
         capital: CFG.CAPITAL, mise: CFG.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, pause: false,
         positions: [], attente: [], trades: [], vetos: {}, candidats: {}, parActif: {}, refus: [], verif: [], depuis: now(),
       };
       this.e.pause = false;   // plus de pause après perte (décision du 05.10.2026)
+      if (!this.e.V1) this.e.V1 = { capital: V1.CAPITAL, mise: V1.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, entrees: 0, pos: null, attente: [], trades: [], issues: {}, depuis: now() };
     });
   }
 
@@ -109,6 +114,11 @@ export class Bot {
       const ids = LISTE.map((a) => ACTIFS[a].spot).filter(Boolean);
       this.connecter("cb", "https://advanced-trade-ws.coinbase.com", [JSON.stringify({ type: "subscribe", product_ids: ids, channel: "ticker" })], (m) => this.surCb(m));
     }
+    const mb = this.mk.BTC;
+    if (mb && mb.up && (this.polyCycle !== mb.start || (!this.ws.poly && depuis("poly") > 3))) {
+      this.polyCycle = mb.start; this.pb = {};
+      this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: [mb.up, mb.down], type: "market" })], (m) => this.surPoly(m), "PING", 10000);
+    }
     if (!this.ws.cl || (this.ageMax("cl") > 20 && depuis("cl") > 20)) this.connecter("cl", "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surCl(m), "PING", 5000);
   }
@@ -151,7 +161,10 @@ export class Bot {
     const tp = m.topic || "", t = now();
     const a = this.actifBybit(tp.split(".").pop());
     if (!a) return;
-    if (tp.startsWith("publicTrade")) { const x = (m.data || []).slice(-1)[0]; if (x) this.noter(a, "perp", +x.p, t); }
+    if (tp.startsWith("publicTrade")) {
+      const x = (m.data || []).slice(-1)[0];
+      if (x) { this.noter(a, "perp", +x.p, t); if (a === V1.ACTIF && t - (this._v1t || 0) > 0.2) { this._v1t = t; try { this.v1Eval("perp", +x.T / 1000); } catch (err) { this.erreur("V1", err); } } }
+    }
     else if (tp.startsWith("allLiquidation")) {
       for (const x of m.data || []) this.liq[a].push({ t, cote: x.S === "Buy" ? "SELL" : "BUY", usd: (+x.v) * (+x.p) });   // Buy = position longue liquidée
       this.liq[a] = this.liq[a].filter((x) => x.t > t - 30);
@@ -232,6 +245,7 @@ export class Bot {
     for (const p of this.e.positions.filter((x) => x.end <= t)) this.e.attente.push(p);
     this.e.positions = this.e.positions.filter((x) => x.end > t);
     await this.resoudre();
+    if (t - (this._v1r || 0) > 15 || (this.e.V1.pos && t >= this.e.V1.pos.end)) { this._v1r = t; await this.v1Regler(); }
     // carnets des marchés dans leur fenêtre d'achat ou avec une position ouverte
     const actifs = LISTE.filter((a) => { const mk = this.mk[a]; return mk.slug && tleft >= 1 && (tleft <= WMAX(a) || this.e.positions.some((p) => p.actif === a && p.start === start)); });
     if (!actifs.length) return;
@@ -413,6 +427,144 @@ export class Bot {
     e.trades.length = Math.min(e.trades.length, 400);
   }
 
+  // ------------------------------------------------------------------ V1 temps réel
+  surPoly(m) {
+    if (Array.isArray(m)) { for (const x of m) this.surPoly(x); return; }
+    const t = now(), ts = +m.timestamp > 1e12 ? +m.timestamp / 1000 : +m.timestamp;
+    if (ts) { this.latPoly.push(t - ts); if (this.latPoly.length > 400) this.latPoly.shift(); }
+    const livre = (id) => (this.pb[id] = this.pb[id] || { bids: new Map(), asks: new Map() });
+    const ev = m.event_type;
+    if (ev === "book") {
+      const L = livre(m.asset_id); L.bids = new Map((m.bids || []).map((x) => [+x.price, +x.size])); L.asks = new Map((m.asks || []).map((x) => [+x.price, +x.size]));
+    } else if (ev === "price_change") {
+      const ch = m.price_changes || (m.changes || []).map((c) => ({ ...c, asset_id: m.asset_id }));
+      for (const c of ch) { const L = livre(c.asset_id), cote = c.side === "BUY" ? L.bids : L.asks; +c.size ? cote.set(+c.price, +c.size) : cote.delete(+c.price); }
+    } else if (ev === "last_trade_price") {
+      this.v1Echange(m.asset_id, m.side, +m.price, +m.size);
+    } else return;
+    try { this.v1Eval("poly", ts || t); } catch (err) { this.erreur("V1", err); }
+  }
+
+  probaV1(mk) {
+    const a = V1.ACTIF, K = mk.strike, perp = this.f[a].perp, cl = this.f[a].cl;
+    if (!K || !perp || !cl) return null;
+    const t = now();
+    if (!this._sg || t - this._sg.t > 5) {
+      const ser = this.serie(a, "perp", 300);
+      if (ser.length < 60) return null;
+      const r = []; for (let i = 1; i < ser.length; i++) r.push(Math.log(ser[i][1] / ser[i - 1][1]));
+      const mo = r.reduce((x, y) => x + y, 0) / r.length;
+      const base = med(this.serie(a, "perp", 120).map(([s2, p]) => { const c = this.prixA(a, "cl", s2); return c ? p - c : null; }).filter((x) => x != null));
+      this._sg = { t, v: Math.sqrt(r.reduce((x, y) => x + (y - mo) ** 2, 0) / r.length) || 1e-6, base };
+    }
+    if (this._sg.base == null) return null;
+    const S = perp.p - this._sg.base;                       // prix le plus rapide (perp), ramené au niveau Chainlink
+    const sg = this._sg.v, ts = Math.floor(t), deb = mk.end - 59;
+    let E, v;
+    if (ts >= deb) {
+      const connus = []; for (let s2 = deb; s2 <= ts; s2++) { const x = this.prixA(a, "cl", s2); if (x) connus.push(x); }
+      const nr = Math.max(1, mk.end - ts);
+      E = (connus.reduce((x, y) => x + y, 0) + nr * S) / (connus.length + nr); v = (sg * S) ** 2 * nr ** 3 / 3 / 3600;
+    } else { E = S; v = (sg * S) ** 2 * ((deb - ts) + 20); }
+    return phi((E - K) / Math.sqrt(v + (CFG.SD_ECART_REL * S) ** 2));
+  }
+
+  livreTrie(id, cote) { const L = this.pb[id]; if (!L) return []; return [...L[cote]].filter((x) => x[1] > 0).sort((x, y) => (cote === "asks" ? x[0] - y[0] : y[0] - x[0])); }
+
+  v1Eval(source, tsSource) {
+    const V = this.e.V1, mk = this.mk[V1.ACTIF];
+    if (!V || !mk || !mk.up || !mk.strike) return;
+    const t = now();
+    if (t < mk.start || t > mk.end - 1) return;
+    const pu = this.probaV1(mk);
+    if (pu == null) return;
+    const delai = tsSource ? t - tsSource : null;
+    let pos = V.pos && V.pos.start === mk.start && !V.pos.fini ? V.pos : null;
+    if (!pos) {
+      if (V.dernierCycle === mk.start) return;            // une seule entrée par cycle
+      for (const up of [true, false]) {
+        const id = up ? mk.up : mk.down, asks = this.livreTrie(id, "asks"), fair = up ? pu : 1 - pu;
+        if (!asks.length || asks[0][0] < V1.PMIN || asks[0][0] > V1.PMAX || fair < V1.PMIN + V1.MARGE) continue;
+        const mise = Math.min(V.mise, V.capital - V.reserve);
+        let reste = mise, parts = 0, cout = 0;
+        for (const [p, sz] of asks) { if (p > V1.PMAX) break; const k = Math.min(sz, reste / p); parts += k; cout += k * p; reste -= k * p; if (reste < 0.01) break; }
+        if (reste >= 0.01 || parts <= 0) continue;
+        const pm = cout / parts;
+        V.dernierCycle = mk.start; V.entrees++;
+        V.pos = { start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", token: id, autre: up ? mk.down : mk.up, prix: +pm.toFixed(4), parts: +parts.toFixed(2),
+          mise: +cout.toFixed(2), frais: +(parts * CFG.FEE_RATE * pm * (1 - pm)).toFixed(3), proba: +fair.toFixed(3), heure: new Date().toISOString(),
+          delai: delai != null ? +delai.toFixed(3) : null, source, B: { parts: 0, cout: 0 }, offre: null };
+        this.notelat(delai); this.sauver();
+        return;
+      }
+      return;
+    }
+    const up = pos.cote === "Up", fairA = up ? pu : 1 - pu;
+    pos.offre = Math.min(Math.floor(((1 - fairA) - V1.MARGE) * 100) / 100, V1.OPP_MAX);
+    pos.probaActuelle = +fairA.toFixed(3);
+    const bids = this.livreTrie(pos.token, "bids");
+    if (fairA < V1.STOP) { this.v1Vendre(pos, bids, "stop", delai); return; }
+    if (pos.B.parts < 1e-9 && bids.length && bids[0][0] >= V1.TP) this.v1Vendre(pos, bids, "sortie 90", delai);
+  }
+
+  // un vendeur de l'autre côté passe au moins 1 cent sous notre offre => offre servie (version prudente)
+  v1Echange(id, side, p, size) {
+    const V = this.e.V1, pos = V && V.pos;
+    if (!pos || pos.fini || pos.offre == null || pos.offre < 0.02) return;
+    let q = null;
+    if (id === pos.autre && side === "SELL") q = p;            // vendeur de l'autre côté
+    else if (id === pos.token && side === "BUY") q = 1 - p;     // acheteur de notre côté = vendeur de l'autre (appariement)
+    if (q == null || q > pos.offre - 0.01 + 1e-9) return;
+    const k = Math.min(size, pos.parts - pos.B.parts);
+    if (k <= 0) return;
+    pos.B.parts += k; pos.B.cout += k * pos.offre;
+    if (pos.B.parts >= pos.parts - 1e-6) this.v1Clore(pos, pos.parts, 0, "paire");
+    this.sauver();
+  }
+
+  v1Vendre(pos, bids, issue, delai) {
+    const q = pos.parts - pos.B.parts;
+    let reste = q, recu = 0, frais = 0;
+    for (const [p, sz] of bids) { const k = Math.min(sz, reste); recu += k * p; frais += k * CFG.FEE_RATE * p * (1 - p); reste -= k; if (reste <= 1e-9) break; }
+    if (reste > 1e-6) return;                                   // pas assez d'acheteurs : on réessaie au prochain message
+    pos.sortie = { prix: +(recu / q).toFixed(4), delai: delai != null ? +delai.toFixed(3) : null };
+    this.notelat(delai);
+    this.v1Clore(pos, pos.B.parts, recu - frais, issue);
+    this.sauver();
+  }
+
+  // net = fusions (1 $ par paire) + produit des ventes - coûts
+  v1Clore(pos, paires, produit, issue) {
+    const V = this.e.V1;
+    pos.fini = true; pos.issue = issue;
+    pos.net = +(paires + produit - pos.mise - pos.B.cout - pos.frais).toFixed(2);
+    V.capital += pos.net; V.pnl += pos.net;
+    (V.issues[issue] = V.issues[issue] || { n: 0, pnl: 0 }).n++; V.issues[issue].pnl += pos.net;
+    if (pos.net >= 0) { V.gains++; V.reserve += pos.net * CFG.PART_RESERVE; V.mise += pos.net * CFG.PART_REINVEST; } else V.pertes++;
+    V.mise = Math.min(V.mise, Math.max(0, V.capital - V.reserve));
+    V.trades.unshift(pos); V.trades.length = Math.min(V.trades.length, 300);
+    V.pos = null;
+  }
+
+  notelat(d) { if (d == null) return; this.latDec.push(d); if (this.latDec.length > 200) this.latDec.shift(); }
+
+  async v1Regler() {
+    const V = this.e.V1, t = now();
+    if (V.pos && t >= V.pos.end && !V.pos.fini) { V.attente.push(V.pos); V.pos = null; }
+    const garder = [];
+    for (const pos of V.attente) {
+      if (t < pos.end + 20) { garder.push(pos); continue; }
+      try {
+        const ev = await (await fetch(`${G}/events?slug=${pos.slug}`)).json();
+        const m = ev[0].markets[0], px = JSON.parse(m.outcomePrices || "[]").map(Number), outs = JSON.parse(m.outcomes || "[]");
+        if (!(px.includes(1) && px.includes(0))) { garder.push(pos); continue; }
+        const gagne = String(outs[px.indexOf(1)]) === pos.cote;
+        this.v1Clore(pos, pos.B.parts, gagne ? pos.parts - pos.B.parts : 0, gagne ? "fin gagnée" : "fin perdue");
+      } catch (err) { garder.push(pos); this.erreur("V1 règlement", err); }
+    }
+    V.attente = garder;
+  }
+
   vue() {
     const t = now(), start = Math.floor(t / 300) * 300;
     const age = (a, k) => (this.f[a][k] ? +(t - this.f[a][k].t).toFixed(1) : null);
@@ -424,6 +576,11 @@ export class Bot {
         return { a, regles: ACTIFS[a].regles, strike: mk.strike || null, cl: this.f[a].cl && this.f[a].cl.p, ageCl: age(a, "cl"), perp: this.f[a].perp && this.f[a].perp.p, agePerp: age(a, "perp"),
           spot: ACTIFS[a].spot ? (this.f[a].cb && this.f[a].cb.p) : "—", ageSpot: ACTIFS[a].spot ? age(a, "cb") : null, deseq: +this.deseq[a].toFixed(2), raison: mk.raison || null };
       }),
+      v1: (() => {
+        const V = this.e.V1, q = (L, x) => { if (!L.length) return null; const b = [...L].sort((a2, b2) => a2 - b2); return +b[Math.min(b.length - 1, Math.floor(b.length * x))].toFixed(3); };
+        return { ...V, trades: V.trades.slice(0, 40), latPolyMed: q(this.latPoly, 0.5), latPolyP90: q(this.latPoly, 0.9), latDecMed: q(this.latDec, 0.5), latDecP90: q(this.latDec, 0.9),
+          polyOk: !!this.ws.poly, livre: this.mk.BTC && this.mk.BTC.up ? { up: (this.livreTrie(this.mk.BTC.up, "asks")[0] || [null])[0], down: (this.livreTrie(this.mk.BTC.down, "asks")[0] || [null])[0] } : null };
+      })(),
       diag: this.diag,
     };
   }
@@ -440,7 +597,7 @@ button{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:10px 1
 @media(max-width:420px){.g{grid-template-columns:repeat(2,1fr)}}</style>`;
 
 const PAGE = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title>${STYLE}</head><body>
-<h1>Bot 95 <span class="badge">mode fantôme</span></h1><div class="mu">7 cryptos 5 min Polymarket — achat immédiat (A) — aucun argent réel</div>
+<h1>Bot 95 <span class="badge">mode fantôme</span></h1><div class="mu">7 cryptos 5 min Polymarket — achat immédiat (A) + V1 paires BTC — aucun argent réel</div>
 <div style="margin-top:8px"><a href="/rapport">→ Rapport détaillé des refus</a></div>
 <div id="app" class="mu" style="margin-top:12px">Chargement…</div>
 <script>
@@ -457,6 +614,12 @@ $('#app').className='';$('#app').innerHTML=
 '<div class=card><div class=g><div><div class=k>Capital</div><div class=v>'+f(e.capital)+' $</div></div><div><div class=k>Réserve (2/3)</div><div class=v>'+f(e.reserve)+' $</div></div><div><div class=k>Mise</div><div class=v>'+f(e.mise)+' $</div></div>'+
 '<div><div class=k>Gain total</div><div class="v '+(e.pnl>=0?'ok':'ko')+'">'+usd(e.pnl)+'</div></div><div><div class=k>Gagnés</div><div class="v ok">'+e.gains+'</div></div><div><div class=k>Perdus</div><div class="v ko">'+e.pertes+'</div></div></div>'+
 (pos?'<div style="margin-top:8px">En cours : '+pos+'</div>':'')+'<div class=mu style="margin-top:6px">Fin du marché en cours dans '+d.reste+' s</div></div>'+
+(()=>{const V=d.v1;const it=Object.entries(V.issues||{}).map(([k,x])=>k+' '+x.n+' ('+usd(x.pnl)+')').join(' · ')||'—';
+const tv=V.trades.map(t=>'<tr><td>'+t.heure.slice(5,16).replace('T',' ')+'</td><td>'+t.cote+'</td><td>'+f(t.prix,3)+'</td><td>'+f(t.proba,2)+'</td><td>'+(t.B&&t.B.parts?f(t.B.parts,0)+' à '+f(t.B.cout/t.B.parts,2):'—')+'</td><td>'+t.issue+'</td><td class="'+(t.net>=0?'ok':'ko')+'">'+usd(t.net)+'</td></tr>').join('')||'<tr><td colspan=7 class=mu>Aucun trade encore</td></tr>';
+const p=V.pos?'<div style="margin-top:8px">En cours : '+V.pos.cote+' à '+f(V.pos.prix,3)+' · proba '+f(V.pos.probaActuelle,2)+' · offre opposée '+f(V.pos.offre,2)+' · servie '+f(V.pos.B.parts,0)+'/'+f(V.pos.parts,0)+'</div>':'';
+return '<div class=card><b>V1 — paires BTC (jambe 55 filtrée)</b> <span class=mu>temps réel'+(V.polyOk?'':' — <span class=ko>carnet en direct déconnecté</span>')+'</span><div class=g style="margin-top:8px"><div><div class=k>Capital</div><div class=v>'+f(V.capital)+' $</div></div><div><div class=k>Gain</div><div class="v '+(V.pnl>=0?'ok':'ko')+'">'+usd(V.pnl)+'</div></div><div><div class=k>Gagnés / perdus</div><div class=v><span class=ok>'+V.gains+'</span> / <span class=ko>'+V.pertes+'</span></div></div></div>'+
+'<div class=mu style="margin-top:6px">Issues : '+it+'</div><div class=mu>Réaction : message Polymarket reçu en '+f(V.latPolyMed,3)+' s (90 % sous '+f(V.latPolyP90,3)+' s) · décisions en '+f(V.latDecMed,3)+' s (90 % sous '+f(V.latDecP90,3)+' s)</div>'+p+
+'<table style="margin-top:8px"><tr><th>Heure UTC</th><th>Jambe</th><th>Prix</th><th>Proba</th><th>Autre jambe</th><th>Issue</th><th>Net</th></tr>'+tv+'</table></div>'})()+
 '<div class=card><b>Par crypto</b><table><tr><th>Crypto</th><th>Candidats</th><th>Trades</th><th>Gagnés</th><th>Perdus</th><th>Gain</th><th>Refus le plus fréquent</th></tr>'+pa+'</table></div>'+
 '<div class=card><b>Trades</b><table><tr><th>Heure UTC</th><th>Crypto</th><th>Côté</th><th>Prix</th><th>z</th><th>Résultat</th><th>Net</th></tr>'+tr+'</table></div>'+
 '<div class=card><b>Flux</b> <span class=mu>(prix et âge de la dernière mise à jour)</span><table><tr><th>Crypto</th><th>Chainlink</th><th>Perp Bybit</th><th>Spot Coinbase</th><th>Prix d\\'exercice</th></tr>'+fl+'</table></div>'+
