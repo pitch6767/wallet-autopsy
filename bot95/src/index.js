@@ -21,7 +21,7 @@ const CFG = {
   ECART_MAX: 0.02,             // écart achat/vente maxi
   LIQ_CONTRE_USD: 250000,      // liquidations contre nous sur 10 s
   DESEQ_CONTRE: 0.6,           // déséquilibre du carnet perp contre nous (5 premiers niveaux)
-  SD_ECART_REL: 5.8e-5,        // incertitude de mesure : 4,9 $ sur BTC à 85 000 $ (mesurée sur 14 jours), en proportion du prix
+  SD_ECART_REL: 8e-4,          // incertitude du prix d'exercice publié en direct par Polymarket : écart max mesuré 0,08 % (validé le 05.10.2026)
   SORTIE_Z: 1.0,               // sortie d'urgence si la distance passe sous 1 écart-type
   FEE_RATE: 0.072,             // frais taker : parts x 0,072 x p x (1-p)
   CAPITAL: 200, MISE: 50, PART_REINVEST: 1 / 3, PART_RESERVE: 2 / 3,
