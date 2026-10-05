@@ -60,15 +60,19 @@ def preparer(prefixe, sym, jours, debut, fin):
     out = {}
     for m in M:
         up = np.full(300, np.nan); vu = np.full(300, -99)
+        bu = np.full(302, np.inf); bd = np.full(302, np.inf)     # plus bas prix paye par un acheteur agressif (Up / Down) dans la seconde
         for (ts, u, p, size, side) in m["tr"]:
             k = ts - m["start"]
             if 0 <= k < 300: up[k] = p if u else 1 - p; vu[k] = k
+            if 0 <= k < 302 and side == "BUY":
+                if u: bu[k] = min(bu[k], p)
+                else: bd[k] = min(bd[k], p)
         # report du dernier prix connu et de l'instant ou il a ete vu
         for k in range(1, 300):
             if np.isnan(up[k]): up[k] = up[k - 1]; vu[k] = vu[k - 1]
         sgc = {}
         pm = np.array([proba_up(m, m["start"] + k - 1, sgc) for k in range(300)])
-        out[m["start"]] = {"up": up, "vu": vu, "pm": pm, "gagne": m["up_gagne"]}
+        out[m["start"]] = {"up": up, "vu": vu, "pm": pm, "gagne": m["up_gagne"], "bu": bu, "bd": bd}
     print(prefixe, "pret", len(out), "cycles (%.0fs)" % (time.time() - t0)); sys.stdout.flush()
     return out
 
@@ -94,15 +98,19 @@ def simuler(A, B, v, coupe):
                 if np.isnan(ma) or np.isnan(mb): continue
                 val = (ma if sens == 1 else 1 - ma) + ((1 - mb) if sens == 1 else mb)
                 if val < cout_sig + v["modele"]: continue
-            # execution 1 s plus tard, au prix d'alors
-            e = k + 1
-            ea = a["up"][e] if sens == 1 else 1 - a["up"][e]; eb = (1 - b["up"][e]) if sens == 1 else b["up"][e]
-            ea += 0.01; eb += 0.01
-            cout = ea + eb + FEE(ea) + FEE(eb)
+            # execution STRICTE : ordre limite a (dernier prix + 2 cents) envoye 1 s apres le signal ; une jambe n'est achetee que si un
+            # vendeur reel a ete servi a ce prix ou moins dans les 2 secondes suivantes (preuve par les echanges). Une jambe seule est gardee.
+            lim_a = pa + 0.02; lim_b = pb + 0.02
+            ta = a["bu"] if sens == 1 else a["bd"]; tb_ = b["bd"] if sens == 1 else b["bu"]
+            fa = min(ta[k + 1], ta[k + 2]); fb = min(tb_[k + 1], tb_[k + 2])
+            okA = fa <= lim_a + 1e-9; okB = fb <= lim_b + 1e-9
+            if not okA and not okB: continue
             gA = a["gagne"] if sens == 1 else not a["gagne"]; gB = (not b["gagne"]) if sens == 1 else b["gagne"]
-            paie = int(gA) + int(gB)
-            pnl = N * (paie - cout); issue = "fin"
-            if "sortie" in v:                   # revendre les deux jambes si la structure vaut cout + x
+            cout = (fa + FEE(fa) if okA else 0) + (fb + FEE(fb) if okB else 0)
+            paie = (int(gA) if okA else 0) + (int(gB) if okB else 0)
+            pnl = N * (paie - cout); issue = "fin" if (okA and okB) else "une jambe"
+            ea = fa if okA else None; eb = fb if okB else None
+            if "sortie" in v and okA and okB:   # revendre les deux jambes si la structure vaut cout + x
                 for j in range(e + 1, 299):
                     if a["vu"][j] < j - 3 or b["vu"][j] < j - 3: continue
                     va = (a["up"][j] if sens == 1 else 1 - a["up"][j]) - 0.01; vb = ((1 - b["up"][j]) if sens == 1 else b["up"][j]) - 0.01
@@ -121,9 +129,10 @@ def resume(R, coupe, jours_a, jours_b):
     for x in R:
         cum += x[1]; pic = max(pic, cum); dd = max(dd, pic - cum)
     fins = [x for x in R if x[4] == "fin"]
+    seules = sum(1 for x in R if x[4] == "une jambe")
     return {"n": len(R), "net": sum(x[1] for x in R), "pertes": sum(x[1] for x in R if x[1] < 0), "nperd": sum(1 for x in R if x[1] < 0),
             "p0": sum(1 for x in fins if x[2] == 0), "p1": sum(1 for x in fins if x[2] == 1), "p2": sum(1 for x in fins if x[2] == 2),
-            "cout": statistics.mean(x[3] for x in R), "dd": dd,
+            "cout": statistics.mean(x[3] for x in R), "dd": dd, "seules": seules,
             "ga": sum(x[1] for x in R if x[0] < coupe) / jours_a, "gb": sum(x[1] for x in R if x[0] >= coupe) / jours_b}
 
 
@@ -155,12 +164,12 @@ def main():
         ("Moins de 0,94 $, seulement dans les 2 dernieres minutes", {"marge": 0.06, "fenetre": (180, 290)}),
     ]
     rap = [f"# Idee 1 — valeur relative entre cryptos (Up d'une + Down de l'autre, meme cycle) — {JOURS} jours ({jours[0]} -> {jours[-1]})",
-           "100 parts par jambe. Prix = dernier echange + 1 cent + frais taker, execution 1 s apres le signal. Une structure par couple et par cycle, gardee jusqu'a la fin (aucun stop).",
+           "100 parts par jambe. EXECUTION STRICTE : ordre a dernier prix + 2 cents, envoye 1 s apres le signal, rempli seulement si un vendeur reel a ete servi a ce prix ou moins dans les 2 s (sinon jambe seule ou rien), frais taker. Une structure par couple et par cycle, gardee jusqu'a la fin (aucun stop).",
            "Paiement par part : 0 $ (A et B ont diverge dans le mauvais sens), 1 $ (meme sens), 2 $ (diverge dans le bon sens).\n"]
     couples = list(itertools.combinations([p for p, _ in ACTIFS if p in D], 2))
     rap += ["## Tous les couples ensemble\n",
-            "| Variante | Structures | Gain net | Gain/jour | Pertes | Structures perdantes | Paiement 0 / 1 / 2 | Cout moyen | Pire baisse | Gain/jour jours 1-8 | **Gain/jour jours 9-12** |",
-            "|---|---|---|---|---|---|---|---|---|---|---|"]
+            "| Variante | Structures | Gain net | Gain/jour | Pertes | Structures perdantes | Paiement 0 / 1 / 2 (2 jambes) | Une seule jambe servie | Cout moyen | Pire baisse | Gain/jour jours 1-8 | **Gain/jour jours 9-12** |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     detail = {}
     for nom, v in variantes:
         tout = []
@@ -170,9 +179,9 @@ def main():
             tout += R
         r = resume(tout, coupe, jours_a, jours_b)
         if r:
-            rap.append(f"| {nom} | {r['n']} | {r['net']:+.0f} $ | {r['net'] / JOURS:+.0f} $ | {r['pertes']:+.0f} $ | {r['nperd']} ({100 * r['nperd'] / r['n']:.0f} %) | {r['p0']} / {r['p1']} / {r['p2']} | {r['cout']:.3f} $ | -{r['dd']:.0f} $ | {r['ga']:+.0f} $ | **{r['gb']:+.0f} $** |")
+            rap.append(f"| {nom} | {r['n']} | {r['net']:+.0f} $ | {r['net'] / JOURS:+.0f} $ | {r['pertes']:+.0f} $ | {r['nperd']} ({100 * r['nperd'] / r['n']:.0f} %) | {r['p0']} / {r['p1']} / {r['p2']} | {r['seules']} | {r['cout']:.3f} $ | -{r['dd']:.0f} $ | {r['ga']:+.0f} $ | **{r['gb']:+.0f} $** |")
         else:
-            rap.append(f"| {nom} | 0 | | | | | | | | | |")
+            rap.append(f"| {nom} | 0 | | | | | | | | | | |")
         print(rap[-1]); sys.stdout.flush()
     for nom, _ in variantes[1:]:
         rap += [f"\n## Par couple — {nom}\n", "| Couple | Structures | Gain net | Gain/jour | Perdantes | Paiement 0 / 1 / 2 | Gain/jour jours 9-12 |", "|---|---|---|---|---|---|---|"]
@@ -180,7 +189,7 @@ def main():
             r = detail[(nom, x, y)]
             if r: rap.append(f"| {x.upper()}/{y.upper()} | {r['n']} | {r['net']:+.0f} $ | {r['net'] / JOURS:+.0f} $ | {r['nperd']} ({100 * r['nperd'] / r['n']:.0f} %) | {r['p0']} / {r['p1']} / {r['p2']} | {r['gb']:+.0f} $ |")
     rap.append(f"\nDuree : {time.time() - t0:.0f} s")
-    open(OUT + "resultat_rv.md", "w").write("\n".join(rap))
+    open(OUT + "resultat_rv2.md", "w").write("\n".join(rap))
     print("\n".join(rap))
 
 
