@@ -68,6 +68,63 @@ async function mesurerLatence() {
   return out;
 }
 
+// idée 2 : Binance accepte-t-il Cloudflare par ses flux publics ? Et qui est en avance sur qui (Binance, Bybit, OKX) ?
+async function sondeBinance(duree = 20) {
+  const out = { http: {}, flux: {}, avance_sur_bybit_ms: {} };
+  const http = { "api.binance.com (spot)": "https://api.binance.com/api/v3/time", "data-api.binance.vision (spot)": "https://data-api.binance.vision/api/v3/time",
+    "fapi.binance.com (perp)": "https://fapi.binance.com/fapi/v1/time", "api.binance.us": "https://api.binance.us/api/v3/time" };
+  for (const [k, u] of Object.entries(http)) { try { const r = await fetch(u); out.http[k] = r.status + " " + (await r.text()).slice(0, 80); } catch (err) { out.http[k] = "erreur " + String(err.message || err).slice(0, 80); } }
+  const flux = {
+    binance_spot_vision: ["https://data-stream.binance.vision/ws/btcusdt@trade", null],
+    binance_spot: ["https://stream.binance.com:9443/ws/btcusdt@trade", null],
+    binance_spot_443: ["https://stream.binance.com:443/ws/btcusdt@trade", null],
+    binance_perp: ["https://fstream.binance.com/ws/btcusdt@aggTrade", null],
+    binance_us: ["https://stream.binance.us:9443/ws/btcusd@trade", null],
+    bybit_perp: ["https://stream.bybit.com/v5/public/linear", JSON.stringify({ op: "subscribe", args: ["publicTrade.BTCUSDT"] })],
+    bybit_spot: ["https://stream.bybit.com/v5/public/spot", JSON.stringify({ op: "subscribe", args: ["publicTrade.BTCUSDT"] })],
+    okx_perp: ["https://ws.okx.com:8443/ws/v5/public", JSON.stringify({ op: "subscribe", args: [{ channel: "trades", instId: "BTC-USDT-SWAP" }] })],
+    coinbase: ["https://ws-feed.exchange.coinbase.com", JSON.stringify({ type: "subscribe", product_ids: ["BTC-USD"], channels: ["matches"] })],
+  };
+  const arr = {}, lag = {}, ouverts = [];
+  await Promise.all(Object.entries(flux).map(async ([k, [u, abo]]) => {
+    try {
+      const r = await fetch(u, { headers: { Upgrade: "websocket" } });
+      if (!r.webSocket) { out.flux[k] = "refusé HTTP " + r.status + " " + (await r.text().catch(() => "")).slice(0, 100); return; }
+      const ws = r.webSocket; ws.accept(); ouverts.push(ws); arr[k] = []; lag[k] = [];
+      ws.addEventListener("message", (ev) => {
+        const t = Date.now(); let m; try { m = JSON.parse(ev.data); } catch (_) { return; }
+        let L = [];
+        if (m.e === "trade" || m.e === "aggTrade") L = [[+m.p, +m.T]];
+        else if (Array.isArray(m.data) && m.topic) L = m.data.map((x) => [+x.p, +x.T]);
+        else if (Array.isArray(m.data) && m.arg) L = m.data.map((x) => [+x.px, +x.ts]);
+        else if (m.type === "match" || m.type === "last_match") L = [[+m.price, Date.parse(m.time)]];
+        for (const [p, te] of L) { if (p) { arr[k].push([t, p]); if (te) lag[k].push(t - te); } }
+      });
+      if (abo) ws.send(abo);
+      out.flux[k] = "connecté";
+    } catch (err) { out.flux[k] = "erreur " + String(err.message || err).slice(0, 100); }
+  }));
+  await new Promise((r) => setTimeout(r, duree * 1000));
+  for (const ws of ouverts) { try { ws.close(); } catch (_) {} }
+  const t0 = Math.max(...Object.values(arr).filter((a) => a.length).map((a) => a[0][0]));
+  const pas = 50, n = Math.floor((duree * 1000 - 2000) / pas);
+  const grille = (a) => { const g = []; let i = 0, last = null; for (let j = 0; j < n; j++) { const tt = t0 + j * pas; while (i < a.length && a[i][0] <= tt) last = a[i++][1]; g.push(last); } return g; };
+  const ret = (g) => g.map((x, i) => (i && x && g[i - 1] ? Math.log(x / g[i - 1]) : 0));
+  const corr = (a, b, d) => { let sab = 0, saa = 0, sbb = 0; for (let i = Math.max(0, d); i < a.length && i - d < b.length; i++) { if (i - d < 0) continue; sab += a[i] * b[i - d]; saa += a[i] ** 2; sbb += b[i - d] ** 2; } return saa && sbb ? sab / Math.sqrt(saa * sbb) : 0; };
+  const rb = arr.bybit_perp && arr.bybit_perp.length > 20 ? ret(grille(arr.bybit_perp)) : null;
+  for (const [k, a] of Object.entries(arr)) {
+    const lg = lag[k].slice().sort((x, y) => x - y);
+    out.flux[k] = { messages: a.length, retard_median_ms: lg.length ? lg[Math.floor(lg.length / 2)] : null };
+    if (rb && k !== "bybit_perp" && a.length > 20) {
+      const rx = ret(grille(a)); let best = [0, -1];
+      for (let d = -40; d <= 40; d++) { const c = corr(rb, rx, d); if (c > best[1]) best = [d * pas, c]; }   // d>0 : k bouge avant Bybit
+      out.avance_sur_bybit_ms[k] = { avance_ms: best[0], correlation: +best[1].toFixed(2) };
+    }
+  }
+  try { const cf = await (await fetch("https://cloudflare.com/cdn-cgi/trace")).text(); out.lieu = (cf.match(/colo=(\w+)/) || [])[1]; } catch (_) {}
+  return out;
+}
+
 export class Sonde {
   constructor(state, env) { this.state = state; }
   async fetch() { return Response.json(await mesurerLatence()); }
@@ -123,6 +180,7 @@ export class Bot {
       return json({ ok: true, arret: true, annulation: r });
     }
     if (u.pathname === "/api/reel/reprise" && req.method === "POST") { this.e.reelStop = false; await this.sauver(); return json({ ok: true, arret: false }); }
+    if (u.pathname === "/api/binance") return json(await sondeBinance(Math.min(60, +(u.searchParams.get("s") || 20))));
     if (u.pathname === "/api/sondes") {
       const regions = ["weur", "eeur", "enam", "wnam", "apac"];
       const r = await Promise.all(regions.map(async (rg) => {
@@ -561,6 +619,21 @@ export class Bot {
     };
   }
 
+  // idée 1 : pendant le trade, note le premier moment où les teneurs de marché retirent leurs achats sur notre jeton
+  // (retraits hors échanges), où le côté opposé est acheté fort, où notre meilleur prix d'achat recule — enregistrement seulement
+  v1Alertes(pos) {
+    const t = now(), bids = this.livreTrie(pos.token, "bids"), bb = bids.length ? bids[0][0] : null;
+    if (bb == null) return;
+    const al = (pos.alertes = pos.alertes || {}), t0 = Date.parse(pos.heure) / 1000;
+    pos.bidMax = Math.max(pos.bidMax || 0, bb);
+    const retr = Math.max(0, this.sommeFlux(pos.token, "retrait_achat", 3) - this.sommeFlux(pos.token, "echange_vente", 3));
+    const opp = this.sommeFlux(pos.autre, "echange_achat", 3) + this.sommeFlux(pos.token, "echange_vente", 3);
+    const note = (k) => { if (!al[k]) al[k] = { s: +(t - t0).toFixed(1), bid: bb, proba: pos.probaActuelle }; };
+    for (const x of [50, 100, 250, 500]) if (retr >= x) note("retrait_achats_3s_" + x + "usd");
+    for (const x of [50, 100, 250]) if (opp >= x) note("achats_opposes_3s_" + x + "usd");
+    for (const x of [2, 3, 5]) if (pos.bidMax - bb >= x / 100 - 1e-9) note("recul_bid_" + x + "c");
+  }
+
   actifDuJeton(id) { return V1.ACTIFS.find((a) => { const m = this.mk[a]; return m && (m.up === id || m.down === id); }) || null; }
   v1Etat(a) { return a === "BTC" ? this.e.V1 : this.e.V1x[a]; }
   v1Declencher(a, source, ts, t) {
@@ -655,6 +728,7 @@ export class Bot {
     const up = pos.cote === "Up", fairA = up ? pu : 1 - pu;
     pos.offre = Math.min(Math.floor(((1 - fairA) - V1.MARGE) * 100) / 100, V1.OPP_MAX);
     pos.probaActuelle = +fairA.toFixed(3);
+    try { this.v1Alertes(pos); } catch (_) {}
     if (pos.reel) this.v1OffreReelle(pos);
     const bids = this.livreTrie(pos.token, "bids");
     if (fairA < pos.proba - V1.STOP_REL) { this.v1Vendre(pos, bids, "stop", delai); return; }
