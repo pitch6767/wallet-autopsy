@@ -61,6 +61,7 @@ export class Bot {
         capital: CFG.CAPITAL, mise: CFG.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, pause: false,
         positions: [], attente: [], trades: [], vetos: {}, candidats: {}, parActif: {}, refus: [], verif: [], depuis: now(),
       };
+      this.e.pause = false;   // plus de pause après perte (décision du 05.10.2026)
     });
   }
 
@@ -102,7 +103,7 @@ export class Bot {
     if (!this.ws.perp || (this.ageMax("perp") > 20 && depuis("perp") > 20)) {
       for (const a of LISTE) this.livre[a] = { b: new Map(), a: new Map() };
       const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`, `orderbook.50.${ACTIFS[a].bybit}`, `allLiquidation.${ACTIFS[a].bybit}`]);
-      this.connecter("perp", "https://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args })], (m) => this.surPerp(m), JSON.stringify({ op: "ping" }), 20000);
+      this.connecter("perp", "https://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args })], (m) => this.surPerp(m), JSON.stringify({ op: "ping" }), 10000);
     }
     if (!this.ws.cb || (this.ageMax("cb") > 30 && depuis("cb") > 30)) {
       const ids = LISTE.map((a) => ACTIFS[a].spot).filter(Boolean);
@@ -225,9 +226,11 @@ export class Bot {
       }
       try {
         if (!mk.slug && t - (mk.essai || 0) > 10) { mk.essai = t; Object.assign(mk, await this.chargerMarche(a, start)); }
-        if (t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); }
+        if (!mk.strike && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); }
       } catch (err) { if (tleft < 200) this.erreur(a, err); }
     }));
+    for (const p of this.e.positions.filter((x) => x.end <= t)) this.e.attente.push(p);
+    this.e.positions = this.e.positions.filter((x) => x.end > t);
     await this.resoudre();
     // carnets des marchés dans leur fenêtre d'achat ou avec une position ouverte
     const actifs = LISTE.filter((a) => { const mk = this.mk[a]; return mk.slug && tleft >= 1 && (tleft <= WMAX(a) || this.e.positions.some((p) => p.actif === a && p.start === start)); });
@@ -307,7 +310,6 @@ export class Bot {
     const c = this.calcul(a, mk, tleft, favUp);
     const d = c ? { tleft: Math.round(tleft), ask, bid, fav: favUp ? "Up" : "Down", z: +c.z.toFixed(2), proba: +c.proba.toFixed(4), dist: c.dist } : { tleft: Math.round(tleft), ask, bid, fav: favUp ? "Up" : "Down" };
     if (!enBande.length) return this.refuser(a, mk, "aucun vendeur dans la bande de prix", `Favori ${favUp ? "Up" : "Down"} : meilleur vendeur ${ask >= 1 ? "aucun" : ask}, meilleur acheteur ${bid}. Bandes : ${regles.map((r) => r.pmin + "–" + r.pmax).join(", ")}.`, d);
-    if (e.pause) return this.refuser(a, mk, "pause après perte", "Une perte a eu lieu : le bot attend ton clic sur « Reprendre ».", d);
     const p = this.protections(a, mk, tleft, favUp, ask, c);
     if (p) return this.refuser(a, mk, p.raison, p.explication, d);
     const regle = enBande.find((r) => c.z >= r.z);
@@ -405,7 +407,7 @@ export class Bot {
     const pa = (e.parActif[pos.actif] = e.parActif[pos.actif] || { trades: 0, gains: 0, pertes: 0, pnl: 0 });
     pa.trades++; pa.pnl += pos.net;
     if (pos.net >= 0) { e.gains++; pa.gains++; e.reserve += pos.net * CFG.PART_RESERVE; e.mise += pos.net * CFG.PART_REINVEST; }
-    else { e.pertes++; pa.pertes++; e.pause = true; }
+    else { e.pertes++; pa.pertes++; }
     e.mise = Math.min(e.mise, Math.max(0, e.capital - e.reserve));
     e.trades.unshift(pos);
     e.trades.length = Math.min(e.trades.length, 400);
