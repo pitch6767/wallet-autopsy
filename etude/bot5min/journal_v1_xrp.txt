@@ -1,0 +1,14 @@
+cycles 1897 (190s)
+## XRP — 1897 cycles, 7 jours
+
+| Version | Retard | Trades/j | Gain/j | Cycles perdants | Pertes totales | Perte moyenne | Pire baisse |
+|---|---|---|---|---|---|---|---|
+| Reference (sans elan, stop proba<0,50) | 1 s | 19 | +171 $ | 44 % | -1008 $ | -17.4 $ | -125 $ |
+| Reference (sans elan, stop proba<0,50) | 2 s | 15 | +85 $ | 50 % | -1080 $ | -21.2 $ | -150 $ |
+| Reglage A (elan + stop -15 pts) | 1 s | 14 | +187 $ | 35 % | -498 $ | -14.6 $ | -42 $ |
+| Reglage A (elan + stop -15 pts) | 2 s | 11 | +131 $ | 42 % | -530 $ | -16.5 $ | -105 $ |
+| Reglage A, marge 0,12 | 1 s | 8 | +127 $ | 32 % | -168 $ | -9.9 $ | -30 $ |
+| Reglage A, marge 0,12 | 2 s | 5 | +56 $ | 42 % | -200 $ | -14.3 $ | -54 $ |
+
+Duree : 212 s
+code sortie: 0
