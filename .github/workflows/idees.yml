@@ -1,0 +1,25 @@
+name: Idees anti-pertes V1
+on:
+  push:
+    branches: [main]
+    paths: [etude/bot5min/idees.py]
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test
+        run: |
+          set +e
+          pip install -q pandas scikit-learn
+          python3 -u etude/bot5min/idees.py 12 > etude/bot5min/journal_idees.txt 2>&1
+          echo "code sortie: $?" >> etude/bot5min/journal_idees.txt
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          git add etude/bot5min/
+          git commit -m "Resultats idees anti-pertes [skip ci]"; for k in $(seq 1 25); do git pull --rebase -q origin main && git push && break; sleep 7; done
