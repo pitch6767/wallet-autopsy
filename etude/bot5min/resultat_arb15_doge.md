@@ -1,0 +1,43 @@
+## DOGE — 672 paires 15 min / 5 min sur 7 jours (fenetre : 5 dernieres minutes)
+
+Ecart median entre les deux prix d'exercice : 0.142 % du prix
+Cycles avec prix des deux jambes observables : 487
+**Cycles avec un moment SANS RISQUE (cout + frais < 1,00) : 26 (5.3 %)**
+Gain sans risque (premier moment, taille limitee aux echanges vus, max 100 parts) : +5.5 $ sur 7 jours, soit +0.8 $/jour
+Gain reel de ces memes achats (bonus quand les deux jambes gagnent) : +9.2 $ sur 7 jours
+Taille mediane disponible au moment sans risque : 5 parts
+Cout + frais le plus bas observe, mediane par cycle : 1.316
+Les deux jambes gagnent (paie 2) : 197 cycles sur 487 (40.5 %)
+
+| Seuil d'achat (cout + frais) | Cycles achetes | Gain reel 100 parts | Gain/jour | Pire cycle |
+|---|---|---|---|---|
+| < 0.98 | 19 | +234 $ | +33 $ | +2 $ |
+| < 1.00 | 26 | +241 $ | +34 $ | +0 $ |
+| < 1.02 | 41 | +227 $ | +32 $ | -2 $ |
+| < 1.05 | 66 | +538 $ | +77 $ | -5 $ |
+| < 1.10 | 115 | +557 $ | +80 $ | -10 $ |
+
+**Achat a un instant fixe (realiste, sans regarder l'avenir), 100 parts par cycle**
+
+| Instant (avant la fin) | Cycles | Cout moyen | Paiement moyen | Gain/cycle | Gain/jour | Perte max par cycle |
+|---|---|---|---|---|---|---|
+| 240 s | 14 | 1.321 | 1.286 | -3.52 $ | -7 $ | -66 $ |
+| 180 s | 15 | 1.360 | 1.267 | -9.29 $ | -20 $ | -59 $ |
+| 120 s | 25 | 1.338 | 1.320 | -1.83 $ | -7 $ | -93 $ |
+| 90 s | 31 | 1.546 | 1.419 | -12.62 $ | -56 $ | -88 $ |
+| 60 s | 27 | 1.552 | 1.444 | -10.77 $ | -42 $ | -83 $ |
+| 30 s | 9 | 1.670 | 1.778 | +10.73 $ | +14 $ | -15 $ |
+
+**Premier instant ou cout + frais passe sous un seuil (realiste)**
+
+| Seuil | Cycles | Gain total 100 parts | Gain/jour |
+|---|---|---|---|
+| < 1.00 | 3 | +4 $ | +1 $ |
+| < 1.05 | 7 | +92 $ | +13 $ |
+| < 1.10 | 18 | +214 $ | +31 $ |
+| < 1.15 | 23 | +151 $ | +22 $ |
+| < 1.20 | 28 | +258 $ | +37 $ |
+
+(Le premier tableau achete au MEILLEUR prix du cycle : c'est un plafond optimiste, connu seulement apres coup.)
+
+Duree : 62 s
