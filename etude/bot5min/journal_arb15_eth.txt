@@ -1,4 +1,4 @@
-eth paires 672 (67s)
+eth paires 672 (93s)
 ## ETH — 672 paires 15 min / 5 min sur 7 jours (fenetre : 5 dernieres minutes)
 
 Ecart median entre les deux prix d'exercice : 0.076 % du prix
@@ -8,7 +8,7 @@ Gain sans risque (premier moment, taille limitee aux echanges vus, max 100 parts
 Gain reel de ces memes achats (bonus quand les deux jambes gagnent) : +26.2 $ sur 7 jours
 Taille mediane disponible au moment sans risque : 7 parts
 Cout + frais le plus bas observe, mediane par cycle : 1.190
-Les deux jambes gagnent (paie 2) : 237 cycles sur 661 (35.9 %)
+Les deux jambes gagnent (paie 2) : 236 cycles sur 661 (35.7 %)
 
 | Seuil d'achat (cout + frais) | Cycles achetes | Gain reel 100 parts | Gain/jour | Pire cycle |
 |---|---|---|---|---|
@@ -18,7 +18,29 @@ Les deux jambes gagnent (paie 2) : 237 cycles sur 661 (35.9 %)
 | < 1.05 | 112 | +581 $ | +83 $ | -5 $ |
 | < 1.10 | 204 | +596 $ | +85 $ | -10 $ |
 
-(Le tableau achete au MEILLEUR prix du cycle : c'est un plafond optimiste, connu seulement apres coup.)
+**Achat a un instant fixe (realiste, sans regarder l'avenir), 100 parts par cycle**
 
-Duree : 67 s
+| Instant (avant la fin) | Cycles | Cout moyen | Paiement moyen | Gain/cycle | Gain/jour | Perte max par cycle |
+|---|---|---|---|---|---|---|
+| 300 s | 10 | 1.319 | 1.300 | -1.88 $ | -3 $ | -43 $ |
+| 240 s | 130 | 1.330 | 1.323 | -0.65 $ | -12 $ | -65 $ |
+| 180 s | 113 | 1.373 | 1.327 | -4.56 $ | -74 $ | -83 $ |
+| 120 s | 138 | 1.412 | 1.399 | -1.35 $ | -27 $ | -95 $ |
+| 90 s | 143 | 1.500 | 1.476 | -2.48 $ | -51 $ | -94 $ |
+| 60 s | 123 | 1.537 | 1.496 | -4.14 $ | -73 $ | -98 $ |
+| 30 s | 13 | 1.654 | 1.538 | -11.54 $ | -21 $ | -64 $ |
+
+**Premier instant ou cout + frais passe sous un seuil (realiste)**
+
+| Seuil | Cycles | Gain total 100 parts | Gain/jour |
+|---|---|---|---|
+| < 1.00 | 7 | +30 $ | +4 $ |
+| < 1.05 | 41 | -96 $ | -14 $ |
+| < 1.10 | 64 | -206 $ | -29 $ |
+| < 1.15 | 94 | -448 $ | -64 $ |
+| < 1.20 | 122 | -491 $ | -70 $ |
+
+(Le premier tableau achete au MEILLEUR prix du cycle : c'est un plafond optimiste, connu seulement apres coup.)
+
+Duree : 93 s
 code sortie: 0
