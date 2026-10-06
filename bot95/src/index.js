@@ -267,7 +267,7 @@ export class Bot {
       if (R.minute !== minute) {
         if (R.lignes.length) this.state.storage.put(`rec:${a}:${R.minute}`, { colonnes: REC_COLS, lignes: R.lignes }).catch(() => {});
         R.minute = minute; R.lignes = [];
-        if (minute % 30 === 0) this.state.storage.list({ prefix: `rec:${a}:`, end: `rec:${a}:${minute - 2880}` }).then((m2) => { const ks = [...m2.keys()].slice(0, 120); if (ks.length) this.state.storage.delete(ks); }).catch(() => {});
+        if (minute % 30 === 0) this.state.storage.list({ prefix: `rec:${a}:`, limit: 200 }).then((m2) => { const ks = [...m2.keys()].filter((k) => +k.split(":")[2] < minute - 2880).slice(0, 120); if (ks.length) this.state.storage.delete(ks); }).catch(() => {});
       }
       R.lignes.push(ligne);
     }
