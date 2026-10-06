@@ -794,7 +794,7 @@ export class Bot {
         const id = up ? mk.up : mk.down, asks = this.livreTrie(id, "asks"), fair = up ? pu : 1 - pu;
         if (!asks.length || asks[0][0] < V1.PMIN || asks[0][0] > V1.PMAX || fair < V1.PMIN + V1.MARGE) continue;
         const el = this.elanV1(a); if (el == null || el * (up ? 1 : -1) <= 0) { V.refusElan = (V.refusElan || 0) + 1; continue; }
-        const mise = Math.min(V.mise, V.capital - V.reserve);
+        const mise = V1.MISE;                              // 50 $ par pari, fixe (décision de Pitch) — la réserve bloquait la mise à 0 depuis le 05.10 au soir
         let reste = mise, parts = 0, cout = 0;
         for (const [p, sz] of asks) { if (p > V1.PMAX) break; const k = Math.min(sz, reste / p); parts += k; cout += k * p; reste -= k * p; if (reste < 0.01) break; }
         if (reste >= 0.01 || parts <= 0) continue;
