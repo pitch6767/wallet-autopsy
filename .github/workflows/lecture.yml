@@ -1,5 +1,5 @@
 # lecture des résultats fantômes du bot (aucun déploiement) — relancer en modifiant la ligne suivante
-# demande: 4
+# demande: 5
 name: Lecture bot95
 on:
   push:
@@ -20,5 +20,6 @@ jobs:
           curl -sS -m 30 "$U/api/nouveaux" > bot95/nouveaux.json
           curl -sS -m 30 "$U/api/etat" | python3 -c "import json,sys;d=json.load(sys.stdin)['v1'];print(json.dumps({'btc':[(t.get('heure'),t.get('issue'),t.get('net')) for t in d['trades'][:80]],'eth':[(t.get('heure'),t.get('issue'),t.get('net')) for t in d['eth']['trades'][:80]]}))" > bot95/v1.json 2> bot95/lecture_err.txt
           for k in 1 2 3 4 5 6; do curl -sS -m 20 "$U/api/v1debug" | python3 -c "import json,sys,time;d=json.load(sys.stdin);print(round(d['maintenant']), d['mk'].get('start'), d['wsPoly'], d['ouvert'], json.dumps(d['livres'])[:900], 'proba', d.get('proba'))" >> bot95/debug.txt 2>&1; sleep 15; done
+          curl -sS -m 30 "$U/api/rec?a=BTC&n=60" | python3 -c "import json,sys;d=json.load(sys.stdin);print('cles',d['cles']);print([ (len(x['lignes']), x['lignes'][0][:3], x['lignes'][-1][:3]) for x in d['docs']])" > bot95/rec_diag.txt 2>&1
           git config user.name lecture; git config user.email bot@users.noreply.github.com
-          git add bot95/debug.txt bot95/nouveaux.json bot95/v1.json bot95/lecture_err.txt; git commit -q -m "Lecture bot95 [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
+          git add bot95/rec_diag.txt bot95/debug.txt bot95/nouveaux.json bot95/v1.json bot95/lecture_err.txt; git commit -q -m "Lecture bot95 [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
