@@ -14,7 +14,7 @@ jobs:
       max-parallel: 20
       matrix:
         actif: [["eth","ETHUSDT"]]
-        jour: [8,9,10,11]
+        jour: [7]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
