@@ -1,0 +1,15 @@
+# veille de nuit : réveille le bot toutes les 10 min (relance la boucle s'il s'était arrêté), aucun déploiement, aucun commit
+name: Veille bot95
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Reveiller et verifier
+        run: |
+          U=https://bot95.pitch67.workers.dev
+          for k in 1 2 3; do curl -sS -m 30 "$U/api/v1debug" | python3 -c "import json,sys;d=json.load(sys.stdin);print('carnet Polymarket', d['wsPoly'], 'cycle', d['mk'].get('start'))" && break; sleep 10; done
