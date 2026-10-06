@@ -23,6 +23,8 @@ const NV = {
     VARIANTES: {                                                            // « actuel » et « pencher » arrêtés le 06.10.2026 (perdants en direct)
       "mm prudent": { MARGE: 0.12, DESEQ: 10, PAQUET: 10, PENCHER: 0.04, RETRAIT_PB: 2 } } },
 };
+const REC_COLS = ["t", "start", "proba_up_modele", "up_achat", "up_vente", "down_achat", "down_vente", "up_achat_taille", "up_vente_taille", "down_achat_taille", "down_vente_taille",
+  "bybit_perp", "okx_perp", "coinbase", "binance_spot", "chainlink", "prix_a_battre"];
 const BB_COLONNES = ["t", "bybit_perp", "okx_perp", "coinbase", "binance_spot", "chainlink", "bybit_meilleur_achat", "bybit_meilleure_vente",
   "prof_achat_1pb", "prof_vente_1pb", "prof_achat_3pb", "prof_vente_3pb", "prof_achat_5pb", "prof_vente_5pb", "prof_achat_10pb", "prof_vente_10pb", "niveaux_achat", "niveaux_vente",
   "perp_achats_usd", "perp_ventes_usd", "perp_plus_gros_achat", "perp_plus_grosse_vente", "perp_nb_echanges", "liq_longs_usd", "liq_courts_usd",
@@ -215,6 +217,12 @@ export class Bot {
         livres: Object.fromEntries(Object.keys(this.pb).map((id) => [id.slice(0, 8), { bids: this.livreTrie(id, "bids").slice(0, 4), asks: this.livreTrie(id, "asks").slice(0, 4) }])),
         derniers: this.polyRaw || [], proba: mb.up ? this.probaV1("BTC", mb) : null, sg: this._sg || null });
     }
+    if (u.pathname === "/api/rec") {
+      const a = u.searchParams.get("a") || "BTC", n = Math.min(60, +(u.searchParams.get("n") || 30)), apres = u.searchParams.get("apres");
+      const m = await this.state.storage.list({ prefix: `rec:${a}:`, limit: n, ...(apres ? { startAfter: apres } : {}) });
+      const ks = [...m.keys()];
+      return json({ cles: ks, docs: [...m.values()], suivant: ks.length ? ks[ks.length - 1] : null });
+    }
     if (u.pathname === "/api/boite") {
       const n = Math.min(40, +(u.searchParams.get("n") || 20)), apres = u.searchParams.get("apres");
       const m = await this.state.storage.list({ prefix: "bb:", limit: n, ...(apres ? { startAfter: apres } : {}) });
@@ -242,8 +250,31 @@ export class Bot {
   // On garde 10 s en mémoire ; sauvegarde à l'entrée, à la première alerte (proba -8 pts) et au stop de chaque trade V1.
   bbAcc(a) { return ((this.bbA = this.bbA || {})[a] = this.bbA[a] || { ach: 0, ven: 0, max_ach: 0, max_ven: 0, n: 0, liq_longs: 0, liq_courts: 0 }); }
   pmAcc(id) { return ((this.pmA = this.pmA || {})[id] = this.pmA[id] || { retrait_achat: 0, retrait_vente: 0, ajout_achat: 0, ajout_vente: 0, echange_achat: 0, echange_vente: 0 }); }
+  // enregistreur (≈ 4 fois par seconde) : modèle, carnet Polymarket, bourses — par minute dans le stockage, gardé 48 h
+  enregistrer(t) {
+    if (t - (this._recT || 0) < 0.25) return; this._recT = t;
+    for (const a of V1.ACTIFS) {
+      const mk = this.mk[a]; if (!mk || !mk.up || !mk.strike) continue;
+      let pu = null; try { pu = this.probaV1(a, mk); } catch (_) {}
+      const b = (id, c) => (this.livreTrie(id, c)[0] || [null, null]);
+      const [ub, ubs] = b(mk.up, "bids"), [ua, uas] = b(mk.up, "asks"), [db, dbs] = b(mk.down, "bids"), [da, das] = b(mk.down, "asks");
+      const px = (src) => (this.f[a][src] ? +this.f[a][src].p : null);
+      const r4 = (x) => (x == null ? null : +x.toFixed(4));
+      const ligne = [+t.toFixed(2), mk.start, r4(pu), ub, ua, db, da, ubs && Math.round(ubs), uas && Math.round(uas), dbs && Math.round(dbs), das && Math.round(das),
+        px("perp"), px("okx"), px("cb"), px("bn"), px("cl"), +(+mk.strike).toFixed(4)];
+      const minute = Math.floor(t / 60);
+      const R = ((this._rec = this._rec || {})[a] = this._rec[a] || { minute, lignes: [] });
+      if (R.minute !== minute) {
+        if (R.lignes.length) this.state.storage.put(`rec:${a}:${R.minute}`, { colonnes: REC_COLS, lignes: R.lignes }).catch(() => {});
+        R.minute = minute; R.lignes = [];
+        if (minute % 30 === 0) this.state.storage.list({ prefix: `rec:${a}:`, end: `rec:${a}:${minute - 2880}` }).then((m2) => { const ks = [...m2.keys()].slice(0, 120); if (ks.length) this.state.storage.delete(ks); }).catch(() => {});
+      }
+      R.lignes.push(ligne);
+    }
+  }
   echantillonner() {
     const t = now();
+    try { this.enregistrer(t); } catch (_) {}
     for (const a of V1.ACTIFS) {
       const L = this.livre[a], mk = this.mk[a] || {};
       const b = [...L.b].map(([p, q2]) => [+p, q2]).sort((x, y) => y[0] - x[0]), k = [...L.a].map(([p, q2]) => [+p, q2]).sort((x, y) => x[0] - y[0]);
