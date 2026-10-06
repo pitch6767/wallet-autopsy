@@ -159,7 +159,15 @@ export class Bot {
     this.reel = new Reel(env);
     this._v1t = {}; this._sgA = {}; this._okxB = {}; this.mkNx = {};
     this.ready = this.state.blockConcurrencyWhile(async () => {
-      this.N = (await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
+      // stockage découpé (une valeur ne doit pas dépasser 128 Ko) : nv:base, nv:strat:<nom>, nv:ordres, nv:audit
+      const base = await this.state.storage.get("nv:base");
+      if (base) {
+        this.N = { ...base, strats: {} };
+        const st2 = await this.state.storage.list({ prefix: "nv:strat:" });
+        for (const [k, v] of st2) this.N.strats[k.slice(9)] = v;
+        this.N.ordres = (await this.state.storage.get("nv:ordres")) || [];
+        this.N.audit = { fait: base.auditFait || {}, lignes: (await this.state.storage.get("nv:audit")) || [] };
+      } else this.N = (await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
       for (const [ancien, neuf] of [["assurance", "assurance 6/9/12"], ["mm", "mm actuel"]]) {
         for (const k of Object.keys(this.N.strats)) if (k.startsWith(ancien + " ") && k.split(" ").length === 2) { this.N.strats[neuf + " " + k.split(" ")[1]] = this.N.strats[k]; delete this.N.strats[k]; }
         for (const P of [...this.N.ouvertes, ...this.N.attente]) if (P.strat === ancien) P.strat = neuf;
@@ -965,7 +973,20 @@ export class Bot {
   // ================================================================== stratégies fantômes (aucun argent réel)
   // Une position = parts Up (U) et Down (D) détenues + trésorerie (cash). Règlement : cash + U si Up gagne, + D si Down gagne.
   nStrat(k) { return (this.N.strats[k] = this.N.strats[k] || { depuis: now(), pnl: 0, n: 0, gains: 0, pertes: 0, issues: {}, trades: [] }); }
-  nSauver() { if (!this._nsv) { this._nsv = setTimeout(() => { this._nsv = null; this.state.storage.put("nouveaux", this.N).catch(() => {}); }, 1000); } }
+  nSauver() {
+    if (this._nsv) return;
+    this._nsv = setTimeout(() => {
+      this._nsv = null;
+      const N = this.N, put = (k, v) => this.state.storage.put(k, v).catch((err) => this.erreur("sauvegarde " + k, err));
+      put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {} });
+      for (const [k, v] of Object.entries(N.strats)) put("nv:strat:" + k, v);
+      // ordres : non réglés + 250 derniers réglés (les compteurs sont cumulés à part)
+      const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
+      N.ordres = [...regles.slice(-250), ...nonRegles];
+      put("nv:ordres", N.ordres);
+      put("nv:audit", ((N.audit || {}).lignes || []).slice(0, 150));
+    }, 1000);
+  }
   // achat fantôme en remontant le carnet (frais taker), au plus `maxParts` et jusqu'à `maxPrix`
   nAcheter(id, maxParts, maxPrix) {
     let parts = 0, cout = 0;
@@ -987,7 +1008,8 @@ export class Bot {
     const S2 = this.nStrat(P.strat + " " + P.actif);
     S2.n++; S2.pnl += P.net; if (P.net >= 0) S2.gains++; else S2.pertes++;
     (S2.issues[issue] = S2.issues[issue] || { n: 0, pnl: 0 }).n++; S2.issues[issue].pnl += P.net;
-    S2.trades.unshift(P); S2.trades.length = Math.min(S2.trades.length, 120);
+    P.journal = P.journal.slice(-6);
+    S2.trades.unshift(P); S2.trades.length = Math.min(S2.trades.length, 60);
     this.N.ouvertes = this.N.ouvertes.filter((x) => x !== P);
     this.nSauver();
   }
@@ -1173,8 +1195,12 @@ export class Bot {
   }
   nOrdresResume() {
     const R = {};
-    for (const O of this.N.ordres || []) {
-      if (O.gagne == null) continue;
+    for (const [k, z] of Object.entries(this.N.ordAgg || {})) R[k] = Object.fromEntries(Object.entries(z).map(([x, v]) => [x, +(+v).toFixed(2)]));
+    return R;
+  }
+  nOrdreCumul(O) {
+    const R = (this.N.ordAgg = this.N.ordAgg || {});
+    {
       const k = O.strat + " " + O.a, z = (R[k] = R[k] || { essais: 0, gagnants: 0, s50: 0, s250: 0, g50: 0, g250: 0, pnl50: 0, pnl250: 0, parts50: 0, parts250: 0, nonServisGagnants: 0, nonServis: 0, inv50: 0, invN: 0, pnlParfait: 0 });
       z.essais++; if (O.gagne) z.gagnants++;
       const fee = (p) => 0.072 * p * (1 - p);
@@ -1185,8 +1211,6 @@ export class Bot {
       if (O.f50 && O.f50.parts > 0 && O.opp50 != null) { z.invN++; z.inv50 += (O.usd / O.opp50) * ((O.gagne ? 0 : 1) - O.opp50 - fee(O.opp50)); }
       if (!(O.f50 && O.f50.parts > 0)) { z.nonServis++; if (O.gagne) z.nonServisGagnants++; }
     }
-    for (const z of Object.values(R)) for (const k of Object.keys(z)) z[k] = +z[k].toFixed ? +(+z[k]).toFixed(2) : z[k];
-    return R;
   }
 
   // ================= audit de la règle de résolution : notre moyenne Chainlink 60 s contre le prix à battre et le prix final officiels
@@ -1222,7 +1246,7 @@ export class Bot {
           const m = ev[0].markets[0], px = JSON.parse(m.outcomePrices || "[]").map(Number), outs = JSON.parse(m.outcomes || "[]");
           cacheG[O.slug] = (px.includes(1) && px.includes(0)) ? String(outs[px.indexOf(1)]) : null;
         }
-        if (cacheG[O.slug]) O.gagne = cacheG[O.slug] === O.cote;
+        if (cacheG[O.slug]) { O.gagne = cacheG[O.slug] === O.cote; this.nOrdreCumul(O); }
       } catch (_) {}
     }
     const t = now();
