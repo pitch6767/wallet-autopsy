@@ -15,10 +15,10 @@ const ACTIFS = {
 };
 const LISTE = Object.keys(ACTIFS);
 // ---- stratégies fantômes ajoutées le 05.10.2026 (idées 19-25, 29, 30), aucun argent réel
-const NV = {
+const NV = {   // teneur de marché en pause depuis le 06.10.2026 (ACTIFS vide)
   ASSUR: { NIVEAUX: [[0.06, 0.25], [0.09, 0.5], [0.12, 1.0]], RETRAIT: 0.03, CALME_S: 2, OPP_MAX: 0.95 },   // assurance graduée à la place du stop (baisse de proba -> part couverte)
   FIN: { BTC: { W: 180, LO: 0.70, HI: 0.85, SEUIL: 0.95 }, ETH: { W: 90, LO: 0.70, HI: 0.90, SEUIL: 0.93 }, MISE: 50 },
-  MM: { ACTIFS: ["BTC"], MARGE: 0.12, DESEQ: 50, MAXI: 100, ARRET_S: 10 },
+  MM: { ACTIFS: [], MARGE: 0.12, DESEQ: 50, MAXI: 100, ARRET_S: 10 },
 };
 const BB_COLONNES = ["t", "bybit_perp", "okx_perp", "coinbase", "binance_spot", "chainlink", "bybit_meilleur_achat", "bybit_meilleure_vente",
   "prof_achat_1pb", "prof_vente_1pb", "prof_achat_3pb", "prof_vente_3pb", "prof_achat_5pb", "prof_vente_5pb", "prof_achat_10pb", "prof_vente_10pb", "niveaux_achat", "niveaux_vente",
