@@ -879,6 +879,7 @@ export class Bot {
           delai: delai != null ? +delai.toFixed(3) : null, source, B: { parts: 0, cout: 0 }, offre: null };
         try { this.gOuvrir(a, mk, V.pos); } catch (err) { this.erreur("assurance", err); }
         try { this.nTenter("V1", a, mk, up, V1.PMAX, V.pos.mise, fair); } catch (_) {}
+        try { this.nInverse("V1", a, mk, up, V.pos.mise); this.nSauver(); } catch (_) {}
         this.notelat(delai); this.sauver();
         return;
       }
@@ -1140,6 +1141,7 @@ export class Bot {
         P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
         this.nNote(P, `achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix} (modèle ${P.proba0}, ${P.restant_s} s restantes)`);
         try { this.nTenter(P.strat, a, mk, up, P.strat === "fin" ? NV.FIN[a].HI : ask[0] + 0.01, r.cout, fair); } catch (_) {}
+        try { this.nInverse(P.strat, a, mk, up, r.cout); } catch (_) {}
         this.nSauver();
         break;
       }
@@ -1157,6 +1159,7 @@ export class Bot {
         P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
         this.nNote(P, `achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix} (modèle ${P.proba0}, ${P.restant_s} s restantes)`);
         try { this.nTenter(P.strat, a, mk, up, P.strat === "fin" ? NV.FIN[a].HI : ask[0] + 0.01, r.cout, fair); } catch (_) {}
+        try { this.nInverse(P.strat, a, mk, up, r.cout); } catch (_) {}
         this.nSauver();
         break;
       }
@@ -1213,6 +1216,17 @@ export class Bot {
         this.nNote(P, `achat ${cle === "U" ? "Up" : "Down"} ${k.toFixed(1)} à ${bid}`); this.nSauver();
       }
     }
+  }
+
+  // ================= stratégies « inverses » : au même instant, acheter l'autre côté au meilleur vendeur, même montant, gardé jusqu'à la fin
+  nInverse(strat, a, mk, upOrig, usd) {
+    const up = !upOrig, id = up ? mk.up : mk.down, ask = this.livreTrie(id, "asks")[0];
+    if (!ask || ask[0] > 0.97) return;
+    const r = this.nAcheter(id, usd / ask[0], ask[0] + 0.01);
+    if (r.parts < 1) return;
+    const P = this.nPos("inverse " + strat, a, mk, { famille: "inverse", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), restant_s: +(mk.end - now()).toFixed(0) });
+    P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
+    this.nNote(P, `inverse de ${strat} : achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix}`);
   }
 
   // ================= ordres fantômes avec le délai taker de Polymarket (50 ms et 250 ms) + « inverse »
@@ -1303,7 +1317,7 @@ export class Bot {
         if (!g) { garder.push(P); continue; }
         P.cash += g === "Up" ? P.U : P.D; P.gagnant = g;
         const issue = P.strat.startsWith("assurance") ? ((P.U > 0 && P.D > 0 && Math.min(P.U, P.D) >= Math.max(P.U, P.D) - 1e-6) ? "paire" : (P.H > 0 ? "fin couverte" : (g === P.cote ? "fin gagnée" : "fin perdue")))
-          : (P.strat === "fin" || P.strat.startsWith("desaccord")) ? (g === P.cote ? "gagné" : "perdu") : (P.U > 0 && P.D > 0 ? "paires + reste" : "une seule jambe");
+          : (P.strat === "fin" || P.strat.startsWith("desaccord") || P.strat.startsWith("inverse")) ? (g === P.cote ? "gagné" : "perdu") : (P.U > 0 && P.D > 0 ? "paires + reste" : "une seule jambe");
         this.nClore(P, issue);
       } catch (err) { garder.push(P); this.erreur("fantômes règlement", err); }
     }
@@ -1422,9 +1436,9 @@ const PAGE_N = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta
 <script>
 const f=(x)=>(x>=0?"+":"")+x.toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/nouveaux",{cache:"no-store"})).json();let h="<div class='mu'>Depuis "+new Date(d.depuis*1000).toLocaleString("fr-CH")+" · "+d.ouvertes.length+" position(s) ouverte(s), "+d.attente+" en attente du résultat</div>";
-const noms={"desaccord 10":"Désaccord modèle/marché ≥ 10 pts","desaccord 15":"Désaccord ≥ 15 pts","desaccord 20":"Désaccord ≥ 20 pts","assurance 6/9/12":"V1 + assurance 6/9/12 (sans stop)","assurance 4/7/10":"V1 + assurance 4/7/10 (sans stop)","fin":"Fin de cycle 0,70–0,90","mm actuel":"Teneur de marché — actuel","mm pencher":"Teneur de marché — pencher 4 cents","mm prudent":"Teneur de marché — prudent (retrait + pencher + petit)"};
+const noms={"inverse V1":"↔ INVERSE de V1","inverse fin":"↔ INVERSE de fin de cycle","inverse desaccord 10":"↔ INVERSE de désaccord ≥ 10","inverse desaccord 15":"↔ INVERSE de désaccord ≥ 15","inverse desaccord 20":"↔ INVERSE de désaccord ≥ 20","desaccord 10":"Désaccord modèle/marché ≥ 10 pts","desaccord 15":"Désaccord ≥ 15 pts","desaccord 20":"Désaccord ≥ 20 pts","assurance 6/9/12":"V1 + assurance 6/9/12 (sans stop)","assurance 4/7/10":"V1 + assurance 4/7/10 (sans stop)","fin":"Fin de cycle 0,70–0,90","mm actuel":"Teneur de marché — actuel","mm pencher":"Teneur de marché — pencher 4 cents","mm prudent":"Teneur de marché — prudent (retrait + pencher + petit)"};
 const cles=Object.keys(d.strats).sort();
-const R=d.resume||{},rk=Object.keys(R).sort();
+const R=d.resume||{},base=(k)=>k.replace(/^inverse /,"").replace(/^V1 actuel \(avec stop\)/,"V1"),rk=Object.keys(R).sort((x,y)=>{const bx=base(x),by=base(y);return bx===by?(x.startsWith("inverse")?1:-1):(bx<by?-1:1);});
 h+="<div class='card'><h2>Comparaison</h2><table><tr><th>Stratégie</th><th>Depuis</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Pertes totales</th><th>Pire trade</th></tr>"+rk.map(k=>{const x=R[k],st=k.slice(0,k.lastIndexOf(" ")),a=k.slice(k.lastIndexOf(" ")+1);return "<tr><td>"+(noms[st]||st)+" — "+a+"</td><td>"+new Date(x.depuis*1000).toLocaleString("fr-CH",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td><b>"+f(x.pnl)+"</b></td><td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td></tr>"}).join("")+"</table></div>";
 const OR=d.ordres||{};if(Object.keys(OR).length){h+="<div class='card'><h2>Ordres fantômes avec le délai de Polymarket</h2><div class='mu'>Essais = moments où la stratégie voulait acheter. Servi = le vendeur était encore là 50 ms / 250 ms après. Résultat par stratégie si on n'achète QUE ce qui est servi, et si on achète l'inverse quand on est servi.</div><table><tr><th>Stratégie</th><th>Essais</th><th>Gagnants (tous)</th><th>Servis 50 ms</th><th>Gagnants si servi</th><th>Gagnants si PAS servi</th><th>Résultat servi 50 ms</th><th>Résultat servi 250 ms</th><th>Résultat « inverse »</th><th>Résultat si tout servi (simulation)</th></tr>"+Object.entries(OR).sort().map(([k,z])=>"<tr><td>"+k+"</td><td>"+z.essais+"</td><td>"+z.gagnants+"</td><td>"+z.s50+" ("+(z.essais?Math.round(100*z.s50/z.essais):0)+" %)</td><td>"+z.g50+" / "+z.s50+"</td><td>"+z.nonServisGagnants+" / "+z.nonServis+"</td><td>"+f(z.pnl50)+"</td><td>"+f(z.pnl250)+"</td><td>"+f(z.inv50)+"</td><td>"+f(z.pnlParfait)+"</td></tr>").join("")+"</table></div>";}
 const MO=d.markout||{};if(Object.keys(MO).length){h+="<div class='card'><h2>Teneur de marché : valeur juste après avoir été servi (cents par part)</h2><div class='mu'>Positif = le prix est monté après notre achat (bon remplissage). Négatif = on a été servi juste avant une baisse (sélection adverse).</div><table><tr><th>Stratégie</th><th>Remplissages</th><th>0,1 s</th><th>0,5 s</th><th>1 s</th><th>3 s</th><th>10 s</th></tr>"+Object.entries(MO).map(([k,v])=>"<tr><td>"+k+"</td><td>"+v.remplissages+"</td>"+["0.1s","0.5s","1s","3s","10s"].map(x=>"<td>"+(v[x]==null?"—":v[x])+"</td>").join("")+"</tr>").join("")+"</table></div>";}
