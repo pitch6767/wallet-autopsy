@@ -15,10 +15,13 @@ const ACTIFS = {
 };
 const LISTE = Object.keys(ACTIFS);
 // ---- stratégies fantômes ajoutées le 05.10.2026 (idées 19-25, 29, 30), aucun argent réel
-const NV = {   // teneur de marché en pause depuis le 06.10.2026 (ACTIFS vide)
-  ASSUR: { NIVEAUX: [[0.06, 0.25], [0.09, 0.5], [0.12, 1.0]], RETRAIT: 0.03, CALME_S: 2, OPP_MAX: 0.95 },   // assurance graduée à la place du stop (baisse de proba -> part couverte)
+const NV = {
+  ASSUR: { RETRAIT: 0.03, CALME_S: 2, OPP_MAX: 0.95,                       // assurance graduée à la place du stop (baisse de proba -> part couverte)
+    VARIANTES: { "assurance 6/9/12": [[0.06, 0.25], [0.09, 0.5], [0.12, 1.0]], "assurance 4/7/10": [[0.04, 0.25], [0.07, 0.5], [0.10, 1.0]] } },
   FIN: { BTC: { W: 180, LO: 0.70, HI: 0.85, SEUIL: 0.95 }, ETH: { W: 90, LO: 0.70, HI: 0.90, SEUIL: 0.93 }, MISE: 50 },
-  MM: { ACTIFS: [], MARGE: 0.12, DESEQ: 50, MAXI: 100, ARRET_S: 10 },
+  MM: { ACTIFS: ["BTC", "ETH"], ARRET_S: 10, MAXI: 100,                    // teneur de marché : 3 versions en parallèle (06.10.2026)
+    VARIANTES: { "mm actuel": { MARGE: 0.12, DESEQ: 50, PAQUET: 1e9 }, "mm pencher": { MARGE: 0.12, DESEQ: 50, PAQUET: 1e9, PENCHER: 0.04 },
+      "mm prudent": { MARGE: 0.12, DESEQ: 10, PAQUET: 10, PENCHER: 0.04, RETRAIT_PB: 2 } } },
 };
 const BB_COLONNES = ["t", "bybit_perp", "okx_perp", "coinbase", "binance_spot", "chainlink", "bybit_meilleur_achat", "bybit_meilleure_vente",
   "prof_achat_1pb", "prof_vente_1pb", "prof_achat_3pb", "prof_vente_3pb", "prof_achat_5pb", "prof_vente_5pb", "prof_achat_10pb", "prof_vente_10pb", "niveaux_achat", "niveaux_vente",
@@ -153,6 +156,10 @@ export class Bot {
     this._v1t = {}; this._sgA = {}; this._okxB = {}; this.mkNx = {};
     this.ready = this.state.blockConcurrencyWhile(async () => {
       this.N = (await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
+      for (const [ancien, neuf] of [["assurance", "assurance 6/9/12"], ["mm", "mm actuel"]]) {
+        for (const k of Object.keys(this.N.strats)) if (k.startsWith(ancien + " ") && k.split(" ").length === 2) { this.N.strats[neuf + " " + k.split(" ")[1]] = this.N.strats[k]; delete this.N.strats[k]; }
+        for (const P of [...this.N.ouvertes, ...this.N.attente]) if (P.strat === ancien) P.strat = neuf;
+      }
       this.e = (await this.state.storage.get("etat2")) || {
         capital: CFG.CAPITAL, mise: CFG.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, pause: false,
         positions: [], attente: [], trades: [], vetos: {}, candidats: {}, parActif: {}, refus: [], verif: [], depuis: now(),
@@ -923,7 +930,7 @@ export class Bot {
 
   // ================================================================== stratégies fantômes (aucun argent réel)
   // Une position = parts Up (U) et Down (D) détenues + trésorerie (cash). Règlement : cash + U si Up gagne, + D si Down gagne.
-  nStrat(k) { return (this.N.strats[k] = this.N.strats[k] || { pnl: 0, n: 0, gains: 0, pertes: 0, issues: {}, trades: [] }); }
+  nStrat(k) { return (this.N.strats[k] = this.N.strats[k] || { depuis: now(), pnl: 0, n: 0, gains: 0, pertes: 0, issues: {}, trades: [] }); }
   nSauver() { if (!this._nsv) { this._nsv = setTimeout(() => { this._nsv = null; this.state.storage.put("nouveaux", this.N).catch(() => {}); }, 1000); } }
   // achat fantôme en remontant le carnet (frais taker), au plus `maxParts` et jusqu'à `maxPrix`
   nAcheter(id, maxParts, maxPrix) {
@@ -954,10 +961,12 @@ export class Bot {
   // ---- 1. V1 avec assurance graduée à la place du stop : même entrée que V1
   gOuvrir(a, mk, vpos) {
     const up = vpos.cote === "Up";
-    const P = this.nPos("assurance", a, mk, { cote: vpos.cote, prix: vpos.prix, parts: vpos.parts, proba0: vpos.proba, H: 0, B: 0, calmeDepuis: null, offre: null });
-    if (up) P.U = vpos.parts; else P.D = vpos.parts;
-    P.cash = -(vpos.mise + vpos.frais);
-    this.nNote(P, `entrée ${vpos.cote} ${vpos.parts.toFixed(1)} parts à ${vpos.prix} (proba ${vpos.proba})`);
+    for (const [nom, niveaux] of Object.entries(NV.ASSUR.VARIANTES)) {
+      const P = this.nPos(nom, a, mk, { famille: "assurance", niveaux, cote: vpos.cote, prix: vpos.prix, parts: vpos.parts, proba0: vpos.proba, H: 0, B: 0, calmeDepuis: null, offre: null });
+      if (up) P.U = vpos.parts; else P.D = vpos.parts;
+      P.cash = -(vpos.mise + vpos.frais);
+      this.nNote(P, `entrée ${vpos.cote} ${vpos.parts.toFixed(1)} parts à ${vpos.prix} (proba ${vpos.proba})`);
+    }
     this.nSauver();
   }
   gGerer(P, pu) {
@@ -975,7 +984,7 @@ export class Bot {
       this.nNote(P, "sortie 0,90"); this.nClore(P, "sortie 90"); return;
     }
     // assurance graduée
-    let cible = 0; for (const [seuil, fr] of NV.ASSUR.NIVEAUX) if (d >= seuil) cible = fr;
+    let cible = 0; for (const [seuil, fr] of (P.niveaux || NV.ASSUR.VARIANTES["assurance 6/9/12"])) if (d >= seuil) cible = fr;
     const manque = cible * main - opp;
     if (manque > 0.5) {
       const r = this.nAcheter(autre, manque, NV.ASSUR.OPP_MAX);
@@ -995,7 +1004,7 @@ export class Bot {
   // ---- évaluation à chaque message (après la proba de V1)
   nEval(a, mk, pu) {
     const t = now(), tleft = mk.end - t;
-    for (const P of this.N.ouvertes) if (P.strat === "assurance" && P.actif === a && P.start === mk.start && !P.fini) this.gGerer(P, pu);
+    for (const P of this.N.ouvertes) if (P.strat.startsWith("assurance") && P.actif === a && P.start === mk.start && !P.fini) this.gGerer(P, pu);
     // ---- 2. fin de cycle : acheter 0,70-0,90 quand le modèle est très sûr, garder jusqu'à la fin
     const F = NV.FIN[a];
     if (F && tleft <= F.W && tleft >= 1 && !this.N.ouvertes.some((P) => P.strat === "fin" && P.actif === a && P.start === mk.start)
@@ -1015,8 +1024,17 @@ export class Bot {
     }
     // ---- 3. teneur de marché : offres d'achat Up et Down à valeur - marge (mises à jour à chaque message)
     if (NV.MM.ACTIFS.includes(a)) {
-      const q = (this._mmQ = this._mmQ || {})[a] = { start: mk.start, up: mk.up, down: mk.down, actif: tleft > NV.MM.ARRET_S,
-        bidU: Math.floor((pu - NV.MM.MARGE) * 100) / 100, bidD: Math.floor((1 - pu - NV.MM.MARGE) * 100) / 100 };
+      const ts = Math.floor(t), p1 = this.prixA(a, "perp", ts), p0 = this.prixA(a, "perp", ts - 1);
+      const bouge = p1 && p0 ? Math.abs(p1 / p0 - 1) * 1e4 : 0;
+      for (const [nom, V2] of Object.entries(NV.MM.VARIANTES)) {
+        const P = this.N.ouvertes.find((x) => x.strat === nom && x.actif === a && x.start === mk.start);
+        let bidU = Math.floor((pu - V2.MARGE) * 100) / 100, bidD = Math.floor((1 - pu - V2.MARGE) * 100) / 100;
+        if (V2.PENCHER && P && Math.abs(P.U - P.D) > 1e-6) {              // pencher : retirer l'offre du côté en trop, remonter l'autre
+          if (P.U > P.D) { bidU = -1; bidD = +(bidD + V2.PENCHER).toFixed(2); } else { bidD = -1; bidU = +(bidU + V2.PENCHER).toFixed(2); }
+        }
+        const retire = V2.RETRAIT_PB != null && bouge > V2.RETRAIT_PB;
+        ((this._mmQ = this._mmQ || {})[nom] = this._mmQ[nom] || {})[a] = { start: mk.start, up: mk.up, down: mk.down, actif: tleft > NV.MM.ARRET_S && !retire, bidU, bidD };
+      }
     }
   }
 
@@ -1025,7 +1043,7 @@ export class Bot {
     // vendeur du jeton X au prix px (une vente de X, ou un achat de l'autre jeton apparié)
     const vendeur = (X, autre) => (id === X && side === "SELL" ? p : id === autre && side === "BUY" ? 1 - p : null);
     for (const P of this.N.ouvertes) {
-      if (P.strat !== "assurance" || P.fini || P.offre == null || P.offre < 0.02) continue;
+      if (!P.strat.startsWith("assurance") || P.fini || P.offre == null || P.offre < 0.02) continue;
       const up = P.cote === "Up", X = up ? P.down : P.up, Y = up ? P.up : P.down, px = vendeur(X, Y);
       if (px == null || px > P.offre - 0.01 + 1e-9) continue;
       const main = up ? P.U : P.D, opp = up ? P.D : P.U, k = Math.min(size, main - opp);
@@ -1033,17 +1051,17 @@ export class Bot {
       P.cash -= k * P.offre; P.B += k; if (up) P.D += k; else P.U += k;
       this.nNote(P, `offre opposée servie ${k.toFixed(1)} à ${P.offre}`); this.nSauver();
     }
-    for (const a of NV.MM.ACTIFS) {
-      const q = (this._mmQ || {})[a]; if (!q || !q.actif || (id !== q.up && id !== q.down)) continue;
+    for (const [nom, V2] of Object.entries(NV.MM.VARIANTES)) for (const a of NV.MM.ACTIFS) {
+      const q = ((this._mmQ || {})[nom] || {})[a]; if (!q || !q.actif || (id !== q.up && id !== q.down)) continue;
       const mk = this.mk[a]; if (!mk || mk.start !== q.start) continue;
-      let P = this.N.ouvertes.find((x) => x.strat === "mm" && x.actif === a && x.start === q.start);
+      let P = this.N.ouvertes.find((x) => x.strat === nom && x.actif === a && x.start === q.start);
       for (const [X, Y, bid, cle] of [[q.up, q.down, q.bidU, "U"], [q.down, q.up, q.bidD, "D"]]) {
         const px = vendeur(X, Y);
         if (px == null || bid < 0.02 || px > bid - 0.01 + 1e-9) continue;
         const inv = P ? P[cle] : 0, autreInv = P ? P[cle === "U" ? "D" : "U"] : 0;
-        const k = Math.min(size, NV.MM.MAXI - inv, NV.MM.DESEQ - (inv - autreInv));
+        const k = Math.min(size, V2.PAQUET, NV.MM.MAXI - inv, V2.DESEQ - (inv - autreInv));
         if (k <= 0) continue;
-        if (!P) P = this.nPos("mm", a, mk, {});
+        if (!P) P = this.nPos(nom, a, mk, { famille: "mm" });
         P[cle] += k; P.cash -= k * bid;
         this.nNote(P, `achat ${cle === "U" ? "Up" : "Down"} ${k.toFixed(1)} à ${bid}`); this.nSauver();
       }
@@ -1066,7 +1084,7 @@ export class Bot {
         const g = cache[P.slug];
         if (!g) { garder.push(P); continue; }
         P.cash += g === "Up" ? P.U : P.D; P.gagnant = g;
-        const issue = P.strat === "assurance" ? ((P.U > 0 && P.D > 0 && Math.min(P.U, P.D) >= Math.max(P.U, P.D) - 1e-6) ? "paire" : (P.H > 0 ? "fin couverte" : (g === P.cote ? "fin gagnée" : "fin perdue")))
+        const issue = P.strat.startsWith("assurance") ? ((P.U > 0 && P.D > 0 && Math.min(P.U, P.D) >= Math.max(P.U, P.D) - 1e-6) ? "paire" : (P.H > 0 ? "fin couverte" : (g === P.cote ? "fin gagnée" : "fin perdue")))
           : P.strat === "fin" ? (g === P.cote ? "gagné" : "perdu") : (P.U > 0 && P.D > 0 ? "paires + reste" : "une seule jambe");
         this.nClore(P, issue);
       } catch (err) { garder.push(P); this.erreur("fantômes règlement", err); }
@@ -1076,7 +1094,16 @@ export class Bot {
   }
 
   nVue() {
-    return { depuis: this.N.depuis, reglages: NV, strats: Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { ...v, trades: v.trades.slice(0, 60) }])),
+    // V1 actuel (avec stop) sur la même période, pour comparer
+    const v1 = {};
+    for (const [a, V] of [["BTC", this.e.V1], ["ETH", this.e.V1x.ETH]]) {
+      const T2 = (V.trades || []).filter((x) => x.heure && Date.parse(x.heure) / 1000 >= this.N.depuis && x.net != null);
+      v1["V1 actuel (avec stop) " + a] = { depuis: this.N.depuis, n: T2.length, pnl: T2.reduce((s2, x) => s2 + x.net, 0), gains: T2.filter((x) => x.net >= 0).length, pertes: T2.filter((x) => x.net < 0).length,
+        pertesTot: T2.filter((x) => x.net < 0).reduce((s2, x) => s2 + x.net, 0), pire: T2.length ? Math.min(...T2.map((x) => x.net)) : 0 };
+    }
+    const resume = Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { depuis: v.depuis, n: v.n, pnl: v.pnl, gains: v.gains, pertes: v.pertes,
+      pertesTot: v.trades.filter((x) => x.net < 0).reduce((s2, x) => s2 + x.net, 0), pire: v.trades.length ? Math.min(...v.trades.map((x) => x.net)) : 0 }]));
+    return { depuis: this.N.depuis, resume: { ...v1, ...resume }, reglages: NV, strats: Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { ...v, trades: v.trades.slice(0, 60) }])),
       ouvertes: this.N.ouvertes, attente: this.N.attente.length, offresMM: this._mmQ || {} };
   }
 
@@ -1172,15 +1199,17 @@ go();setInterval(go,3000);
 
 const PAGE_N = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes</title>${STYLE}</head><body>
 <h1>Nouvelles stratégies — mode fantôme</h1>
-<div class="mu">Aucun argent réel. Assurance graduée = V1 sans stop, on achète l'autre côté par paliers quand la proba baisse (6 / 9 / 12 pts → 25 / 50 / 100 %). Fin de cycle = achat 0,70–0,90 quand le modèle est très sûr, gardé jusqu'à la fin. Teneur de marché = offres d'achat Up et Down au prix du modèle moins 12 cents, sur BTC.</div>
+<div class="mu">Aucun argent réel. Toutes les versions tournent en même temps sur les mêmes marchés pour être comparées. Assurance = V1 sans stop : on achète l'autre côté par paliers quand la proba baisse (6/9/12 ou 4/7/10 pts → 25/50/100 %). Fin de cycle = achat 0,70–0,90 quand le modèle est très sûr. Teneur de marché = offres Up et Down au prix du modèle moins 12 cents (actuel ; pencher = on retire le côté acheté et on remonte l'autre de 4 cents ; prudent = pencher + 10 parts max + retrait si BTC bouge vite).</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a></div><div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+x.toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/nouveaux",{cache:"no-store"})).json();let h="<div class='mu'>Depuis "+new Date(d.depuis*1000).toLocaleString("fr-CH")+" · "+d.ouvertes.length+" position(s) ouverte(s), "+d.attente+" en attente du résultat</div>";
-const noms={"assurance":"V1 + assurance graduée (sans stop)","fin":"Fin de cycle 0,70–0,90","mm":"Teneur de marché"};
+const noms={"assurance 6/9/12":"V1 + assurance 6/9/12 (sans stop)","assurance 4/7/10":"V1 + assurance 4/7/10 (sans stop)","fin":"Fin de cycle 0,70–0,90","mm actuel":"Teneur de marché — actuel","mm pencher":"Teneur de marché — pencher 4 cents","mm prudent":"Teneur de marché — prudent (retrait + pencher + petit)"};
 const cles=Object.keys(d.strats).sort();
+const R=d.resume||{},rk=Object.keys(R).sort();
+h+="<div class='card'><h2>Comparaison</h2><table><tr><th>Stratégie</th><th>Depuis</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Pertes totales</th><th>Pire trade</th></tr>"+rk.map(k=>{const x=R[k],st=k.slice(0,k.lastIndexOf(" ")),a=k.slice(k.lastIndexOf(" ")+1);return "<tr><td>"+(noms[st]||st)+" — "+a+"</td><td>"+new Date(x.depuis*1000).toLocaleString("fr-CH",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td><b>"+f(x.pnl)+"</b></td><td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td></tr>"}).join("")+"</table></div>";
 if(!cles.length)h+="<p>Aucun trade terminé pour l'instant.</p>";
-for(const k of cles){const S=d.strats[k],[st,a]=k.split(" ");h+="<div class='card' style='margin-top:12px'><h2>"+(noms[st]||st)+" — "+a+"</h2><div>Trades : <b>"+S.n+"</b> · gagnés "+S.gains+" · perdus "+S.pertes+" · résultat <b>"+f(S.pnl)+"</b></div><div class='mu'>"+Object.entries(S.issues).map(([i,v])=>i+" : "+v.n+" ("+f(v.pnl)+")").join(" · ")+"</div>";
+for(const k of cles){const S=d.strats[k],st=k.slice(0,k.lastIndexOf(" ")),a=k.slice(k.lastIndexOf(" ")+1);h+="<div class='card' style='margin-top:12px'><h2>"+(noms[st]||st)+" — "+a+"</h2><div>Trades : <b>"+S.n+"</b> · gagnés "+S.gains+" · perdus "+S.pertes+" · résultat <b>"+f(S.pnl)+"</b></div><div class='mu'>"+Object.entries(S.issues).map(([i,v])=>i+" : "+v.n+" ("+f(v.pnl)+")").join(" · ")+"</div>";
 h+="<table style='margin-top:6px'><tr><th>Heure</th><th>Côté</th><th>Issue</th><th>Résultat</th><th>Détail</th></tr>"+S.trades.slice(0,25).map(T=>"<tr><td>"+new Date(T.heure).toLocaleTimeString("fr-CH")+"</td><td>"+(T.cote||"Up "+(T.U||0).toFixed(0)+" / Down "+(T.D||0).toFixed(0))+"</td><td>"+T.issue+"</td><td>"+f(T.net)+"</td><td class='mu' style='font-size:11px'>"+T.journal.slice(-4).join(" · ")+"</td></tr>").join("")+"</table></div>";}
 if(d.ouvertes.length)h+="<div class='card' style='margin-top:12px'><h2>Positions ouvertes</h2>"+d.ouvertes.map(P=>"<div>"+(noms[P.strat]||P.strat)+" "+P.actif+" — "+P.journal.slice(-3).join(" · ")+"</div>").join("")+"</div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
