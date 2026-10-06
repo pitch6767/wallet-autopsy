@@ -1569,11 +1569,13 @@ const STYLE = `<style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media (prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#171a21;--tx:#e8eaee;--mu:#98a2b3;--bd:#262b35;--ok:#3ccf91;--ko:#f0705f;--ac:#7c9cff;--wa:#f5a524}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 -apple-system,system-ui,sans-serif;padding:16px;max-width:820px;margin:auto}
-h1{font-size:20px;margin:0 0 4px}a{color:var(--ac)}.mu{color:var(--mu);font-size:13px}.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:12px 0;overflow-x:auto}
+h1{font-size:20px;margin:0 0 4px}a{color:var(--ac)}.mu{color:var(--mu);font-size:13px}.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:12px 0;overflow-x:hidden}
 .g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.k{font-size:12px;color:var(--mu)}.v{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
-.ok{color:var(--ok)}.ko{color:var(--ko)}.wa{color:var(--wa)}table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}td,th{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+.ok{color:var(--ok)}.ko{color:var(--ko)}.wa{color:var(--wa)}table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}td,th{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:left;white-space:normal;overflow-wrap:anywhere}
 button{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:10px 14px;font-size:15px;width:100%;margin-top:8px}.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;background:var(--bd)}
-@media(max-width:420px){.g{grid-template-columns:repeat(2,1fr)}}</style>`;
+@media(max-width:420px){.g{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){table,tbody,tr,td{display:block;width:100%}tr:first-child:has(th){display:none}tr{border:1px solid var(--bd);border-radius:8px;margin:8px 0;padding:4px 8px}td{border:0;padding:3px 0;max-width:none!important}td[data-l]::before{content:attr(data-l)" : ";color:var(--mu);font-size:12px}}</style>
+<script>(()=>{const lab=()=>{for(const t of document.querySelectorAll("table")){const h=[...(t.rows[0]?t.rows[0].cells:[])].map(c=>c.tagName==="TH"?c.textContent.trim():"");if(!h.some(x=>x))continue;for(let i=1;i<t.rows.length;i++){const r=t.rows[i];for(let j=0;j<r.cells.length;j++){const c=r.cells[j];if(h[j]&&!c.hasAttribute("data-l"))c.setAttribute("data-l",h[j]);}}}};const go=()=>{lab();new MutationObserver(lab).observe(document.body,{childList:true,subtree:true});};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",go):go();})();</script>`;
 
 const PAGE = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title>${STYLE}</head><body>
 <h1>Bot 95 <span class="badge">mode fantôme</span></h1><div class="mu">7 cryptos 5 min Polymarket — achat immédiat (A) + V1 paires BTC — aucun argent réel</div>
