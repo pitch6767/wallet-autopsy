@@ -25,6 +25,7 @@ const NV = {
     VARIANTES: {                                                            // « actuel » et « pencher » arrêtés le 06.10.2026 (perdants en direct)
       "mm prudent": { MARGE: 0.12, DESEQ: 10, PAQUET: 10, PENCHER: 0.04, RETRAIT_PB: 2 } } },
 };
+const EVT_SRC = { perp: "p", okx: "o", bn: "n", cb: "c", cl: "l" };   // B/E + source ; carnet : BU/BD/EU/ED (meilleur achat, meilleure vente) ; échanges : BUt/BDt/EUt/EDt (prix, ±taille)
 const REC_COLS = ["t", "start", "proba_up_modele", "up_achat", "up_vente", "down_achat", "down_vente", "up_achat_taille", "up_vente_taille", "down_achat_taille", "down_vente_taille",
   "bybit_perp", "okx_perp", "coinbase", "binance_spot", "chainlink", "prix_a_battre"];
 const BB_COLONNES = ["t", "bybit_perp", "okx_perp", "coinbase", "binance_spot", "chainlink", "bybit_meilleur_achat", "bybit_meilleure_vente",
@@ -227,6 +228,12 @@ export class Bot {
         livres: Object.fromEntries(Object.keys(this.pb).map((id) => [id.slice(0, 8), { bids: this.livreTrie(id, "bids").slice(0, 4), asks: this.livreTrie(id, "asks").slice(0, 4) }])),
         derniers: this.polyRaw || [], proba: mb.up ? this.probaV1("BTC", mb) : null, sg: this._sg || null });
     }
+    if (u.pathname === "/api/evt") {
+      const n = Math.min(80, +(u.searchParams.get("n") || 40)), apres = u.searchParams.get("apres");
+      const m = await this.state.storage.list({ prefix: "evt:", limit: n, ...(apres ? { startAfter: apres } : {}) });
+      const ks = [...m.keys()];
+      return json({ cles: ks, docs: [...m.values()], suivant: ks.length ? ks[ks.length - 1] : null });
+    }
     if (u.pathname === "/api/rec") {
       const a = u.searchParams.get("a") || "BTC", n = Math.min(60, +(u.searchParams.get("n") || 30)), apres = u.searchParams.get("apres");
       const m = await this.state.storage.list({ prefix: `rec:${a}:`, limit: n, ...(apres ? { startAfter: apres } : {}) });
@@ -397,7 +404,21 @@ export class Bot {
     this.ws[nom + "_en_cours"] = false;
   }
 
+  // enregistreur au message près : [ms, code, valeur1, valeur2] ; actif 10 min par heure ; blocs de 15 s « evt:<bloc> », gardés 24 h
+  evt(code, x, y) {
+    const ms = Date.now(), min = Math.floor(ms / 60000);
+    if (min % 60 >= 10) { if (this._evB && this._evB.l.length) this.evtFlush(); return; }
+    const bloc = Math.floor(ms / 15000);
+    if (!this._evB || this._evB.bloc !== bloc) { if (this._evB && this._evB.l.length) this.evtFlush(); this._evB = { bloc, l: [] }; }
+    this._evB.l.push(y === undefined ? [ms, code, x] : [ms, code, x, y]);
+  }
+  evtFlush() {
+    const B = this._evB; this._evB = null; if (!B) return;
+    this.state.storage.put("evt:" + B.bloc, B.l).catch(() => {});
+    if (B.bloc % 40 === 0) this.state.storage.list({ prefix: "evt:", limit: 400 }).then((m2) => { const ks = [...m2.keys()].filter((k) => +k.slice(4) < B.bloc - 5760).slice(0, 120); if (ks.length) this.state.storage.delete(ks); }).catch(() => {});
+  }
   noter(a, k, p, t) {
+    if (V1.ACTIFS.includes(a) && EVT_SRC[k]) { const last = (this._evL = this._evL || {})[a + k]; if (last !== p) { this._evL[a + k] = p; this.evt(a[0] + EVT_SRC[k], p); } }
     this.f[a][k] = { p, t };
     const s = Math.floor(t), m = this.sec[a];
     let o = m.get(s);
@@ -712,6 +733,17 @@ export class Bot {
       this.pmAcc(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size;
       this.v1Echange(m.asset_id, m.side, +m.price, +m.size);
     } else return;
+    // enregistreur au message près : meilleur prix de chaque jeton des cycles en cours, et échanges
+    try {
+      const ids = ev === "price_change" ? [...new Set((m.price_changes || []).map((c) => c.asset_id))] : [m.asset_id];
+      for (const jid of ids) {
+        const a2 = this.actifDuJeton(jid); if (!a2) continue;
+        const code = a2[0] + (this.mk[a2].up === jid ? "U" : "D");
+        if (ev === "last_trade_price") { this.evt(code + "t", +m.price, (m.side === "BUY" ? 1 : -1) * Math.round(+m.size)); continue; }
+        const b = (this.livreTrie(jid, "bids")[0] || [null])[0], k2 = (this.livreTrie(jid, "asks")[0] || [null])[0], cle = b + "/" + k2;
+        if ((this._evT = this._evT || {})[jid] !== cle) { this._evT[jid] = cle; this.evt(code, b, k2); }
+      }
+    } catch (_) {}
     const id = m.asset_id || ((m.price_changes || [])[0] || {}).asset_id;
     const a = this.actifDuJeton(id);
     if (a) try { this.v1Eval("poly", ts || t, a); } catch (err) { this.erreur("V1", err); }
@@ -978,7 +1010,7 @@ export class Bot {
     this._nsv = setTimeout(() => {
       this._nsv = null;
       const N = this.N, put = (k, v) => this.state.storage.put(k, v).catch((err) => this.erreur("sauvegarde " + k, err));
-      put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {} });
+      put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {}, markout: N.markout || {} });
       for (const [k, v] of Object.entries(N.strats)) put("nv:strat:" + k, v);
       // ordres : non réglés + 250 derniers réglés (les compteurs sont cumulés à part)
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
@@ -1171,6 +1203,13 @@ export class Bot {
         if (k <= 0) continue;
         if (!P) P = this.nPos(nom, a, mk, { famille: "mm" });
         P[cle] += k; P.cash -= k * bid;
+        try {
+          const jid = cle === "U" ? q.up : q.down, nomS = nom + " " + a;
+          const mid = () => { const b = this.livreTrie(jid, "bids")[0], x = this.livreTrie(jid, "asks")[0]; return b && x ? (b[0] + x[0]) / 2 : null; };
+          const MK = ((this.N.markout = this.N.markout || {})[nomS] = this.N.markout[nomS] || { n: 0, "0.1s": 0, "0.5s": 0, "1s": 0, "3s": 0, "10s": 0, nOk: { "0.1s": 0, "0.5s": 0, "1s": 0, "3s": 0, "10s": 0 } });
+          MK.n++;
+          for (const [lab, ms] of [["0.1s", 100], ["0.5s", 500], ["1s", 1000], ["3s", 3000], ["10s", 10000]]) setTimeout(() => { const v = mid(); if (v != null) { MK[lab] += (v - bid) * k; MK.nOk[lab] += k; } }, ms);
+        } catch (_) {}
         this.nNote(P, `achat ${cle === "U" ? "Up" : "Down"} ${k.toFixed(1)} à ${bid}`); this.nSauver();
       }
     }
@@ -1282,7 +1321,7 @@ export class Bot {
     }
     const resume = Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { depuis: v.depuis, n: v.n, pnl: v.pnl, gains: v.gains, pertes: v.pertes,
       pertesTot: v.trades.filter((x) => x.net < 0).reduce((s2, x) => s2 + x.net, 0), pire: v.trades.length ? Math.min(...v.trades.map((x) => x.net)) : 0 }]));
-    return { depuis: this.N.depuis, ordres: this.nOrdresResume(), audit: ((this.N.audit || {}).lignes || []).slice(0, 200), manquees: this.N.manq || {}, resume: { ...v1, ...resume }, reglages: NV, strats: Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { ...v, trades: v.trades.slice(0, 60) }])),
+    return { depuis: this.N.depuis, markout: Object.fromEntries(Object.entries(this.N.markout || {}).map(([k, v]) => [k, { remplissages: v.n, ...Object.fromEntries(["0.1s", "0.5s", "1s", "3s", "10s"].map((h) => [h, v.nOk[h] ? +(100 * v[h] / v.nOk[h]).toFixed(2) : null])) }])), ordres: this.nOrdresResume(), audit: ((this.N.audit || {}).lignes || []).slice(0, 200), manquees: this.N.manq || {}, resume: { ...v1, ...resume }, reglages: NV, strats: Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { ...v, trades: v.trades.slice(0, 60) }])),
       ouvertes: this.N.ouvertes, attente: this.N.attente.length, offresMM: this._mmQ || {} };
   }
 
@@ -1388,6 +1427,7 @@ const cles=Object.keys(d.strats).sort();
 const R=d.resume||{},rk=Object.keys(R).sort();
 h+="<div class='card'><h2>Comparaison</h2><table><tr><th>Stratégie</th><th>Depuis</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Pertes totales</th><th>Pire trade</th></tr>"+rk.map(k=>{const x=R[k],st=k.slice(0,k.lastIndexOf(" ")),a=k.slice(k.lastIndexOf(" ")+1);return "<tr><td>"+(noms[st]||st)+" — "+a+"</td><td>"+new Date(x.depuis*1000).toLocaleString("fr-CH",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td><b>"+f(x.pnl)+"</b></td><td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td></tr>"}).join("")+"</table></div>";
 const OR=d.ordres||{};if(Object.keys(OR).length){h+="<div class='card'><h2>Ordres fantômes avec le délai de Polymarket</h2><div class='mu'>Essais = moments où la stratégie voulait acheter. Servi = le vendeur était encore là 50 ms / 250 ms après. Résultat par stratégie si on n'achète QUE ce qui est servi, et si on achète l'inverse quand on est servi.</div><table><tr><th>Stratégie</th><th>Essais</th><th>Gagnants (tous)</th><th>Servis 50 ms</th><th>Gagnants si servi</th><th>Gagnants si PAS servi</th><th>Résultat servi 50 ms</th><th>Résultat servi 250 ms</th><th>Résultat « inverse »</th><th>Résultat si tout servi (simulation)</th></tr>"+Object.entries(OR).sort().map(([k,z])=>"<tr><td>"+k+"</td><td>"+z.essais+"</td><td>"+z.gagnants+"</td><td>"+z.s50+" ("+(z.essais?Math.round(100*z.s50/z.essais):0)+" %)</td><td>"+z.g50+" / "+z.s50+"</td><td>"+z.nonServisGagnants+" / "+z.nonServis+"</td><td>"+f(z.pnl50)+"</td><td>"+f(z.pnl250)+"</td><td>"+f(z.inv50)+"</td><td>"+f(z.pnlParfait)+"</td></tr>").join("")+"</table></div>";}
+const MO=d.markout||{};if(Object.keys(MO).length){h+="<div class='card'><h2>Teneur de marché : valeur juste après avoir été servi (cents par part)</h2><div class='mu'>Positif = le prix est monté après notre achat (bon remplissage). Négatif = on a été servi juste avant une baisse (sélection adverse).</div><table><tr><th>Stratégie</th><th>Remplissages</th><th>0,1 s</th><th>0,5 s</th><th>1 s</th><th>3 s</th><th>10 s</th></tr>"+Object.entries(MO).map(([k,v])=>"<tr><td>"+k+"</td><td>"+v.remplissages+"</td>"+["0.1s","0.5s","1s","3s","10s"].map(x=>"<td>"+(v[x]==null?"—":v[x])+"</td>").join("")+"</tr>").join("")+"</table></div>";}
 const AU=d.audit||[];if(AU.length){const ok=AU.filter(x=>x.ptb&&x.notreDebut);h+="<div class='card'><h2>Audit de la règle de résolution</h2><div class='mu'>Notre moyenne Chainlink 60 s contre le prix à battre et le prix final officiels de Polymarket.</div><table><tr><th>Cycle</th><th>Crypto</th><th>Prix à battre officiel</th><th>Notre moyenne début</th><th>Final officiel</th><th>Notre moyenne fin</th><th>Gagnant</th></tr>"+AU.slice(0,20).map(x=>"<tr><td>"+new Date(x.start*1000).toLocaleTimeString("fr-CH")+"</td><td>"+x.a+"</td><td>"+x.ptb+"</td><td>"+x.notreDebut+" ("+x.nDebut+" s)</td><td>"+x.final+"</td><td>"+x.notreFin+" ("+x.nFin+" s)</td><td>"+x.gagnant+"</td></tr>").join("")+"</table></div>";}
 const MQ=d.manquees||{};for(const a of ["BTC","ETH"]){const m=MQ[a];if(!m)continue;for(const [st,titre] of [["v1","V1 — quand le modèle donne ≥ 0,63"],["fin","Fin de cycle — quand le modèle est très sûr"]]){const o=m[st]||{},tot=o["secondes modèle OK"]||0;if(!tot)continue;h+="<div class='card'><h2>Occasions — "+titre+" — "+a+"</h2><table><tr><th>Ce qu'il y avait</th><th>Secondes / échanges</th><th>Part</th></tr>"+Object.entries(o).map(([k,v])=>"<tr><td>"+k+"</td><td>"+v+"</td><td>"+(k.startsWith("meilleure")?(100*v/tot).toFixed(1)+" %":"")+"</td></tr>").join("")+"</table></div>";}}
 if(!cles.length)h+="<p>Aucun trade terminé pour l'instant.</p>";
