@@ -1,0 +1,22 @@
+# lecture des résultats fantômes du bot (aucun déploiement) — relancer en modifiant la ligne suivante
+# demande: 1
+name: Lecture bot95
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/lecture.yml]
+permissions:
+  contents: write
+jobs:
+  lire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lire
+        run: |
+          U=https://bot95.pitch67.workers.dev
+          curl -sS -m 30 "$U/api/nouveaux" > bot95/nouveaux.json
+          curl -sS -m 30 "$U/api/etat" | python3 -c "import json,sys;d=json.load(sys.stdin)['v1'];print(json.dumps({'btc':[(t.get('heure'),t.get('issue'),t.get('net')) for t in d['trades'][:80]],'eth':[(t.get('heure'),t.get('issue'),t.get('net')) for t in d['eth']['trades'][:80]]}))" > bot95/v1.json
+          git config user.name lecture; git config user.email bot@users.noreply.github.com
+          git add bot95/nouveaux.json bot95/v1.json; git commit -q -m "Lecture bot95 [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
