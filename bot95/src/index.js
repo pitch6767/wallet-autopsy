@@ -18,6 +18,8 @@ const LISTE = Object.keys(ACTIFS);
 const NV = {
   ASSUR: { RETRAIT: 0.03, CALME_S: 2, OPP_MAX: 0.95,                       // assurance graduée à la place du stop (baisse de proba -> part couverte)
     VARIANTES: { "assurance 6/9/12": [[0.06, 0.25], [0.09, 0.5], [0.12, 1.0]], "assurance 4/7/10": [[0.04, 0.25], [0.07, 0.5], [0.10, 1.0]] } },
+  // désaccord modèle / marché (analyse du 06.10 : écart >= 0,10 → le modèle a raison 61 %, +0,07 $/part sur 12 jours) : achat taker au meilleur vendeur, gardé jusqu'à la fin
+  DESACCORD: { VARIANTES: { "desaccord 10": 0.10, "desaccord 15": 0.15, "desaccord 20": 0.20 }, MISE: 50, TMIN: 5 },
   FIN: { BTC: { W: 180, LO: 0.70, HI: 0.85, SEUIL: 0.95 }, ETH: { W: 90, LO: 0.70, HI: 0.90, SEUIL: 0.93 }, MISE: 50 },
   MM: { ACTIFS: ["BTC", "ETH"], ARRET_S: 10, MAXI: 100,                    // teneur de marché : 3 versions en parallèle (06.10.2026)
     VARIANTES: {                                                            // « actuel » et « pencher » arrêtés le 06.10.2026 (perdants en direct)
@@ -1086,6 +1088,22 @@ export class Bot {
         break;
       }
     }
+    // ---- 4. désaccord : le modèle donne au moins X de plus que le meilleur vendeur → achat, une fois par cycle et par variante
+    if (tleft >= NV.DESACCORD.TMIN) for (const [nom, ecart] of Object.entries(NV.DESACCORD.VARIANTES)) {
+      if (this.N.ouvertes.some((P) => P.strat === nom && P.actif === a && P.start === mk.start) || ((this._dsF || {})[nom + a] === mk.start)) continue;
+      for (const up of [true, false]) {
+        const id = up ? mk.up : mk.down, ask = this.livreTrie(id, "asks")[0], fair = up ? pu : 1 - pu;
+        if (!ask || ask[0] < 0.03 || ask[0] > 0.97 || fair - ask[0] < ecart) continue;
+        const r = this.nAcheter(id, NV.DESACCORD.MISE / ask[0], ask[0] + 0.01);
+        if (r.parts < 1) continue;
+        (this._dsF = this._dsF || {})[nom + a] = mk.start;
+        const P = this.nPos(nom, a, mk, { famille: "desaccord", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0) });
+        P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
+        this.nNote(P, `achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix} (modèle ${P.proba0}, ${P.restant_s} s restantes)`);
+        this.nSauver();
+        break;
+      }
+    }
     // ---- 3. teneur de marché : offres d'achat Up et Down à valeur - marge (mises à jour à chaque message)
     if (NV.MM.ACTIFS.includes(a)) {
       const ts = Math.floor(t), p1 = this.prixA(a, "perp", ts), p0 = this.prixA(a, "perp", ts - 1);
@@ -1150,7 +1168,7 @@ export class Bot {
         if (!g) { garder.push(P); continue; }
         P.cash += g === "Up" ? P.U : P.D; P.gagnant = g;
         const issue = P.strat.startsWith("assurance") ? ((P.U > 0 && P.D > 0 && Math.min(P.U, P.D) >= Math.max(P.U, P.D) - 1e-6) ? "paire" : (P.H > 0 ? "fin couverte" : (g === P.cote ? "fin gagnée" : "fin perdue")))
-          : P.strat === "fin" ? (g === P.cote ? "gagné" : "perdu") : (P.U > 0 && P.D > 0 ? "paires + reste" : "une seule jambe");
+          : (P.strat === "fin" || P.strat.startsWith("desaccord")) ? (g === P.cote ? "gagné" : "perdu") : (P.U > 0 && P.D > 0 ? "paires + reste" : "une seule jambe");
         this.nClore(P, issue);
       } catch (err) { garder.push(P); this.erreur("fantômes règlement", err); }
     }
@@ -1269,7 +1287,7 @@ const PAGE_N = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta
 <script>
 const f=(x)=>(x>=0?"+":"")+x.toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/nouveaux",{cache:"no-store"})).json();let h="<div class='mu'>Depuis "+new Date(d.depuis*1000).toLocaleString("fr-CH")+" · "+d.ouvertes.length+" position(s) ouverte(s), "+d.attente+" en attente du résultat</div>";
-const noms={"assurance 6/9/12":"V1 + assurance 6/9/12 (sans stop)","assurance 4/7/10":"V1 + assurance 4/7/10 (sans stop)","fin":"Fin de cycle 0,70–0,90","mm actuel":"Teneur de marché — actuel","mm pencher":"Teneur de marché — pencher 4 cents","mm prudent":"Teneur de marché — prudent (retrait + pencher + petit)"};
+const noms={"desaccord 10":"Désaccord modèle/marché ≥ 10 pts","desaccord 15":"Désaccord ≥ 15 pts","desaccord 20":"Désaccord ≥ 20 pts","assurance 6/9/12":"V1 + assurance 6/9/12 (sans stop)","assurance 4/7/10":"V1 + assurance 4/7/10 (sans stop)","fin":"Fin de cycle 0,70–0,90","mm actuel":"Teneur de marché — actuel","mm pencher":"Teneur de marché — pencher 4 cents","mm prudent":"Teneur de marché — prudent (retrait + pencher + petit)"};
 const cles=Object.keys(d.strats).sort();
 const R=d.resume||{},rk=Object.keys(R).sort();
 h+="<div class='card'><h2>Comparaison</h2><table><tr><th>Stratégie</th><th>Depuis</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Pertes totales</th><th>Pire trade</th></tr>"+rk.map(k=>{const x=R[k],st=k.slice(0,k.lastIndexOf(" ")),a=k.slice(k.lastIndexOf(" ")+1);return "<tr><td>"+(noms[st]||st)+" — "+a+"</td><td>"+new Date(x.depuis*1000).toLocaleString("fr-CH",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td><b>"+f(x.pnl)+"</b></td><td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td></tr>"}).join("")+"</table></div>";
