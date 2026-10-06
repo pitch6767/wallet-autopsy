@@ -21,7 +21,14 @@ const NV = {
   // désaccord modèle / marché (analyse du 06.10 : écart >= 0,10 → le modèle a raison 61 %, +0,07 $/part sur 12 jours) : achat taker au meilleur vendeur, gardé jusqu'à la fin
   DESACCORD: { VARIANTES: { "desaccord 10": 0.10, "desaccord 15": 0.15, "desaccord 20": 0.20 }, MISE: 50, TMIN: 5,
     // gestion après l'entrée (06.10) : copies de chaque désaccord gérées autrement, pour comparer
-    GESTIONS: ["validation", "validation+inversion", "convergence", "verrou", "demi"], FENETRE_S: 20, MIN_S: 3 },
+    GESTIONS: ["validation", "validation+inversion", "convergence", "verrou", "demi", "freeroll"], FENETRE_S: 20, MIN_S: 3,
+    // nouvelles entrées (06.10 soir) : valeur combinée marché+modèle, maker, confirmation croisée BTC/ETH ; gestions testées sur ces entrées
+    COMBINE: { "desaccord combine 2.5": 0.025, "desaccord combine 4": 0.04 },
+    // poids (marché, modèle) en logit selon le temps restant — appris sur 12 jours (analyse calib du 06.10)
+    POIDS: { BTC: [[60, 0.90, 0.45], [180, 0.75, 0.25], [301, 0.80, 0.20]], ETH: [[60, 0.85, 0.45], [180, 0.60, 0.40], [301, 0.65, 0.30]] },
+    MAKER: { nom: "desaccord maker 10", ecart: 0.10, retrait: 0.04, duree_s: 30 },
+    CROISE: { nom: "desaccord croise 10", ecart: 0.10, autre: 0.05 },
+    GESTIONS_NOUVELLES: ["validation+inversion", "freeroll", "verrou", "convergence"] },
   FIN: { BTC: { W: 180, LO: 0.70, HI: 0.85, SEUIL: 0.95 }, ETH: { W: 90, LO: 0.70, HI: 0.90, SEUIL: 0.93 }, MISE: 50 },
   MM: { ACTIFS: ["BTC", "ETH"], ARRET_S: 10, MAXI: 100,                    // teneur de marché : 3 versions en parallèle (06.10.2026)
     VARIANTES: {                                                            // « actuel » et « pencher » arrêtés le 06.10.2026 (perdants en direct)
@@ -1151,6 +1158,7 @@ export class Bot {
       }
     }
     // ---- 4. désaccord : le modèle donne au moins X de plus que le meilleur vendeur → achat, une fois par cycle et par variante
+    if (tleft >= NV.DESACCORD.TMIN) { try { this.dNouvelles(a, mk, pu, tleft); } catch (err) { this.erreur("désaccords nouveaux", err); } }
     if (tleft >= NV.DESACCORD.TMIN) for (const [nom, ecart] of Object.entries(NV.DESACCORD.VARIANTES)) {
       if (this.N.ouvertes.some((P) => P.strat === nom && P.actif === a && P.start === mk.start) || ((this._dsF || {})[nom + a] === mk.start)) continue;
       for (const up of [true, false]) {
@@ -1188,6 +1196,7 @@ export class Bot {
   // ---- échanges Polymarket : remplissage prudent des offres maker (un vendeur doit passer 1 cent sous notre offre)
   nEchange(id, side, p, size) {
     try { this.nManqEchange(id, side, p); } catch (_) {}
+    try { this.dMakerEchange(id, side, p, size); } catch (_) {}
     // vendeur du jeton X au prix px (une vente de X, ou un achat de l'autre jeton apparié)
     const vendeur = (X, autre) => (id === X && side === "SELL" ? p : id === autre && side === "BUY" ? 1 - p : null);
     for (const P of this.N.ouvertes) {
@@ -1233,10 +1242,95 @@ export class Bot {
     let mkt = "marché ?";
     if (n > 40) { const m0 = R[n - 41], m1 = R[n - 1], mid = (r) => (r[3] != null && r[4] != null ? (r[3] + r[4]) / 2 : null); const a0 = mid(m0), a1 = mid(m1);
       if (a0 != null && a1 != null) { const d = (a1 - a0) * (up ? 1 : -1); mkt = d > 0.02 ? "marché vers nous" : d < -0.02 ? "marché contre nous" : "marché stable"; } }
-    return [T2, Pz, perp, mkt].join(" | ");
+    const ac = this.dAutre(a, up), autreC = ac == null ? "autre crypto ?" : ac ? "autre crypto d'accord" : "autre crypto pas d'accord";
+    return [T2, Pz, perp, mkt, autreC].join(" | ");
   }
-  dCopies(P0, ecart, a, mk, up, r) {
-    for (const g of NV.DESACCORD.GESTIONS) {
+  // valeur combinée marché + modèle (logit pondéré)
+  dCombinee(a, tleft, fair, mid) {
+    const L = (x) => { x = Math.min(Math.max(x, 0.005), 0.995); return Math.log(x / (1 - x)); };
+    const w = NV.DESACCORD.POIDS[a].find((z) => tleft <= z[0]) || NV.DESACCORD.POIDS[a][2];
+    return 1 / (1 + Math.exp(-(w[1] * L(mid) + w[2] * L(fair))));
+  }
+  // un désaccord dans le même sens sur l'autre crypto ? (+1 : oui, 0 : non, null : inconnu)
+  dAutre(a, up) {
+    const b2 = a === "BTC" ? "ETH" : "BTC", mk2 = this.mk[b2], pu2 = this._puA && this._puA[b2];
+    if (!mk2 || !mk2.up || pu2 == null) return null;
+    const id2 = up ? mk2.up : mk2.down, k2 = this.livreTrie(id2, "asks")[0];
+    if (!k2) return null;
+    return ((up ? pu2 : 1 - pu2) - k2[0] >= NV.DESACCORD.CROISE.autre) ? 1 : 0;
+  }
+  // entrée taker générique pour les nouvelles variantes
+  dEntrer(nom, a, mk, up, tleft, fair, ask, ecart, gestions, extra) {
+    const id = up ? mk.up : mk.down;
+    const r = this.nAcheter(id, NV.DESACCORD.MISE / ask, ask + 0.01);
+    if (r.parts < 1) return false;
+    (this._dsF = this._dsF || {})[nom + a] = mk.start;
+    const P = this.nPos(nom, a, mk, { famille: "desaccord", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0), ...(extra || {}) });
+    P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
+    this.nNote(P, `achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix} (modèle ${P.proba0}${extra && extra.combinee != null ? ", combinée " + extra.combinee : ""}, ${P.restant_s} s)`);
+    try { this.nTenter(nom, a, mk, up, ask + 0.01, r.cout, fair); } catch (_) {}
+    P.type = this.dType(a, up, tleft, ask);
+    this.dCopies(P, ecart, a, mk, up, r, gestions);
+    this.nSauver();
+    return true;
+  }
+  dNouvelles(a, mk, pu, tleft) {
+    const deja = (nom) => this.N.ouvertes.some((P) => P.strat === nom && P.actif === a && P.start === mk.start) || ((this._dsF || {})[nom + a] === mk.start);
+    for (const up of [true, false]) {
+      const id = up ? mk.up : mk.down, k = this.livreTrie(id, "asks")[0], b = this.livreTrie(id, "bids")[0], fair = up ? pu : 1 - pu;
+      if (!k || !b || k[0] < 0.03 || k[0] > 0.97) continue;
+      const mid = (k[0] + b[0]) / 2;
+      // valeur combinée marché + modèle
+      const comb = this.dCombinee(a, tleft, fair, mid);
+      for (const [nom, seuil] of Object.entries(NV.DESACCORD.COMBINE))
+        if (!deja(nom) && comb - k[0] >= seuil) this.dEntrer(nom, a, mk, up, tleft, fair, k[0], seuil, NV.DESACCORD.GESTIONS_NOUVELLES, { combinee: +comb.toFixed(3) });
+      // confirmation croisée : désaccord ici ET dans le même sens sur l'autre crypto
+      const C = NV.DESACCORD.CROISE;
+      if (!deja(C.nom) && fair - k[0] >= C.ecart && this.dAutre(a, up) === 1) this.dEntrer(C.nom, a, mk, up, tleft, fair, k[0], C.ecart, NV.DESACCORD.GESTIONS_NOUVELLES, { croise: true });
+    }
+    // maker : offre d'achat sous la valeur du modèle, retirée si l'avantage fond ou après 30 s
+    const MK = NV.DESACCORD.MAKER, cle = MK.nom + a, Q = (this._mkQ = this._mkQ || {});
+    if (Q[cle] && Q[cle].start !== mk.start) delete Q[cle];
+    if (deja(MK.nom)) return;
+    if (Q[cle]) {
+      const q = Q[cle], fair = q.up ? pu : 1 - pu;
+      if (fair - q.bid < MK.retrait || now() - q.posee > MK.duree_s) { delete Q[cle]; (this._mkFait = this._mkFait || {})[cle] = (this._mkFait[cle] || 0) + 1; }
+      else q.fair = fair;
+      return;
+    }
+    for (const up of [true, false]) {
+      const id = up ? mk.up : mk.down, k = this.livreTrie(id, "asks")[0], b = this.livreTrie(id, "bids")[0], fair = up ? pu : 1 - pu;
+      if (!k || !b || k[0] < 0.03 || k[0] > 0.97 || fair - k[0] < MK.ecart) continue;
+      const bid = Math.min(+(b[0] + 0.01).toFixed(2), +(k[0] - 0.01).toFixed(2), Math.floor((fair - 0.06) * 100) / 100);
+      if (bid < 0.02) continue;
+      Q[cle] = { start: mk.start, up, id, bid, ameliore: bid > b[0] + 1e-9, posee: now(), fair, parts: 0, cout: 0, tleft };
+      return;
+    }
+  }
+  // remplissage de l'offre maker (prudent : un vendeur passe sous notre prix, ou à notre prix si nous étions seuls au meilleur prix)
+  dMakerEchange(id, side, p, size) {
+    const MK = NV.DESACCORD.MAKER;
+    for (const a of V1.ACTIFS) {
+      const cle = MK.nom + a, q = (this._mkQ || {})[cle]; if (!q || q.id !== id || side !== "SELL") continue;
+      if (!(p < q.bid - 1e-9 || (q.ameliore && Math.abs(p - q.bid) < 1e-9))) continue;
+      const mk = this.mk[a]; if (!mk || mk.start !== q.start) continue;
+      const voulu = NV.DESACCORD.MISE / q.bid - q.parts, k2 = Math.min(size, voulu);
+      if (k2 <= 0) continue;
+      q.parts += k2; q.cout += k2 * q.bid;
+      if (q.parts >= NV.DESACCORD.MISE / q.bid - 1e-6) {
+        delete this._mkQ[cle]; (this._dsF = this._dsF || {})[cle] = mk.start;
+        const tleft = mk.end - now();
+        const P = this.nPos(MK.nom, a, mk, { famille: "desaccord", cote: q.up ? "Up" : "Down", prix: q.bid, parts: +q.parts.toFixed(2), proba0: +q.fair.toFixed(3), restant_s: +tleft.toFixed(0) });
+        P.cash = -q.cout; if (q.up) P.U = q.parts; else P.D = q.parts;
+        this.nNote(P, `offre maker servie : ${q.parts.toFixed(1)} parts à ${q.bid} (sans frais)`);
+        P.type = this.dType(a, q.up, tleft, q.bid);
+        this.dCopies(P, MK.ecart, a, mk, q.up, { parts: q.parts, cout: q.cout }, NV.DESACCORD.GESTIONS_NOUVELLES);
+        this.nSauver();
+      }
+    }
+  }
+  dCopies(P0, ecart, a, mk, up, r, gestions) {
+    for (const g of (gestions || NV.DESACCORD.GESTIONS)) {
       const demi = g === "demi", parts = demi ? r.parts / 2 : r.parts, cout = demi ? r.cout / 2 : r.cout;
       const P = this.nPos(P0.strat + " +" + g, a, mk, { famille: "desaccordG", gestion: g, ecart, cote: P0.cote, prix: P0.prix, parts: +parts.toFixed(2), proba0: P0.proba0, restant_s: P0.restant_s,
         t0: now(), type: P0.type, etatSignal: "en attente", fini2: false, ajout: false });
@@ -1248,11 +1342,17 @@ export class Bot {
   // VRAI RETOURNEMENT (signal raté + le modèle voit maintenant un avantage de l'autre côté). Seul le vrai retournement autorise l'inversion.
   dGerer(P, pu) {
     if (P.fini2) return;
+    if (Math.min(P.U, P.D) > 0 && Math.abs(P.U - P.D) < 1e-6 && P.gestion !== "verrou") { P.fini2 = true; return; }
     const up = P.cote === "Up", id = up ? P.up : P.down, autre = up ? P.down : P.up, t = now(), age = t - P.t0;
     const fair = up ? pu : 1 - pu, b = this.livreTrie(id, "bids")[0], k = this.livreTrie(id, "asks")[0], ko = this.livreTrie(autre, "asks")[0];
     if (!b || !k) return;
     const mid = (b[0] + k[0]) / 2, main = up ? P.U : P.D, opp = up ? P.D : P.U;
-    const vendre = (raison) => { const v = this.nVendre(id, main); if (v.vendu <= 0) return false; P.cash += v.recu; if (up) P.U -= v.vendu; else P.D -= v.vendu; this.nNote(P, raison + ` : vente ${v.vendu.toFixed(1)} à ${(v.recu / v.vendu).toFixed(3)}`); return true; };
+    // sortie au meilleur des deux : vendre notre côté, ou acheter l'autre côté (la paire vaut 1 $ à la fin)
+    const vendre = (raison, q) => {
+      const n = q || main, v = this.nVendre(id, n), r2 = this.nAcheter(autre, n, 0.99);
+      const viaAutre = r2.parts >= n - 1e-6 ? n - r2.cout : -1;
+      if (viaAutre > v.recu + 1e-9) { P.cash -= r2.cout; if (up) P.D += r2.parts; else P.U += r2.parts; this.nNote(P, raison + ` : sortie par l'autre côté (${(r2.cout / r2.parts).toFixed(3)}), meilleure de ${(viaAutre - v.recu).toFixed(2)} $`); return true; }
+      if (v.vendu <= 0) return false; P.cash += v.recu; if (up) P.U -= v.vendu; else P.D -= v.vendu; this.nNote(P, raison + ` : vente ${v.vendu.toFixed(1)} à ${(v.recu / v.vendu).toFixed(3)}`); return true; };
     // classement du signal pendant la fenêtre de validation
     if (P.etatSignal === "en attente" && age >= NV.DESACCORD.MIN_S) {
       if (mid >= P.prix + 0.02) P.etatSignal = "CONFIRMÉ";
@@ -1276,6 +1376,10 @@ export class Bot {
     if (g === "verrou" && main > 0 && opp < main - 1e-6 && ko && P.prix + ko[0] + 0.072 * ko[0] * (1 - ko[0]) <= 0.97) {
       const r2 = this.nAcheter(autre, main - opp, ko[0] + 0.005);
       if (r2.parts > 0) { P.cash -= r2.cout; if (up) P.D += r2.parts; else P.U += r2.parts; this.nNote(P, `paire verrouillée : achat ${up ? "Down" : "Up"} ${r2.parts.toFixed(1)} à ${(r2.cout / r2.parts).toFixed(3)}`); this.nSauver(); }
+      return;
+    }
+    if (g === "freeroll" && !P.roll && main > 0 && b[0] >= 2 * P.prix && P.prix <= 0.45) {
+      if (vendre("prix doublé → la moitié revendue, le reste court gratuitement", main / 2)) { P.roll = true; this.nSauver(); }
       return;
     }
     if (g === "demi" && !P.ajout && P.etatSignal === "CONFIRMÉ" && fair - k[0] >= P.ecart / 2) {
@@ -1516,11 +1620,11 @@ const PAGE_N = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta
 <script>
 const f=(x)=>(x>=0?"+":"")+x.toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/nouveaux",{cache:"no-store"})).json();let h="<div class='mu'>Depuis "+new Date(d.depuis*1000).toLocaleString("fr-CH")+" · "+d.ouvertes.length+" position(s) ouverte(s), "+d.attente+" en attente du résultat</div>";
-const noms={"desaccord 10 +validation":"Désaccord 10 + validation (fermer si signal raté)","desaccord 10 +validation+inversion":"Désaccord 10 + validation + inversion si vrai retournement","desaccord 10 +convergence":"Désaccord 10 + encaisser quand le marché rejoint le modèle","desaccord 10 +verrou":"Désaccord 10 + verrouiller la paire si ≤ 0,97","desaccord 10 +demi":"Désaccord 10 + moitié puis 2e moitié si confirmé","inverse V1":"↔ INVERSE de V1","inverse fin":"↔ INVERSE de fin de cycle","inverse desaccord 10":"↔ INVERSE de désaccord ≥ 10","inverse desaccord 15":"↔ INVERSE de désaccord ≥ 15","inverse desaccord 20":"↔ INVERSE de désaccord ≥ 20","desaccord 10":"Désaccord modèle/marché ≥ 10 pts","desaccord 15":"Désaccord ≥ 15 pts","desaccord 20":"Désaccord ≥ 20 pts","assurance 6/9/12":"V1 + assurance 6/9/12 (sans stop)","assurance 4/7/10":"V1 + assurance 4/7/10 (sans stop)","fin":"Fin de cycle 0,70–0,90","mm actuel":"Teneur de marché — actuel","mm pencher":"Teneur de marché — pencher 4 cents","mm prudent":"Teneur de marché — prudent (retrait + pencher + petit)"};
+const noms={"desaccord combine 2.5":"Désaccord VALEUR COMBINÉE ≥ 2,5 pts","desaccord combine 4":"Désaccord VALEUR COMBINÉE ≥ 4 pts","desaccord maker 10":"Désaccord MAKER (offre posée, sans frais)","desaccord croise 10":"Désaccord 10 CONFIRMÉ par l'autre crypto","desaccord 10 +validation":"Désaccord 10 + validation (fermer si signal raté)","desaccord 10 +validation+inversion":"Désaccord 10 + validation + inversion si vrai retournement","desaccord 10 +convergence":"Désaccord 10 + encaisser quand le marché rejoint le modèle","desaccord 10 +verrou":"Désaccord 10 + verrouiller la paire si ≤ 0,97","desaccord 10 +demi":"Désaccord 10 + moitié puis 2e moitié si confirmé","inverse V1":"↔ INVERSE de V1","inverse fin":"↔ INVERSE de fin de cycle","inverse desaccord 10":"↔ INVERSE de désaccord ≥ 10","inverse desaccord 15":"↔ INVERSE de désaccord ≥ 15","inverse desaccord 20":"↔ INVERSE de désaccord ≥ 20","desaccord 10":"Désaccord modèle/marché ≥ 10 pts","desaccord 15":"Désaccord ≥ 15 pts","desaccord 20":"Désaccord ≥ 20 pts","assurance 6/9/12":"V1 + assurance 6/9/12 (sans stop)","assurance 4/7/10":"V1 + assurance 4/7/10 (sans stop)","fin":"Fin de cycle 0,70–0,90","mm actuel":"Teneur de marché — actuel","mm pencher":"Teneur de marché — pencher 4 cents","mm prudent":"Teneur de marché — prudent (retrait + pencher + petit)"};
 const cles=Object.keys(d.strats).sort();
 const R=d.resume||{},base=(k)=>k.replace(/^inverse /,"").replace(/^V1 actuel \(avec stop\)/,"V1"),rk=Object.keys(R).sort((x,y)=>{const bx=base(x),by=base(y);return bx===by?(x.startsWith("inverse")?1:-1):(bx<by?-1:1);});
 h+="<div class='card'><h2>Comparaison</h2><table><tr><th>Stratégie</th><th>Depuis</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Pertes totales</th><th>Pire trade</th></tr>"+rk.map(k=>{const x=R[k],st=k.slice(0,k.lastIndexOf(" ")),a=k.slice(k.lastIndexOf(" ")+1);return "<tr><td>"+(noms[st]||st)+" — "+a+"</td><td>"+new Date(x.depuis*1000).toLocaleString("fr-CH",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td><b>"+f(x.pnl)+"</b></td><td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td></tr>"}).join("")+"</table></div>";
-const TY=d.typesDesaccord||{};if(Object.keys(TY).length){const G=["simple","validation","validation+inversion","convergence","verrou","demi"];h+="<div class='card'><h2>Désaccords : résultat par type de configuration et par gestion</h2><div class='mu'>Type = moment du cycle | prix acheté | sens du perp | sens du marché. Chaque case : trades, gagnés, résultat. États du signal : CONFIRMÉ / PAS DE SUITE / SIGNAL RATÉ / VRAI RETOURNEMENT (seul ce dernier autorise l'inversion).</div><table><tr><th>Type</th>"+G.map(g=>"<th>"+g+"</th>").join("")+"</tr>"+Object.entries(TY).sort((x,y)=>((y[1].simple||{}).n||0)-((x[1].simple||{}).n||0)).map(([t,z])=>"<tr><td style='font-size:11px'>"+t+"</td>"+G.map(g=>{const c=z[g];return "<td>"+(c?c.n+" · "+c.g+" G · <b>"+f(c.pnl)+"</b>"+(c.etats&&Object.keys(c.etats).length?"<br><span class='mu' style='font-size:10px'>"+Object.entries(c.etats).map(([e,n])=>e+" "+n).join(", ")+"</span>":""):"—")+"</td>"}).join("")+"</tr>").join("")+"</table></div>";}
+const TY=d.typesDesaccord||{};if(Object.keys(TY).length){const G=["simple","validation","validation+inversion","convergence","verrou","demi","freeroll"];h+="<div class='card'><h2>Désaccords : résultat par type de configuration et par gestion</h2><div class='mu'>Type = moment du cycle | prix acheté | sens du perp | sens du marché. Chaque case : trades, gagnés, résultat. États du signal : CONFIRMÉ / PAS DE SUITE / SIGNAL RATÉ / VRAI RETOURNEMENT (seul ce dernier autorise l'inversion).</div><table><tr><th>Type</th>"+G.map(g=>"<th>"+g+"</th>").join("")+"</tr>"+Object.entries(TY).sort((x,y)=>((y[1].simple||{}).n||0)-((x[1].simple||{}).n||0)).map(([t,z])=>"<tr><td style='font-size:11px'>"+t+"</td>"+G.map(g=>{const c=z[g];return "<td>"+(c?c.n+" · "+c.g+" G · <b>"+f(c.pnl)+"</b>"+(c.etats&&Object.keys(c.etats).length?"<br><span class='mu' style='font-size:10px'>"+Object.entries(c.etats).map(([e,n])=>e+" "+n).join(", ")+"</span>":""):"—")+"</td>"}).join("")+"</tr>").join("")+"</table></div>";}
 const OR=d.ordres||{};if(Object.keys(OR).length){h+="<div class='card'><h2>Ordres fantômes avec le délai de Polymarket</h2><div class='mu'>Essais = moments où la stratégie voulait acheter. Servi = le vendeur était encore là 50 ms / 250 ms après. Résultat par stratégie si on n'achète QUE ce qui est servi, et si on achète l'inverse quand on est servi.</div><table><tr><th>Stratégie</th><th>Essais</th><th>Gagnants (tous)</th><th>Servis 50 ms</th><th>Gagnants si servi</th><th>Gagnants si PAS servi</th><th>Résultat servi 50 ms</th><th>Résultat servi 250 ms</th><th>Résultat « inverse »</th><th>Résultat si tout servi (simulation)</th></tr>"+Object.entries(OR).sort().map(([k,z])=>"<tr><td>"+k+"</td><td>"+z.essais+"</td><td>"+z.gagnants+"</td><td>"+z.s50+" ("+(z.essais?Math.round(100*z.s50/z.essais):0)+" %)</td><td>"+z.g50+" / "+z.s50+"</td><td>"+z.nonServisGagnants+" / "+z.nonServis+"</td><td>"+f(z.pnl50)+"</td><td>"+f(z.pnl250)+"</td><td>"+f(z.inv50)+"</td><td>"+f(z.pnlParfait)+"</td></tr>").join("")+"</table></div>";}
 const MO=d.markout||{};if(Object.keys(MO).length){h+="<div class='card'><h2>Teneur de marché : valeur juste après avoir été servi (cents par part)</h2><div class='mu'>Positif = le prix est monté après notre achat (bon remplissage). Négatif = on a été servi juste avant une baisse (sélection adverse).</div><table><tr><th>Stratégie</th><th>Remplissages</th><th>0,1 s</th><th>0,5 s</th><th>1 s</th><th>3 s</th><th>10 s</th></tr>"+Object.entries(MO).map(([k,v])=>"<tr><td>"+k+"</td><td>"+v.remplissages+"</td>"+["0.1s","0.5s","1s","3s","10s"].map(x=>"<td>"+(v[x]==null?"—":v[x])+"</td>").join("")+"</tr>").join("")+"</table></div>";}
 const AU=d.audit||[];if(AU.length){const ok=AU.filter(x=>x.ptb&&x.notreDebut);h+="<div class='card'><h2>Audit de la règle de résolution</h2><div class='mu'>Notre moyenne Chainlink 60 s contre le prix à battre et le prix final officiels de Polymarket.</div><table><tr><th>Cycle</th><th>Crypto</th><th>Prix à battre officiel</th><th>Notre moyenne début</th><th>Final officiel</th><th>Notre moyenne fin</th><th>Gagnant</th></tr>"+AU.slice(0,20).map(x=>"<tr><td>"+new Date(x.start*1000).toLocaleTimeString("fr-CH")+"</td><td>"+x.a+"</td><td>"+x.ptb+"</td><td>"+x.notreDebut+" ("+x.nDebut+" s)</td><td>"+x.final+"</td><td>"+x.notreFin+" ("+x.nFin+" s)</td><td>"+x.gagnant+"</td></tr>").join("")+"</table></div>";}
