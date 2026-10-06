@@ -1,0 +1,26 @@
+# analyse de l'enregistreur en direct — relancer en changeant la ligne suivante
+# demande: 1
+name: Analyse enregistreur
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/rec.yml, etude/bot5min/analyse_rec.py]
+permissions:
+  contents: write
+jobs:
+  analyser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Analyse
+        run: |
+          set +e
+          pip install -q numpy
+          python3 -u etude/bot5min/analyse_rec.py > etude/bot5min/journal_rec.txt 2>&1
+          echo "code sortie: $?" >> etude/bot5min/journal_rec.txt
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          git add etude/bot5min/; git commit -m "Resultats enregistreur [skip ci]"; for k in $(seq 1 25); do git pull --rebase -q origin main && git push && break; sleep 7; done
