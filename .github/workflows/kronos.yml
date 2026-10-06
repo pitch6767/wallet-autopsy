@@ -1,0 +1,56 @@
+name: Test Kronos
+on:
+  push:
+    branches: [main]
+    paths: [etude/bot5min/kronos_test.py, .github/workflows/kronos.yml]
+permissions:
+  contents: write
+jobs:
+  prevoir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        actif: [["eth","ETHUSDT"]]
+        jour: [8,9,10,11]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Previsions Kronos d'un jour
+        run: |
+          set +e
+          git clone -q --depth 1 https://github.com/shiyu-coder/Kronos /tmp/Kronos
+          pip install -q torch --index-url https://download.pytorch.org/whl/cpu > /tmp/pip.log 2>&1
+          grep -v -i "^torch" /tmp/Kronos/requirements.txt > /tmp/req.txt; pip install -q -r /tmp/req.txt >> /tmp/pip.log 2>&1
+          pip install -q pandas >> /tmp/pip.log 2>&1
+          python3 -u etude/bot5min/kronos_test.py 12 prevoir ${{ matrix.actif[0] }} ${{ matrix.actif[1] }} ${{ matrix.jour }} > /tmp/j.log 2>&1
+          echo "code sortie: $?" >> /tmp/j.log; tail -5 /tmp/j.log
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          git add etude/bot5min/kronos/; git commit -q -m "Previsions Kronos ${{ matrix.actif[0] }} jour ${{ matrix.jour }} [skip ci]"
+          for k in $(seq 1 40); do git pull --rebase -q origin main && git push -q && break; sleep $((RANDOM % 15 + 5)); done
+  analyser:
+    needs: prevoir
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Analyse
+        run: |
+          set +e
+          git pull -q origin main
+          pip install -q pandas scikit-learn
+          ls etude/bot5min/kronos/ > etude/bot5min/journal_kronos_complet.txt
+          python3 -u etude/bot5min/kronos_test.py 12 analyser >> etude/bot5min/journal_kronos_complet.txt 2>&1
+          echo "code sortie: $?" >> etude/bot5min/journal_kronos_complet.txt
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          git add etude/bot5min/; git commit -m "Resultats Kronos complets [skip ci]"; for k in $(seq 1 25); do git pull --rebase -q origin main && git push && break; sleep 7; done
