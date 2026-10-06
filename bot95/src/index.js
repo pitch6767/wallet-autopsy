@@ -838,6 +838,7 @@ export class Bot {
           mise: +cout.toFixed(2), frais: +(parts * CFG.FEE_RATE * pm * (1 - pm)).toFixed(3), proba: +fair.toFixed(3), heure: new Date().toISOString(),
           delai: delai != null ? +delai.toFixed(3) : null, source, B: { parts: 0, cout: 0 }, offre: null };
         try { this.gOuvrir(a, mk, V.pos); } catch (err) { this.erreur("assurance", err); }
+        try { this.nTenter("V1", a, mk, up, V1.PMAX, V.pos.mise, fair); } catch (_) {}
         this.notelat(delai); this.sauver();
         return;
       }
@@ -1084,6 +1085,7 @@ export class Bot {
         const P = this.nPos("fin", a, mk, { cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0) });
         P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
         this.nNote(P, `achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix} (modèle ${P.proba0}, ${P.restant_s} s restantes)`);
+        try { this.nTenter(P.strat, a, mk, up, P.strat === "fin" ? NV.FIN[a].HI : ask[0] + 0.01, r.cout, fair); } catch (_) {}
         this.nSauver();
         break;
       }
@@ -1100,6 +1102,7 @@ export class Bot {
         const P = this.nPos(nom, a, mk, { famille: "desaccord", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0) });
         P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
         this.nNote(P, `achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix} (modèle ${P.proba0}, ${P.restant_s} s restantes)`);
+        try { this.nTenter(P.strat, a, mk, up, P.strat === "fin" ? NV.FIN[a].HI : ask[0] + 0.01, r.cout, fair); } catch (_) {}
         this.nSauver();
         break;
       }
@@ -1151,8 +1154,77 @@ export class Bot {
     }
   }
 
+  // ================= ordres fantômes avec le délai taker de Polymarket (50 ms et 250 ms) + « inverse »
+  // À la décision : prix limite et montant. 50 / 250 ms plus tard : quelle quantité le carnet sert encore à ce prix ou mieux ?
+  // Au même instant : prix du côté opposé (pour tester « acheter l'inverse quand on est servi »). Puis valeur 1 s et 5 s après.
+  nTenter(strat, a, mk, up, limite, usd, fair) {
+    const id = up ? mk.up : mk.down, autre = up ? mk.down : mk.up, t0 = now();
+    const O = { strat, a, start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", limite: +(+limite).toFixed(3), usd: +(+usd).toFixed(2), fair: +(+fair).toFixed(3), t0: +t0.toFixed(2),
+      ask0: (this.livreTrie(id, "asks")[0] || [null])[0], restant: +(mk.end - t0).toFixed(0) };
+    const servi = () => { let parts = 0, cout = 0, reste = O.usd; for (const [p, sz] of this.livreTrie(id, "asks")) { if (p > O.limite + 1e-9 || reste < 0.01) break; const k = Math.min(sz, reste / p); parts += k; cout += k * p; reste -= k * p; } return { parts: +parts.toFixed(2), prix: parts ? +(cout / parts).toFixed(4) : null }; };
+    const opp = () => (this.livreTrie(autre, "asks")[0] || [null])[0];
+    const mid = () => { const b = this.livreTrie(id, "bids")[0], k = this.livreTrie(id, "asks")[0]; return b && k ? +((b[0] + k[0]) / 2).toFixed(3) : null; };
+    setTimeout(() => { try { O.f50 = servi(); O.opp50 = opp(); } catch (_) {} }, 50);
+    setTimeout(() => { try { O.f250 = servi(); O.opp250 = opp(); } catch (_) {} }, 250);
+    setTimeout(() => { try { O.mid1s = mid(); } catch (_) {} }, 1000);
+    setTimeout(() => { try { O.mid5s = mid(); } catch (_) {} }, 5000);
+    (this.N.ordres = this.N.ordres || []).push(O);
+    if (this.N.ordres.length > 3000) this.N.ordres.shift();
+  }
+  nOrdresResume() {
+    const R = {};
+    for (const O of this.N.ordres || []) {
+      if (O.gagne == null) continue;
+      const k = O.strat + " " + O.a, z = (R[k] = R[k] || { essais: 0, gagnants: 0, s50: 0, s250: 0, g50: 0, g250: 0, pnl50: 0, pnl250: 0, parts50: 0, parts250: 0, nonServisGagnants: 0, nonServis: 0, inv50: 0, invN: 0, pnlParfait: 0 });
+      z.essais++; if (O.gagne) z.gagnants++;
+      const fee = (p) => 0.072 * p * (1 - p);
+      if (O.ask0 != null) z.pnlParfait += ((O.gagne ? 1 : 0) - O.ask0 - fee(O.ask0)) * (O.usd / O.ask0);
+      for (const [d, f] of [["50", O.f50], ["250", O.f250]]) {
+        if (f && f.parts > 0) { z["s" + d]++; if (O.gagne) z["g" + d]++; z["pnl" + d] += f.parts * ((O.gagne ? 1 : 0) - f.prix - fee(f.prix)); z["parts" + d] += f.parts; }
+      }
+      if (O.f50 && O.f50.parts > 0 && O.opp50 != null) { z.invN++; z.inv50 += (O.usd / O.opp50) * ((O.gagne ? 0 : 1) - O.opp50 - fee(O.opp50)); }
+      if (!(O.f50 && O.f50.parts > 0)) { z.nonServis++; if (O.gagne) z.nonServisGagnants++; }
+    }
+    for (const z of Object.values(R)) for (const k of Object.keys(z)) z[k] = +z[k].toFixed ? +(+z[k]).toFixed(2) : z[k];
+    return R;
+  }
+
+  // ================= audit de la règle de résolution : notre moyenne Chainlink 60 s contre le prix à battre et le prix final officiels
+  async nAudit() {
+    const t = now(), A = (this.N.audit = this.N.audit || { fait: {}, lignes: [] });
+    for (const a of V1.ACTIFS) {
+      const st = Math.floor(t / 300) * 300 - 300;               // dernier cycle terminé
+      if (t < st + 300 + 25 || A.fait[a] === st) continue;
+      A.fait[a] = st;
+      const moy = (a2, b2) => { const v = []; for (let s2 = a2; s2 <= b2; s2++) { const x = this.prixA(a, "cl", s2); if (x) v.push(x); } return v.length ? { m: v.reduce((x, y) => x + y, 0) / v.length, n: v.length } : null; };
+      try {
+        const ev = await (await fetch(`${G}/events?slug=${a.toLowerCase()}-updown-5m-${st}`)).json();
+        const e = ev[0], m = e.markets[0], meta = (typeof e.eventMetadata === "string" ? JSON.parse(e.eventMetadata) : e.eventMetadata) || (typeof m.eventMetadata === "string" ? JSON.parse(m.eventMetadata) : m.eventMetadata) || {};
+        const px = JSON.parse(m.outcomePrices || "[]").map(Number), outs = JSON.parse(m.outcomes || "[]");
+        const deb = moy(st - 59, st), fin2 = moy(st + 241, st + 300), fin3 = moy(st + 240, st + 299);
+        A.lignes.unshift({ a, start: st, ptb: meta.priceToBeat ?? null, final: meta.finalPrice ?? null, notreDebut: deb && +deb.m.toFixed(4), nDebut: deb && deb.n,
+          notreFin: fin2 && +fin2.m.toFixed(4), nFin: fin2 && fin2.n, notreFinDecale: fin3 && +fin3.m.toFixed(4), gagnant: px.includes(1) ? outs[px.indexOf(1)] : null });
+        A.lignes.length = Math.min(A.lignes.length, 600);
+      } catch (err) { this.erreur("audit", err); }
+    }
+  }
+
   // ---- règlement : résultat officiel Polymarket (20 s après la fin)
   async nRegler() {
+    try { await this.nAudit(); } catch (_) {}
+    // résultat des ordres fantômes
+    const cacheG = this._cacheG = this._cacheG || {};
+    for (const O of (this.N.ordres || [])) {
+      if (O.gagne != null || now() < O.end + 25) continue;
+      try {
+        if (!(O.slug in cacheG)) {
+          const ev = await (await fetch(`${G}/events?slug=${O.slug}`)).json();
+          const m = ev[0].markets[0], px = JSON.parse(m.outcomePrices || "[]").map(Number), outs = JSON.parse(m.outcomes || "[]");
+          cacheG[O.slug] = (px.includes(1) && px.includes(0)) ? String(outs[px.indexOf(1)]) : null;
+        }
+        if (cacheG[O.slug]) O.gagne = cacheG[O.slug] === O.cote;
+      } catch (_) {}
+    }
     const t = now();
     for (const P of this.N.ouvertes.filter((x) => t >= x.end)) { this.N.ouvertes = this.N.ouvertes.filter((x) => x !== P); this.N.attente.push(P); }
     const garder = [], cache = {};
@@ -1186,7 +1258,7 @@ export class Bot {
     }
     const resume = Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { depuis: v.depuis, n: v.n, pnl: v.pnl, gains: v.gains, pertes: v.pertes,
       pertesTot: v.trades.filter((x) => x.net < 0).reduce((s2, x) => s2 + x.net, 0), pire: v.trades.length ? Math.min(...v.trades.map((x) => x.net)) : 0 }]));
-    return { depuis: this.N.depuis, manquees: this.N.manq || {}, resume: { ...v1, ...resume }, reglages: NV, strats: Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { ...v, trades: v.trades.slice(0, 60) }])),
+    return { depuis: this.N.depuis, ordres: this.nOrdresResume(), audit: ((this.N.audit || {}).lignes || []).slice(0, 200), manquees: this.N.manq || {}, resume: { ...v1, ...resume }, reglages: NV, strats: Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { ...v, trades: v.trades.slice(0, 60) }])),
       ouvertes: this.N.ouvertes, attente: this.N.attente.length, offresMM: this._mmQ || {} };
   }
 
@@ -1291,6 +1363,8 @@ const noms={"desaccord 10":"Désaccord modèle/marché ≥ 10 pts","desaccord 15
 const cles=Object.keys(d.strats).sort();
 const R=d.resume||{},rk=Object.keys(R).sort();
 h+="<div class='card'><h2>Comparaison</h2><table><tr><th>Stratégie</th><th>Depuis</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Pertes totales</th><th>Pire trade</th></tr>"+rk.map(k=>{const x=R[k],st=k.slice(0,k.lastIndexOf(" ")),a=k.slice(k.lastIndexOf(" ")+1);return "<tr><td>"+(noms[st]||st)+" — "+a+"</td><td>"+new Date(x.depuis*1000).toLocaleString("fr-CH",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td><b>"+f(x.pnl)+"</b></td><td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td></tr>"}).join("")+"</table></div>";
+const OR=d.ordres||{};if(Object.keys(OR).length){h+="<div class='card'><h2>Ordres fantômes avec le délai de Polymarket</h2><div class='mu'>Essais = moments où la stratégie voulait acheter. Servi = le vendeur était encore là 50 ms / 250 ms après. Résultat par stratégie si on n'achète QUE ce qui est servi, et si on achète l'inverse quand on est servi.</div><table><tr><th>Stratégie</th><th>Essais</th><th>Gagnants (tous)</th><th>Servis 50 ms</th><th>Gagnants si servi</th><th>Gagnants si PAS servi</th><th>Résultat servi 50 ms</th><th>Résultat servi 250 ms</th><th>Résultat « inverse »</th><th>Résultat si tout servi (simulation)</th></tr>"+Object.entries(OR).sort().map(([k,z])=>"<tr><td>"+k+"</td><td>"+z.essais+"</td><td>"+z.gagnants+"</td><td>"+z.s50+" ("+(z.essais?Math.round(100*z.s50/z.essais):0)+" %)</td><td>"+z.g50+" / "+z.s50+"</td><td>"+z.nonServisGagnants+" / "+z.nonServis+"</td><td>"+f(z.pnl50)+"</td><td>"+f(z.pnl250)+"</td><td>"+f(z.inv50)+"</td><td>"+f(z.pnlParfait)+"</td></tr>").join("")+"</table></div>";}
+const AU=d.audit||[];if(AU.length){const ok=AU.filter(x=>x.ptb&&x.notreDebut);h+="<div class='card'><h2>Audit de la règle de résolution</h2><div class='mu'>Notre moyenne Chainlink 60 s contre le prix à battre et le prix final officiels de Polymarket.</div><table><tr><th>Cycle</th><th>Crypto</th><th>Prix à battre officiel</th><th>Notre moyenne début</th><th>Final officiel</th><th>Notre moyenne fin</th><th>Gagnant</th></tr>"+AU.slice(0,20).map(x=>"<tr><td>"+new Date(x.start*1000).toLocaleTimeString("fr-CH")+"</td><td>"+x.a+"</td><td>"+x.ptb+"</td><td>"+x.notreDebut+" ("+x.nDebut+" s)</td><td>"+x.final+"</td><td>"+x.notreFin+" ("+x.nFin+" s)</td><td>"+x.gagnant+"</td></tr>").join("")+"</table></div>";}
 const MQ=d.manquees||{};for(const a of ["BTC","ETH"]){const m=MQ[a];if(!m)continue;for(const [st,titre] of [["v1","V1 — quand le modèle donne ≥ 0,63"],["fin","Fin de cycle — quand le modèle est très sûr"]]){const o=m[st]||{},tot=o["secondes modèle OK"]||0;if(!tot)continue;h+="<div class='card'><h2>Occasions — "+titre+" — "+a+"</h2><table><tr><th>Ce qu'il y avait</th><th>Secondes / échanges</th><th>Part</th></tr>"+Object.entries(o).map(([k,v])=>"<tr><td>"+k+"</td><td>"+v+"</td><td>"+(k.startsWith("meilleure")?(100*v/tot).toFixed(1)+" %":"")+"</td></tr>").join("")+"</table></div>";}}
 if(!cles.length)h+="<p>Aucun trade terminé pour l'instant.</p>";
 for(const k of cles){const S=d.strats[k],st=k.slice(0,k.lastIndexOf(" ")),a=k.slice(k.lastIndexOf(" ")+1);h+="<div class='card' style='margin-top:12px'><h2>"+(noms[st]||st)+" — "+a+"</h2><div>Trades : <b>"+S.n+"</b> · gagnés "+S.gains+" · perdus "+S.pertes+" · résultat <b>"+f(S.pnl)+"</b></div><div class='mu'>"+Object.entries(S.issues).map(([i,v])=>i+" : "+v.n+" ("+f(v.pnl)+")").join(" · ")+"</div>";
