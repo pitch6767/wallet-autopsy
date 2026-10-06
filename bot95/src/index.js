@@ -19,7 +19,9 @@ const NV = {
   ASSUR: { RETRAIT: 0.03, CALME_S: 2, OPP_MAX: 0.95,                       // assurance graduée à la place du stop (baisse de proba -> part couverte)
     VARIANTES: { "assurance 6/9/12": [[0.06, 0.25], [0.09, 0.5], [0.12, 1.0]], "assurance 4/7/10": [[0.04, 0.25], [0.07, 0.5], [0.10, 1.0]] } },
   // désaccord modèle / marché (analyse du 06.10 : écart >= 0,10 → le modèle a raison 61 %, +0,07 $/part sur 12 jours) : achat taker au meilleur vendeur, gardé jusqu'à la fin
-  DESACCORD: { VARIANTES: { "desaccord 10": 0.10, "desaccord 15": 0.15, "desaccord 20": 0.20 }, MISE: 50, TMIN: 5 },
+  DESACCORD: { VARIANTES: { "desaccord 10": 0.10, "desaccord 15": 0.15, "desaccord 20": 0.20 }, MISE: 50, TMIN: 5,
+    // gestion après l'entrée (06.10) : copies de chaque désaccord gérées autrement, pour comparer
+    GESTIONS: ["validation", "validation+inversion", "convergence", "verrou", "demi"], FENETRE_S: 20, MIN_S: 3 },
   FIN: { BTC: { W: 180, LO: 0.70, HI: 0.85, SEUIL: 0.95 }, ETH: { W: 90, LO: 0.70, HI: 0.90, SEUIL: 0.93 }, MISE: 50 },
   MM: { ACTIFS: ["BTC", "ETH"], ARRET_S: 10, MAXI: 100,                    // teneur de marché : 3 versions en parallèle (06.10.2026)
     VARIANTES: {                                                            // « actuel » et « pencher » arrêtés le 06.10.2026 (perdants en direct)
@@ -1127,6 +1129,7 @@ export class Bot {
     (this._puA = this._puA || {})[a] = pu;
     try { this.nManq(a, mk, pu, t, tleft); } catch (_) {}
     for (const P of this.N.ouvertes) if (P.strat.startsWith("assurance") && P.actif === a && P.start === mk.start && !P.fini) this.gGerer(P, pu);
+    for (const P of this.N.ouvertes) if (P.famille === "desaccordG" && P.actif === a && P.start === mk.start) { try { this.dGerer(P, pu); } catch (_) {} }
     // ---- 2. fin de cycle : acheter 0,70-0,90 quand le modèle est très sûr, garder jusqu'à la fin
     const F = NV.FIN[a];
     if (F && tleft <= F.W && tleft >= 1 && !this.N.ouvertes.some((P) => P.strat === "fin" && P.actif === a && P.start === mk.start)
@@ -1142,6 +1145,7 @@ export class Bot {
         this.nNote(P, `achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix} (modèle ${P.proba0}, ${P.restant_s} s restantes)`);
         try { this.nTenter(P.strat, a, mk, up, P.strat === "fin" ? NV.FIN[a].HI : ask[0] + 0.01, r.cout, fair); } catch (_) {}
         try { this.nInverse(P.strat, a, mk, up, r.cout); } catch (_) {}
+        try { if (P.famille === "desaccord") { P.type = this.dType(a, up, tleft, ask[0]); this.dCopies(P, ecart, a, mk, up, r); } } catch (err) { this.erreur("désaccord copies", err); }
         this.nSauver();
         break;
       }
@@ -1160,6 +1164,7 @@ export class Bot {
         this.nNote(P, `achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix} (modèle ${P.proba0}, ${P.restant_s} s restantes)`);
         try { this.nTenter(P.strat, a, mk, up, P.strat === "fin" ? NV.FIN[a].HI : ask[0] + 0.01, r.cout, fair); } catch (_) {}
         try { this.nInverse(P.strat, a, mk, up, r.cout); } catch (_) {}
+        try { if (P.famille === "desaccord") { P.type = this.dType(a, up, tleft, ask[0]); this.dCopies(P, ecart, a, mk, up, r); } } catch (err) { this.erreur("désaccord copies", err); }
         this.nSauver();
         break;
       }
@@ -1216,6 +1221,80 @@ export class Bot {
         this.nNote(P, `achat ${cle === "U" ? "Up" : "Down"} ${k.toFixed(1)} à ${bid}`); this.nSauver();
       }
     }
+  }
+
+  // ================= désaccords : type de configuration + gestions après l'entrée
+  // Type = temps restant × prix acheté × sens du perp (5 s) × sens du marché Polymarket (10 s) par rapport à notre côté
+  dType(a, up, tleft, ask) {
+    const T2 = tleft > 240 ? "début (>4 min)" : tleft > 120 ? "milieu" : "fin (<2 min)";
+    const Pz = ask < 0.3 ? "bon marché (<0,30)" : ask < 0.5 ? "0,30-0,50" : "cher (>0,50)";
+    const el = this.elanV1(a), perp = el == null ? "perp ?" : (el * (up ? 1 : -1) > 0 ? "perp avec nous" : "perp contre nous");
+    const R = ((this._rec || {})[a] || {}).lignes || [], n = R.length;
+    let mkt = "marché ?";
+    if (n > 40) { const m0 = R[n - 41], m1 = R[n - 1], mid = (r) => (r[3] != null && r[4] != null ? (r[3] + r[4]) / 2 : null); const a0 = mid(m0), a1 = mid(m1);
+      if (a0 != null && a1 != null) { const d = (a1 - a0) * (up ? 1 : -1); mkt = d > 0.02 ? "marché vers nous" : d < -0.02 ? "marché contre nous" : "marché stable"; } }
+    return [T2, Pz, perp, mkt].join(" | ");
+  }
+  dCopies(P0, ecart, a, mk, up, r) {
+    for (const g of NV.DESACCORD.GESTIONS) {
+      const demi = g === "demi", parts = demi ? r.parts / 2 : r.parts, cout = demi ? r.cout / 2 : r.cout;
+      const P = this.nPos(P0.strat + " +" + g, a, mk, { famille: "desaccordG", gestion: g, ecart, cote: P0.cote, prix: P0.prix, parts: +parts.toFixed(2), proba0: P0.proba0, restant_s: P0.restant_s,
+        t0: now(), type: P0.type, etatSignal: "en attente", fini2: false, ajout: false });
+      P.cash = -cout; if (up) P.U = parts; else P.D = parts;
+      this.nNote(P, `entrée ${P.cote} ${parts.toFixed(1)} parts à ${P.prix} (${g})`);
+    }
+  }
+  // états : CONFIRMÉ (le marché va vers nous), PAS DE SUITE (rien ne se passe), SIGNAL RATÉ (le marché va contre nous et le modèle lâche),
+  // VRAI RETOURNEMENT (signal raté + le modèle voit maintenant un avantage de l'autre côté). Seul le vrai retournement autorise l'inversion.
+  dGerer(P, pu) {
+    if (P.fini2) return;
+    const up = P.cote === "Up", id = up ? P.up : P.down, autre = up ? P.down : P.up, t = now(), age = t - P.t0;
+    const fair = up ? pu : 1 - pu, b = this.livreTrie(id, "bids")[0], k = this.livreTrie(id, "asks")[0], ko = this.livreTrie(autre, "asks")[0];
+    if (!b || !k) return;
+    const mid = (b[0] + k[0]) / 2, main = up ? P.U : P.D, opp = up ? P.D : P.U;
+    const vendre = (raison) => { const v = this.nVendre(id, main); if (v.vendu <= 0) return false; P.cash += v.recu; if (up) P.U -= v.vendu; else P.D -= v.vendu; this.nNote(P, raison + ` : vente ${v.vendu.toFixed(1)} à ${(v.recu / v.vendu).toFixed(3)}`); return true; };
+    // classement du signal pendant la fenêtre de validation
+    if (P.etatSignal === "en attente" && age >= NV.DESACCORD.MIN_S) {
+      if (mid >= P.prix + 0.02) P.etatSignal = "CONFIRMÉ";
+      else if (mid <= P.prix - 0.03 && fair - mid < P.ecart / 2) {
+        P.etatSignal = (ko && (1 - fair) - ko[0] >= P.ecart / 2) ? "VRAI RETOURNEMENT" : "SIGNAL RATÉ";
+      } else if (age >= NV.DESACCORD.FENETRE_S) P.etatSignal = "PAS DE SUITE";
+      if (P.etatSignal !== "en attente") this.nNote(P, "état : " + P.etatSignal + ` (marché ${mid.toFixed(3)}, modèle ${fair.toFixed(3)})`);
+    }
+    const g = P.gestion;
+    if ((g === "validation" || g === "validation+inversion") && (P.etatSignal === "SIGNAL RATÉ" || P.etatSignal === "VRAI RETOURNEMENT") && main > 0) {
+      if (vendre("signal raté → fermeture")) {
+        if (g === "validation+inversion" && P.etatSignal === "VRAI RETOURNEMENT" && ko) {
+          const r2 = this.nAcheter(autre, (P.parts * P.prix) / ko[0], ko[0] + 0.01);
+          if (r2.parts > 0) { P.cash -= r2.cout; if (up) P.D += r2.parts; else P.U += r2.parts; this.nNote(P, `INVERSION : achat ${up ? "Down" : "Up"} ${r2.parts.toFixed(1)} à ${(r2.cout / r2.parts).toFixed(3)}`); }
+        }
+        P.fini2 = true; this.nSauver();
+      }
+      return;
+    }
+    if (g === "convergence" && main > 0 && mid >= P.proba0 - 0.02) { if (vendre("le marché a rejoint le modèle → gain encaissé")) { P.fini2 = true; this.nSauver(); } return; }
+    if (g === "verrou" && main > 0 && opp < main - 1e-6 && ko && P.prix + ko[0] + 0.072 * ko[0] * (1 - ko[0]) <= 0.97) {
+      const r2 = this.nAcheter(autre, main - opp, ko[0] + 0.005);
+      if (r2.parts > 0) { P.cash -= r2.cout; if (up) P.D += r2.parts; else P.U += r2.parts; this.nNote(P, `paire verrouillée : achat ${up ? "Down" : "Up"} ${r2.parts.toFixed(1)} à ${(r2.cout / r2.parts).toFixed(3)}`); this.nSauver(); }
+      return;
+    }
+    if (g === "demi" && !P.ajout && P.etatSignal === "CONFIRMÉ" && fair - k[0] >= P.ecart / 2) {
+      const r2 = this.nAcheter(id, P.parts, k[0] + 0.01);
+      if (r2.parts > 0) { P.cash -= r2.cout; if (up) P.U += r2.parts; else P.D += r2.parts; P.ajout = true; this.nNote(P, `confirmé → 2e moitié ${r2.parts.toFixed(1)} à ${(r2.cout / r2.parts).toFixed(3)}`); this.nSauver(); }
+    }
+  }
+  dTypesResume() {
+    const R = {};
+    for (const [k, v] of Object.entries(this.N.strats)) {
+      for (const T2 of v.trades) {
+        if (!T2.type || !k.startsWith("desaccord")) continue;
+        const nom = k.slice(0, k.lastIndexOf(" ")), gest = nom.includes("+") ? nom.slice(nom.indexOf("+") + 1) : "simple";
+        const z = ((R[T2.type] = R[T2.type] || {})[gest] = R[T2.type][gest] || { n: 0, g: 0, pnl: 0, etats: {} });
+        z.n++; if (T2.net >= 0) z.g++; z.pnl = +(z.pnl + T2.net).toFixed(2);
+        if (T2.etatSignal) z.etats[T2.etatSignal] = (z.etats[T2.etatSignal] || 0) + 1;
+      }
+    }
+    return R;
   }
 
   // ================= stratégies « inverses » : au même instant, acheter l'autre côté au meilleur vendeur, même montant, gardé jusqu'à la fin
@@ -1317,6 +1396,7 @@ export class Bot {
         if (!g) { garder.push(P); continue; }
         P.cash += g === "Up" ? P.U : P.D; P.gagnant = g;
         const issue = P.strat.startsWith("assurance") ? ((P.U > 0 && P.D > 0 && Math.min(P.U, P.D) >= Math.max(P.U, P.D) - 1e-6) ? "paire" : (P.H > 0 ? "fin couverte" : (g === P.cote ? "fin gagnée" : "fin perdue")))
+          : P.famille === "desaccordG" ? ((P.U === 0 && P.D === 0) ? "fermé avant la fin" : (P.U > 0 && P.D > 0 ? "paire / inversé" : ((g === "Up" ? P.U : P.D) > 0 ? "gagné" : "perdu")))
           : (P.strat === "fin" || P.strat.startsWith("desaccord") || P.strat.startsWith("inverse")) ? (g === P.cote ? "gagné" : "perdu") : (P.U > 0 && P.D > 0 ? "paires + reste" : "une seule jambe");
         this.nClore(P, issue);
       } catch (err) { garder.push(P); this.erreur("fantômes règlement", err); }
@@ -1335,7 +1415,7 @@ export class Bot {
     }
     const resume = Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { depuis: v.depuis, n: v.n, pnl: v.pnl, gains: v.gains, pertes: v.pertes,
       pertesTot: v.trades.filter((x) => x.net < 0).reduce((s2, x) => s2 + x.net, 0), pire: v.trades.length ? Math.min(...v.trades.map((x) => x.net)) : 0 }]));
-    return { depuis: this.N.depuis, markout: Object.fromEntries(Object.entries(this.N.markout || {}).map(([k, v]) => [k, { remplissages: v.n, ...Object.fromEntries(["0.1s", "0.5s", "1s", "3s", "10s"].map((h) => [h, v.nOk[h] ? +(100 * v[h] / v.nOk[h]).toFixed(2) : null])) }])), ordres: this.nOrdresResume(), audit: ((this.N.audit || {}).lignes || []).slice(0, 200), manquees: this.N.manq || {}, resume: { ...v1, ...resume }, reglages: NV, strats: Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { ...v, trades: v.trades.slice(0, 60) }])),
+    return { depuis: this.N.depuis, typesDesaccord: this.dTypesResume(), markout: Object.fromEntries(Object.entries(this.N.markout || {}).map(([k, v]) => [k, { remplissages: v.n, ...Object.fromEntries(["0.1s", "0.5s", "1s", "3s", "10s"].map((h) => [h, v.nOk[h] ? +(100 * v[h] / v.nOk[h]).toFixed(2) : null])) }])), ordres: this.nOrdresResume(), audit: ((this.N.audit || {}).lignes || []).slice(0, 200), manquees: this.N.manq || {}, resume: { ...v1, ...resume }, reglages: NV, strats: Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { ...v, trades: v.trades.slice(0, 60) }])),
       ouvertes: this.N.ouvertes, attente: this.N.attente.length, offresMM: this._mmQ || {} };
   }
 
@@ -1436,10 +1516,11 @@ const PAGE_N = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta
 <script>
 const f=(x)=>(x>=0?"+":"")+x.toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/nouveaux",{cache:"no-store"})).json();let h="<div class='mu'>Depuis "+new Date(d.depuis*1000).toLocaleString("fr-CH")+" · "+d.ouvertes.length+" position(s) ouverte(s), "+d.attente+" en attente du résultat</div>";
-const noms={"inverse V1":"↔ INVERSE de V1","inverse fin":"↔ INVERSE de fin de cycle","inverse desaccord 10":"↔ INVERSE de désaccord ≥ 10","inverse desaccord 15":"↔ INVERSE de désaccord ≥ 15","inverse desaccord 20":"↔ INVERSE de désaccord ≥ 20","desaccord 10":"Désaccord modèle/marché ≥ 10 pts","desaccord 15":"Désaccord ≥ 15 pts","desaccord 20":"Désaccord ≥ 20 pts","assurance 6/9/12":"V1 + assurance 6/9/12 (sans stop)","assurance 4/7/10":"V1 + assurance 4/7/10 (sans stop)","fin":"Fin de cycle 0,70–0,90","mm actuel":"Teneur de marché — actuel","mm pencher":"Teneur de marché — pencher 4 cents","mm prudent":"Teneur de marché — prudent (retrait + pencher + petit)"};
+const noms={"desaccord 10 +validation":"Désaccord 10 + validation (fermer si signal raté)","desaccord 10 +validation+inversion":"Désaccord 10 + validation + inversion si vrai retournement","desaccord 10 +convergence":"Désaccord 10 + encaisser quand le marché rejoint le modèle","desaccord 10 +verrou":"Désaccord 10 + verrouiller la paire si ≤ 0,97","desaccord 10 +demi":"Désaccord 10 + moitié puis 2e moitié si confirmé","inverse V1":"↔ INVERSE de V1","inverse fin":"↔ INVERSE de fin de cycle","inverse desaccord 10":"↔ INVERSE de désaccord ≥ 10","inverse desaccord 15":"↔ INVERSE de désaccord ≥ 15","inverse desaccord 20":"↔ INVERSE de désaccord ≥ 20","desaccord 10":"Désaccord modèle/marché ≥ 10 pts","desaccord 15":"Désaccord ≥ 15 pts","desaccord 20":"Désaccord ≥ 20 pts","assurance 6/9/12":"V1 + assurance 6/9/12 (sans stop)","assurance 4/7/10":"V1 + assurance 4/7/10 (sans stop)","fin":"Fin de cycle 0,70–0,90","mm actuel":"Teneur de marché — actuel","mm pencher":"Teneur de marché — pencher 4 cents","mm prudent":"Teneur de marché — prudent (retrait + pencher + petit)"};
 const cles=Object.keys(d.strats).sort();
 const R=d.resume||{},base=(k)=>k.replace(/^inverse /,"").replace(/^V1 actuel \(avec stop\)/,"V1"),rk=Object.keys(R).sort((x,y)=>{const bx=base(x),by=base(y);return bx===by?(x.startsWith("inverse")?1:-1):(bx<by?-1:1);});
 h+="<div class='card'><h2>Comparaison</h2><table><tr><th>Stratégie</th><th>Depuis</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Pertes totales</th><th>Pire trade</th></tr>"+rk.map(k=>{const x=R[k],st=k.slice(0,k.lastIndexOf(" ")),a=k.slice(k.lastIndexOf(" ")+1);return "<tr><td>"+(noms[st]||st)+" — "+a+"</td><td>"+new Date(x.depuis*1000).toLocaleString("fr-CH",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td><b>"+f(x.pnl)+"</b></td><td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td></tr>"}).join("")+"</table></div>";
+const TY=d.typesDesaccord||{};if(Object.keys(TY).length){const G=["simple","validation","validation+inversion","convergence","verrou","demi"];h+="<div class='card'><h2>Désaccords : résultat par type de configuration et par gestion</h2><div class='mu'>Type = moment du cycle | prix acheté | sens du perp | sens du marché. Chaque case : trades, gagnés, résultat. États du signal : CONFIRMÉ / PAS DE SUITE / SIGNAL RATÉ / VRAI RETOURNEMENT (seul ce dernier autorise l'inversion).</div><table><tr><th>Type</th>"+G.map(g=>"<th>"+g+"</th>").join("")+"</tr>"+Object.entries(TY).sort((x,y)=>((y[1].simple||{}).n||0)-((x[1].simple||{}).n||0)).map(([t,z])=>"<tr><td style='font-size:11px'>"+t+"</td>"+G.map(g=>{const c=z[g];return "<td>"+(c?c.n+" · "+c.g+" G · <b>"+f(c.pnl)+"</b>"+(c.etats&&Object.keys(c.etats).length?"<br><span class='mu' style='font-size:10px'>"+Object.entries(c.etats).map(([e,n])=>e+" "+n).join(", ")+"</span>":""):"—")+"</td>"}).join("")+"</tr>").join("")+"</table></div>";}
 const OR=d.ordres||{};if(Object.keys(OR).length){h+="<div class='card'><h2>Ordres fantômes avec le délai de Polymarket</h2><div class='mu'>Essais = moments où la stratégie voulait acheter. Servi = le vendeur était encore là 50 ms / 250 ms après. Résultat par stratégie si on n'achète QUE ce qui est servi, et si on achète l'inverse quand on est servi.</div><table><tr><th>Stratégie</th><th>Essais</th><th>Gagnants (tous)</th><th>Servis 50 ms</th><th>Gagnants si servi</th><th>Gagnants si PAS servi</th><th>Résultat servi 50 ms</th><th>Résultat servi 250 ms</th><th>Résultat « inverse »</th><th>Résultat si tout servi (simulation)</th></tr>"+Object.entries(OR).sort().map(([k,z])=>"<tr><td>"+k+"</td><td>"+z.essais+"</td><td>"+z.gagnants+"</td><td>"+z.s50+" ("+(z.essais?Math.round(100*z.s50/z.essais):0)+" %)</td><td>"+z.g50+" / "+z.s50+"</td><td>"+z.nonServisGagnants+" / "+z.nonServis+"</td><td>"+f(z.pnl50)+"</td><td>"+f(z.pnl250)+"</td><td>"+f(z.inv50)+"</td><td>"+f(z.pnlParfait)+"</td></tr>").join("")+"</table></div>";}
 const MO=d.markout||{};if(Object.keys(MO).length){h+="<div class='card'><h2>Teneur de marché : valeur juste après avoir été servi (cents par part)</h2><div class='mu'>Positif = le prix est monté après notre achat (bon remplissage). Négatif = on a été servi juste avant une baisse (sélection adverse).</div><table><tr><th>Stratégie</th><th>Remplissages</th><th>0,1 s</th><th>0,5 s</th><th>1 s</th><th>3 s</th><th>10 s</th></tr>"+Object.entries(MO).map(([k,v])=>"<tr><td>"+k+"</td><td>"+v.remplissages+"</td>"+["0.1s","0.5s","1s","3s","10s"].map(x=>"<td>"+(v[x]==null?"—":v[x])+"</td>").join("")+"</tr>").join("")+"</table></div>";}
 const AU=d.audit||[];if(AU.length){const ok=AU.filter(x=>x.ptb&&x.notreDebut);h+="<div class='card'><h2>Audit de la règle de résolution</h2><div class='mu'>Notre moyenne Chainlink 60 s contre le prix à battre et le prix final officiels de Polymarket.</div><table><tr><th>Cycle</th><th>Crypto</th><th>Prix à battre officiel</th><th>Notre moyenne début</th><th>Final officiel</th><th>Notre moyenne fin</th><th>Gagnant</th></tr>"+AU.slice(0,20).map(x=>"<tr><td>"+new Date(x.start*1000).toLocaleTimeString("fr-CH")+"</td><td>"+x.a+"</td><td>"+x.ptb+"</td><td>"+x.notreDebut+" ("+x.nDebut+" s)</td><td>"+x.final+"</td><td>"+x.notreFin+" ("+x.nFin+" s)</td><td>"+x.gagnant+"</td></tr>").join("")+"</table></div>";}
