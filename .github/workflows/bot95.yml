@@ -32,6 +32,7 @@ jobs:
           U=https://bot95.pitch67.workers.dev
           sleep 20; curl -sS -m 20 -o /dev/null -w "page %{http_code}\n" $U/ >> /tmp/c.log
           for k in 1 2 3; do sleep 40; echo "=== etat $k" >> /tmp/c.log; curl -sS -m 20 $U/api/etat | python3 -c "import json,sys;d=json.load(sys.stdin);print(json.dumps({'actifs':d['actifs'],'diag':d['diag'],'vetos':d['e']['vetos'],'candidats':d['e']['candidats'],'trades':len(d['e']['trades'])},ensure_ascii=False))" >> /tmp/c.log 2>&1; echo >> /tmp/c.log; done
+          echo "=== v1" >> /tmp/c.log; curl -sS -m 20 "$U/api/etat" | python3 -c "import json,sys;d=json.load(sys.stdin)['v1'];print(json.dumps({'entrees':d.get('entrees'),'pos':d.get('pos'),'refusElan':d.get('refusElan'),'derniers':[(t.get('heure'),t.get('issue'),t.get('net')) for t in d['trades'][:4]],'eth':{'entrees':d['eth'].get('entrees'),'pos':d['eth'].get('pos'),'derniers':[(t.get('heure'),t.get('issue'),t.get('net')) for t in d['eth']['trades'][:4]]},'polyOk':d.get('polyOk'),'latPolyMed':d.get('latPolyMed')},ensure_ascii=False)[:1500])" >> /tmp/c.log 2>&1
           echo "=== fantomes" >> /tmp/c.log; curl -sS -m 20 "$U/api/nouveaux" | head -c 1500 >> /tmp/c.log 2>&1; echo >> /tmp/c.log; curl -sS -m 20 -o /dev/null -w "page nouveaux %{http_code}\n" "$U/nouveaux" >> /tmp/c.log
           echo "=== boite noire" >> /tmp/c.log; curl -sS -m 20 "$U/api/boite/compte" >> /tmp/c.log 2>&1; echo >> /tmp/c.log
           echo "=== sonde binance (idee 2)" >> /tmp/c.log; curl -sS -m 60 "$U/api/binance?s=30" >> /tmp/c.log 2>&1; echo >> /tmp/c.log
