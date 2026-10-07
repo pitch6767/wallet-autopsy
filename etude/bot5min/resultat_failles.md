@@ -1,0 +1,57 @@
+# Chasse aux failles — Polymarket crypto
+
+## C. Remboursements maker sur les 5 min
+
+- BTC : 80 marches, 2744800 parts echangees, frais taker 26199 $ -> remboursement maker ≈ **0.19 cents par part servie** (≈ 0.38 cents par paire Up+Down servie, soit 0.39 % d'une paire a 0,975)
+- ETH : 80 marches, 304910 parts echangees, frais taker 3017 $ -> remboursement maker ≈ **0.20 cents par part servie** (≈ 0.40 cents par paire Up+Down servie, soit 0.41 % d'une paire a 0,975)
+
+Champs recompenses/frais d'un marche 5 min (gamma) : `{"marketMakerAddress": "", "orderMinSize": 5, "makerBaseFee": 1000, "takerBaseFee": 1000, "rewardsMinSize": 50, "rewardsMaxSpread": 4.5, "spread": 0.01, "holdingRewardsEnabled": false, "feesEnabled": true, "makerRebatesFeeShareBps": 10000, "feeType": "crypto_fees_v2", "feeSchedule": {"exponent": 1, "rate": 0.07, "takerOnly": true, "rebateRate": 0.2}}`
+
+## A/B. Echelles et fourchettes crypto ouvertes — 2100 evenements, 4 passages a 5 min d'intervalle
+
+Net = gain garanti par dollar de paiement, frais taker 0,072·p·(1−p) compris (hypothese prudente). Positif = faille.
+
+| Type | Evenement | Jambes (meilleur moment) | Cout | Net garanti | Taille dispo (parts) | Passages positifs |
+|---|---|---|---|---|---|---|
+| echelle | Variational FDV above ___ one day after launch? | OUI >5 a 0.048 + NON >100 a 0.019 | 0.067 | **+0.928** | 55 | 20/20 |
+| echelle | Variational FDV above ___ one day after launch? | OUI >4 a 0.062 + NON >100 a 0.019 | 0.081 | **+0.913** | 55 | 20/24 |
+| echelle | Multipli.fi FDV above ___ one day after launch? | OUI >1 a 0.039 + NON >50 a 0.062 | 0.101 | **+0.892** | 100 | 36/36 |
+| echelle | 3Jane FDV above ___ one day after launch? | OUI >1.5 a 0.039 + NON >40 a 0.08 | 0.119 | **+0.873** | 28 | 32/40 |
+| echelle | 3Jane FDV above ___ one day after launch? | OUI >2 a 0.039 + NON >40 a 0.08 | 0.119 | **+0.873** | 90 | 32/36 |
+| echelle | 3Jane FDV above ___ one day after launch? | OUI >1 a 0.047 + NON >40 a 0.08 | 0.127 | **+0.864** | 60 | 28/44 |
+| echelle | Variational FDV above ___ one day after launch? | OUI >3 a 0.128 + NON >100 a 0.019 | 0.147 | **+0.844** | 55 | 20/28 |
+| echelle | Apyx FDV above ___ one day after launch? | OUI >1 a 0.031 + NON >50 a 0.142 | 0.173 | **+0.816** | 30 | 28/32 |
+| echelle | Predict.fun FDV above ___ one day after launch? | OUI >2 a 0.206 + NON >50 a 0.039 | 0.245 | **+0.741** | 150 | 32/32 |
+| echelle | Predict.fun FDV above ___ one day after launch? | OUI >1.5 a 0.273 + NON >50 a 0.039 | 0.312 | **+0.671** | 50 | 32/36 |
+| echelle | Variational FDV above ___ one day after launch? | OUI >2 a 0.299 + NON >100 a 0.019 | 0.318 | **+0.666** | 40 | 20/32 |
+| echelle | Saturn FDV above ___ one day after launch? | OUI >1 a 0.03 + NON >50 a 0.31 | 0.340 | **+0.643** | 5 | 32/36 |
+| echelle | Arc FDV above ___ one day after launch? | OUI >20 a 0.015 + NON >500 a 0.38 | 0.395 | **+0.587** | 82 | 8/8 |
+| echelle | Extended FDV above ___ one day after launch? | OUI >3 a 0.024 + NON >150 a 0.39 | 0.414 | **+0.567** | 138 | 16/16 |
+| echelle | Predict.fun FDV above ___ one day after launch? | OUI >1 a 0.375 + NON >50 a 0.039 | 0.414 | **+0.566** | 125 | 32/40 |
+| echelle | StandX FDV above ___ one day after launch? | OUI >10 a 0.017 + NON >50 a 0.4 | 0.417 | **+0.565** | 9 | 20/20 |
+| echelle | Extended FDV above ___ one day after launch? | OUI >2 a 0.035 + NON >150 a 0.39 | 0.425 | **+0.555** | 138 | 16/20 |
+| echelle | StandX FDV above ___ one day after launch? | OUI >7 a 0.027 + NON >50 a 0.4 | 0.427 | **+0.554** | 55 | 20/24 |
+| echelle | StandX FDV above ___ one day after launch? | OUI >2 a 0.03 + NON >50 a 0.4 | 0.430 | **+0.551** | 30 | 20/36 |
+| echelle | StandX FDV above ___ one day after launch? | OUI >5 a 0.03 + NON >50 a 0.4 | 0.430 | **+0.551** | 45 | 20/28 |
+| echelle | StandX FDV above ___ one day after launch? | OUI >3 a 0.034 + NON >50 a 0.4 | 0.434 | **+0.546** | 98 | 20/32 |
+| echelle | Arc FDV above ___ one day after launch? | OUI >10 a 0.059 + NON >500 a 0.38 | 0.439 | **+0.540** | 43 | 8/12 |
+| echelle | Extended FDV above ___ one day after launch? | OUI >1 a 0.051 + NON >150 a 0.39 | 0.441 | **+0.538** | 138 | 16/24 |
+| echelle | Ethereal FDV above ___ one day after launch? | OUI >1 a 0.027 + NON >25 a 0.42 | 0.447 | **+0.534** | 43 | 36/40 |
+| echelle | Ethereal FDV above ___ one day after launch? | OUI >2 a 0.027 + NON >25 a 0.42 | 0.447 | **+0.534** | 47 | 36/36 |
+| echelle | Tuyo FDV above ___ one day after launch? | OUI >1.5 a 0.1 + NON >20 a 0.35 | 0.450 | **+0.527** | 5 | 32/36 |
+| echelle | Tuyo FDV above ___ one day after launch? | OUI >1 a 0.11 + NON >20 a 0.35 | 0.460 | **+0.517** | 5 | 32/40 |
+| echelle | Arc FDV above ___ one day after launch? | OUI >7 a 0.121 + NON >500 a 0.38 | 0.501 | **+0.474** | 61 | 8/16 |
+| echelle | StandX FDV above ___ one day after launch? | OUI >1 a 0.12 + NON >50 a 0.4 | 0.520 | **+0.455** | 110 | 20/40 |
+| fourchettes OUI | What price will Ethereum hit October 5-11? | 13 OUI | 0.539 | **+0.427** | 5 | 4/4 |
+| echelle | Reya FDV above ___ one day after launch? | OUI >1 a 0.011 + NON >40 a 0.56 | 0.571 | **+0.410** | 4 | 28/28 |
+| echelle | Variational FDV above ___ one day after launch? | OUI >1 a 0.61 + NON >100 a 0.019 | 0.629 | **+0.353** | 55 | 20/36 |
+| echelle | Theo FDV above ___ one day after launch? | OUI >1 a 0.002 + NON >100 a 0.63 | 0.632 | **+0.351** | 83 | 12/12 |
+| echelle | Arc FDV above ___ one day after launch? | OUI >5 a 0.25 + NON >500 a 0.38 | 0.630 | **+0.340** | 82 | 8/20 |
+| echelle | Base FDV above ___ one day after launch? | OUI >12 a 0.12 + NON >500 a 0.52 | 0.640 | **+0.334** | 327 | 4/4 |
+| echelle | Base FDV above ___ one day after launch? | OUI >8 a 0.15 + NON >500 a 0.52 | 0.670 | **+0.303** | 188 | 4/12 |
+| echelle | Base FDV above ___ one day after launch? | OUI >10 a 0.16 + NON >500 a 0.52 | 0.680 | **+0.292** | 313 | 4/8 |
+| echelle | Relay FDV above ___ one day after launch? | OUI >1.5 a 0.053 + NON >100 a 0.64 | 0.693 | **+0.287** | 55 | 28/28 |
+| echelle | Arc FDV above ___ one day after launch? | OUI >4 a 0.32 + NON >500 a 0.38 | 0.700 | **+0.267** | 82 | 8/24 |
+| echelle | Unit FDV above ___ one day after launch? | OUI >3 a 0.17 + NON >200 a 0.55 | 0.720 | **+0.252** | 220 | 8/16 |
+
+Combinaisons avec un gain garanti > 0 au moins une fois : **94** sur 643.
