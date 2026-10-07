@@ -20,7 +20,10 @@ const NV = {
     VARIANTES: { "assurance 6/9/12": [[0.06, 0.25], [0.09, 0.5], [0.12, 1.0]], "assurance 4/7/10": [[0.04, 0.25], [0.07, 0.5], [0.10, 1.0]] } },
   // désaccord modèle / marché (analyse du 06.10 : écart >= 0,10 → le modèle a raison 61 %, +0,07 $/part sur 12 jours) : achat taker au meilleur vendeur, gardé jusqu'à la fin
   // 07.10.2026 (décision de Pitch) : on ne garde que V1, assurance et désaccord 20 — tout le reste est arrêté (résultats figés sur la page)
-  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20"],
+  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord confirme", "desaccord confirme perp"],
+  // 07.10.2026 : désaccord CONFIRMÉ (analyse sur les vrais carnets) : écart >= 0,20 (BTC) / 0,10 (ETH) repéré, on attend 20 s,
+  // on n'achète que si notre côté a déjà monté de 3 cents vers le modèle et que le modèle garde 3 cents d'avance ; gardé jusqu'à la fin.
+  CONFIRME: { ECART: { BTC: 0.20, ETH: 0.10 }, ATTENTE_S: 20, HAUSSE: 0.03, AVANCE_MIN: 0.03, MISE: 50 },
   DESACCORD: { VARIANTES: { "desaccord 20": 0.20 }, MISE: 50, TMIN: 5, ARRETES: true,
     // gestion après l'entrée (06.10) : copies de chaque désaccord gérées autrement, pour comparer
     GESTIONS: ["validation", "validation+inversion", "convergence", "verrou", "demi", "freeroll"], FENETRE_S: 20, MIN_S: 3,
@@ -1288,6 +1291,7 @@ export class Bot {
         break;
       }
     }
+    try { this.dConfirme(a, mk, pu, tleft); } catch (err) { this.erreur("désaccord confirmé", err); }
     // ---- 4. désaccord : le modèle donne au moins X de plus que le meilleur vendeur → achat, une fois par cycle et par variante
     if (tleft >= NV.DESACCORD.TMIN && !NV.DESACCORD.ARRETES) { try { this.dNouvelles(a, mk, pu, tleft); } catch (err) { this.erreur("désaccords nouveaux", err); } }
     if (tleft >= NV.DESACCORD.TMIN) for (const [nom, ecart] of Object.entries(NV.DESACCORD.VARIANTES)) {
@@ -1456,6 +1460,31 @@ export class Bot {
         this.nNote(P, `offre maker servie : ${q.parts.toFixed(1)} parts à ${q.bid} (sans frais)`);
         P.type = this.dType(a, q.up, tleft, q.bid);
         this.dCopies(P, MK.ecart, a, mk, q.up, { parts: q.parts, cout: q.cout }, NV.DESACCORD.GESTIONS_NOUVELLES);
+        this.nSauver();
+      }
+    }
+  }
+  dConfirme(a, mk, pu, tleft) {
+    const C = NV.CONFIRME, E = C.ECART[a]; if (!E || tleft < 5) return;
+    const Z = ((this._dcf = this._dcf || {})[a] = this._dcf[a] && this._dcf[a].start === mk.start ? this._dcf[a] : { start: mk.start, det: {}, fait: {} });
+    for (const up of [true, false]) {
+      const id = up ? mk.up : mk.down, b = this.livreTrie(id, "bids")[0], k = this.livreTrie(id, "asks")[0], fair = up ? pu : 1 - pu;
+      if (!b || !k) continue;
+      const mid = (b[0] + k[0]) / 2, cle = up ? "U" : "D";
+      if (!Z.det[cle]) { if (k[0] >= 0.03 && k[0] <= 0.97 && fair - k[0] >= E && tleft >= 25) Z.det[cle] = { t: now(), mid, perp: this.prixA(a, "perp", Math.floor(now())) }; continue; }
+      const d = Z.det[cle]; if (d.fini || now() - d.t < C.ATTENTE_S) continue;
+      d.fini = true;                                   // une seule décision, 20 s après la détection
+      if (mid - d.mid < C.HAUSSE || fair - k[0] < C.AVANCE_MIN || k[0] > 0.97) continue;
+      const p1 = this.prixA(a, "perp", Math.floor(now())), p0 = this.prixA(a, "perp", Math.floor(now()) - 5);
+      const perpOk = p1 && p0 ? (p1 - p0) * (up ? 1 : -1) >= 0 : false;
+      for (const nom of ["desaccord confirme", "desaccord confirme perp"]) {
+        if (nom.endsWith("perp") && !perpOk) continue;
+        if (Z.fait[nom]) continue;
+        const r = this.nAcheter(id, C.MISE / k[0], k[0] + 0.01); if (r.parts < 1) continue;
+        Z.fait[nom] = true;
+        const P = this.nPos(nom, a, mk, { famille: "desaccord", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0) });
+        P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
+        this.nNote(P, `désaccord repéré à ${d.mid.toFixed(3)} il y a ${(now() - d.t).toFixed(0)} s, marché monté à ${mid.toFixed(3)} → achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix} (modèle ${fair.toFixed(3)})`);
         this.nSauver();
       }
     }
@@ -1766,6 +1795,8 @@ const ENTREE={"V1 actuel (avec stop)":"V1 d'origine : achète la jambe à 0,55�
 "fin":"Fin de cycle : dans les dernières 90–180 s, achète à 0,70–0,90 quand le modèle est sûr à ≥ 93–95 %, garde jusqu'à la fin.",
 "desaccord 10":"Désaccord 10 : achète le côté que le modèle estime à au moins 10 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
 "desaccord 15":"Désaccord 15 : achète le côté que le modèle estime à au moins 15 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
+"desaccord confirme":"Désaccord CONFIRMÉ : le modèle a 20 pts d'avance (BTC) ou 10 pts (ETH) ; on attend 20 s et on n'achète que si le marché est déjà monté de 3 cents vers le modèle (il garde 3 cents d'avance). Gardé jusqu'à la fin.",
+"desaccord confirme perp":"Désaccord CONFIRMÉ + PERP : pareil, et en plus le perp Bybit doit aller dans notre sens sur les 5 dernières secondes.",
 "desaccord 20":"Désaccord 20 : achète le côté que le modèle estime à au moins 20 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
 "desaccord combine 2.5":"Valeur combinée 2,5 : on mélange le prix du marché (≈70 %) et notre modèle (≈30 %) ; achète si cette valeur combinée dépasse le vendeur d'au moins 2,5 points.",
 "desaccord combine 4":"Valeur combinée 4 : on mélange le prix du marché (≈70 %) et notre modèle (≈30 %) ; achète si cette valeur combinée dépasse le vendeur d'au moins 4 points.",
