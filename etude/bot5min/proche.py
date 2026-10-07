@@ -125,6 +125,13 @@ def main():
         for nom in ("Binance ou perp avec nous", "aucune bourse contre nous", "3 bourses sur 4 avec nous"):
             for mode, h in (("retombe", 3), ("retombe", 5), ("les_deux", 5), ("pas_rejoint", 10)):
                 rap.append(ligne(f"{nom} + sortie {h} s ({mode})", [(e["st"], regle_A(e, h, mode)) for e in EV if FILTRES[nom](e)], mi))
+        jour = lambda e: (((e["st"] // 3600) + 2) % 24) >= 8          # heure suisse (ete) du debut du cycle
+        rap += ["", "### E. Memes regles SANS LA NUIT (aucun achat 00h-08h, heure suisse)", "", H]
+        rap.append(ligne("tout acheter a l'entree, sans nuit", [(e["st"], pnl_tenir(e["ask"], e["gm"])) for e in EV if jour(e)], mi))
+        for nom in ("Binance avec nous", "Binance ou perp avec nous", "aucune bourse contre nous"):
+            rap.append(ligne(f"{nom}, sans nuit", [(e["st"], pnl_tenir(e["ask"], e["gm"])) for e in EV if FILTRES[nom](e) and jour(e)], mi))
+            rap.append(ligne(f"{nom}, LA NUIT seulement", [(e["st"], pnl_tenir(e["ask"], e["gm"])) for e in EV if FILTRES[nom](e) and not jour(e)], mi))
+        rap.append(ligne("aucune bourse contre nous + sortie 10 s (pas_rejoint), sans nuit", [(e["st"], regle_A(e, 10, "pas_rejoint")) for e in EV if FILTRES["aucune bourse contre nous"](e) and jour(e)], mi))
         rap.append("")
         open(OUT + "resultat_proche.md", "w").write("\n".join(rap))
     print("\n".join(rap))
