@@ -1,0 +1,147 @@
+BTC 240 cycles
+ETH 241 cycles
+320 regles
+# Desaccords — recherche a fond sur les vrais carnets (enregistreur du bot)
+
+Entree : direct = tout de suite ; attente d/c = apres d s si le marche a bouge de +c vers nous ; rebond r = creux puis remontee de r. perp = seulement si le perp va dans notre sens (5 s).
+Gestion : garder ; sortir / inverser / couvrir si le meilleur acheteur tombe de s sous le prix d'entree. Gain par part (1 part), frais compris, resultat officiel.
+
+## BTC — ecart >= 0.10 — 314 desaccords (06.10 14:20 -> 07.10 10:25 UTC)
+
+Reference (tout de suite, garder) : 1re moitie -0.001 $/part (160), **2e moitie -0.051 $/part (152)**
+
+| Regle (classee sur la 1re moitie) | 1re moitie : gain/part (trades) | **2e moitie : gain/part (trades)** | 2e moitie total (1 part) |
+|---|---|---|---|
+| attente 2 s +0.03 · garder | +0.110 (17) | **-0.026** (22) | -0.58 |
+| direct + perp · inverser 0.05 | +0.073 (27) | **+0.048** (22) | +1.05 |
+| attente 10 s +0.01 + perp · garder | +0.069 (41) | **+0.038** (39) | +1.47 |
+| direct + perp · inverser 0.1 | +0.068 (27) | **+0.132** (22) | +2.90 |
+| attente 10 s +0.0 + perp · garder | +0.067 (55) | **+0.012** (52) | +0.61 |
+| attente 5 s +0.01 · garder | +0.066 (50) | **-0.114** (52) | -5.94 |
+| attente 2 s +0.01 · garder | +0.061 (46) | **-0.117** (50) | -5.83 |
+| attente 20 s +0.01 + perp · inverser 0.1 | +0.055 (37) | **+0.029** (30) | +0.88 |
+| attente 20 s +0.0 + perp · inverser 0.1 | +0.054 (44) | **+0.014** (37) | +0.53 |
+| attente 5 s +0.01 + perp · garder | +0.053 (42) | **-0.049** (37) | -1.83 |
+| attente 20 s +0.0 + perp · sortir 0.1 | +0.042 (44) | **-0.056** (37) | -2.09 |
+| attente 20 s +0.0 + perp · couvrir 0.1 | +0.042 (44) | **-0.056** (37) | -2.09 |
+
+Parmi les 20 meilleures de la 1re moitie : **7** restent positives sur la 2e moitie.
+
+Gestion seule (moyenne de toutes les entrees, 2e moitie) : inverser 0.05 +0.012 · inverser 0.15 -0.024 · inverser 0.1 -0.029 · couvrir 0.05 -0.030 · sortir 0.05 -0.030 · couvrir 0.15 -0.048 · sortir 0.15 -0.048 · couvrir 0.1 -0.050 · sortir 0.1 -0.050 · garder -0.071
+
+## BTC — ecart >= 0.15 — 280 desaccords (06.10 14:20 -> 07.10 10:25 UTC)
+
+Reference (tout de suite, garder) : 1re moitie +0.004 $/part (143), **2e moitie -0.050 $/part (136)**
+
+| Regle (classee sur la 1re moitie) | 1re moitie : gain/part (trades) | **2e moitie : gain/part (trades)** | 2e moitie total (1 part) |
+|---|---|---|---|
+| attente 5 s +0.03 + perp · inverser 0.1 | +0.240 (19) | **-0.183** (22) | -4.03 |
+| attente 5 s +0.03 + perp · inverser 0.05 | +0.219 (19) | **-0.106** (22) | -2.34 |
+| attente 5 s +0.03 + perp · inverser 0.15 | +0.198 (19) | **-0.091** (22) | -1.99 |
+| attente 5 s +0.01 + perp · inverser 0.1 | +0.171 (29) | **-0.184** (33) | -6.08 |
+| attente 10 s +0.03 · inverser 0.1 | +0.168 (26) | **-0.070** (26) | -1.83 |
+| attente 10 s +0.03 + perp · inverser 0.1 | +0.166 (24) | **-0.100** (22) | -2.20 |
+| attente 20 s +0.03 + perp · inverser 0.05 | +0.143 (22) | **-0.013** (19) | -0.25 |
+| attente 5 s +0.03 · inverser 0.05 | +0.140 (26) | **-0.054** (25) | -1.34 |
+| attente 20 s +0.03 + perp · inverser 0.15 | +0.138 (22) | **+0.016** (19) | +0.30 |
+| attente 5 s +0.03 · inverser 0.1 | +0.138 (26) | **-0.124** (25) | -3.10 |
+| attente 5 s +0.01 + perp · inverser 0.15 | +0.134 (29) | **-0.094** (33) | -3.11 |
+| attente 5 s +0.03 + perp · sortir 0.1 | +0.132 (19) | **-0.095** (22) | -2.10 |
+
+Parmi les 20 meilleures de la 1re moitie : **1** restent positives sur la 2e moitie.
+
+Gestion seule (moyenne de toutes les entrees, 2e moitie) : inverser 0.05 -0.040 · couvrir 0.05 -0.048 · sortir 0.05 -0.048 · inverser 0.15 -0.048 · couvrir 0.15 -0.051 · sortir 0.15 -0.051 · garder -0.055 · couvrir 0.1 -0.059 · sortir 0.1 -0.059 · inverser 0.1 -0.064
+
+## BTC — ecart >= 0.20 — 238 desaccords (06.10 14:20 -> 07.10 10:25 UTC)
+
+Reference (tout de suite, garder) : 1re moitie -0.005 $/part (120), **2e moitie -0.018 $/part (117)**
+
+| Regle (classee sur la 1re moitie) | 1re moitie : gain/part (trades) | **2e moitie : gain/part (trades)** | 2e moitie total (1 part) |
+|---|---|---|---|
+| attente 20 s +0.03 + perp · garder | +0.178 (15) | **+0.204** (17) | +3.47 |
+| attente 5 s +0.03 · garder | +0.157 (17) | **+0.053** (23) | +1.21 |
+| attente 10 s +0.03 · garder | +0.149 (17) | **+0.016** (30) | +0.47 |
+| attente 10 s +0.03 + perp · garder | +0.143 (15) | **+0.043** (25) | +1.08 |
+| attente 10 s +0.03 · couvrir 0.15 | +0.133 (17) | **+0.026** (30) | +0.77 |
+| attente 10 s +0.03 · sortir 0.15 | +0.133 (17) | **+0.026** (30) | +0.77 |
+| attente 5 s +0.03 · couvrir 0.15 | +0.130 (17) | **+0.016** (23) | +0.36 |
+| attente 5 s +0.03 · sortir 0.15 | +0.130 (17) | **+0.016** (23) | +0.36 |
+| attente 20 s +0.03 · garder | +0.130 (19) | **+0.165** (22) | +3.63 |
+| attente 10 s +0.03 + perp · couvrir 0.15 | +0.121 (15) | **+0.031** (25) | +0.77 |
+| attente 10 s +0.03 + perp · sortir 0.15 | +0.121 (15) | **+0.031** (25) | +0.77 |
+| attente 20 s +0.03 + perp · couvrir 0.15 | +0.121 (15) | **+0.198** (17) | +3.37 |
+
+Parmi les 20 meilleures de la 1re moitie : **17** restent positives sur la 2e moitie.
+
+Gestion seule (moyenne de toutes les entrees, 2e moitie) : garder +0.034 · couvrir 0.15 +0.023 · sortir 0.15 +0.023 · inverser 0.15 +0.012 · couvrir 0.05 +0.002 · sortir 0.05 +0.002 · couvrir 0.1 -0.006 · sortir 0.1 -0.006 · inverser 0.05 -0.030 · inverser 0.1 -0.047
+
+## ETH — ecart >= 0.10 — 307 desaccords (06.10 14:15 -> 07.10 10:25 UTC)
+
+Reference (tout de suite, garder) : 1re moitie -0.035 $/part (149), **2e moitie -0.001 $/part (157)**
+
+| Regle (classee sur la 1re moitie) | 1re moitie : gain/part (trades) | **2e moitie : gain/part (trades)** | 2e moitie total (1 part) |
+|---|---|---|---|
+| attente 2 s +0.03 · garder | +0.195 (16) | **+0.023** (24) | +0.56 |
+| attente 2 s +0.03 · sortir 0.15 | +0.159 (16) | **-0.032** (24) | -0.77 |
+| attente 2 s +0.03 · couvrir 0.15 | +0.159 (16) | **-0.032** (24) | -0.77 |
+| attente 2 s +0.0 + perp · inverser 0.05 | +0.156 (17) | **-0.341** (18) | -6.15 |
+| attente 2 s +0.03 · inverser 0.15 | +0.123 (16) | **-0.088** (24) | -2.10 |
+| attente 20 s +0.03 + perp · garder | +0.118 (19) | **+0.178** (23) | +4.09 |
+| attente 2 s +0.0 + perp · inverser 0.1 | +0.099 (17) | **-0.241** (18) | -4.34 |
+| attente 20 s +0.03 · garder | +0.099 (26) | **+0.139** (32) | +4.44 |
+| direct + perp · inverser 0.1 | +0.096 (23) | **-0.028** (27) | -0.76 |
+| direct + perp · inverser 0.05 | +0.077 (23) | **-0.196** (27) | -5.30 |
+| attente 2 s +0.0 + perp · couvrir 0.05 | +0.069 (17) | **-0.118** (18) | -2.12 |
+| attente 2 s +0.0 + perp · sortir 0.05 | +0.069 (17) | **-0.118** (18) | -2.12 |
+
+Parmi les 20 meilleures de la 1re moitie : **4** restent positives sur la 2e moitie.
+
+Gestion seule (moyenne de toutes les entrees, 2e moitie) : garder +0.053 · couvrir 0.15 -0.002 · sortir 0.15 -0.002 · couvrir 0.1 -0.031 · sortir 0.1 -0.031 · couvrir 0.05 -0.038 · sortir 0.05 -0.038 · inverser 0.15 -0.058 · inverser 0.1 -0.114 · inverser 0.05 -0.128
+
+## ETH — ecart >= 0.15 — 271 desaccords (06.10 14:15 -> 07.10 10:25 UTC)
+
+Reference (tout de suite, garder) : 1re moitie -0.014 $/part (136), **2e moitie -0.001 $/part (134)**
+
+| Regle (classee sur la 1re moitie) | 1re moitie : gain/part (trades) | **2e moitie : gain/part (trades)** | 2e moitie total (1 part) |
+|---|---|---|---|
+| attente 5 s +0.03 · inverser 0.05 | +0.136 (24) | **-0.055** (36) | -1.98 |
+| attente 5 s +0.03 + perp · inverser 0.05 | +0.123 (21) | **-0.064** (30) | -1.91 |
+| attente 2 s +0.0 + perp · garder | +0.118 (24) | **-0.117** (30) | -3.51 |
+| attente 5 s +0.01 · inverser 0.05 | +0.085 (38) | **-0.036** (54) | -1.93 |
+| attente 20 s +0.0 + perp · inverser 0.05 | +0.084 (35) | **+0.042** (30) | +1.27 |
+| attente 20 s +0.01 · inverser 0.05 | +0.080 (38) | **-0.028** (40) | -1.11 |
+| attente 20 s +0.0 · inverser 0.05 | +0.080 (48) | **-0.036** (46) | -1.64 |
+| attente 20 s +0.01 + perp · inverser 0.05 | +0.077 (28) | **+0.078** (25) | +1.95 |
+| attente 2 s +0.0 + perp · sortir 0.15 | +0.070 (24) | **-0.061** (30) | -1.84 |
+| attente 2 s +0.0 + perp · couvrir 0.15 | +0.070 (24) | **-0.061** (30) | -1.84 |
+| attente 20 s +0.03 · inverser 0.05 | +0.066 (29) | **-0.035** (34) | -1.17 |
+| attente 2 s +0.0 + perp · couvrir 0.1 | +0.063 (24) | **-0.073** (30) | -2.20 |
+
+Parmi les 20 meilleures de la 1re moitie : **5** restent positives sur la 2e moitie.
+
+Gestion seule (moyenne de toutes les entrees, 2e moitie) : garder +0.019 · couvrir 0.15 +0.011 · sortir 0.15 +0.011 · inverser 0.15 +0.004 · couvrir 0.1 -0.005 · sortir 0.1 -0.005 · couvrir 0.05 -0.015 · sortir 0.05 -0.015 · inverser 0.1 -0.029 · inverser 0.05 -0.049
+
+## ETH — ecart >= 0.20 — 220 desaccords (06.10 14:15 -> 07.10 10:25 UTC)
+
+Reference (tout de suite, garder) : 1re moitie -0.013 $/part (114), **2e moitie +0.025 $/part (106)**
+
+| Regle (classee sur la 1re moitie) | 1re moitie : gain/part (trades) | **2e moitie : gain/part (trades)** | 2e moitie total (1 part) |
+|---|---|---|---|
+| attente 20 s +0.03 + perp · inverser 0.05 | +0.228 (16) | **-0.004** (18) | -0.07 |
+| attente 20 s +0.03 · inverser 0.05 | +0.224 (17) | **+0.004** (23) | +0.10 |
+| attente 20 s +0.01 + perp · inverser 0.05 | +0.190 (24) | **-0.033** (22) | -0.73 |
+| attente 2 s +0.0 + perp · inverser 0.1 | +0.189 (27) | **+0.215** (18) | +3.88 |
+| attente 20 s +0.01 · inverser 0.05 | +0.177 (27) | **-0.019** (28) | -0.52 |
+| attente 20 s +0.03 + perp · inverser 0.1 | +0.174 (16) | **+0.122** (18) | +2.20 |
+| attente 20 s +0.03 · inverser 0.1 | +0.155 (17) | **+0.089** (23) | +2.05 |
+| attente 2 s +0.0 + perp · inverser 0.15 | +0.142 (27) | **+0.262** (18) | +4.72 |
+| attente 20 s +0.01 + perp · inverser 0.1 | +0.131 (24) | **+0.055** (22) | +1.20 |
+| attente 2 s +0.01 + perp · inverser 0.1 | +0.127 (16) | **+0.226** (11) | +2.49 |
+| attente 2 s +0.0 + perp · couvrir 0.1 | +0.116 (27) | **+0.206** (18) | +3.71 |
+| attente 2 s +0.0 + perp · sortir 0.1 | +0.116 (27) | **+0.206** (18) | +3.71 |
+
+Parmi les 20 meilleures de la 1re moitie : **15** restent positives sur la 2e moitie.
+
+Gestion seule (moyenne de toutes les entrees, 2e moitie) : inverser 0.15 +0.089 · sortir 0.15 +0.085 · couvrir 0.15 +0.085 · garder +0.081 · couvrir 0.1 +0.071 · sortir 0.1 +0.071 · inverser 0.1 +0.061 · couvrir 0.05 +0.047 · sortir 0.05 +0.047 · inverser 0.05 +0.013
+
+code sortie: 0
