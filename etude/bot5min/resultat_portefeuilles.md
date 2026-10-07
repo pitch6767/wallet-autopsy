@@ -2,58 +2,58 @@
 
 Gain = resolution officielle (parts gagnantes x 1 $) + ventes + fusions - achats. Paire = prix moyen d'achat Up + prix moyen d'achat Down (marches ou il achete les deux). Desequilibre = |Up - Down| / (Up + Down) en fin de marche (0 = paire parfaite, 1 = un seul cote). Favori gagne = le cote ou il avait le plus de parts a gagne. 1er achat = secondes apres le debut du marche.
 
-| Portefeuille | Origine | Marche | Marches | Gain | Gain / mise | Marches gagnants | Achete les 2 cotes | Paire mediane | Desequilibre median | Favori gagne | 1er achat | Prix moyen achete |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 0xb27bc932… | web : paire complete | 5 min | 59 | +1264 $ | +4.5 % | 66 % | 85 % | 0.923 | 0.60 | 46 % | 13 s | 0.47 |
-| 0xb27bc932… | web : paire complete | 15 min | 14 | -159 $ | -1.8 % | 36 % | 100 % | 1.087 | 0.28 | 86 % | 14 s | 0.56 |
-| 0xb27bc932… | web : paire complete | 240 min | 3 | +492 $ | +25.2 % | 100 % | 100 % | 1.003 | 0.85 | 0 % | 9150 s | 0.42 |
-| 0x89b5cdaa… | web : paire puis penchant (ohanism) | 5 min | 144 | -3147 $ | -13.1 % | 52 % | 35 % | 0.985 | 1.00 | 55 % | 66 s | 0.56 |
-| 0x89b5cdaa… | web : paire puis penchant (ohanism) | 15 min | 58 | +790 $ | +6.8 % | 76 % | 43 % | 1.317 | 1.00 | 81 % | 158 s | 0.71 |
-| 0xeebde7a0… | web : desequilibre (bonereaper) | 5 min | 256 | -1090 $ | -2.5 % | 54 % | 63 % | 0.981 | 0.73 | 54 % | -3 s | 0.50 |
-| 0xeebde7a0… | web : desequilibre (bonereaper) | 15 min | 61 | -1108 $ | -6.0 % | 38 % | 90 % | 0.994 | 0.46 | 46 % | 26 s | 0.50 |
-| 0xeebde7a0… | web : desequilibre (bonereaper) | 240 min | 4 | +106 $ | +21.0 % | 50 % | 75 % | 0.939 | 0.37 | 50 % | 2382 s | 0.38 |
-| 0x0006af12… | web : fin a 0,99 (stingo43) | 5 min | 622 | +25405 $ | +48.6 % | 63 % | 7 % | 0.600 | 1.00 | 62 % | 304 s | 0.36 |
-| 0x0006af12… | web : fin a 0,99 (stingo43) | 15 min | 81 | +5378 $ | +85.4 % | 65 % | 5 % | 0.461 | 1.00 | 64 % | 904 s | 0.36 |
-| 0x10c95474… | web : valeur juste (collabbsucksandiswashedongrok) | 5 min | 168 | +4734 $ | +9.9 % | 54 % | 53 % | 0.931 | 0.77 | 51 % | 38 s | 0.42 |
-| 0x10c95474… | web : valeur juste (collabbsucksandiswashedongrok) | 15 min | 24 | -646 $ | -26.2 % | 58 % | 38 % | 0.870 | 1.00 | 38 % | 662 s | 0.46 |
-| 0x41e2e1cc… | actif : 120 marches / 120, 31695 $ | 5 min | 89 | +130 $ | +0.4 % | 45 % | 99 % | 0.975 | 0.07 | 52 % | 20 s | 0.48 |
-| 0x41e2e1cc… | actif : 120 marches / 120, 31695 $ | 15 min | 10 | +76 $ | +2.7 % | 80 % | 90 % | 0.965 | 0.04 | 60 % | 184 s | 0.52 |
-| 0xf06d99fb… | actif : 120 marches / 120, 338 $ | 5 min | 1800 | -289 $ | -9.1 % | 7 % | 12 % | 0.813 | 1.00 | 4 % | 232 s | 0.06 |
-| 0xf06d99fb… | actif : 120 marches / 120, 338 $ | 15 min | 10 | -19 $ | -38.6 % | 20 % | 50 % | 0.890 | 0.75 | 20 % | 324 s | 0.30 |
-| 0x17e6a2f9… | actif : 119 marches / 120, 6 $ | 5 min | 2994 | -147 $ | -11.7 % | 6 % | 7 % | 0.900 | 1.00 | 3 % | 236 s | 0.05 |
-| 0x576b0696… | actif : 118 marches / 120, 3656 $ | 5 min | 350 | +109 $ | +0.6 % | 19 % | 31 % | 0.720 | 1.00 | 11 % | 166 s | 0.10 |
-| 0x576b0696… | actif : 118 marches / 120, 3656 $ | 15 min | 147 | -596 $ | -6.1 % | 7 % | 17 % | 0.780 | 1.00 | 8 % | 719 s | 0.07 |
-| 0x576b0696… | actif : 118 marches / 120, 3656 $ | 240 min | 2 | +76 $ | +24.6 % | 50 % | 50 % | 0.925 | 0.67 | 50 % | 5551 s | 0.47 |
-| 0xbfffdf9a… | actif : 116 marches / 120, 6 $ | 5 min | 2805 | +6 $ | +2.1 % | 2 % | 1 % | 0.020 | 1.00 | 1 % | 242 s | 0.02 |
-| 0x355d5424… | actif : 113 marches / 120, 6043 $ | 5 min | 379 | +51 $ | +0.2 % | 83 % | 28 % | 1.458 | 1.00 | 96 % | 181 s | 0.88 |
-| 0x885278f0… | actif : 113 marches / 120, 3857 $ | 5 min | 360 | -264 $ | -1.4 % | 39 % | 74 % | 0.972 | 0.36 | 34 % | 98 s | 0.35 |
-| 0x0c7c5204… | actif : 112 marches / 120, 6828 $ | 5 min | 420 | +411 $ | +1.4 % | 44 % | 62 % | 0.940 | 0.79 | 41 % | 53 s | 0.42 |
-| 0xb4cd4d6f… | actif : 111 marches / 120, 1090 $ | 5 min | 304 | -661 $ | -11.8 % | 34 % | 43 % | 1.010 | 1.00 | 29 % | 102 s | 0.39 |
-| 0xb4cd4d6f… | actif : 111 marches / 120, 1090 $ | 15 min | 64 | +964 $ | +19.4 % | 58 % | 56 % | 1.012 | 0.89 | 55 % | 144 s | 0.46 |
-| 0xb4cd4d6f… | actif : 111 marches / 120, 1090 $ | 240 min | 9 | +36 $ | +33.7 % | 44 % | 56 % | 0.815 | 0.69 | 33 % | 3567 s | 0.43 |
-| 0xb9587c37… | actif : 109 marches / 120, 3743 $ | 5 min | 579 | -128 $ | -0.6 % | 40 % | 70 % | 0.894 | 0.56 | 16 % | 72 s | 0.37 |
-| 0xb9587c37… | actif : 109 marches / 120, 3743 $ | 15 min | 65 | +34 $ | +1.8 % | 48 % | 88 % | 0.870 | 0.39 | 5 % | 98 s | 0.36 |
-| 0xf8af03f1… | actif : 108 marches / 120, 7692 $ | 5 min | 297 | +737 $ | +3.8 % | 63 % | 44 % | 1.007 | 1.00 | 66 % | 81 s | 0.55 |
-| 0xf8af03f1… | actif : 108 marches / 120, 7692 $ | 15 min | 25 | +190 $ | +1.7 % | 60 % | 84 % | 0.969 | 0.22 | 64 % | 32 s | 0.56 |
-| 0x5e2b9261… | actif : 104 marches / 120, 2155 $ | 5 min | 712 | +566 $ | +4.7 % | 57 % | 42 % | 1.050 | 1.00 | 65 % | 94 s | 0.63 |
-| 0x5e2b9261… | actif : 104 marches / 120, 2155 $ | 15 min | 77 | +4 $ | +0.1 % | 60 % | 78 % | 1.148 | 0.37 | 81 % | 123 s | 0.65 |
+| Portefeuille | Origine | Periode lue | Marche | Marches | Gain | Gain / mise | Marches gagnants | Achete les 2 cotes | Paire mediane | Desequilibre median | Favori gagne | 1er achat | Prix moyen achete |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0xb27bc932… | web : paire complete | 24.09→24.09 | 5 min | 59 | +1264 $ | +4.5 % | 66 % | 85 % | 0.923 | 0.60 | 46 % | 13 s | 0.47 |
+| 0xb27bc932… | web : paire complete | 24.09→24.09 | 15 min | 14 | -159 $ | -1.8 % | 36 % | 100 % | 1.087 | 0.28 | 86 % | 14 s | 0.56 |
+| 0xb27bc932… | web : paire complete | 24.09→24.09 | 240 min | 3 | +492 $ | +25.2 % | 100 % | 100 % | 1.003 | 0.85 | 0 % | 9150 s | 0.42 |
+| 0x89b5cdaa… | web : paire puis penchant (ohanism) | 02.06→11.06 | 5 min | 144 | -3147 $ | -13.1 % | 52 % | 35 % | 0.985 | 1.00 | 55 % | 66 s | 0.56 |
+| 0x89b5cdaa… | web : paire puis penchant (ohanism) | 02.06→11.06 | 15 min | 58 | +790 $ | +6.8 % | 76 % | 43 % | 1.317 | 1.00 | 81 % | 158 s | 0.71 |
+| 0xeebde7a0… | web : desequilibre (bonereaper) | 06.10→07.10 | 5 min | 257 | -1274 $ | -2.9 % | 53 % | 62 % | 0.983 | 0.72 | 54 % | -6 s | 0.50 |
+| 0xeebde7a0… | web : desequilibre (bonereaper) | 06.10→07.10 | 15 min | 62 | -941 $ | -5.4 % | 39 % | 89 % | 0.994 | 0.46 | 45 % | 26 s | 0.50 |
+| 0xeebde7a0… | web : desequilibre (bonereaper) | 06.10→07.10 | 240 min | 4 | +17 $ | +3.6 % | 50 % | 75 % | 0.939 | 0.37 | 50 % | 2382 s | 0.37 |
+| 0x0006af12… | web : fin a 0,99 (stingo43) | 14.04→24.04 | 5 min | 622 | +25405 $ | +48.6 % | 63 % | 7 % | 0.600 | 1.00 | 62 % | 304 s | 0.36 |
+| 0x0006af12… | web : fin a 0,99 (stingo43) | 14.04→24.04 | 15 min | 81 | +5378 $ | +85.4 % | 65 % | 5 % | 0.461 | 1.00 | 64 % | 904 s | 0.36 |
+| 0x10c95474… | web : valeur juste (collabbsucksandiswashedongrok) | 20.05→28.05 | 5 min | 168 | +4734 $ | +9.9 % | 54 % | 53 % | 0.931 | 0.77 | 51 % | 38 s | 0.42 |
+| 0x10c95474… | web : valeur juste (collabbsucksandiswashedongrok) | 20.05→28.05 | 15 min | 24 | -646 $ | -26.2 % | 58 % | 38 % | 0.870 | 1.00 | 38 % | 662 s | 0.46 |
+| 0x41e2e1cc… | actif : 120 marches / 120, 32656 $ | 07.10→07.10 | 5 min | 85 | +121 $ | +0.4 % | 48 % | 99 % | 0.975 | 0.08 | 52 % | 17 s | 0.48 |
+| 0x41e2e1cc… | actif : 120 marches / 120, 32656 $ | 07.10→07.10 | 15 min | 9 | +85 $ | +2.9 % | 89 % | 100 % | 0.961 | 0.04 | 56 % | 147 s | 0.48 |
+| 0xf06d99fb… | actif : 120 marches / 120, 367 $ | 05.10→07.10 | 5 min | 1815 | -254 $ | -8.0 % | 7 % | 11 % | 0.795 | 1.00 | 4 % | 232 s | 0.06 |
+| 0xf06d99fb… | actif : 120 marches / 120, 367 $ | 05.10→07.10 | 15 min | 5 | -11 $ | -51.7 % | 0 % | 40 % | 0.913 | 1.00 | 20 % | 485 s | 0.29 |
+| 0x17e6a2f9… | actif : 119 marches / 120, 6 $ | 02.10→07.10 | 5 min | 2998 | -146 $ | -11.7 % | 6 % | 7 % | 0.900 | 1.00 | 3 % | 236 s | 0.05 |
+| 0x576b0696… | actif : 118 marches / 120, 3917 $ | 06.10→07.10 | 5 min | 348 | -140 $ | -0.8 % | 20 % | 32 % | 0.723 | 1.00 | 10 % | 164 s | 0.11 |
+| 0x576b0696… | actif : 118 marches / 120, 3917 $ | 06.10→07.10 | 15 min | 147 | -666 $ | -6.9 % | 6 % | 17 % | 0.795 | 1.00 | 7 % | 716 s | 0.06 |
+| 0x576b0696… | actif : 118 marches / 120, 3917 $ | 06.10→07.10 | 240 min | 2 | +91 $ | +32.5 % | 50 % | 50 % | 0.964 | 0.64 | 50 % | 6850 s | 0.47 |
+| 0xbfffdf9a… | actif : 115 marches / 120, 6 $ | 26.09→07.10 | 5 min | 2832 | +5 $ | +1.6 % | 2 % | 1 % | 0.020 | 1.00 | 1 % | 242 s | 0.02 |
+| 0x355d5424… | actif : 113 marches / 120, 6203 $ | 06.10→07.10 | 5 min | 387 | -3 $ | -0.0 % | 83 % | 28 % | 1.452 | 1.00 | 95 % | 182 s | 0.88 |
+| 0x885278f0… | actif : 111 marches / 120, 3708 $ | 06.10→07.10 | 5 min | 356 | -473 $ | -2.5 % | 40 % | 75 % | 0.970 | 0.36 | 34 % | 96 s | 0.36 |
+| 0xb4cd4d6f… | actif : 111 marches / 120, 1177 $ | 06.10→07.10 | 5 min | 311 | -707 $ | -11.9 % | 34 % | 43 % | 1.010 | 1.00 | 29 % | 102 s | 0.40 |
+| 0xb4cd4d6f… | actif : 111 marches / 120, 1177 $ | 06.10→07.10 | 15 min | 63 | +932 $ | +18.4 % | 57 % | 57 % | 1.012 | 0.87 | 56 % | 140 s | 0.45 |
+| 0xb4cd4d6f… | actif : 111 marches / 120, 1177 $ | 06.10→07.10 | 240 min | 9 | +37 $ | +35.1 % | 44 % | 44 % | 0.727 | 1.00 | 33 % | 7215 s | 0.41 |
+| 0x0c7c5204… | actif : 110 marches / 120, 6797 $ | 06.10→07.10 | 5 min | 425 | +288 $ | +1.0 % | 44 % | 61 % | 0.947 | 0.80 | 41 % | 55 s | 0.42 |
+| 0xb9587c37… | actif : 107 marches / 120, 3731 $ | 06.10→07.10 | 5 min | 585 | -46 $ | -0.2 % | 40 % | 70 % | 0.899 | 0.56 | 16 % | 72 s | 0.37 |
+| 0xb9587c37… | actif : 107 marches / 120, 3731 $ | 06.10→07.10 | 15 min | 67 | +49 $ | +2.6 % | 48 % | 84 % | 0.857 | 0.45 | 6 % | 104 s | 0.35 |
+| 0xf8af03f1… | actif : 106 marches / 120, 7020 $ | 07.10→07.10 | 5 min | 309 | +535 $ | +2.7 % | 60 % | 45 % | 1.025 | 1.00 | 65 % | 81 s | 0.55 |
+| 0xf8af03f1… | actif : 106 marches / 120, 7020 $ | 07.10→07.10 | 15 min | 25 | +321 $ | +3.0 % | 64 % | 88 % | 0.955 | 0.22 | 60 % | 27 s | 0.55 |
+| 0x5e2b9261… | actif : 104 marches / 120, 2199 $ | 06.10→07.10 | 5 min | 714 | +516 $ | +4.3 % | 56 % | 42 % | 1.053 | 1.00 | 64 % | 95 s | 0.63 |
+| 0x5e2b9261… | actif : 104 marches / 120, 2199 $ | 06.10→07.10 | 15 min | 78 | +20 $ | +0.6 % | 60 % | 76 % | 1.138 | 0.36 | 81 % | 121 s | 0.65 |
 
 ## Taker / maker
 
 - 0xb27bc932bf8110d8f78e55da7d5f0497a18b5b82 (web : paire complete) : 2921 executions Up/Down lues, dont 117 en taker (le reste en maker)
 - 0x89b5cdaaa4866c1e738406712012a630b4078beb (web : paire puis penchant (ohanism)) : 3170 executions Up/Down lues, dont 0 en taker (le reste en maker)
-- 0xeebde7a0e019a63e6b476eb425505b7b3e6eba30 (web : desequilibre (bonereaper)) : 2490 executions Up/Down lues, dont 1388 en taker (le reste en maker)
+- 0xeebde7a0e019a63e6b476eb425505b7b3e6eba30 (web : desequilibre (bonereaper)) : 2463 executions Up/Down lues, dont 1388 en taker (le reste en maker)
 - 0x0006af12cd4dacc450836a0e1ec6ce47365d8c63 (web : fin a 0,99 (stingo43)) : 3389 executions Up/Down lues, dont 886 en taker (le reste en maker)
 - 0x10c95474a829d67b6a41025da3b886f05719e999 (web : valeur juste (collabbsucksandiswashedongrok)) : 3488 executions Up/Down lues, dont 1241 en taker (le reste en maker)
-- 0x41e2e1ccf1e4940029af02259a31c6b89b9fa354 (actif : 120 marches / 120, 31695 $) : 3568 executions Up/Down lues, dont 2037 en taker (le reste en maker)
-- 0xf06d99fbb2ea9801dae4606575d6b23b0b21d823 (actif : 120 marches / 120, 338 $) : 3743 executions Up/Down lues, dont 156 en taker (le reste en maker)
+- 0x41e2e1ccf1e4940029af02259a31c6b89b9fa354 (actif : 120 marches / 120, 32656 $) : 3475 executions Up/Down lues, dont 2122 en taker (le reste en maker)
+- 0xf06d99fbb2ea9801dae4606575d6b23b0b21d823 (actif : 120 marches / 120, 367 $) : 3753 executions Up/Down lues, dont 153 en taker (le reste en maker)
 - 0x17e6a2f9bfdf6e2c0d6a2bb171e6dd15ac2cc4b6 (actif : 119 marches / 120, 6 $) : 3773 executions Up/Down lues, dont 3 en taker (le reste en maker)
-- 0x576b0696fd5a9225d66fd9500fd98f5be10b0cab (actif : 118 marches / 120, 3656 $) : 2940 executions Up/Down lues, dont 656 en taker (le reste en maker)
-- 0xbfffdf9aff0ce13332d163cf5aeecba077c32b8d (actif : 116 marches / 120, 6 $) : 3334 executions Up/Down lues, dont 65 en taker (le reste en maker)
-- 0x355d54242b1fcbc20e6bb3f8d94a1ccaaf5d1c50 (actif : 113 marches / 120, 6043 $) : 3427 executions Up/Down lues, dont 3206 en taker (le reste en maker)
-- 0x885278f0e304bc2d53f805af2ab779cb6011c569 (actif : 113 marches / 120, 3857 $) : 3500 executions Up/Down lues, dont 0 en taker (le reste en maker)
-- 0x0c7c5204404e9d5402d258fedac59c7212bae4cb (actif : 112 marches / 120, 6828 $) : 3547 executions Up/Down lues, dont 3645 en taker (le reste en maker)
-- 0xb4cd4d6fe596f360137e5a0441fecc4e1ec9c041 (actif : 111 marches / 120, 1090 $) : 2721 executions Up/Down lues, dont 2528 en taker (le reste en maker)
-- 0xb9587c373c773d023f47c2f85a30b3d5bddcf513 (actif : 109 marches / 120, 3743 $) : 3282 executions Up/Down lues, dont 3367 en taker (le reste en maker)
-- 0xf8af03f1e68ee7162db8983f0d6dd0dc869854c6 (actif : 108 marches / 120, 7692 $) : 3446 executions Up/Down lues, dont 335 en taker (le reste en maker)
-- 0x5e2b9261b0c4f697b55bf921ff2bc227183d9101 (actif : 104 marches / 120, 2155 $) : 2734 executions Up/Down lues, dont 2823 en taker (le reste en maker)
+- 0x576b0696fd5a9225d66fd9500fd98f5be10b0cab (actif : 118 marches / 120, 3917 $) : 2930 executions Up/Down lues, dont 688 en taker (le reste en maker)
+- 0xbfffdf9aff0ce13332d163cf5aeecba077c32b8d (actif : 115 marches / 120, 6 $) : 3362 executions Up/Down lues, dont 65 en taker (le reste en maker)
+- 0x355d54242b1fcbc20e6bb3f8d94a1ccaaf5d1c50 (actif : 113 marches / 120, 6203 $) : 3508 executions Up/Down lues, dont 3189 en taker (le reste en maker)
+- 0x885278f0e304bc2d53f805af2ab779cb6011c569 (actif : 111 marches / 120, 3708 $) : 3590 executions Up/Down lues, dont 0 en taker (le reste en maker)
+- 0xb4cd4d6fe596f360137e5a0441fecc4e1ec9c041 (actif : 111 marches / 120, 1177 $) : 2773 executions Up/Down lues, dont 2527 en taker (le reste en maker)
+- 0x0c7c5204404e9d5402d258fedac59c7212bae4cb (actif : 110 marches / 120, 6797 $) : 3554 executions Up/Down lues, dont 3661 en taker (le reste en maker)
+- 0xb9587c373c773d023f47c2f85a30b3d5bddcf513 (actif : 107 marches / 120, 3731 $) : 3345 executions Up/Down lues, dont 3405 en taker (le reste en maker)
+- 0xf8af03f1e68ee7162db8983f0d6dd0dc869854c6 (actif : 106 marches / 120, 7020 $) : 3539 executions Up/Down lues, dont 334 en taker (le reste en maker)
+- 0x5e2b9261b0c4f697b55bf921ff2bc227183d9101 (actif : 104 marches / 120, 2199 $) : 2764 executions Up/Down lues, dont 2825 en taker (le reste en maker)
