@@ -37,6 +37,13 @@ const NV = {
       "mm prudent": { MARGE: 0.12, DESEQ: 10, PAQUET: 10, PENCHER: 0.04, RETRAIT_PB: 2 } } },
 };
 const EVT_SRC = { perp: "p", okx: "o", bn: "n", cb: "c", cl: "l" };   // B/E + source ; carnet : BU/BD/EU/ED (meilleur achat, meilleure vente) ; échanges : BUt/BDt/EUt/EDt (prix, ±taille)
+const SIG_COLS = ["t", "start", "prix_a_battre", "proba_up_modele", "bybit_perp", "okx_perp", "binance_spot", "coinbase", "chainlink", "bybit_meilleur_achat", "bybit_meilleure_vente",
+  "prof_achat_1pb", "prof_vente_1pb", "prof_achat_3pb", "prof_vente_3pb", "prof_achat_5pb", "prof_vente_5pb", "prof_achat_10pb", "prof_vente_10pb",
+  "perp_achats_usd", "perp_ventes_usd", "perp_plus_gros_achat", "perp_plus_grosse_vente", "perp_nb_echanges", "liq_longs_usd", "liq_courts_usd",
+  "pm_up_achat", "pm_up_vente", "pm_up_achat_taille", "pm_up_vente_taille",
+  "pm_up_retrait_achat", "pm_up_retrait_vente", "pm_up_ajout_achat", "pm_up_ajout_vente", "pm_up_echange_achat", "pm_up_echange_vente",
+  "pm_down_retrait_achat", "pm_down_retrait_vente", "pm_down_ajout_achat", "pm_down_ajout_vente", "pm_down_echange_achat", "pm_down_echange_vente",
+  "bybit_interet_ouvert", "bybit_financement", "bybit_base_pb", "deribit_perp", "deribit_interet_ouvert"];
 const REC_COLS = ["t", "start", "proba_up_modele", "up_achat", "up_vente", "down_achat", "down_vente", "up_achat_taille", "up_vente_taille", "down_achat_taille", "down_vente_taille",
   "bybit_perp", "okx_perp", "coinbase", "binance_spot", "chainlink", "prix_a_battre"];
 const BB_COLONNES = ["t", "bybit_perp", "okx_perp", "coinbase", "binance_spot", "chainlink", "bybit_meilleur_achat", "bybit_meilleure_vente",
@@ -251,6 +258,12 @@ export class Bot {
       const ks = [...m.keys()];
       return json({ cles: ks, docs: [...m.values()], suivant: ks.length ? ks[ks.length - 1] : null });
     }
+    if (u.pathname === "/api/sig") {
+      const a = u.searchParams.get("a") || "BTC", n = Math.min(120, +(u.searchParams.get("n") || 60)), apres = u.searchParams.get("apres");
+      const m = await this.state.storage.list({ prefix: `sig:${a}:`, limit: n, ...(apres ? { startAfter: apres } : {}) });
+      const ks = [...m.keys()];
+      return json({ cles: ks, docs: [...m.values()], suivant: ks.length ? ks[ks.length - 1] : null });
+    }
     if (u.pathname === "/api/m97") {
       const n = Math.min(60, +(u.searchParams.get("n") || 30)), apres = u.searchParams.get("apres");
       const m = await this.state.storage.list({ prefix: "m97:", limit: n, ...(apres ? { startAfter: apres } : {}) });
@@ -362,9 +375,56 @@ export class Bot {
     })().catch((err) => this.erreur("moments 97", err)).finally(() => { Z.enCours = false; });
   }
 
+  sigB(a) { return ((this._sgB = this._sgB || {})[a] = this._sgB[a] || { ach: 0, ven: 0, max_ach: 0, max_ven: 0, n: 0, liq_longs: 0, liq_courts: 0 }); }
+  sigP(id) { return ((this._sgP = this._sgP || {})[id] = this._sgP[id] || { retrait_achat: 0, retrait_vente: 0, ajout_achat: 0, ajout_vente: 0, echange_achat: 0, echange_vente: 0 }); }
+  // ---- signaux en continu, 1 ligne par seconde et par crypto (07.10.2026) : pour construire le meilleur prédicteur à 1 minute et le comparer au prix Polymarket.
+  // Gardé 4 jours. Intérêt ouvert / financement Bybit et perp Deribit lus toutes les 15 s (REST).
+  signaux(t) {
+    if (t - (this._sgT || 0) < 1) return; this._sgT = t;
+    if (t - (this._sgX || 0) >= 15) { this._sgX = t; this.sigExterne().catch(() => {}); }
+    for (const a of V1.ACTIFS) {
+      const L = this.livre[a], mk = this.mk[a] || {};
+      const b = [...L.b].map(([p, q2]) => [+p, q2]).sort((x, y) => y[0] - x[0]), k = [...L.a].map(([p, q2]) => [+p, q2]).sort((x, y) => x[0] - y[0]);
+      const mid = b.length && k.length ? (b[0][0] + k[0][0]) / 2 : null;
+      const prof = (cote, bps) => mid ? Math.round(cote.filter(([p]) => Math.abs(p / mid - 1) * 1e4 <= bps).reduce((s2, [p, q2]) => s2 + p * q2, 0)) : null;
+      const px = (src) => (this.f[a][src] ? +this.f[a][src].p : null);
+      let pu = null; try { if (mk.up && mk.strike) pu = this.probaV1(a, mk); } catch (_) {}
+      const bk = (id, c) => (id ? (this.livreTrie(id, c)[0] || [null, null]) : [null, null]);
+      const [ub, ubs] = bk(mk.up, "bids"), [ua, uas] = bk(mk.up, "asks");
+      const sg = this.sigB(a), fl = (id) => { if (!id) return [null, null, null, null, null, null]; const z = this.sigP(id), r = Object.values(z).map(Math.round); for (const kk of Object.keys(z)) z[kk] = 0; return r; };
+      const X = (this._sgE || {})[a] || {};
+      const ligne = [Math.floor(t), mk.start || null, mk.strike ? +(+mk.strike).toFixed(4) : null, pu == null ? null : +pu.toFixed(4),
+        px("perp"), px("okx"), px("bn"), px("cb"), px("cl"), b.length ? b[0][0] : null, k.length ? k[0][0] : null,
+        prof(b, 1), prof(k, 1), prof(b, 3), prof(k, 3), prof(b, 5), prof(k, 5), prof(b, 10), prof(k, 10),
+        Math.round(sg.ach), Math.round(sg.ven), Math.round(sg.max_ach), Math.round(sg.max_ven), sg.n, Math.round(sg.liq_longs), Math.round(sg.liq_courts),
+        ub, ua, ubs == null ? null : Math.round(ubs), uas == null ? null : Math.round(uas), ...fl(mk.up), ...fl(mk.down),
+        X.oi ?? null, X.funding ?? null, X.basis ?? null, X.deribit ?? null, X.deribit_oi ?? null];
+      for (const kk of Object.keys(sg)) sg[kk] = 0;
+      const minute = Math.floor(t / 60);
+      const R = ((this._sgR = this._sgR || {})[a] = this._sgR[a] || { minute, lignes: [] });
+      if (R.minute !== minute) {
+        if (R.lignes.length) this.state.storage.put(`sig:${a}:${R.minute}`, { colonnes: SIG_COLS, lignes: R.lignes }).catch(() => {});
+        R.minute = minute; R.lignes = [];
+        if (minute % 30 === 0) this.state.storage.list({ prefix: `sig:${a}:`, limit: 300 }).then((m2) => { const ks = [...m2.keys()].filter((kk) => +kk.split(":")[2] < minute - 5760).slice(0, 120); if (ks.length) this.state.storage.delete(ks); }).catch(() => {});
+      }
+      R.lignes.push(ligne);
+    }
+  }
+  async sigExterne() {
+    const prend = async (url) => { try { const r = await fetch(url, { headers: { "User-Agent": "bot95" } }); return r.ok ? await r.json() : null; } catch (_) { return null; } };
+    for (const a of V1.ACTIFS) {
+      const [by, dr] = await Promise.all([prend(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${ACTIFS[a].bybit}`), prend(`https://www.deribit.com/api/v2/public/ticker?instrument_name=${a}-PERPETUAL`)]);
+      const X = ((this._sgE = this._sgE || {})[a] = this._sgE[a] || {});
+      const y = by && by.result && (by.result.list || [])[0];
+      if (y) { X.oi = +y.openInterest; X.funding = +y.fundingRate; X.basis = y.indexPrice ? +((+y.markPrice / +y.indexPrice - 1) * 1e4).toFixed(3) : null; }
+      if (dr && dr.result) { X.deribit = +dr.result.last_price || +dr.result.mark_price; X.deribit_oi = +dr.result.open_interest; }
+    }
+  }
+
   echantillonner() {
     const t = now();
     try { this.enregistrer(t); } catch (_) {}
+    try { this.signaux(t); } catch (err) { this.erreur("signaux", err); }
     for (const a of V1.ACTIFS) {
       const L = this.livre[a], mk = this.mk[a] || {};
       const b = [...L.b].map(([p, q2]) => [+p, q2]).sort((x, y) => y[0] - x[0]), k = [...L.a].map(([p, q2]) => [+p, q2]).sort((x, y) => x[0] - y[0]);
@@ -505,12 +565,14 @@ export class Bot {
     const a = this.actifBybit(tp.split(".").pop());
     if (!a) return;
     if (tp.startsWith("publicTrade")) {
+      if (V1.ACTIFS.includes(a)) { const sg = this.sigB(a); for (const y of m.data || []) { const u2 = +y.v * +y.p; sg.n++; if (y.S === "Buy") { sg.ach += u2; sg.max_ach = Math.max(sg.max_ach, u2); } else { sg.ven += u2; sg.max_ven = Math.max(sg.max_ven, u2); } } }
       if (V1.ACTIFS.includes(a)) { const ac = this.bbAcc(a); for (const y of m.data || []) { const u2 = +y.v * +y.p; ac.n++; if (y.S === "Buy") { ac.ach += u2; ac.max_ach = Math.max(ac.max_ach, u2); } else { ac.ven += u2; ac.max_ven = Math.max(ac.max_ven, u2); } } }
       const x = (m.data || []).slice(-1)[0];
       if (x) { this.noter(a, "perp", +x.p, t); if (V1.ACTIFS.includes(a)) this.v1Declencher(a, "perp", +x.T / 1000, t); }
     }
     else if (tp.startsWith("allLiquidation")) {
       for (const x of m.data || []) this.liq[a].push({ t, cote: x.S === "Buy" ? "SELL" : "BUY", usd: (+x.v) * (+x.p) });   // Buy = position longue liquidée
+      if (V1.ACTIFS.includes(a)) { const sg = this.sigB(a); for (const x of m.data || []) { if (x.S === "Buy") sg.liq_longs += (+x.v) * (+x.p); else sg.liq_courts += (+x.v) * (+x.p); } }
       if (V1.ACTIFS.includes(a)) { const ac = this.bbAcc(a); for (const x of m.data || []) { if (x.S === "Buy") ac.liq_longs += (+x.v) * (+x.p); else ac.liq_courts += (+x.v) * (+x.p); } }
       this.liq[a] = this.liq[a].filter((x) => x.t > t - 30);
     } else if (tp.startsWith("orderbook")) {
@@ -798,12 +860,14 @@ export class Bot {
       for (const c of ch) {
         const L = livre(c.asset_id), cote = c.side === "BUY" ? L.bids : L.asks, avant = cote.get(+c.price) || 0, apres = +c.size;
         if (apres < avant) this.noterFlux(c.asset_id, "retrait_" + (c.side === "BUY" ? "achat" : "vente"), (avant - apres) * +c.price, t);
-        { const z = this.pmAcc(c.asset_id), cs = c.side === "BUY" ? "achat" : "vente"; if (apres < avant) z["retrait_" + cs] += (avant - apres) * +c.price; else z["ajout_" + cs] += (apres - avant) * +c.price; }
+        { const z = this.pmAcc(c.asset_id), cs = c.side === "BUY" ? "achat" : "vente"; if (apres < avant) z["retrait_" + cs] += (avant - apres) * +c.price; else z["ajout_" + cs] += (apres - avant) * +c.price;
+          const z2 = this.sigP(c.asset_id); if (apres < avant) z2["retrait_" + cs] += (avant - apres) * +c.price; else z2["ajout_" + cs] += (apres - avant) * +c.price; }
         apres ? cote.set(+c.price, apres) : cote.delete(+c.price);
       }
     } else if (ev === "last_trade_price") {
       this.noterFlux(m.asset_id, "echange_" + (m.side === "BUY" ? "achat" : "vente"), +m.price * +m.size, t);
       this.pmAcc(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size;
+      this.sigP(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size;
       this.v1Echange(m.asset_id, m.side, +m.price, +m.size);
     } else return;
     // enregistreur au message près : meilleur prix de chaque jeton des cycles en cours, et échanges
