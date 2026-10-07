@@ -94,6 +94,7 @@ def sonde():
     now = time.time()
     s = lim_slug(now); log("Limitless", s, lim_livre(s) if s else None)
     tk = kal_tk(now); log("Kalshi", tk, kal_livre(tk) if tk else None)
+    if tk: log("Kalshi brut", json.dumps(get(f"{K}/markets/{tk}/orderbook"))[:1500]); log("Kalshi marche", json.dumps(get(f"{K}/markets/{tk}"))[:1500])
     log("Poly 5m", poly_mid(now, 300), "Poly 15m", poly_mid(now, 900))
 
 
