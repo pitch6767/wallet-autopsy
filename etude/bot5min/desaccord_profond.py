@@ -111,7 +111,7 @@ def jouer(R, up, i0, gagne, regle):
         for j in range(ie + 1, len(R)):
             if st + 300 - R[j][0] < 2: break
             b2, a2, _ = cote(R[j], up)
-            if px - b2 >= s:
+            if (px - b2 >= s) if s >= 0 else (b2 <= px * (1 + s)):   # s >= 0 : baisse en cents ; s < 0 : baisse relative (-0,3 = -30 % du prix d'entree)
                 if gest in ("sortir", "inverser"):
                     cash += b2 - FEE(b2); pos_main = 0.0
                 if gest == "inverser" or gest == "couvrir":
@@ -130,12 +130,12 @@ def main():
     for entree in ("direct", "attente", "rebond"):
         for d, c, r_ in ([(0, 0, 0)] if entree == "direct" else ([(d, c, 0) for d in (2, 5, 10, 20) for c in (0.0, 0.01, 0.03)] if entree == "attente" else [(0, 0, r) for r in (0.02, 0.04, 0.06)])):
             for perp in (False, True):
-                for gest, s in [("garder", 0)] + [(g, s) for g in ("sortir", "inverser", "couvrir") for s in (0.05, 0.10, 0.15)]:
+                for gest, s in [("garder", 0)] + [(g, s) for g in ("sortir", "inverser", "couvrir") for s in (0.05, 0.10, 0.15, -0.3, -0.5)]:
                     regles.append((entree, d, c, r_, perp, gest, s))
     log(len(regles), "regles")
     rap = ["# Desaccords — recherche a fond sur les vrais carnets (enregistreur du bot)", "",
            "Entree : direct = tout de suite ; attente d/c = apres d s si le marche a bouge de +c vers nous ; rebond r = creux puis remontee de r. perp = seulement si le perp va dans notre sens (5 s).",
-           "Gestion : garder ; sortir / inverser / couvrir si le meilleur acheteur tombe de s sous le prix d'entree. Gain par part (1 part), frais compris, resultat officiel.", ""]
+           "Gestion : garder ; sortir / inverser / couvrir si le meilleur acheteur tombe de s cents sous le prix d'entree, ou de 30 % / 50 % du prix d'entree (pour les jetons bon marche). Gain par part (1 part), frais compris, resultat officiel.", ""]
     for a, C in data.items():
         sts = sorted(C); mi = sts[len(sts) // 2] if sts else 0
         for st in sts: resultat(a, st)
@@ -154,7 +154,7 @@ def main():
             if not res: continue
             res.sort(key=lambda x: -x[0])
             base = next((x for x in res if x[5][0] == "direct" and not x[5][4] and x[5][5] == "garder"), None)
-            nom = lambda rg: f"{rg[0]}{' ' + str(rg[1]) + ' s +' + str(rg[2]) if rg[0] == 'attente' else (' ' + str(rg[3]) if rg[0] == 'rebond' else '')}{' + perp' if rg[4] else ''} · {rg[5]}{' ' + str(rg[6]) if rg[5] != 'garder' else ''}"
+            nom = lambda rg: f"{rg[0]}{' ' + str(rg[1]) + ' s +' + str(rg[2]) if rg[0] == 'attente' else (' ' + str(rg[3]) if rg[0] == 'rebond' else '')}{' + perp' if rg[4] else ''} · {rg[5]}{(' -' + str(int(-rg[6] * 100)) + ' %' if rg[6] < 0 else ' ' + str(rg[6])) if rg[5] != 'garder' else ''}"
             rap += [f"## {a} — ecart >= {E:.2f} — {len(EV)} desaccords ({time.strftime('%d.%m %H:%M', time.gmtime(sts[0]))} -> {time.strftime('%d.%m %H:%M', time.gmtime(sts[-1] + 300))} UTC)", ""]
             if base: rap.append(f"Reference (tout de suite, garder) : 1re moitie {base[0]:+.3f} $/part ({base[1]}), **2e moitie {base[2]:+.3f} $/part ({base[3]})**")
             rap += ["", "| Regle (classee sur la 1re moitie) | 1re moitie : gain/part (trades) | **2e moitie : gain/part (trades)** | 2e moitie total (1 part) |", "|---|---|---|---|"]
@@ -164,7 +164,7 @@ def main():
             rap += ["", f"Parmi les 20 meilleures de la 1re moitie : **{len(ok)}** restent positives sur la 2e moitie.", ""]
             # meilleure gestion par type (moyenne sur les entrees)
             par = collections.defaultdict(list)
-            for x in res: par[x[5][5] + (" " + str(x[5][6]) if x[5][5] != "garder" else "")].append(x[2])
+            for x in res: par[x[5][5] + ((" -" + str(int(-x[5][6] * 100)) + " %" if x[5][6] < 0 else " " + str(x[5][6])) if x[5][5] != "garder" else "")].append(x[2])
             rap += ["Gestion seule (moyenne de toutes les entrees, 2e moitie) : " + " · ".join(f"{k} {statistics.mean(v):+.3f}" for k, v in sorted(par.items(), key=lambda kv: -statistics.mean(kv[1]))), ""]
             open(OUT + "resultat_desaccord_profond.md", "w").write("\n".join(rap))
     open(OUT + "resultat_desaccord_profond.md", "w").write("\n".join(rap))
