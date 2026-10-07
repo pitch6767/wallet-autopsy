@@ -35,8 +35,13 @@ def evenements(A, C, E=0.10):
                 d = lambda x, c: ((r[c] - x[c]) / x[c] * 1e4 * sg) if x and x[c] and r[c] else 0.0
                 ed = lambda x: ((x[2] - x[4]) if up else ((1 - x[2]) - x[6])) if x and x[4] is not None and x[6] is not None else None
                 mid = lambda x: ((x[3] + x[4]) / 2 if up else (x[5] + x[6]) / 2) if x and None not in (x[3], x[4], x[5], x[6]) else None
-                bids = [(R[j][3] if up else R[j][5]) for j in range(i + 1, len(R))]
-                bids = [b for b in bids if b is not None]
+                parts0 = 50 / ask
+                chemin = []
+                for j in range(i + 1, len(R)):
+                    b2 = R[j][3] if up else R[j][5]; z2 = (R[j][7] if up else R[j][9]) or 0
+                    if b2 is None: continue
+                    chemin.append((R[j][0] - r[0], b2 if z2 >= parts0 / 2 else b2 - 0.01))
+                bids = [b for _, b in chemin]
                 if not bids: break
                 mx = max(bids)
                 gm = g if up else (not g)
@@ -46,7 +51,19 @@ def evenements(A, C, E=0.10):
                 vente = next((b for b in bids if b >= cible), None)
                 pnl_tenir = parts * ((1 if gm else 0) - ask - FEE(ask))
                 pnl_mvt = parts * ((vente - FEE(vente)) if vente else (1 if gm else 0)) - parts * (ask + FEE(ask))
-                out.append({"st": st, "tl": tl, "ask": ask, "fair": fair, "edge": fair - ask, "taille": taille, "spread": ask - bid,
+                # cibles multi-horizons / multi-amplitudes et « morts » a 5/15/30/60 s
+                cib = {"+5c": ask + 0.05, "+10c": ask + 0.10, "+25%": 1.25 * ask, "+50%": max(1.5 * ask, ask + 0.05), "x2": 2 * ask}
+                mv = {f"{n}@{h}s": any(b >= c for dt, b in chemin if dt <= h) for n, c in cib.items() for h in (5, 10, 30, 60)}
+                morts = {f"mort{h}": not any(b > ask + 0.01 for dt, b in chemin if dt <= h) for h in (5, 15, 30, 60)}
+                # abandon precoce : si a +k s le meilleur acheteur n'a jamais depasse entree + 1 c, on revend au meilleur acheteur
+                ab = {}
+                for k in (3, 5, 10):
+                    deja = [b for dt, b in chemin if dt <= k]
+                    pt = next((b for dt, b in chemin if dt >= k), None)
+                    if deja and not any(b > ask + 0.01 for b in deja) and pt is not None:
+                        ab[f"ab{k}"] = parts * (pt - FEE(pt)) - parts * (ask + FEE(ask))
+                    else: ab[f"ab{k}"] = parts * ((1 if gm else 0) - ask - FEE(ask))
+                out.append({**mv, **morts, **ab, "st": st, "tl": tl, "ask": ask, "fair": fair, "edge": fair - ask, "taille": taille, "spread": ask - bid,
                             "v3": (fair - ask) - (ed(h3) if ed(h3) is not None else fair - ask), "perp3": d(h3, 11), "perp5": d(h5, 11), "okx3": d(h3, 12),
                             "cb3": d(h3, 13), "bn3": d(h3, 14), "mkt5": (mid(r) - mid(h5)) if mid(h5) is not None and mid(r) is not None else 0.0,
                             "mouvement": vente is not None, "mort": mx <= ask + 0.01, "gagne": gm, "pnl_tenir": pnl_tenir, "pnl_mvt": pnl_mvt})
@@ -81,6 +98,17 @@ def main():
         mg = lgb.LGBMClassifier(**par).fit(Xa, [e["gagne"] for e in a_])
         md = lgb.LGBMClassifier(**par).fit(Xa, [e["mort"] for e in a_])
         pm_, pg_, pd_ = mm.predict_proba(Xb)[:, 1], mg.predict_proba(Xb)[:, 1], md.predict_proba(Xb)[:, 1]
+        # forme du repricing
+        rap += ["", "Forme du repricing (part des desaccords qui atteignent la cible dans le delai, au meilleur acheteur executable) :", "",
+                "| Cible | 5 s | 10 s | 30 s | 60 s |", "|---|---|---|---|---|"]
+        for n in ("+5c", "+10c", "+25%", "+50%", "x2"):
+            rap.append(f"| {n} | " + " | ".join(f"{100 * statistics.mean(1 if e[f'{n}@{h}s'] else 0 for e in E):.0f} %" for h in (5, 10, 30, 60)) + " |")
+        rap += ["", "Morts (le meilleur acheteur ne depasse jamais entree + 1 c) : " + " · ".join(f"{h} s {100 * statistics.mean(1 if e[f'mort{h}'] else 0 for e in E):.0f} %" for h in (5, 15, 30, 60)),
+                "", "Les morts a 5 s finissent-ils perdants ? " + (lambda X: f"{len(X)} trades morts a 5 s : {100 * statistics.mean(1 if e['gagne'] else 0 for e in X):.0f} % gagnent quand meme, resultat {sum(e['pnl_tenir'] for e in X):+.0f} $" if X else "—")([e for e in E if e["mort5"]]),
+                "", "| Abandon precoce (revendre si rien n'a bouge apres k s) | 1re moitie | **2e moitie** |", "|---|---|---|"]
+        rap.append(f"| jamais (garder) | {sum(e['pnl_tenir'] for e in a_):+.0f} $ | **{sum(e['pnl_tenir'] for e in b_):+.0f} $** |")
+        for k in (3, 5, 10):
+            rap.append(f"| abandon a {k} s | {sum(e[f'ab{k}'] for e in a_):+.0f} $ | **{sum(e[f'ab{k}'] for e in b_):+.0f} $** |")
         rap += ["", "### 2e moitie (jamais vue) — routeur", "", "| Regle | Trades | Resultat |", "|---|---|---|"]
         rap.append(f"| tout acheter, garder | {len(b_)} | {sum(e['pnl_tenir'] for e in b_):+.0f} $ |")
         for sd in (0.5, 0.6, 0.7):
