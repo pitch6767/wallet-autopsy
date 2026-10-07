@@ -21,4 +21,3 @@ Revente : au meilleur acheteur de la meme place (profondeur comprise) N secondes
 | 8 pb / 3 s | 0 | | | | | | | |
 
 Gain = par evenement, sur toute la taille achetee ; (n) = evenements ou la revente etait possible sur la meme echeance. Frais Kalshi 0,07·p·(1−p) compris ; Limitless sans frais (a confirmer).
-code sortie: 0
