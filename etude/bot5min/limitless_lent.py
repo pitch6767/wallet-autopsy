@@ -64,7 +64,7 @@ def kal_tk(now):
 def kal_livre(tk):
     r = get(f"{K}/markets/{tk}/orderbook")
     try:
-        ob = r["orderbook"]
+        ob = r.get("orderbook_fp") or r.get("orderbook")
         def lv(key, keyd):
             if ob.get(keyd): return [(float(p), float(q)) for p, q in ob[keyd]]
             return [(float(p) / 100, float(q)) for p, q in (ob.get(key) or [])]
