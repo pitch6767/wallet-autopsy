@@ -1,0 +1,24 @@
+name: Sauvetage
+on:
+  push:
+    branches: [main]
+    paths: [etude/bot5min/sauvetage.py]
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Autopsie
+        run: |
+          set +e
+          python3 -u etude/bot5min/sauvetage.py > etude/bot5min/journal_sauvetage.txt 2>&1
+          echo "code sortie: $?" >> etude/bot5min/journal_sauvetage.txt
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          git add etude/bot5min/
+          git commit -m "Resultats sauvetage [skip ci]"; for k in $(seq 1 25); do git pull --rebase -q origin main && git push && break; sleep 7; done
