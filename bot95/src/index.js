@@ -251,6 +251,13 @@ export class Bot {
       const ks = [...m.keys()];
       return json({ cles: ks, docs: [...m.values()], suivant: ks.length ? ks[ks.length - 1] : null });
     }
+    if (u.pathname === "/api/m97") {
+      const n = Math.min(60, +(u.searchParams.get("n") || 30)), apres = u.searchParams.get("apres");
+      const m = await this.state.storage.list({ prefix: "m97:", limit: n, ...(apres ? { startAfter: apres } : {}) });
+      const ks = [...m.keys()];
+      return json({ cles: ks, docs: [...m.values()], suivant: ks.length ? ks[ks.length - 1] : null });
+    }
+    if (u.pathname === "/api/m97/compte") { const m = await this.state.storage.list({ prefix: "m97:", limit: 20000 }); return json({ n: m.size }); }
     if (u.pathname === "/api/boite") {
       const n = Math.min(40, +(u.searchParams.get("n") || 20)), apres = u.searchParams.get("apres");
       const m = await this.state.storage.list({ prefix: "bb:", limit: n, ...(apres ? { startAfter: apres } : {}) });
@@ -300,6 +307,61 @@ export class Bot {
       R.lignes.push(ligne);
     }
   }
+  // ---- moments « 97 c » (07.10.2026, demande de Pitch) : le favori se vend 0,93-0,985 entre 150 et 10 s de la fin.
+  // On photographie tout ce qui pourrait prédire un retournement : 10 s de boîte noire (prix, carnet Bybit, flux, liquidations, carnets et retraits Polymarket),
+  // carnets profonds Bybit perp + Binance spot (mur entre le prix et le prix à battre), intérêt ouvert Bybit, options Deribit (intérêt ouvert par prix d'exercice).
+  // Deux photos max par cycle et par crypto : à l'entrée dans la zone, puis vers 30 s de la fin. Le résultat officiel est lu ensuite par l'analyse.
+  m97(a, mk, pu, tleft) {
+    if (!V1.ACTIFS.includes(a) || !mk.up || !mk.strike || tleft > 150 || tleft < 10) return;
+    const fa = [["Up", mk.up], ["Down", mk.down]].map(([c, id]) => [c, id, (this.livreTrie(id, "asks")[0] || [null])[0]]).filter((x) => x[2] != null && x[2] >= 0.93 && x[2] <= 0.985);
+    if (!fa.length) return;
+    const Z = ((this._m97 = this._m97 || {})[a] = this._m97[a] && this._m97[a].start === mk.start ? this._m97[a] : { start: mk.start, n: 0, enCours: false });
+    const phase = Z.n === 0 ? "entree" : (Z.n === 1 && tleft <= 35 ? "30s" : null);
+    if (!phase || Z.enCours) return;
+    Z.enCours = true; Z.n++;
+    const [cote, , ask] = fa[0], t = now(), px = (src) => (this.f[a][src] ? +this.f[a][src].p : null);
+    const doc = { actif: a, start: mk.start, slug: mk.slug, phase, t: +t.toFixed(2), tleft: +tleft.toFixed(1), cote, ask, proba_modele: pu, strike: +mk.strike,
+      perp: px("perp"), chainlink: px("cl"), spot_binance: px("bn"), coinbase: px("cb"),
+      liq_30s: (this.liq[a] || []).map((x) => [+(x.t - t).toFixed(1), x.cote, Math.round(x.usd)]),
+      boite: { colonnes: BB_COLONNES, lignes: ((this.bbR || {})[a] || []).slice() } };
+    const sym = ACTIFS[a].bybit, ref = doc.perp || doc.spot_binance;
+    const tranches = (cote2, niveaux) => {          // liquidité en $ par tranche de distance au prix (pb)
+      const B = [2, 5, 10, 20, 50, 100, 200], out = B.map(() => 0);
+      for (const [p, q] of niveaux) { const d = Math.abs(p / ref - 1) * 1e4; const i = B.findIndex((x) => d <= x); if (i >= 0) out[i] += p * q; }
+      return out.map(Math.round);
+    };
+    const prend = async (url) => { try { const r = await fetch(url, { headers: { "User-Agent": "bot95" } }); return r.ok ? await r.json() : null; } catch (_) { return null; } };
+    (async () => {
+      const [bb, bn, oi, dr] = await Promise.all([
+        prend(`https://api.bybit.com/v5/market/orderbook?category=linear&symbol=${sym}&limit=500`),
+        prend(`https://api.binance.com/api/v3/depth?symbol=${sym}&limit=5000`),
+        prend(`https://api.bybit.com/v5/market/open-interest?category=linear&symbol=${sym}&intervalTime=5min&limit=6`),
+        prend(`https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=${a}&kind=option`)]);
+      if (ref) {
+        const r2 = bb && bb.result; if (r2) doc.bybit_prof = { tranches_pb: [2, 5, 10, 20, 50, 100, 200], achat: tranches("b", (r2.b || []).map(([p, q]) => [+p, +q])), vente: tranches("a", (r2.a || []).map(([p, q]) => [+p, +q])),
+          entre_prix_et_strike_achat: Math.round((r2.b || []).filter(([p]) => +p >= Math.min(ref, doc.strike) && +p <= Math.max(ref, doc.strike)).reduce((s2, [p, q]) => s2 + p * q, 0)),
+          entre_prix_et_strike_vente: Math.round((r2.a || []).filter(([p]) => +p >= Math.min(ref, doc.strike) && +p <= Math.max(ref, doc.strike)).reduce((s2, [p, q]) => s2 + p * q, 0)) };
+        if (bn && bn.bids) doc.binance_prof = { achat: tranches("b", bn.bids.map(([p, q]) => [+p, +q])), vente: tranches("a", bn.asks.map(([p, q]) => [+p, +q])),
+          entre_prix_et_strike_achat: Math.round(bn.bids.filter(([p]) => +p >= Math.min(ref, doc.strike)).reduce((s2, [p, q]) => s2 + p * q, 0)),
+          entre_prix_et_strike_vente: Math.round(bn.asks.filter(([p]) => +p <= Math.max(ref, doc.strike)).reduce((s2, [p, q]) => s2 + p * q, 0)) };
+      }
+      if (oi && oi.result) doc.interet_ouvert = (oi.result.list || []).map((x) => [+x.timestamp, +x.openInterest]);
+      if (dr && dr.result && ref) {                 // options : intérêt ouvert par prix d'exercice proche (±3 %), échéances des 2 prochains jours
+        const lim = Date.now() + 2 * 86400e3, S = {};
+        for (const o of dr.result) {
+          const [, exp, k, cp] = (o.instrument_name || "").split("-"); const K = +k;
+          if (!K || Math.abs(K / ref - 1) > 0.03) continue;
+          const e = Date.parse(exp.replace(/(\d+)([A-Z]+)(\d+)/, "$1 $2 20$3") + " 08:00 UTC"); if (!(e <= lim)) continue;
+          const z = (S[K] = S[K] || [0, 0]); z[cp === "C" ? 0 : 1] += +o.open_interest || 0;
+        }
+        doc.options_oi = Object.entries(S).map(([k, v]) => [+k, +v[0].toFixed(1), +v[1].toFixed(1)]).sort((x, y) => x[0] - y[0]);
+      }
+      await this.state.storage.put("m97:" + Math.floor(t * 1000).toString().padStart(14, "0") + ":" + a, doc);
+      this.m97N = (this.m97N || 0) + 1;
+      if (this.m97N % 100 === 0) { const m = await this.state.storage.list({ prefix: "m97:", limit: 20000 }); const ks = [...m.keys()]; if (ks.length > 8000) await this.state.storage.delete(ks.slice(0, Math.min(128, ks.length - 8000))); }
+    })().catch((err) => this.erreur("moments 97", err)).finally(() => { Z.enCours = false; });
+  }
+
   echantillonner() {
     const t = now();
     try { this.enregistrer(t); } catch (_) {}
@@ -1139,6 +1201,7 @@ export class Bot {
     const t = now(), tleft = mk.end - t;
     (this._puA = this._puA || {})[a] = pu;
     try { this.nManq(a, mk, pu, t, tleft); } catch (_) {}
+    try { this.m97(a, mk, pu, tleft); } catch (err) { this.erreur("moments 97", err); }
     for (const P of this.N.ouvertes) if (P.strat.startsWith("assurance") && P.actif === a && P.start === mk.start && !P.fini) this.gGerer(P, pu);
     for (const P of this.N.ouvertes) if (P.famille === "desaccordG" && P.actif === a && P.start === mk.start) { try { this.dGerer(P, pu); } catch (_) {} }
     // ---- 2. fin de cycle : acheter 0,70-0,90 quand le modèle est très sûr, garder jusqu'à la fin
