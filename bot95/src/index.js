@@ -22,7 +22,7 @@ const NV = {
   // 07.10.2026 (décision de Pitch) : on ne garde que V1, assurance et désaccord 20 — tout le reste est arrêté (résultats figés sur la page)
   // 07.10.2026 (décision de Pitch) : on oublie ETH — plus aucun trade ETH (les données ETH restent enregistrées)
   TRADE: ["BTC"],
-  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord 20 sans nuit", "desaccord confirme", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-G jury des bourses", "V2-H veto complet", "V5 gain attendu", "V6 loterie"],
+  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord 20 sans nuit", "desaccord confirme", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-G jury des bourses", "V2-H veto complet", "V5 gain attendu", "V6 loterie", "desaccord 20 Poly rejoint 3 s", "desaccord 20 Poly rejoint 10 s", "desaccord 20 Poly rejoint 3 s sans nuit", "desaccord 20 Poly rejoint 10 s sans nuit"],
   // 07.10.2026 : désaccord CONFIRMÉ (analyse sur les vrais carnets) : écart >= 0,20 (BTC) / 0,10 (ETH) repéré, on attend 20 s,
   // on n'achète que si notre côté a déjà monté de 3 cents vers le modèle et que le modèle garde 3 cents d'avance ; gardé jusqu'à la fin.
   CONFIRME: { ECART: { BTC: 0.20, ETH: 0.10 }, ATTENTE_S: 20, HAUSSE: 0.03, AVANCE_MIN: 0.03, MISE: 50 },
@@ -1490,6 +1490,7 @@ export class Bot {
       for (const h of [1, 3, 10]) if (!e["f" + h] && t - e.t0 >= h) {
         e["f" + h] = fam(fair - e.fair0, mid - e.mid0);
         if (h === 3) e.ask3 = up ? ua[0] : da[0];
+        if (h !== 1 && e["f" + h] === "POLY REJOINT" && tleft >= 3) this.blinkAcheter(a, mk, e, h, up ? mk.up : mk.down, up ? ua : da, fair, tleft);
         this.blkSauver();
       }
     }
@@ -1504,6 +1505,20 @@ export class Bot {
         bn3: d("bn"), perp3: d("perp"), okx3: d("okx"), cb3: d("cb"), mkt3: h3 ? +((up ? last.um - h3.um : last.dm - h3.dm)).toFixed(3) : null });
       while (L.length > 350) L.shift();
       this.blkSauver();
+    }
+  }
+  // fantômes du 07.10.2026 (figés) : désaccord 20, attendre 3 s ou 10 s, acheter 50 $ au meilleur vendeur SEULEMENT si Polymarket a rejoint le modèle ; variantes sans la nuit (00h-08h suisse)
+  blinkAcheter(a, mk, e, h, id, k, fair, tleft) {
+    const hz = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", hour12: false }).format(new Date()) % 24;
+    for (const nom of [`desaccord 20 Poly rejoint ${h} s`, `desaccord 20 Poly rejoint ${h} s sans nuit`]) {
+      if (!NV.ACTIVES.includes(nom) || (nom.endsWith("sans nuit") && hz < 8)) continue;
+      if (k[0] < 0.03 || k[0] > 0.97) continue;
+      if (this.N.ouvertes.some((P) => P.strat === nom && P.actif === a && P.start === mk.start)) continue;
+      const r = this.nAcheter(id, 50 / k[0], k[0] + 0.01); if (r.parts < 1) continue;
+      const P = this.nPos(nom, a, mk, { famille: "desaccord", cote: e.cote, prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0) });
+      P.cash = -r.cout; if (e.cote === "Up") P.U = r.parts; else P.D = r.parts;
+      this.nNote(P, `désaccord 20 vu à ${e.ask} (modèle ${e.fair0}) ; ${h} s plus tard Polymarket a rejoint le modèle → achat à ${P.prix}, ${tleft.toFixed(0)} s restantes`);
+      this.nSauver();
     }
   }
   blkSauver() {
@@ -1981,7 +1996,7 @@ const ENTREE={"V1 actuel (avec stop)":"V1 d'origine : achète la jambe à 0,55�
 "V2-H veto complet":"V2-H : désaccord 20 sauf veto : écart qui fond, Binance contre nous, Bybit+OKX contre nous, 60-89 s, Polymarket déjà en train de corriger, vendeur < 20 parts.",
 "desaccord confirme":"Désaccord CONFIRMÉ : le modèle a 20 pts d'avance (BTC) ou 10 pts (ETH) ; on attend 20 s et on n'achète que si le marché est déjà monté de 3 cents vers le modèle (il garde 3 cents d'avance). Gardé jusqu'à la fin.",
 "desaccord confirme perp":"Désaccord CONFIRMÉ + PERP : pareil, et en plus le perp Bybit doit aller dans notre sens sur les 5 dernières secondes.",
-"desaccord 20 sans nuit":"Désaccord 20 SANS LA NUIT : exactement comme Désaccord 20, mais aucun achat entre 00h et 08h (heure suisse).","desaccord 20":"Désaccord 20 : achète le côté que le modèle estime à au moins 20 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
+"desaccord 20 Poly rejoint 3 s":"Désaccord 20 POLY REJOINT 3 s : quand le modèle dépasse le meilleur vendeur de 20 pts, on attend 3 s ; on achète 50 $ seulement si Polymarket a monté d'au moins 3 c vers le modèle (et le modèle n'a pas baissé de 3 c). Garde jusqu'à la fin.","desaccord 20 Poly rejoint 10 s":"Désaccord 20 POLY REJOINT 10 s : pareil, mais on attend 10 s avant de vérifier que Polymarket a rejoint le modèle.","desaccord 20 Poly rejoint 3 s sans nuit":"Désaccord 20 POLY REJOINT 3 s SANS LA NUIT : comme « Poly rejoint 3 s », aucun achat entre 00h et 08h (heure suisse).","desaccord 20 Poly rejoint 10 s sans nuit":"Désaccord 20 POLY REJOINT 10 s SANS LA NUIT : comme « Poly rejoint 10 s », aucun achat entre 00h et 08h (heure suisse).","desaccord 20 sans nuit":"Désaccord 20 SANS LA NUIT : exactement comme Désaccord 20, mais aucun achat entre 00h et 08h (heure suisse).","desaccord 20":"Désaccord 20 : achète le côté que le modèle estime à au moins 20 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
 "desaccord combine 2.5":"Valeur combinée 2,5 : on mélange le prix du marché (≈70 %) et notre modèle (≈30 %) ; achète si cette valeur combinée dépasse le vendeur d'au moins 2,5 points.",
 "desaccord combine 4":"Valeur combinée 4 : on mélange le prix du marché (≈70 %) et notre modèle (≈30 %) ; achète si cette valeur combinée dépasse le vendeur d'au moins 4 points.",
 "desaccord maker 10":"Maker : quand le modèle voit 10 points d'avantage, on POSE une offre d'achat (sans frais) au lieu d'acheter au vendeur ; retirée si l'avantage fond ou après 30 s.",
