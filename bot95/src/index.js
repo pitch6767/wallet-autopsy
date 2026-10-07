@@ -334,7 +334,7 @@ export class Bot {
     (async () => {
       const [bb, bn, oi, dr] = await Promise.all([
         prend(`https://api.bybit.com/v5/market/orderbook?category=linear&symbol=${sym}&limit=500`),
-        prend(`https://api.binance.com/api/v3/depth?symbol=${sym}&limit=5000`),
+        prend(`https://data-api.binance.vision/api/v3/depth?symbol=${sym}&limit=5000`),
         prend(`https://api.bybit.com/v5/market/open-interest?category=linear&symbol=${sym}&intervalTime=5min&limit=6`),
         prend(`https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=${a}&kind=option`)]);
       if (ref) {
