@@ -16,7 +16,7 @@ jobs:
           python-version: "3.12"
       - name: Autopsie
         run: |
-          pip install -q lightgbm numpy
+          pip install -q lightgbm numpy scikit-learn
           set +e
           python3 -u etude/bot5min/mouvement.py > etude/bot5min/journal_mouvement.txt 2>&1
           echo "code sortie: $?" >> etude/bot5min/journal_mouvement.txt
