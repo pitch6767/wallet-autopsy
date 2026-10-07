@@ -20,7 +20,7 @@ const NV = {
     VARIANTES: { "assurance 6/9/12": [[0.06, 0.25], [0.09, 0.5], [0.12, 1.0]], "assurance 4/7/10": [[0.04, 0.25], [0.07, 0.5], [0.10, 1.0]] } },
   // désaccord modèle / marché (analyse du 06.10 : écart >= 0,10 → le modèle a raison 61 %, +0,07 $/part sur 12 jours) : achat taker au meilleur vendeur, gardé jusqu'à la fin
   // 07.10.2026 (décision de Pitch) : on ne garde que V1, assurance et désaccord 20 — tout le reste est arrêté (résultats figés sur la page)
-  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord confirme", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-G jury des bourses", "V2-H veto complet"],
+  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord confirme", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-G jury des bourses", "V2-H veto complet", "V5 gain attendu", "V6 loterie"],
   // 07.10.2026 : désaccord CONFIRMÉ (analyse sur les vrais carnets) : écart >= 0,20 (BTC) / 0,10 (ETH) repéré, on attend 20 s,
   // on n'achète que si notre côté a déjà monté de 3 cents vers le modèle et que le modèle garde 3 cents d'avance ; gardé jusqu'à la fin.
   CONFIRME: { ECART: { BTC: 0.20, ETH: 0.10 }, ATTENTE_S: 20, HAUSSE: 0.03, AVANCE_MIN: 0.03, MISE: 50 },
@@ -1477,6 +1477,23 @@ export class Bot {
     }
     if (tleft < 5) return;
     const il_y_a = (sec) => { for (let i = H.r.length - 1; i >= 0; i--) if (t - H.r[i].t >= sec) return H.r[i]; return null; };
+    // V5 / V6 (07.10.2026, figés) : gain attendu par dollar au prix EXÉCUTABLE pour 50 $ (carnet jusqu'à +5 c), au lieu d'un écart fixe.
+    // V5 : gain attendu >= +50 % par dollar et modèle >= prix + 5 c. V6 loterie : prix exécutable <= 0,10 et modèle >= 2 × prix.
+    for (const up of [true, false]) {
+      const id = up ? mk.up : mk.down, k = up ? ua : da, fair = up ? pu : 1 - pu;
+      if (k[0] < 0.02 || k[0] > 0.90) continue;
+      const r = this.nAcheter(id, 50 / k[0], k[0] + 0.05); if (r.parts < 5) continue;
+      const vwap = r.cout / r.parts, gain = fair / vwap - 1;
+      const W = { "V5 gain attendu": gain >= 0.5 && fair - vwap >= 0.05, "V6 loterie": vwap <= 0.10 && fair >= 2 * vwap };
+      for (const [nom, ok] of Object.entries(W)) {
+        if (!ok || H.fait[nom]) continue;
+        H.fait[nom] = true;
+        const P = this.nPos(nom, a, mk, { famille: "desaccord", cote: up ? "Up" : "Down", prix: +vwap.toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0) });
+        P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
+        this.nNote(P, `prix exécutable ${vwap.toFixed(3)} pour ${r.cout.toFixed(0)} $, modèle ${fair.toFixed(3)}, gain attendu ${(100 * gain).toFixed(0)} % par $, ${tleft.toFixed(0)} s restantes`);
+        this.nSauver();
+      }
+    }
     for (const up of [true, false]) {
       const k = up ? ua : da, fair = up ? pu : 1 - pu, edge = fair - k[0], sg = up ? 1 : -1;
       if (k[0] < 0.03 || k[0] > 0.97 || edge < 0.20) continue;
@@ -1846,6 +1863,8 @@ const ENTREE={"V1 actuel (avec stop)":"V1 d'origine : achète la jambe à 0,55�
 "fin":"Fin de cycle : dans les dernières 90–180 s, achète à 0,70–0,90 quand le modèle est sûr à ≥ 93–95 %, garde jusqu'à la fin.",
 "desaccord 10":"Désaccord 10 : achète le côté que le modèle estime à au moins 10 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
 "desaccord 15":"Désaccord 15 : achète le côté que le modèle estime à au moins 15 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
+"V5 gain attendu":"V5 : n'achète que si le gain attendu dépasse +50 % par dollar misé, calculé au prix réellement payable pour 50 $ (en descendant dans le carnet), et si le modèle dépasse ce prix d'au moins 5 c. Remplace le seuil fixe de 20 points.",
+"V6 loterie":"V6 LOTERIE : jetons à 0,10 $ ou moins (prix payable pour 50 $), seulement si le modèle leur donne au moins 2 fois ce prix. Gagne rarement, paie très gros.",
 "V2-B hors 60-89 s":"V2-B : désaccord 20, sauf entre 60 et 89 s de la fin.",
 "V2-C perp":"V2-C : désaccord 20 seulement si le perp Bybit va dans notre sens sur 5 s.",
 "V2-D perp 120-269 s":"V2-D : désaccord 20 + perp avec nous + entre 120 et 269 s de la fin.",
