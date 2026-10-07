@@ -2,31 +2,31 @@
 
 Toutes les regles sont causales (decision avec ce qu'on sait a ce moment-la). 50 $ par trade, frais compris. « Sans top 3 » = resultat sans les 3 meilleurs trades.
 
-## BTC — 324 desaccords >= 0,20
+## BTC — 325 desaccords >= 0,20
 
 | Regle | Trades | 1re moitie | 2e moitie | **Total** | Par trade | Sans top 3 |
 |---|---|---|---|---|---|---|
-| REFERENCE : tout acheter a l'entree, garder | 324 | -643 $ | +2049 $ | **+1406 $** | +4.3 $ | -1656 $ |
+| REFERENCE : tout acheter a l'entree, garder | 325 | -643 $ | +2196 $ | **+1553 $** | +4.8 $ | -1509 $ |
 
 ### A. Achat immediat, sortie au meilleur acheteur si le desaccord se revele faux
 
 | Regle | Trades | 1re moitie | 2e moitie | **Total** | Par trade | Sans top 3 |
 |---|---|---|---|---|---|---|
-| sortie a 1 s si modele -3 c | 324 | -270 $ | +1414 $ | **+1144 $** | +3.5 $ | -1918 $ |
-| sortie a 2 s si modele -3 c | 324 | -285 $ | +1226 $ | **+940 $** | +2.9 $ | -2122 $ |
-| sortie a 3 s si modele -3 c | 324 | -311 $ | +1804 $ | **+1493 $** | +4.6 $ | -1569 $ |
-| sortie a 5 s si modele -3 c | 324 | -173 $ | +964 $ | **+790 $** | +2.4 $ | -2272 $ |
-| sortie a 10 s si modele -3 c | 324 | -490 $ | +1577 $ | **+1087 $** | +3.4 $ | -1920 $ |
-| sortie a 1 s si Poly n'a pas monte de 3 c | 324 | -1139 $ | -14 $ | **-1153 $** | -3.6 $ | -2365 $ |
-| sortie a 2 s si Poly n'a pas monte de 3 c | 324 | -1204 $ | +356 $ | **-848 $** | -2.6 $ | -2060 $ |
-| sortie a 3 s si Poly n'a pas monte de 3 c | 324 | -1500 $ | +338 $ | **-1162 $** | -3.6 $ | -2374 $ |
-| sortie a 5 s si Poly n'a pas monte de 3 c | 324 | -1497 $ | +134 $ | **-1363 $** | -4.2 $ | -2575 $ |
-| sortie a 10 s si Poly n'a pas monte de 3 c | 324 | -396 $ | +1325 $ | **+929 $** | +2.9 $ | -2078 $ |
-| sortie a 1 s si modele -3 c OU Poly pas monte | 324 | -1276 $ | +197 $ | **-1080 $** | -3.3 $ | -2291 $ |
-| sortie a 2 s si modele -3 c OU Poly pas monte | 324 | -1287 $ | +193 $ | **-1094 $** | -3.4 $ | -2222 $ |
-| sortie a 3 s si modele -3 c OU Poly pas monte | 324 | -1444 $ | +176 $ | **-1268 $** | -3.9 $ | -2396 $ |
-| sortie a 5 s si modele -3 c OU Poly pas monte | 324 | -1365 $ | +146 $ | **-1219 $** | -3.8 $ | -2431 $ |
-| sortie a 10 s si modele -3 c OU Poly pas monte | 324 | -264 $ | +1373 $ | **+1109 $** | +3.4 $ | -1898 $ |
+| sortie a 1 s si modele -3 c | 325 | -270 $ | +1561 $ | **+1291 $** | +4.0 $ | -1771 $ |
+| sortie a 2 s si modele -3 c | 325 | -285 $ | +1373 $ | **+1088 $** | +3.3 $ | -1974 $ |
+| sortie a 3 s si modele -3 c | 325 | -311 $ | +1952 $ | **+1640 $** | +5.0 $ | -1422 $ |
+| sortie a 5 s si modele -3 c | 325 | -173 $ | +1111 $ | **+938 $** | +2.9 $ | -2124 $ |
+| sortie a 10 s si modele -3 c | 325 | -490 $ | +1724 $ | **+1234 $** | +3.8 $ | -1772 $ |
+| sortie a 1 s si Poly n'a pas monte de 3 c | 325 | -1139 $ | -23 $ | **-1162 $** | -3.6 $ | -2374 $ |
+| sortie a 2 s si Poly n'a pas monte de 3 c | 325 | -1204 $ | +346 $ | **-858 $** | -2.6 $ | -2069 $ |
+| sortie a 3 s si Poly n'a pas monte de 3 c | 325 | -1500 $ | +327 $ | **-1173 $** | -3.6 $ | -2385 $ |
+| sortie a 5 s si Poly n'a pas monte de 3 c | 325 | -1497 $ | +122 $ | **-1375 $** | -4.2 $ | -2586 $ |
+| sortie a 10 s si Poly n'a pas monte de 3 c | 325 | -396 $ | +1472 $ | **+1076 $** | +3.3 $ | -1930 $ |
+| sortie a 1 s si modele -3 c OU Poly pas monte | 325 | -1276 $ | +187 $ | **-1089 $** | -3.4 $ | -2300 $ |
+| sortie a 2 s si modele -3 c OU Poly pas monte | 325 | -1287 $ | +183 $ | **-1103 $** | -3.4 $ | -2232 $ |
+| sortie a 3 s si modele -3 c OU Poly pas monte | 325 | -1444 $ | +165 $ | **-1279 $** | -3.9 $ | -2407 $ |
+| sortie a 5 s si modele -3 c OU Poly pas monte | 325 | -1365 $ | +135 $ | **-1231 $** | -3.8 $ | -2442 $ |
+| sortie a 10 s si modele -3 c OU Poly pas monte | 325 | -264 $ | +1521 $ | **+1256 $** | +3.9 $ | -1750 $ |
 
 ### B. Achat aux premiers signes (Polymarket monte de x c vers le modele, modele stable, dans les W s)
 
@@ -48,16 +48,16 @@ Toutes les regles sont causales (decision avec ce qu'on sait a ce moment-la). 50
 | W 5 s, x 2 c | 113 | -818 $ | +684 $ | **-135 $** | -1.2 $ | -1047 $ |
 | W 5 s, x 3 c | 92 | -141 $ | +748 $ | **+608 $** | +6.6 $ | -281 $ |
 | W 5 s, x 5 c | 63 | -61 $ | +358 $ | **+297 $** | +4.7 $ | -449 $ |
-| W 10 s, x 1 c | 193 | -257 $ | +1008 $ | **+751 $** | +3.9 $ | -529 $ |
-| W 10 s, x 2 c | 146 | -798 $ | +1215 $ | **+417 $** | +2.9 $ | -721 $ |
-| W 10 s, x 3 c | 127 | -405 $ | +1088 $ | **+683 $** | +5.4 $ | -256 $ |
+| W 10 s, x 1 c | 194 | -257 $ | +1148 $ | **+891 $** | +4.6 $ | -389 $ |
+| W 10 s, x 2 c | 147 | -798 $ | +1348 $ | **+550 $** | +3.7 $ | -588 $ |
+| W 10 s, x 3 c | 128 | -405 $ | +1208 $ | **+803 $** | +6.3 $ | -137 $ |
 | W 10 s, x 5 c | 90 | +42 $ | +773 $ | **+816 $** | +9.1 $ | -77 $ |
 
 ### C. Filtre bourses a l'entree (3 s avant), achat immediat, garder
 
 | Regle | Trades | 1re moitie | 2e moitie | **Total** | Par trade | Sans top 3 |
 |---|---|---|---|---|---|---|
-| aucun | 324 | -643 $ | +2049 $ | **+1406 $** | +4.3 $ | -1656 $ |
+| aucun | 325 | -643 $ | +2196 $ | **+1553 $** | +4.8 $ | -1509 $ |
 | Binance avec nous | 72 | +1953 $ | +1765 $ | **+3719 $** | +51.6 $ | +1258 $ |
 | perp avec nous | 84 | +1301 $ | +1307 $ | **+2609 $** | +31.1 $ | +147 $ |
 | Binance ou perp avec nous | 104 | +1360 $ | +1887 $ | **+3247 $** | +31.2 $ | +786 $ |
@@ -81,6 +81,19 @@ Toutes les regles sont causales (decision avec ce qu'on sait a ce moment-la). 50
 | 3 bourses sur 4 avec nous + sortie 5 s (retombe) | 54 | +1813 $ | +714 $ | **+2528 $** | +46.8 $ | +66 $ |
 | 3 bourses sur 4 avec nous + sortie 5 s (les_deux) | 54 | +347 $ | +938 $ | **+1285 $** | +23.8 $ | +157 $ |
 | 3 bourses sur 4 avec nous + sortie 10 s (pas_rejoint) | 54 | +1733 $ | +1100 $ | **+2834 $** | +52.5 $ | +372 $ |
+
+### E. Memes regles SANS LA NUIT (aucun achat 00h-08h, heure suisse)
+
+| Regle | Trades | 1re moitie | 2e moitie | **Total** | Par trade | Sans top 3 |
+|---|---|---|---|---|---|---|
+| tout acheter a l'entree, sans nuit | 227 | +339 $ | +2583 $ | **+2922 $** | +12.9 $ | -84 $ |
+| Binance avec nous, sans nuit | 57 | +1943 $ | +1464 $ | **+3407 $** | +59.8 $ | +946 $ |
+| Binance avec nous, LA NUIT seulement | 15 | +11 $ | +301 $ | **+312 $** | +20.8 $ | -409 $ |
+| Binance ou perp avec nous, sans nuit | 81 | +1719 $ | +1639 $ | **+3358 $** | +41.5 $ | +897 $ |
+| Binance ou perp avec nous, LA NUIT seulement | 23 | -359 $ | +249 $ | **-111 $** | -4.8 $ | -832 $ |
+| aucune bourse contre nous, sans nuit | 67 | +1545 $ | +1746 $ | **+3291 $** | +49.1 $ | +285 $ |
+| aucune bourse contre nous, LA NUIT seulement | 19 | +14 $ | -82 $ | **-69 $** | -3.6 $ | -618 $ |
+| aucune bourse contre nous + sortie 10 s (pas_rejoint), sans nuit | 67 | +1569 $ | +1922 $ | **+3491 $** | +52.1 $ | +485 $ |
 
 ## ETH — 294 desaccords >= 0,20
 
@@ -161,3 +174,16 @@ Toutes les regles sont causales (decision avec ce qu'on sait a ce moment-la). 50
 | 3 bourses sur 4 avec nous + sortie 5 s (retombe) | 47 | -39 $ | -584 $ | **-623 $** | -13.3 $ | -1328 $ |
 | 3 bourses sur 4 avec nous + sortie 5 s (les_deux) | 47 | +104 $ | -344 $ | **-240 $** | -5.1 $ | -945 $ |
 | 3 bourses sur 4 avec nous + sortie 10 s (pas_rejoint) | 47 | -78 $ | -380 $ | **-459 $** | -9.8 $ | -1164 $ |
+
+### E. Memes regles SANS LA NUIT (aucun achat 00h-08h, heure suisse)
+
+| Regle | Trades | 1re moitie | 2e moitie | **Total** | Par trade | Sans top 3 |
+|---|---|---|---|---|---|---|
+| tout acheter a l'entree, sans nuit | 203 | -481 $ | +761 $ | **+280 $** | +1.4 $ | -1979 $ |
+| Binance avec nous, sans nuit | 44 | -354 $ | +84 $ | **-270 $** | -6.1 $ | -1118 $ |
+| Binance avec nous, LA NUIT seulement | 18 | -124 $ | +6 $ | **-118 $** | -6.5 $ | -683 $ |
+| Binance ou perp avec nous, sans nuit | 64 | -675 $ | +223 $ | **-452 $** | -7.1 $ | -1379 $ |
+| Binance ou perp avec nous, LA NUIT seulement | 20 | -177 $ | -47 $ | **-223 $** | -11.2 $ | -789 $ |
+| aucune bourse contre nous, sans nuit | 55 | -278 $ | +1056 $ | **+778 $** | +14.1 $ | -1086 $ |
+| aucune bourse contre nous, LA NUIT seulement | 22 | -145 $ | -99 $ | **-244 $** | -11.1 $ | -893 $ |
+| aucune bourse contre nous + sortie 10 s (pas_rejoint), sans nuit | 55 | -414 $ | +766 $ | **+352 $** | +6.4 $ | -1218 $ |
