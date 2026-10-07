@@ -269,6 +269,12 @@ export class Bot {
       const ks = [...m.keys()];
       return json({ cles: ks, docs: [...m.values()], suivant: ks.length ? ks[ks.length - 1] : null });
     }
+    if (u.pathname === "/api/lead") {
+      const n = Math.min(40, +(u.searchParams.get("n") || 20)), apres = u.searchParams.get("apres");
+      const m = await this.state.storage.list({ prefix: "lead:", limit: n, ...(apres ? { startAfter: apres } : {}) });
+      const ks = [...m.keys()];
+      return json({ cles: ks, docs: [...m.values()], suivant: ks.length ? ks[ks.length - 1] : null });
+    }
     if (u.pathname === "/api/m97") {
       const n = Math.min(60, +(u.searchParams.get("n") || 30)), apres = u.searchParams.get("apres");
       const m = await this.state.storage.list({ prefix: "m97:", limit: n, ...(apres ? { startAfter: apres } : {}) });
@@ -1480,6 +1486,7 @@ export class Bot {
       while (H.r.length && t - H.r[0].t > 12) H.r.shift();
     }
     if (tleft < 5) return;
+    try { this.leadPhoto(a, mk, pu, tleft, ua, da); } catch (_) {}
     const il_y_a = (sec) => { for (let i = H.r.length - 1; i >= 0; i--) if (t - H.r[i].t >= sec) return H.r[i]; return null; };
     // V5 / V6 (07.10.2026, figés) : gain attendu par dollar au prix EXÉCUTABLE pour 50 $ (carnet jusqu'à +5 c), au lieu d'un écart fixe.
     // V5 : gain attendu >= +50 % par dollar et modèle >= prix + 5 c. V6 loterie : prix exécutable <= 0,10 et modèle >= 2 × prix.
@@ -1535,6 +1542,26 @@ export class Bot {
         this.nSauver();
       }
     }
+  }
+  // ---- « qui a bougé en premier » (07.10.2026) : au 1er désaccord >= 0,20 du cycle, on sauve la boîte noire (10 s à 100 ms :
+  // Bybit, OKX, Binance, Coinbase, Chainlink, carnet Bybit, flux, liquidations, carnets et retraits Polymarket), puis 10 s après.
+  leadPhoto(a, mk, pu, tleft, ua, da) {
+    const L = ((this._lead = this._lead || {})[a] = this._lead[a] && this._lead[a].start === mk.start ? this._lead[a] : { start: mk.start, fait: false });
+    const sauver = (phase, extra) => {
+      const R = (this.bbR || {})[a]; if (!R || !R.length) return;
+      const t = now();
+      this.state.storage.put("lead:" + Math.floor(t * 1000).toString().padStart(14, "0") + ":" + a + ":" + phase,
+        { actif: a, start: mk.start, slug: mk.slug, phase, t: +t.toFixed(3), ...extra, colonnes: BB_COLONNES, lignes: R.slice() }).catch(() => {});
+    };
+    if (!L.fait) {
+      for (const up of [true, false]) {
+        const k = up ? ua : da, fair = up ? pu : 1 - pu;
+        if (k[0] >= 0.03 && k[0] <= 0.97 && fair - k[0] >= 0.20) {
+          L.fait = true; L.t = now(); L.info = { cote: up ? "Up" : "Down", ask: k[0], taille: k[1], modele: +fair.toFixed(4), ecart: +(fair - k[0]).toFixed(4), reste_s: +tleft.toFixed(1), strike: +mk.strike };
+          sauver("avant", L.info); break;
+        }
+      }
+    } else if (!L.apres && now() - L.t >= 10) { L.apres = true; sauver("apres", L.info); }
   }
   dConfirme(a, mk, pu, tleft) {
     const C = NV.CONFIRME, E = C.ECART[a]; if (!E || tleft < 5) return;
