@@ -196,6 +196,7 @@ export class Bot {
         for (const k of Object.keys(this.N.strats)) if (k.startsWith(ancien + " ") && k.split(" ").length === 2) { this.N.strats[neuf + " " + k.split(" ")[1]] = this.N.strats[k]; delete this.N.strats[k]; }
         for (const P of [...this.N.ouvertes, ...this.N.attente]) if (P.strat === ancien) P.strat = neuf;
       }
+      this.BL = (await this.state.storage.get("blink")) || { depuis: now(), evts: [] };
       this.e = (await this.state.storage.get("etat2")) || {
         capital: CFG.CAPITAL, mise: CFG.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, pause: false,
         positions: [], attente: [], trades: [], vetos: {}, candidats: {}, parActif: {}, refus: [], verif: [], depuis: now(),
@@ -1478,6 +1479,77 @@ export class Bot {
     }
   }
   // ---- moteur fantôme V2 (07.10.2026, paramètres FIGÉS avant toute mesure) : désaccord >= 0,20 + un filtre ou un veto, 50 $, gardé jusqu'à la fin.
+  // QUI CONVERGE VERS QUI (07.10.2026, mesure seulement, aucun achat) : à chaque 1er désaccord >= 0,20 du cycle et du côté,
+  // 1, 3 et 10 s plus tard : POLY REJOINT (milieu Poly +3 c vers le modèle, modèle stable) / MODÈLE RETOMBE (modèle -3 c, Poly stable) / LES DEUX / RIEN.
+  blinkSuivre(a, mk, pu, tleft, ua, da, H) {
+    const t = now(), L = this.BL.evts, last = H.r[H.r.length - 1]; if (!last) return;
+    const fam = (df, dm) => { const p = dm >= 0.03, m = df <= -0.03; return p && m ? "LES DEUX" : p ? "POLY REJOINT" : m ? "MODELE RETOMBE" : "RIEN"; };
+    for (const e of L) {
+      if (e.a !== a || e.st !== mk.start || e.f10) continue;
+      const up = e.cote === "Up", fair = up ? pu : 1 - pu, mid = up ? last.um : last.dm;
+      for (const h of [1, 3, 10]) if (!e["f" + h] && t - e.t0 >= h) {
+        e["f" + h] = fam(fair - e.fair0, mid - e.mid0);
+        if (h === 3) e.ask3 = up ? ua[0] : da[0];
+        this.blkSauver();
+      }
+    }
+    if (tleft < 12) return;
+    for (const up of [true, false]) {
+      const k = up ? ua : da, fair = up ? pu : 1 - pu, cote = up ? "Up" : "Down";
+      if (k[0] < 0.03 || k[0] > 0.97 || fair - k[0] < 0.20) continue;
+      if (L.some((e) => e.a === a && e.st === mk.start && e.cote === cote)) continue;
+      let h3 = null; for (let i = H.r.length - 1; i >= 0; i--) if (t - H.r[i].t >= 3) { h3 = H.r[i]; break; }
+      const sg = up ? 1 : -1, d = (src) => (h3 && h3[src] && last[src] ? +((last[src] - h3[src]) / h3[src] * 1e4 * sg).toFixed(2) : null);
+      L.push({ a, st: mk.start, slug: mk.slug, cote, t0: +t.toFixed(2), reste: Math.round(tleft), ask: k[0], fair0: +fair.toFixed(3), mid0: up ? last.um : last.dm,
+        bn3: d("bn"), perp3: d("perp"), okx3: d("okx"), cb3: d("cb"), mkt3: h3 ? +((up ? last.um - h3.um : last.dm - h3.dm)).toFixed(3) : null });
+      while (L.length > 350) L.shift();
+      this.blkSauver();
+    }
+  }
+  blkSauver() {
+    if (this._bsv) return;
+    this._bsv = setTimeout(() => { this._bsv = null; this.state.storage.put("blink", this.BL).catch((err) => this.erreur("sauvegarde blink", err)); }, 2000);
+  }
+  async blkRegler() {
+    const t = now(), cache = {}, fee = (p) => 0.072 * p * (1 - p);
+    let ch = false;
+    for (const e of this.BL.evts) {
+      if (e.g != null || t < e.st + 320 || !e.slug) continue;
+      try {
+        if (!(e.slug in cache)) {
+          const ev = await (await fetch(`${G}/events?slug=${e.slug}`)).json();
+          const m = ev[0].markets[0], px = JSON.parse(m.outcomePrices || "[]").map(Number), outs = JSON.parse(m.outcomes || "[]");
+          cache[e.slug] = (px.includes(1) && px.includes(0)) ? String(outs[px.indexOf(1)]) : null;
+        }
+        const w = cache[e.slug]; if (!w) continue;
+        e.g = w === e.cote ? 1 : 0;
+        e.pnl = +((50 / e.ask) * (e.g - e.ask - fee(e.ask))).toFixed(2);
+        if (e.ask3 && e.ask3 >= 0.03 && e.ask3 <= 0.97) e.pnl3 = +((50 / e.ask3) * (e.g - e.ask3 - fee(e.ask3))).toFixed(2);
+        ch = true;
+      } catch (_) {}
+    }
+    if (ch) this.blkSauver();
+  }
+  blkVue() {
+    const E = this.BL.evts.filter((e) => e.g != null), FAM = ["POLY REJOINT", "MODELE RETOMBE", "LES DEUX", "RIEN"], r2 = (x) => +x.toFixed(0);
+    const res = (X) => ({ n: X.length, g: X.filter((e) => e.g).length, pnl: r2(X.reduce((s2, e) => s2 + e.pnl, 0)) });
+    const parH = {};
+    for (const h of [1, 3, 10]) {
+      const X = E.filter((e) => e["f" + h]);
+      parH[h] = { tous: res(X), fam: Object.fromEntries(FAM.map((f) => [f, res(X.filter((e) => e["f" + h] === f))])) };
+    }
+    const PR = E.filter((e) => e.f3 === "POLY REJOINT" && e.pnl3 != null);
+    const sens = {};
+    for (const [nom, k] of [["Binance", "bn3"], ["Bybit perp", "perp3"], ["OKX", "okx3"], ["Coinbase", "cb3"], ["Polymarket", "mkt3"]]) {
+      sens[nom] = {};
+      for (const [s2, fl] of [["contre nous", (v) => v < 0], ["neutre", (v) => v === 0], ["avec nous", (v) => v > 0]]) {
+        const X = E.filter((e) => e.f3 && e[k] != null && fl(e[k]));
+        sens[nom][s2] = { ...res(X), pr: X.filter((e) => e.f3 === "POLY REJOINT").length, mr: X.filter((e) => e.f3 === "MODELE RETOMBE").length };
+      }
+    }
+    return { depuis: this.BL.depuis, n: this.BL.evts.length, regles: E.length, parH, attendre3: { n: PR.length, g: PR.filter((e) => e.g).length, pnl: r2(PR.reduce((s2, e) => s2 + e.pnl3, 0)) }, sens };
+  }
+
   dV2(a, mk, pu, tleft) {
     const t = now(), px = (src) => (this.f[a][src] ? +this.f[a][src].p : null);
     const ub = this.livreTrie(mk.up, "bids")[0], ua = this.livreTrie(mk.up, "asks")[0], db = this.livreTrie(mk.down, "bids")[0], da = this.livreTrie(mk.down, "asks")[0];
@@ -1487,6 +1559,7 @@ export class Bot {
       H.r.push({ t, pu, um: (ub[0] + ua[0]) / 2, dm: (db[0] + da[0]) / 2, ua: ua[0], da: da[0], perp: px("perp"), okx: px("okx"), bn: px("bn"), cb: px("cb") });
       while (H.r.length && t - H.r[0].t > 12) H.r.shift();
     }
+    try { this.blinkSuivre(a, mk, pu, tleft, ua, da, H); } catch (err) { this.erreur("qui converge", err); }
     if (tleft < 5) return;
     try { this.leadPhoto(a, mk, pu, tleft, ua, da); } catch (_) {}
     const il_y_a = (sec) => { for (let i = H.r.length - 1; i >= 0; i--) if (t - H.r[i].t >= sec) return H.r[i]; return null; };
@@ -1770,6 +1843,7 @@ export class Bot {
     }
     this.N.attente = garder;
     this.nSauver();
+    try { await this.blkRegler(); } catch (err) { this.erreur("qui converge règlement", err); }
   }
 
   nVue() {
@@ -1783,7 +1857,7 @@ export class Bot {
     const resume = Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { depuis: v.depuis, n: v.n, pnl: v.pnl, gains: v.gains, pertes: v.pertes,
       pertesTot: v.trades.filter((x) => x.net < 0).reduce((s2, x) => s2 + x.net, 0), pire: v.trades.length ? Math.min(...v.trades.map((x) => x.net)) : 0, ...nRisqueVue(v.rq && v.rq.hist ? v.rq : nRisqueDepuis(v.trades)) }]));
     return { depuis: this.N.depuis, typesDesaccord: this.dTypesResume(), markout: Object.fromEntries(Object.entries(this.N.markout || {}).map(([k, v]) => [k, { remplissages: v.n, ...Object.fromEntries(["0.1s", "0.5s", "1s", "3s", "10s"].map((h) => [h, v.nOk[h] ? +(100 * v[h] / v.nOk[h]).toFixed(2) : null])) }])), ordres: this.nOrdresResume(), audit: ((this.N.audit || {}).lignes || []).slice(0, 200), manquees: this.N.manq || {}, resume: { ...v1, ...resume }, reglages: NV, strats: Object.fromEntries(Object.entries(this.N.strats).map(([k, v]) => [k, { depuis: v.depuis, n: v.n, gains: v.gains, pertes: v.pertes, pnl: v.pnl, issues: v.issues, trades: v.trades.slice(0, 25).map((t) => ({ heure: t.heure, cote: t.cote, U: t.U, D: t.D, issue: t.issue, net: t.net, prix: t.prix, type: t.type, etatSignal: t.etatSignal, journal: (t.journal || []).slice(-4) })) }])),
-      actives: NV.ACTIVES, ouvertes: this.N.ouvertes, attente: this.N.attente.length, offresMM: this._mmQ || {} };
+      blink: this.blkVue(), actives: NV.ACTIVES, ouvertes: this.N.ouvertes, attente: this.N.attente.length, offresMM: this._mmQ || {} };
   }
 
   async v1Regler(a = "BTC") {
@@ -1926,6 +2000,7 @@ const cles=Object.keys(d.strats).sort((x,y)=>((d.strats[y]||{}).pnl||0)-((d.stra
 const R=d.resume||{},base=(k)=>k.replace(/^inverse /,"").replace(/^V1 actuel \(avec stop\)/,"V1"),rk=Object.keys(R).sort((x,y)=>((R[y]||{}).pnl||0)-((R[x]||{}).pnl||0));
 const act=(k)=>(d.actives||[]).includes(k.slice(0,k.lastIndexOf(" ")));
 h+="<div class='card'><h2>Stratégies actives — classées par résultat en $</h2><table><tr><th>Stratégie</th><th>Ce qu'elle fait</th><th>Depuis</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Combien de fois</th><th>Creux max</th><th>Capital conseillé</th></tr>"+rk.filter(act).map(k=>{const x=R[k],st=k.slice(0,k.lastIndexOf(" ")),a=k.slice(k.lastIndexOf(" ")+1);return "<tr><td>"+(noms[st]||st)+" — "+a+"</td><td class='mu' style='font-size:11px;max-width:420px'>"+expl(st.replace(/^V1 actuel \(avec stop\)$/,"V1 actuel (avec stop)"))+"</td><td>"+new Date(x.depuis*1000).toLocaleString("fr-CH",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td><b>"+f(x.pnl)+"</b></td><td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td><b>"+(x.serieMax??"—")+"</b> / "+(x.serie??"—")+"</td><td class='mu' style='font-size:11px'>"+ser(x.series)+"</td><td class='ko'>"+(x.creux!=null?f(x.creux):"—")+"</td><td><b>"+(x.capital!=null?x.capital+" $":"—")+"</b></td></tr>"}).join("")+"</table></div>";
+const BK=d.blink;if(BK){const FM=[["POLY REJOINT","Polymarket rejoint le modèle"],["MODELE RETOMBE","Le modèle retombe vers Polymarket"],["LES DEUX","Les deux se rapprochent"],["RIEN","Rien ne bouge (moins de 3 c)"]];const cel=(z)=>z&&z.n?z.n+" · "+Math.round(100*z.g/z.n)+" % gagnés · <b>"+f(z.pnl)+"</b>":"—";h+="<div class='card'><h2>Qui converge vers qui ? (BTC, mesure en direct, aucun achat)</h2><div class='mu'>À chaque 1er désaccord ≥ 20 pts du cycle : 1, 3 et 10 s plus tard, est-ce Polymarket qui rejoint le modèle (désaccord vrai) ou le modèle qui retombe (désaccord faux) ? Chaque case : désaccords · % gagnés à la fin · résultat si on avait acheté 50 $ à l'entrée. Depuis "+new Date(BK.depuis*1000).toLocaleString("fr-CH",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+" · "+BK.n+" désaccords, "+BK.regles+" réglés.</div><table><tr><th>Famille</th><th>Après 1 s</th><th>Après 3 s</th><th>Après 10 s</th></tr>"+FM.map(([k,l])=>"<tr><td>"+l+"</td>"+[1,3,10].map(x=>"<td>"+cel((BK.parH[x]||{fam:{}}).fam[k])+"</td>").join("")+"</tr>").join("")+"<tr><td><b>Tous</b></td>"+[1,3,10].map(x=>"<td>"+cel((BK.parH[x]||{}).tous)+"</td>").join("")+"</tr></table><div style='margin-top:6px'>Attendre 3 s et n'acheter que si Polymarket rejoint le modèle : <b>"+cel(BK.attendre3)+"</b></div><table style='margin-top:8px'><tr><th>Bourse (3 s avant)</th><th>Contre nous</th><th>Neutre</th><th>Avec nous</th></tr>"+Object.entries(BK.sens||{}).map(([nm,z])=>"<tr><td>"+nm+"</td>"+["contre nous","neutre","avec nous"].map(s=>{const c=z[s];return "<td>"+(c&&c.n?cel(c)+"<br><span class='mu' style='font-size:10px'>Poly rejoint "+c.pr+" · modèle retombe "+c.mr+"</span>":"—")+"</td>"}).join("")+"</tr>").join("")+"</table></div>";}
 h+="<div class='card'><details><summary><b>Stratégies arrêtées le 07.10 (résultats figés)</b></summary><table><tr><th>Stratégie</th><th>Ce qu'elle fait</th><th>Depuis</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Combien de fois</th><th>Creux max</th><th>Capital conseillé</th></tr>"+rk.filter(k=>!act(k)).map(k=>{const x=R[k],st=k.slice(0,k.lastIndexOf(" ")),a=k.slice(k.lastIndexOf(" ")+1);return "<tr><td>"+(noms[st]||st)+" — "+a+"</td><td class='mu' style='font-size:11px;max-width:420px'>"+expl(st.replace(/^V1 actuel \(avec stop\)$/,"V1 actuel (avec stop)"))+"</td><td>"+new Date(x.depuis*1000).toLocaleString("fr-CH",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td><b>"+f(x.pnl)+"</b></td><td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td><b>"+(x.serieMax??"—")+"</b> / "+(x.serie??"—")+"</td><td class='mu' style='font-size:11px'>"+ser(x.series)+"</td><td class='ko'>"+(x.creux!=null?f(x.creux):"—")+"</td><td><b>"+(x.capital!=null?x.capital+" $":"—")+"</b></td></tr>"}).join("")+"</table></details></div>";
 const TY=d.typesDesaccord||{};if(Object.keys(TY).length){const G=["simple","validation","validation+inversion","convergence","verrou","demi","freeroll"];h+="<div class='card'><h2>Désaccords : résultat par type de configuration et par gestion</h2><div class='mu'>Type = moment du cycle | prix acheté | sens du perp | sens du marché. Chaque case : trades, gagnés, résultat. États du signal : CONFIRMÉ / PAS DE SUITE / SIGNAL RATÉ / VRAI RETOURNEMENT (seul ce dernier autorise l'inversion).</div><table><tr><th>Type</th>"+G.map(g=>"<th>"+g+"</th>").join("")+"</tr>"+Object.entries(TY).sort((x,y)=>((y[1].simple||{}).n||0)-((x[1].simple||{}).n||0)).map(([t,z])=>"<tr><td style='font-size:11px'>"+t+"</td>"+G.map(g=>{const c=z[g];return "<td>"+(c?c.n+" · "+c.g+" G · <b>"+f(c.pnl)+"</b>"+(c.etats&&Object.keys(c.etats).length?"<br><span class='mu' style='font-size:10px'>"+Object.entries(c.etats).map(([e,n])=>e+" "+n).join(", ")+"</span>":""):"—")+"</td>"}).join("")+"</tr>").join("")+"</table></div>";}
 const OR=d.ordres||{};if(Object.keys(OR).length){h+="<div class='card'><h2>Ordres fantômes avec le délai de Polymarket</h2><div class='mu'>Essais = moments où la stratégie voulait acheter. Servi = le vendeur était encore là 50 ms / 250 ms après. Résultat par stratégie si on n'achète QUE ce qui est servi, et si on achète l'inverse quand on est servi.</div><table><tr><th>Stratégie</th><th>Essais</th><th>Gagnants (tous)</th><th>Servis 50 ms</th><th>Gagnants si servi</th><th>Gagnants si PAS servi</th><th>Résultat servi 50 ms</th><th>Résultat servi 250 ms</th><th>Résultat « inverse »</th><th>Résultat si tout servi (simulation)</th></tr>"+Object.entries(OR).sort().map(([k,z])=>"<tr><td>"+k+"</td><td>"+z.essais+"</td><td>"+z.gagnants+"</td><td>"+z.s50+" ("+(z.essais?Math.round(100*z.s50/z.essais):0)+" %)</td><td>"+z.g50+" / "+z.s50+"</td><td>"+z.nonServisGagnants+" / "+z.nonServis+"</td><td>"+f(z.pnl50)+"</td><td>"+f(z.pnl250)+"</td><td>"+f(z.inv50)+"</td><td>"+f(z.pnlParfait)+"</td></tr>").join("")+"</table></div>";}
