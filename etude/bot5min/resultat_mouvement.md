@@ -113,5 +113,3 @@ Les morts a 5 s finissent-ils perdants ? 247 trades morts a 5 s : 22 % gagnent q
 | routeur (garder si P(gain) >= 0.3 et > prix ; sinon revendre +50 % si P(mvt) >= 0.6) | 52 | -303 $ |
 
 Variables les plus utilisees pour reconnaitre un « mort a l'arrivee » : taille 176 · tl 165 · edge 135 · mkt5 83 · ask 67 · v3 60 · cb3 54 · fair 47
-
-code sortie: 0
