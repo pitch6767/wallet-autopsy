@@ -28,7 +28,7 @@ def actifs_btc5():
         if not isinstance(m, dict) or m.get("slug") in vus: continue
         vus.add(m.get("slug"))
         s = m.get("slug") or ""
-        if re.search(r"btc.*5-min|bitcoin.*5.min", s + " " + (m.get("title") or ""), re.I): out.append(m)
+        if re.match(r"btc-up-or-down-5-min-", s): out.append(m)
     return out
 
 
@@ -57,7 +57,7 @@ def prix_limitless(slug):
         bids = ob.get("bids") or []; asks = ob.get("asks") or []
         if bids: bid = max(float(x["price"]) for x in bids)
         if asks:
-            a0 = min(asks, key=lambda x: float(x["price"])); ask = float(a0["price"]); taille_ask = float(a0.get("size") or 0)
+            a0 = min(asks, key=lambda x: float(x["price"])); ask = float(a0["price"]); taille_ask = float(a0.get("size") or 0) / 1e6
         if bid and bid > 1: bid /= 100
         if ask and ask > 1: ask /= 100
     except Exception: pass

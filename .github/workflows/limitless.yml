@@ -2,7 +2,7 @@ name: Limitless lent
 on:
   push:
     branches: [main]
-    paths: [etude/bot5min/limitless_mode.txt]
+    paths: [etude/bot5min/limitless_go.txt]
   schedule:
     - cron: "35 13 7 10 *"
 permissions:
