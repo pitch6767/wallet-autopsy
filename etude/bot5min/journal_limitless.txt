@@ -1,4 +1,4 @@
-# Places lentes — 7300 secondes (07.10 10:15 -> 12:45 UTC)
+# Places lentes — 6936 secondes (07.10 16:21 -> 18:51 UTC)
 
 Evenement : le BTC bouge d'au moins X pb en 3 s, Polymarket a deja bouge dans le meme sens, la place lente pas encore (moins de 1 cent).
 Achat : tout ce qui est vendu sur la place lente jusqu'a (ancien milieu + mouvement de Polymarket - 1 cent), profondeur comprise.
@@ -8,7 +8,7 @@ Revente : au meilleur acheteur de la meme place (profondeur comprise) N secondes
 
 | Seuil BTC | Evenements | Parts achetables (mediane) | Mise moyenne | Gain revente +5 s | +10 s | +30 s | +60 s | Gain total (+30 s) |
 |---|---|---|---|---|---|---|---|---|
-| 3 pb / 3 s | 2 | 10 | 3 $ | -1.70 $ (2) | -1.91 $ (2) | -1.20 $ (2) | -0.28 $ (2) | **-2.39 $** |
+| 3 pb / 3 s | 0 | | | | | | | |
 | 5 pb / 3 s | 0 | | | | | | | |
 | 8 pb / 3 s | 0 | | | | | | | |
 
