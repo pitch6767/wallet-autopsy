@@ -95,7 +95,7 @@ def actifs_recents(n_cycles=60):
 def activite(w, maxi=4000):
     ev = []
     for off in range(0, maxi, 500):
-        try: lot = get(f"{D}/activity?user={w}&limit=500&offset={off}")
+        try: lot = get(f"{D}/activity?user={w}&limit=500&offset={off}&sortBy=TIMESTAMP&sortDirection=DESC")
         except Exception: break
         if not lot: break
         ev += lot
@@ -140,7 +140,7 @@ def autopsie(w):
                        "paire": (pmU + pmD) if (pmU is not None and pmD is not None) else None,
                        "deseq": abs(m["U"] - m["D"]) / tot if tot > 0 else 0, "favori_gagne": (m["U"] > m["D"]) == (g.lower() == "up"),
                        "t0": min(m["t"]) if m["t"] else None, "t1": max(m["t"]) if m["t"] else None, "n": m["n"],
-                       "prix_moy": statistics.mean([p for p, _ in m["achats"]]) if m["achats"] else None, "tmin": min(int(e["timestamp"]) for e in ev)})
+                       "prix_moy": statistics.mean([p for p, _ in m["achats"]]) if m["achats"] else None, "tmin": min(int(e["timestamp"]) for e in ev), "tmax": max(int(e["timestamp"]) for e in ev)})
     return lignes
 
 
@@ -156,7 +156,7 @@ def taker_part(w, tmin):
 
 
 def resume(w, etiquette, L):
-    if not L: return [f"| {w[:10]}… | {etiquette} | aucun marche Up/Down resolu | | | | | | | | |"]
+    if not L: return [f"| {w[:10]}… | {etiquette} | aucun marche Up/Down resolu | | | | | | | | | |"]
     par = collections.defaultdict(list)
     for x in L: par[x["duree"]].append(x)
     out = []
@@ -164,7 +164,8 @@ def resume(w, etiquette, L):
         pn = [x["pnl"] for x in X]; co = sum(x["cout"] for x in X)
         deux = [x for x in X if x["deux"]]; pa = [x["paire"] for x in deux if x["paire"]]
         t0 = [x["t0"] for x in X if x["t0"] is not None]
-        out.append(f"| {w[:10]}… | {etiquette} | {('%d min' % (d // 60)) if d else '?'} | {len(X)} | {sum(pn):+.0f} $ | {sum(pn) / max(co, 1) * 100:+.1f} % | {100 * sum(1 for p in pn if p > 0) / len(X):.0f} % | "
+        per = time.strftime('%d.%m', time.gmtime(min(x["tmin"] for x in X))) + "→" + time.strftime('%d.%m', time.gmtime(max(x["tmax"] for x in X)))
+        out.append(f"| {w[:10]}… | {etiquette} | {per} | {('%d min' % (d // 60)) if d else '?'} | {len(X)} | {sum(pn):+.0f} $ | {sum(pn) / max(co, 1) * 100:+.1f} % | {100 * sum(1 for p in pn if p > 0) / len(X):.0f} % | "
                    f"{100 * len(deux) / len(X):.0f} % | {statistics.median(pa) if pa else float('nan'):.3f} | {statistics.median([x['deseq'] for x in X]):.2f} | "
                    f"{100 * sum(1 for x in X if x['favori_gagne']) / len(X):.0f} % | {statistics.median(t0) if t0 else float('nan'):.0f} s | {statistics.mean(x['prix_moy'] for x in X if x['prix_moy']):.2f} |")
     return out
@@ -180,8 +181,8 @@ def main():
     vus = set(); rap = ["# Autopsie des portefeuilles sur les marches crypto Up/Down (Polymarket)", "",
                         "Gain = resolution officielle (parts gagnantes x 1 $) + ventes + fusions - achats. Paire = prix moyen d'achat Up + prix moyen d'achat Down (marches ou il achete les deux). "
                         "Desequilibre = |Up - Down| / (Up + Down) en fin de marche (0 = paire parfaite, 1 = un seul cote). Favori gagne = le cote ou il avait le plus de parts a gagne. 1er achat = secondes apres le debut du marche.", "",
-                        "| Portefeuille | Origine | Marche | Marches | Gain | Gain / mise | Marches gagnants | Achete les 2 cotes | Paire mediane | Desequilibre median | Favori gagne | 1er achat | Prix moyen achete |",
-                        "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+                        "| Portefeuille | Origine | Periode lue | Marche | Marches | Gain | Gain / mise | Marches gagnants | Achete les 2 cotes | Paire mediane | Desequilibre median | Favori gagne | 1er achat | Prix moyen achete |",
+                        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     detail = []
     for w, et in cibles:
         if not w or w in vus: continue
