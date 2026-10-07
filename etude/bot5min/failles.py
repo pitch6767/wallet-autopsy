@@ -30,11 +30,12 @@ def livre(tok):
 
 
 def nombre(q):
-    """premier prix dans la question : $120,000 / 120k / 4,500"""
-    m = re.search(r"\$\s?([\d,]+(?:\.\d+)?)\s*([kK])?", q) or re.search(r"([\d,]{4,}(?:\.\d+)?)", q)
+    """premier montant : $120,000 / 120k / $5B / $100M / 4,500 -> valeur en unites"""
+    m = re.search(r"\$?\s?([\d,]+(?:\.\d+)?)\s*([kKmMbB])?\b", q)
     if not m: return None
     v = float(m.group(1).replace(",", ""))
-    if len(m.groups()) > 1 and m.group(2): v *= 1000
+    u = (m.group(2) or "").lower()
+    v *= {"k": 1e3, "m": 1e6, "b": 1e9}.get(u, 1)
     return v
 
 
@@ -65,8 +66,9 @@ def scan(E):
             yes = toks[outs.index("Yes")] if "Yes" in outs else toks[0]; no = toks[1] if yes == toks[0] else toks[0]
             lignes.append({"q": q, "k": k, "yes": yes, "no": no, "neg": m.get("negRisk") or e.get("negRisk")})
         if len(lignes) < 3: continue
+        if not (re.search(r"above|price|between|range|FDV|market cap", titre, re.I)): continue
         dessus = all(re.search(r"above|over|reach|hit|>|higher", l["q"], re.I) for l in lignes) and all(l["k"] for l in lignes)
-        fourchette = bool(e.get("negRisk")) or all(re.search(r"between|range|-|to ", l["q"], re.I) for l in lignes)
+        fourchette = bool(e.get("negRisk")) and not re.search(r"reach|hit|dip|high|low", titre, re.I)
         for l in lignes:
             l["ya"], l["yb"] = livre(l["yes"]); l["na"], l["nb"] = livre(l["no"])
         if dessus and not re.search(r"reach|hit", titre + lignes[0]["q"], re.I):
