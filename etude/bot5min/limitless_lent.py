@@ -19,16 +19,24 @@ def log(*a): print(*a, flush=True)
 
 
 def actifs_btc5():
-    r = get(f"{L}/markets/active?limit=100")
-    data = r.get("data") if isinstance(r, dict) else r
-    out = []
-    for m in data or []:
+    data = []
+    for url in (f"{L}/markets/active", f"{L}/markets/active?page=2", f"{L}/markets/active?limit=25&page=1", f"{L}/markets/active?limit=25&page=2", f"{L}/markets/active?limit=25&page=3"):
+        r = get(url)
+        data += (r.get("data") if isinstance(r, dict) else r) or []
+    out = []; vus = set()
+    for m in data:
+        if not isinstance(m, dict) or m.get("slug") in vus: continue
+        vus.add(m.get("slug"))
         s = m.get("slug") or ""
         if re.search(r"btc.*5-min|bitcoin.*5.min", s + " " + (m.get("title") or ""), re.I): out.append(m)
     return out
 
 
 def sonde():
+    r = get(f"{L}/markets/active")
+    log("cles reponse", list(r.keys()) if isinstance(r, dict) else type(r), "total", r.get("totalMarketsCount") if isinstance(r, dict) else None)
+    d = (r.get("data") if isinstance(r, dict) else r) or []
+    log("slugs", [m.get("slug") for m in d][:60])
     A = actifs_btc5()
     log("BTC 5 min actifs :", [m.get("slug") for m in A])
     if A:
