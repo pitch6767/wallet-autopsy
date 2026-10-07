@@ -1,0 +1,35 @@
+# Variantes V2 / V5 / V6 sur les vrais carnets du bot (48 h)
+
+Achat au meilleur vendeur reel, limite a la taille affichee (max 50 $), garde jusqu'au resultat officiel. 1 achat par cycle et par variante.
+
+## BTC — 262 cycles (06.10 16:20 → 07.10 14:15)
+
+| Variante | Trades | Gagnes | 1re moitie | 2e moitie | **Total** | Gain moyen / trade |
+|---|---|---|---|---|---|---|
+| A desaccord 20 | 220 | 48 | +655 $ | -509 $ | **+146 $** | +0.66 $ |
+| F ecart qui grandit | 211 | 45 | +1472 $ | -648 $ | **+823 $** | +3.90 $ |
+| V5 gain attendu >= 50 % | 256 | 59 | -217 $ | -791 $ | **-1007 $** | -3.94 $ |
+| V6 loterie | 245 | 20 | -114 $ | -531 $ | **-645 $** | -2.63 $ |
+| B hors 60-89 s | 213 | 48 | +801 $ | -333 $ | **+469 $** | +2.20 $ |
+| H veto complet | 206 | 43 | +1060 $ | +404 $ | **+1464 $** | +7.11 $ |
+| E persistant | 210 | 37 | +1439 $ | -493 $ | **+945 $** | +4.50 $ |
+| C perp | 215 | 45 | +1256 $ | -821 $ | **+434 $** | +2.02 $ |
+| G jury | 165 | 34 | +1298 $ | -660 $ | **+639 $** | +3.87 $ |
+| C+F perp + grandit | 197 | 39 | +1746 $ | -1091 $ | **+655 $** | +3.32 $ |
+| D perp + 120-269 s | 152 | 37 | +1616 $ | +70 $ | **+1686 $** | +11.09 $ |
+
+## ETH — 263 cycles (06.10 16:15 → 07.10 14:15)
+
+| Variante | Trades | Gagnes | 1re moitie | 2e moitie | **Total** | Gain moyen / trade |
+|---|---|---|---|---|---|---|
+| A desaccord 20 | 203 | 38 | -552 $ | -625 $ | **-1177 $** | -5.80 $ |
+| F ecart qui grandit | 196 | 36 | +69 $ | -166 $ | **-96 $** | -0.49 $ |
+| V5 gain attendu >= 50 % | 254 | 62 | -605 $ | -75 $ | **-680 $** | -2.68 $ |
+| V6 loterie | 243 | 20 | -349 $ | +141 $ | **-208 $** | -0.86 $ |
+| B hors 60-89 s | 194 | 37 | -626 $ | -452 $ | **-1078 $** | -5.56 $ |
+| E persistant | 186 | 29 | -707 $ | -486 $ | **-1193 $** | -6.42 $ |
+| C perp | 192 | 35 | -163 $ | +14 $ | **-149 $** | -0.78 $ |
+| G jury | 143 | 21 | -568 $ | +46 $ | **-522 $** | -3.65 $ |
+| C+F perp + grandit | 171 | 29 | -121 $ | -56 $ | **-177 $** | -1.03 $ |
+| H veto complet | 177 | 30 | -925 $ | +181 $ | **-744 $** | -4.21 $ |
+| D perp + 120-269 s | 122 | 26 | -64 $ | +167 $ | **+103 $** | +0.84 $ |
