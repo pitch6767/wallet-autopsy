@@ -20,6 +20,8 @@ const NV = {
     VARIANTES: { "assurance 6/9/12": [[0.06, 0.25], [0.09, 0.5], [0.12, 1.0]], "assurance 4/7/10": [[0.04, 0.25], [0.07, 0.5], [0.10, 1.0]] } },
   // désaccord modèle / marché (analyse du 06.10 : écart >= 0,10 → le modèle a raison 61 %, +0,07 $/part sur 12 jours) : achat taker au meilleur vendeur, gardé jusqu'à la fin
   // 07.10.2026 (décision de Pitch) : on ne garde que V1, assurance et désaccord 20 — tout le reste est arrêté (résultats figés sur la page)
+  // 07.10.2026 (décision de Pitch) : on oublie ETH — plus aucun trade ETH (les données ETH restent enregistrées)
+  TRADE: ["BTC"],
   ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord confirme", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-G jury des bourses", "V2-H veto complet", "V5 gain attendu", "V6 loterie"],
   // 07.10.2026 : désaccord CONFIRMÉ (analyse sur les vrais carnets) : écart >= 0,20 (BTC) / 0,10 (ETH) repéré, on attend 20 s,
   // on n'achète que si notre côté a déjà monté de 3 cents vers le modèle et que le modèle garde 3 cents d'avance ; gardé jusqu'à la fin.
@@ -933,6 +935,7 @@ export class Bot {
   actifDuJeton(id) { return V1.ACTIFS.find((a) => { const m = this.mk[a]; return m && (m.up === id || m.down === id); }) || null; }
   v1Etat(a) { return a === "BTC" ? this.e.V1 : this.e.V1x[a]; }
   v1Declencher(a, source, ts, t) {
+    if (!NV.TRADE.includes(a) && !this.v1Etat(a).pos) return;          // plus de nouvelle entrée hors BTC (une position ouverte va jusqu'au bout)
     if (t - (this._v1t[a] || 0) <= 0.2) return;
     this._v1t[a] = t;
     try { this.v1Eval(source, ts, a); } catch (err) { this.erreur("V1 " + a, err); }
@@ -1291,6 +1294,7 @@ export class Bot {
         break;
       }
     }
+    if (!NV.TRADE.includes(a)) return;                                  // ETH : enregistrement seulement
     try { this.dV2(a, mk, pu, tleft); } catch (err) { this.erreur("désaccord V2", err); }
     try { this.dConfirme(a, mk, pu, tleft); } catch (err) { this.erreur("désaccord confirmé", err); }
     // ---- 4. désaccord : le modèle donne au moins X de plus que le meilleur vendeur → achat, une fois par cycle et par variante
@@ -1852,7 +1856,7 @@ function nRisqueVue(r) { const h = { ...(r.hist || {}) }; if (r.serie > 0) h[r.s
 
 const PAGE_N = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes</title>${STYLE}</head><body>
 <h1>Nouvelles stratégies — mode fantôme</h1>
-<div class="mu">Aucun argent réel. Depuis le 07.10 au matin, seules tournent : V1, V1 + assurance (6/9/12 et 4/7/10) et désaccord 20, sur BTC et ETH. Toutes les autres stratégies sont arrêtées ; leurs résultats restent visibles, figés, dans « Stratégies arrêtées ».</div>
+<div class="mu">Aucun argent réel. Depuis le 07.10 à 15h, seulement sur BTC (ETH abandonné, ses anciens résultats restent visibles) : V1, V1 + assurance (6/9/12 et 4/7/10), désaccord 20 et ses variantes (confirmé, V2 B à H, V5, V6). Toutes les autres stratégies sont arrêtées ; leurs résultats restent visibles, figés, dans « Stratégies arrêtées ».</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a></div><div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+x.toFixed(2)+" $";
