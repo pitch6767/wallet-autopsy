@@ -1,0 +1,34 @@
+# Meta-modele, gain attendu, reaction de Polymarket — 12 jours (2026-09-25 -> 2026-10-06)
+
+11169 candidats (modele >= marche + 5 c, achetables) — j1-8 : 7422, j9-12 : 3747. Gain pour 50 $ par trade, frais compris.
+
+Fonction de reaction (j1-8) : en 3 s, Polymarket bouge en moyenne de **0.08 fois** le mouvement du modele. Residu < 0 = Polymarket en retard.
+
+## Regles simples (figees, aucune optimisation)
+
+| Regle | j1-8 | **j9-12 (verification)** |
+|---|---|---|
+| seuil fixe +20 pts (actuel) | 447 trades · +48.49 $/trade · total +21675 $ · 63 % gagnants | **276 trades · +46.68 $/trade · total +12883 $ · 65 % gagnants** |
+| seuil fixe +10 pts | 2514 trades · +14.89 $/trade · total +37436 $ · 61 % gagnants | **1443 trades · +19.42 $/trade · total +28021 $ · 59 % gagnants** |
+| gain attendu >= +25 % / $ | 1973 trades · +22.76 $/trade · total +44909 $ · 46 % gagnants | **1175 trades · +23.92 $/trade · total +28112 $ · 44 % gagnants** |
+| gain attendu >= +50 % / $ | 638 trades · +53.99 $/trade · total +34448 $ · 41 % gagnants | **382 trades · +67.19 $/trade · total +25665 $ · 41 % gagnants** |
+| gain attendu >= +100 % / $ | 212 trades · +129.62 $/trade · total +27479 $ · 42 % gagnants | **129 trades · +154.62 $/trade · total +19946 $ · 38 % gagnants** |
+| loterie (prix <= 0,10, modele >= 2x) | 111 trades · +165.61 $/trade · total +18383 $ · 23 % gagnants | **73 trades · +227.85 $/trade · total +16633 $ · 25 % gagnants** |
+| normal (0,10-0,35, +20 pts) | 127 trades · +66.70 $/trade · total +8471 $ · 55 % gagnants | **57 trades · +50.68 $/trade · total +2889 $ · 51 % gagnants** |
+| cher (> 0,35, +10 pts) | 2019 trades · +5.69 $/trade · total +11483 $ · 66 % gagnants | **1139 trades · +5.72 $/trade · total +6516 $ · 66 % gagnants** |
+| Polymarket en retard (residu <= -0,03) + gain >= 50 % | 251 trades · +67.40 $/trade · total +16916 $ · 41 % gagnants | **155 trades · +82.60 $/trade · total +12803 $ · 45 % gagnants** |
+| Polymarket en retard + spot avec nous (3 s) | 1076 trades · +19.75 $/trade · total +21255 $ · 51 % gagnants | **459 trades · +33.81 $/trade · total +15520 $ · 58 % gagnants** |
+| gain >= 50 % + spot avec nous (5 s) | 585 trades · +60.79 $/trade · total +35561 $ · 43 % gagnants | **320 trades · +84.30 $/trade · total +26977 $ · 46 % gagnants** |
+| gain >= 50 % + ecart qui grandit (3 s) | 596 trades · +56.95 $/trade · total +33942 $ · 41 % gagnants | **350 trades · +74.00 $/trade · total +25901 $ · 42 % gagnants** |
+
+## Meta-modele LightGBM (appris j1-8, gain attendu predit pour chaque candidat)
+
+| On achete si le gain predit depasse | j1-8 (appris, optimiste) | **j9-12 (jamais vu)** |
+|---|---|---|
+| 0 $ | 5043 trades · +22.21 $/trade · total +112030 $ · 69 % gagnants | **2541 trades · +13.55 $/trade · total +34430 $ · 60 % gagnants** |
+| 2 $ | 4016 trades · +27.70 $/trade · total +111247 $ · 70 % gagnants | **1956 trades · +18.42 $/trade · total +36026 $ · 60 % gagnants** |
+| 5 $ | 2679 trades · +38.60 $/trade · total +103415 $ · 70 % gagnants | **1250 trades · +27.37 $/trade · total +34214 $ · 58 % gagnants** |
+| 10 $ | 1641 trades · +54.26 $/trade · total +89040 $ · 68 % gagnants | **743 trades · +42.33 $/trade · total +31448 $ · 54 % gagnants** |
+| 20 $ | 884 trades · +82.45 $/trade · total +72884 $ · 67 % gagnants | **371 trades · +73.02 $/trade · total +27090 $ · 47 % gagnants** |
+
+Variables les plus utiles (SHAP, j9-12) : dpm3 4.60 · prix 4.41 · ratio 3.61 · v1 2.34 · fair 1.89 · edge 1.41 · acc 1.24 · tl 1.23 · v3 1.21 · dup10 1.11
