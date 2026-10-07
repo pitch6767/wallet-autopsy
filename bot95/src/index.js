@@ -20,7 +20,7 @@ const NV = {
     VARIANTES: { "assurance 6/9/12": [[0.06, 0.25], [0.09, 0.5], [0.12, 1.0]], "assurance 4/7/10": [[0.04, 0.25], [0.07, 0.5], [0.10, 1.0]] } },
   // désaccord modèle / marché (analyse du 06.10 : écart >= 0,10 → le modèle a raison 61 %, +0,07 $/part sur 12 jours) : achat taker au meilleur vendeur, gardé jusqu'à la fin
   // 07.10.2026 (décision de Pitch) : on ne garde que V1, assurance et désaccord 20 — tout le reste est arrêté (résultats figés sur la page)
-  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord confirme", "desaccord confirme perp"],
+  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord confirme", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-G jury des bourses", "V2-H veto complet"],
   // 07.10.2026 : désaccord CONFIRMÉ (analyse sur les vrais carnets) : écart >= 0,20 (BTC) / 0,10 (ETH) repéré, on attend 20 s,
   // on n'achète que si notre côté a déjà monté de 3 cents vers le modèle et que le modèle garde 3 cents d'avance ; gardé jusqu'à la fin.
   CONFIRME: { ECART: { BTC: 0.20, ETH: 0.10 }, ATTENTE_S: 20, HAUSSE: 0.03, AVANCE_MIN: 0.03, MISE: 50 },
@@ -1291,6 +1291,7 @@ export class Bot {
         break;
       }
     }
+    try { this.dV2(a, mk, pu, tleft); } catch (err) { this.erreur("désaccord V2", err); }
     try { this.dConfirme(a, mk, pu, tleft); } catch (err) { this.erreur("désaccord confirmé", err); }
     // ---- 4. désaccord : le modèle donne au moins X de plus que le meilleur vendeur → achat, une fois par cycle et par variante
     if (tleft >= NV.DESACCORD.TMIN && !NV.DESACCORD.ARRETES) { try { this.dNouvelles(a, mk, pu, tleft); } catch (err) { this.erreur("désaccords nouveaux", err); } }
@@ -1460,6 +1461,56 @@ export class Bot {
         this.nNote(P, `offre maker servie : ${q.parts.toFixed(1)} parts à ${q.bid} (sans frais)`);
         P.type = this.dType(a, q.up, tleft, q.bid);
         this.dCopies(P, MK.ecart, a, mk, q.up, { parts: q.parts, cout: q.cout }, NV.DESACCORD.GESTIONS_NOUVELLES);
+        this.nSauver();
+      }
+    }
+  }
+  // ---- moteur fantôme V2 (07.10.2026, paramètres FIGÉS avant toute mesure) : désaccord >= 0,20 + un filtre ou un veto, 50 $, gardé jusqu'à la fin.
+  dV2(a, mk, pu, tleft) {
+    const t = now(), px = (src) => (this.f[a][src] ? +this.f[a][src].p : null);
+    const ub = this.livreTrie(mk.up, "bids")[0], ua = this.livreTrie(mk.up, "asks")[0], db = this.livreTrie(mk.down, "bids")[0], da = this.livreTrie(mk.down, "asks")[0];
+    if (!ub || !ua || !db || !da) return;
+    const H = ((this._v2h = this._v2h || {})[a] = this._v2h[a] && this._v2h[a].start === mk.start ? this._v2h[a] : { start: mk.start, r: [], fait: {} });
+    if (!H.r.length || t - H.r[H.r.length - 1].t >= 0.25) {
+      H.r.push({ t, pu, um: (ub[0] + ua[0]) / 2, dm: (db[0] + da[0]) / 2, ua: ua[0], da: da[0], perp: px("perp"), okx: px("okx"), bn: px("bn"), cb: px("cb") });
+      while (H.r.length && t - H.r[0].t > 12) H.r.shift();
+    }
+    if (tleft < 5) return;
+    const il_y_a = (sec) => { for (let i = H.r.length - 1; i >= 0; i--) if (t - H.r[i].t >= sec) return H.r[i]; return null; };
+    for (const up of [true, false]) {
+      const k = up ? ua : da, fair = up ? pu : 1 - pu, edge = fair - k[0], sg = up ? 1 : -1;
+      if (k[0] < 0.03 || k[0] > 0.97 || edge < 0.20) continue;
+      const edgeDe = (x) => (up ? x.pu - x.ua : (1 - x.pu) - x.da), midDe = (x) => (up ? x.um : x.dm);
+      const h3 = il_y_a(3), h5 = il_y_a(5);
+      const dir = (src, ago) => { const x = il_y_a(ago); return x && x[src] && px(src) ? (px(src) - x[src]) * sg : null; };
+      const perp5 = dir("perp", 5);
+      const recents = H.r.filter((x) => t - x.t <= 1.5);
+      const persistant = recents.length >= 4 && recents.every((x) => edgeDe(x) >= 0.20) && t - H.r[0].t >= 1.5;
+      const grandit = h3 ? edge - edgeDe(h3) >= 0.03 : false;
+      const d3 = ["perp", "okx", "bn", "cb"].map((src) => dir(src, 3));
+      const jury = d3.every((v) => v != null && v >= 0) && d3.some((v) => v > 0) && h3 && (fair - (up ? h3.pu : 1 - h3.pu)) - (midDe(H.r[H.r.length - 1]) - midDe(h3)) >= 0.03;
+      const vetos = [
+        h3 && edge - edgeDe(h3) < -0.02,                                   // l'écart fond
+        (dir("bn", 3) ?? 0) < 0,                                          // Binance part contre nous
+        (dir("perp", 3) ?? 0) < 0 && (dir("okx", 3) ?? 0) < 0,            // Bybit et OKX contre nous
+        tleft >= 60 && tleft < 90,                                        // 60-89 s
+        h5 && midDe(H.r[H.r.length - 1]) - midDe(h5) >= Math.max(0.05, edge / 2),   // Polymarket est déjà en train de corriger
+        k[1] < 20];                                                       // vendeur trop mince (< 20 parts)
+      const V = {
+        "V2-B hors 60-89 s": !(tleft >= 60 && tleft < 90),
+        "V2-C perp": perp5 != null && perp5 >= 0,
+        "V2-D perp 120-269 s": perp5 != null && perp5 >= 0 && tleft >= 120 && tleft <= 269,
+        "V2-E persistant": persistant,
+        "V2-F ecart qui grandit": grandit,
+        "V2-G jury des bourses": !!jury,
+        "V2-H veto complet": !vetos.some(Boolean) };
+      for (const [nom, ok] of Object.entries(V)) {
+        if (!ok || H.fait[nom]) continue;
+        const r = this.nAcheter(up ? mk.up : mk.down, 50 / k[0], k[0] + 0.01); if (r.parts < 1) continue;
+        H.fait[nom] = true;
+        const P = this.nPos(nom, a, mk, { famille: "desaccord", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0) });
+        P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
+        this.nNote(P, `écart ${edge.toFixed(2)}, ${tleft.toFixed(0)} s restantes → achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix} (modèle ${fair.toFixed(3)})`);
         this.nSauver();
       }
     }
@@ -1795,6 +1846,13 @@ const ENTREE={"V1 actuel (avec stop)":"V1 d'origine : achète la jambe à 0,55�
 "fin":"Fin de cycle : dans les dernières 90–180 s, achète à 0,70–0,90 quand le modèle est sûr à ≥ 93–95 %, garde jusqu'à la fin.",
 "desaccord 10":"Désaccord 10 : achète le côté que le modèle estime à au moins 10 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
 "desaccord 15":"Désaccord 15 : achète le côté que le modèle estime à au moins 15 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
+"V2-B hors 60-89 s":"V2-B : désaccord 20, sauf entre 60 et 89 s de la fin.",
+"V2-C perp":"V2-C : désaccord 20 seulement si le perp Bybit va dans notre sens sur 5 s.",
+"V2-D perp 120-269 s":"V2-D : désaccord 20 + perp avec nous + entre 120 et 269 s de la fin.",
+"V2-E persistant":"V2-E : désaccord 20 seulement s'il tient au moins 1,5 s (pas un éclair).",
+"V2-F ecart qui grandit":"V2-F : désaccord 20 seulement si l'écart a grandi d'au moins 3 pts sur 3 s.",
+"V2-G jury des bourses":"V2-G : désaccord 20 seulement si Bybit, OKX, Binance et Coinbase vont tous dans notre sens sur 3 s ET que Polymarket a moins suivi que le modèle (en retard).",
+"V2-H veto complet":"V2-H : désaccord 20 sauf veto : écart qui fond, Binance contre nous, Bybit+OKX contre nous, 60-89 s, Polymarket déjà en train de corriger, vendeur < 20 parts.",
 "desaccord confirme":"Désaccord CONFIRMÉ : le modèle a 20 pts d'avance (BTC) ou 10 pts (ETH) ; on attend 20 s et on n'achète que si le marché est déjà monté de 3 cents vers le modèle (il garde 3 cents d'avance). Gardé jusqu'à la fin.",
 "desaccord confirme perp":"Désaccord CONFIRMÉ + PERP : pareil, et en plus le perp Bybit doit aller dans notre sens sur les 5 dernières secondes.",
 "desaccord 20":"Désaccord 20 : achète le côté que le modèle estime à au moins 20 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
