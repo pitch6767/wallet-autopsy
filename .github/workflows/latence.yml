@@ -1,0 +1,17 @@
+name: Latence Polymarket
+on:
+  push:
+    branches: [main]
+    paths: [bot95/latence_go.txt]
+permissions:
+  contents: write
+jobs:
+  l:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sleep 120
+          for k in 1 2 3 4 5; do date -u +%H:%M:%S >> bot95/latence.txt; curl -sS -m 90 "https://bot95.pitch67.workers.dev/api/latence?n=20" >> bot95/latence.txt; echo >> bot95/latence.txt; sleep 60; done
+          git config user.name l; git config user.email bot@users.noreply.github.com
+          git add bot95/latence.txt; git commit -m "latence [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
