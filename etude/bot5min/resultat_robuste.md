@@ -1,0 +1,76 @@
+# Recherche d'une zone robuste — vrais carnets du bot (48 h)
+
+Robuste = positif sur chacun des 4 quarts de la periode ET sans les 3 meilleurs trades (au moins 25 trades). Classement par le PIRE quart.
+
+## BTC — 1261 combinaisons testees (>= 25 trades), **78 robustes** (6 %)
+
+| Combinaison | Trades | Q1 | Q2 | Q3 | Q4 | **Total** | Par trade | Sans top 3 |
+|---|---|---|---|---|---|---|---|---|
+| ecart >= 0.30 · au plus 1 bourse contre · 0,15-0,35 · > 60 s · jour et nuit | 84 | +1522 | +440 | +767 | +442 | **+3171 $** | +37.7 $ | +2330 $ |
+| ecart >= 0.30 · Binance et perp >= 0 · 0,15-0,35 · > 60 s · jour et nuit | 80 | +1522 | +440 | +891 | +548 | **+3401 $** | +42.5 $ | +2560 $ |
+| ecart >= 0.30 · Binance et perp >= 0 · 0,15-0,35 · 30-120 s · jour et nuit | 74 | +1213 | +397 | +416 | +412 | **+2438 $** | +32.9 $ | +1597 $ |
+| ecart >= 0.30 · perp >= 0 · 0,15-0,35 · > 60 s · jour et nuit | 82 | +1522 | +375 | +785 | +548 | **+3230 $** | +39.4 $ | +2389 $ |
+| ecart >= 0.30 · aucune contre (4 bourses >= 0) · 0,15-0,35 · > 60 s · jour et nuit | 78 | +1609 | +421 | +771 | +306 | **+3107 $** | +39.8 $ | +2267 $ |
+| ecart >= 0.30 · jury (4 >= 0, au moins 1 > 0) · 0,15-0,35 · > 60 s · jour et nuit | 73 | +1646 | +581 | +597 | +306 | **+3129 $** | +42.9 $ | +2288 $ |
+| ecart >= 0.30 · Binance >= 0 · 0,15-0,35 · 30-120 s · jour et nuit | 81 | +1190 | +270 | +269 | +306 | **+2035 $** | +25.1 $ | +1194 $ |
+| ecart >= 0.30 · Binance >= 0 · 0,15-0,35 · > 60 s · jour et nuit | 89 | +1469 | +260 | +994 | +442 | **+3165 $** | +35.6 $ | +2324 $ |
+| ecart >= 0.30 · aucune contre (4 bourses >= 0) · 0,15-0,35 · > 60 s · sans nuit | 40 | +307 | +962 | +771 | +247 | **+2286 $** | +57.2 $ | +1446 $ |
+| ecart >= 0.30 · jury (4 >= 0, au moins 1 > 0) · 0,15-0,35 · > 60 s · sans nuit | 37 | +307 | +1068 | +597 | +247 | **+2218 $** | +59.9 $ | +1377 $ |
+| ecart >= 0.30 · au plus 1 bourse contre · 0,15-0,35 · 30-120 s · jour et nuit | 79 | +1190 | +397 | +238 | +306 | **+2132 $** | +27.0 $ | +1291 $ |
+| ecart >= 0.30 · perp >= 0 · 0,15-0,35 · > 60 s · sans nuit | 42 | +307 | +915 | +785 | +230 | **+2237 $** | +53.3 $ | +1396 $ |
+| ecart >= 0.30 · au plus 1 bourse contre · 0,15-0,35 · > 60 s · sans nuit | 42 | +307 | +980 | +767 | +230 | **+2283 $** | +54.4 $ | +1443 $ |
+| ecart >= 0.30 · Binance et perp >= 0 · 0,15-0,35 · tout temps · jour et nuit | 102 | +1363 | +615 | +906 | +230 | **+3114 $** | +30.5 $ | +2273 $ |
+| ecart >= 0.30 · Binance >= 0 · 0,15-0,35 · > 60 s · sans nuit | 45 | +307 | +853 | +994 | +230 | **+2384 $** | +53.0 $ | +1543 $ |
+| ecart >= 0.30 · Binance et perp >= 0 · 0,15-0,35 · > 60 s · sans nuit | 40 | +307 | +980 | +891 | +230 | **+2408 $** | +60.2 $ | +1567 $ |
+| ecart >= 0.30 · perp >= 0 · 0,15-0,35 · tout temps · jour et nuit | 106 | +1363 | +549 | +694 | +230 | **+2837 $** | +26.8 $ | +1996 $ |
+| ecart >= 0.25 · au plus 1 bourse contre · 0,15-0,35 · tout temps · jour et nuit | 202 | +1434 | +294 | +1271 | +211 | **+3209 $** | +15.9 $ | +2368 $ |
+| ecart >= 0.30 · toutes · 0,15-0,35 · > 60 s · sans nuit | 49 | +201 | +795 | +1126 | +230 | **+2353 $** | +48.0 $ | +1512 $ |
+| ecart >= 0.30 · aucune contre (4 bourses >= 0) · 0,15-0,35 · 30-120 s · jour et nuit | 72 | +1300 | +378 | +296 | +170 | **+2144 $** | +29.8 $ | +1303 $ |
+| ecart >= 0.30 · perp >= 0 · 0,15-0,35 · 30-120 s · jour et nuit | 79 | +1190 | +323 | +151 | +412 | **+2077 $** | +26.3 $ | +1236 $ |
+| ecart >= 0.30 · jury (4 >= 0, au moins 1 > 0) · 0,15-0,35 · 30-120 s · jour et nuit | 68 | +1269 | +537 | +151 | +170 | **+2127 $** | +31.3 $ | +1286 $ |
+| ecart >= 0.25 · perp >= 0 · 0,15-0,35 · tout temps · jour et nuit | 210 | +1475 | +150 | +1093 | +177 | **+2896 $** | +13.8 $ | +2055 $ |
+| ecart >= 0.30 · Binance >= 0 · 0,15-0,35 · tout temps · sans nuit | 60 | +148 | +800 | +706 | +230 | **+1884 $** | +31.4 $ | +1043 $ |
+| ecart >= 0.30 · perp >= 0 · 0,15-0,35 · tout temps · sans nuit | 58 | +148 | +862 | +694 | +230 | **+1934 $** | +33.3 $ | +1093 $ |
+| ecart >= 0.30 · Binance et perp >= 0 · 0,15-0,35 · tout temps · sans nuit | 54 | +148 | +927 | +906 | +230 | **+2211 $** | +40.9 $ | +1370 $ |
+| ecart >= 0.30 · au plus 1 bourse contre · 0,15-0,35 · tout temps · sans nuit | 57 | +148 | +927 | +728 | +230 | **+2034 $** | +35.7 $ | +1193 $ |
+| ecart >= 0.30 · jury (4 >= 0, au moins 1 > 0) · 0,15-0,35 · tout temps · sans nuit | 51 | +148 | +1015 | +611 | +247 | **+2021 $** | +39.6 $ | +1180 $ |
+| ecart >= 0.30 · aucune contre (4 bourses >= 0) · 0,15-0,35 · tout temps · sans nuit | 54 | +148 | +908 | +786 | +247 | **+2090 $** | +38.7 $ | +1249 $ |
+| ecart >= 0.25 · Binance et perp >= 0 · 0,15-0,35 · tout temps · jour et nuit | 202 | +1393 | +126 | +916 | +230 | **+2665 $** | +13.2 $ | +1824 $ |
+| ecart >= 0.30 · au plus 1 bourse contre · 0,15-0,35 · tout temps · jour et nuit | 107 | +1363 | +615 | +728 | +124 | **+2831 $** | +26.5 $ | +1990 $ |
+| ecart >= 0.30 · Binance >= 0 · 0,15-0,35 · tout temps · jour et nuit | 111 | +1310 | +487 | +706 | +124 | **+2627 $** | +23.7 $ | +1786 $ |
+| ecart >= 0.15 · aucune contre (4 bourses >= 0) · 0,35-0,60 · 30-120 s · jour et nuit | 53 | +227 | +104 | +224 | +418 | **+973 $** | +18.4 $ | +701 $ |
+| ecart >= 0.15 · jury (4 >= 0, au moins 1 > 0) · 0,35-0,60 · 30-120 s · jour et nuit | 53 | +227 | +104 | +224 | +418 | **+973 $** | +18.4 $ | +701 $ |
+| ecart >= 0.25 · aucune contre (4 bourses >= 0) · 0,15-0,35 · tout temps · jour et nuit | 182 | +1378 | +99 | +1172 | +343 | **+2991 $** | +16.4 $ | +2150 $ |
+| ecart >= 0.30 · toutes · 0,15-0,35 · > 60 s · jour et nuit | 96 | +1363 | +97 | +1126 | +389 | **+2975 $** | +31.0 $ | +2134 $ |
+| ecart >= 0.15 · au plus 1 bourse contre · 0,35-0,60 · 30-120 s · jour et nuit | 58 | +217 | +91 | +224 | +573 | **+1105 $** | +19.0 $ | +833 $ |
+| ecart >= 0.15 · perp >= 0 · 0,35-0,60 · 30-120 s · jour et nuit | 59 | +157 | +79 | +224 | +573 | **+1033 $** | +17.5 $ | +762 $ |
+| ecart >= 0.25 · jury (4 >= 0, au moins 1 > 0) · 0,15-0,35 · > 60 s · sans nuit | 84 | +410 | +630 | +1279 | +77 | **+2396 $** | +28.5 $ | +1555 $ |
+| ecart >= 0.25 · aucune contre (4 bourses >= 0) · 0,15-0,35 · > 60 s · sans nuit | 87 | +452 | +622 | +1451 | +77 | **+2601 $** | +29.9 $ | +1760 $ |
+
+### Ingredients les plus frequents dans les combinaisons robustes (vs toutes)
+
+| Ingredient | Part chez les robustes | Part chez toutes |
+|---|---|---|
+| ecart >= 0.10 | 4 % | 22 % |
+| ecart >= 0.15 | 27 % | 22 % |
+| ecart >= 0.20 | 10 % | 21 % |
+| ecart >= 0.25 | 13 % | 18 % |
+| ecart >= 0.30 | 46 % | 17 % |
+| toutes | 10 % | 14 % |
+| aucune contre (4 bourses >= 0) | 13 % | 14 % |
+| jury (4 >= 0, au moins 1 > 0) | 17 % | 14 % |
+| Binance >= 0 | 13 % | 14 % |
+| perp >= 0 | 32 % | 29 % |
+| Binance et perp >= 0 | 18 % | 14 % |
+| au plus 1 bourse contre | 15 % | 14 % |
+| tous prix | 3 % | 22 % |
+| < 0,15 | 0 % | 22 % |
+| 0,15-0,35 | 56 % | 22 % |
+| 0,35-0,60 | 40 % | 12 % |
+| < 0,35 | 1 % | 22 % |
+| tout temps | 33 % | 26 % |
+| > 120 s | 3 % | 24 % |
+| 30-120 s | 24 % | 25 % |
+| > 60 s | 40 % | 26 % |
+| jour et nuit | 59 % | 51 % |
+| sans nuit | 41 % | 49 % |
