@@ -1,164 +1,269 @@
-"""7 idees testees sur la ZONE (ecart >= 0,30, jeton 0,15-0,35, > 60 s) — 08.10.2026, vrais carnets du bot (48 h, 4 mesures/s), BTC.
-1 juges (modele + prix Polymarket melanges, appris sur la 1re moitie) · 2 calibration selon le temps restant · 5 horloge elastique (mouvements / volatilite)
-6 execution (achat 0,25 / 0,5 / 1 s plus tard, taille au vendeur) · 7 origine du desaccord · 8 tendance du BTC (15 et 60 min)
-9 bilan de chaque filtre : pertes evitees contre gagnants perdus.
-Sorties : resultat_idees.md + idees.json.
+"""Idees pour eviter les pertes de V1 (reglage A) — BTC et ETH, 12 jours, retard 1 s, 100 parts.
+Idee 3 : perp trop cher / pas assez cher par rapport au spot (ecart perp-spot anormal)
+Idee 4 : tres gros ordres sur le perp Binance
+Idee 5 : regime du marche (tendance ou allers-retours), ratio de variance sur 30 min
+Idee 6 : mise selon l'avance du modele
+Idee 7 : encaisser une partie en route / stop suiveur
+Idee 1 (approximation avec les echanges Polymarket) : achats agressifs du cote oppose
+Seuils choisis sur les jours 1-8 seulement ; colonne « jours 9-12 » = periode jamais vue.
 """
-import sys, json, math, bisect, statistics, collections
-import numpy as np
+import sys, math, time, statistics, collections
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 sys.path.insert(0, "etude/bot5min")
-from sauvetage import resultat, RES, FEE
-from proche import charger_brut
+import test as T
+import paires as P
+import solutions as S
+from sorties import spot_jour, perp_jour, charger, dernier
 
+JOURS = int(sys.argv[1]) if len(sys.argv) > 1 else 12
+L = 1
+N = 100.0
+FEE = lambda p: T.FEE_RATE * p * (1 - p)
 OUT = "etude/bot5min/"
-lg = lambda p: math.log(max(1e-4, min(1 - 1e-4, p)) / (1 - max(1e-4, min(1 - 1e-4, p))))
-pnl = lambda p, g: (50 / p) * ((1 if g else 0) - p - FEE(p))
+
+
+def q(vals, x):
+    v = sorted(vals)
+    return v[min(len(v) - 1, max(0, int(len(v) * x)))] if v else None
+
+
+def etudier(prefixe, sym, jours, debut, fin, coupe):
+    t0 = time.time()
+    SP = charger(spot_jour, sym, jours)
+    SPx = {s: (v[0], v[0]) for s, v in SP.items()}
+    PE = charger(perp_jour, sym, jours)
+    print(prefixe, "binance charge", len(SP), len(PE), "(%.0fs)" % (time.time() - t0)); sys.stdout.flush()
+    with ThreadPoolExecutor(12) as ex:
+        M = sorted([m for m in ex.map(lambda st: S.marche(prefixe, st), range(debut, fin, 300)) if m], key=lambda m: m["start"])
+    def tr(m):
+        try: m["tr"], _ = P.echanges(m)
+        except Exception: m["tr"] = []
+        return m
+    with ThreadPoolExecutor(10) as ex:
+        M = [m for m in ex.map(tr, M) if m["tr"] and m.get("strike") is not None]
+    print(prefixe, "marches", len(M), "(%.0fs)" % (time.time() - t0)); sys.stdout.flush()
+    prix = lambda t: dernier(SP, t, 0)
+    hist, derives = [], []
+    for m in M:
+        kp = float(m["strike"]); fo = float(m["final"]) if m.get("final") is not None else None
+        tb = S.twap(SPx, m["start"] - 59, m["start"]); tf = S.twap(SPx, m["end"] - 59, m["end"])
+        m["base"] = statistics.median(hist[-12:]) if len(hist) >= 3 else 0
+        if tb: hist.append(tb - kp)
+        m["K"] = kp + m["base"]
+        m["sd_b"] = statistics.pstdev(derives[-50:]) if len(derives) >= 10 else None
+        if tf and tb and fo: derives.append((tf - tb) - (fo - kp))
+
+    def proba_up(m, ts, cache):
+        if ts in cache: return cache[ts]
+        r = None; P0 = prix(ts); sgk = ts // 15
+        if ("sg", sgk) not in cache: cache[("sg", sgk)] = T.sigma_s(SPx, ts)
+        sg = cache[("sg", sgk)]
+        if P0 and sg and m["sd_b"]:
+            a = m["end"] - 59
+            if ts >= a:
+                connus = [x for x in (prix(s) for s in range(a, ts + 1)) if x]
+                nr = m["end"] - ts
+                E = (sum(connus) + nr * P0) / (len(connus) + nr); var = (sg * P0) ** 2 * nr ** 3 / 3 / 3600
+            else:
+                E = P0; var = (sg * P0) ** 2 * ((a - ts) + 20)
+            r = T.phi((E - m["K"]) / math.sqrt(var + m["sd_b"] ** 2))
+        cache[ts] = r
+        return r
+
+    # ---------- signaux
+    def basis(t):
+        s_ = dernier(SP, t, 0, 3); p_ = dernier(PE, t, 0, 3)
+        return (p_ / s_ - 1) * 1e4 if s_ and p_ else None
+    cb = {}
+    def exces(t):                                  # ecart perp-spot (points de base) moins sa mediane des 5 dernieres minutes
+        if t in cb: return cb[t]
+        b = basis(t); ref = [x for x in (basis(x) for x in range(t - 300, t - 10, 10)) if x is not None]
+        cb[t] = (b - statistics.median(ref)) if b is not None and len(ref) > 5 else None
+        return cb[t]
+    def gros(t, d, k, contre):                     # plus gros echange unique (USD) sur k secondes, contre nous ou pour nous
+        col = (5 if d > 0 else 4) if contre else (4 if d > 0 else 5)
+        v = [PE[s][col] for s in range(t - k + 1, t + 1) if s in PE]
+        return max(v) if v else 0
+    cv = {}
+    def vr(t, h=15, fen=1800):                     # ratio de variance : >1 tendance, <1 allers-retours
+        k = (t // 60, h, fen)
+        if k in cv: return cv[k]
+        p_ = [prix(s) for s in range(t - fen, t + 1)]
+        p_ = [x for x in p_ if x]
+        r = None
+        if len(p_) > fen * 0.8:
+            r1 = [math.log(p_[i + 1] / p_[i]) for i in range(len(p_) - 1)]
+            rh = [math.log(p_[i + h] / p_[i]) for i in range(0, len(p_) - h, h)]
+            v1 = statistics.pvariance(r1)
+            r = statistics.pvariance(rh) / (h * v1) if v1 > 0 else None
+        cv[k] = r
+        return r
+
+    def sim(m, v):
+        cache = m.setdefault("cache", {}); A = None; invB = [0.0, 0.0]; pnl = 0.0; etat = "rien"; dern = {True: 0.5, False: 0.5}
+        ruban = collections.deque()                # (ts, pression_vers_up, parts)
+        def pression(up_, a, b):
+            return sum(x[2] for x in ruban if a <= x[0] <= b and x[1] == up_)
+        for (ts, up, p, size, side) in m["tr"]:
+            if ts > m["end"] - 1: break
+            ruban.append((ts, (side == "BUY") == up, size))
+            while ruban and ruban[0][0] < ts - 30: ruban.popleft()
+            if ts < m["start"]: continue
+            dern[up] = p; dern[not up] = 1 - p
+            pu = proba_up(m, ts - L, cache)
+            if pu is None: continue
+            if A is None:
+                if side == "BUY" and 0.55 <= p <= 0.56:
+                    fair = pu if up else 1 - pu
+                    if fair >= 0.63:
+                        a0, b0 = prix(ts - L - 5), prix(ts - L)
+                        if not (a0 and b0 and ((b0 - a0) * (1 if up else -1)) > 0): continue
+                        d = 1 if up else -1
+                        f = v.get("refuser")
+                        if f and f(ts - L, d, up, pression): continue
+                        w = v["mise"](fair - p) if "mise" in v else 1.0
+                        A = {"cote": up, "prix": p, "q": N * w, "q0": N * w, "fair0": fair, "ts": ts, "max": p, "d": d}
+                        pnl -= A["q"] * FEE(p); etat = "jambe"
+                        if "noter" in v: v["noter"](m, ts - L, d, fair - p)
+                continue
+            c = A["cote"]; fairA = pu if c else 1 - pu
+            A["max"] = max(A["max"], dern[c])
+            if side == "SELL": O, qq = up, p
+            elif side == "BUY": O, qq = (not up), 1 - p
+            else: O = None
+            if O is not None and O != c and invB[0] < A["q"]:
+                offre = min(math.floor(((1 - fairA) - 0.08) * 100) / 100, 0.43)
+                if offre >= 0.02 and qq <= offre - 0.01 + 1e-9:
+                    k = min(size, A["q"] - invB[0]); invB[0] += k; invB[1] += k * offre
+            if invB[0] >= A["q"] - 1e-9:
+                pnl += A["q"] * (1 - A["prix"]) - invB[1]; etat = "paire"; A["fini"] = True; break
+            # --- alarmes de sortie (signal vu a ts - L, ou ruban Polymarket deja vu avant ts - L)
+            alarme = False
+            if "alarme" in v and ts - L > A["ts"]:
+                alarme = v["alarme"](ts - L, A["d"], c, pression, A["ts"])
+            if fairA < A["fair0"] - 0.15 or alarme:
+                pv = max(0.01, dern[c] - 0.01); qa = A["q"] - invB[0]
+                pnl += qa * (pv - FEE(pv)) - qa * A["prix"] + invB[0] * (1 - A["prix"]) - invB[1]
+                etat = "alarme" if alarme and not fairA < A["fair0"] - 0.15 else "stop"; A["fini"] = True; A["aurait"] = (c == m["up_gagne"]); break
+            # --- encaissement partiel / stop suiveur
+            if "partiel" in v and not A.get("partiel") and up == c and p >= v["partiel"][0] and invB[0] < 1e-9:
+                lv, fr = v["partiel"]; k = A["q"] * fr
+                pnl += k * (lv - FEE(lv) - A["prix"]); A["q"] -= k; A["partiel"] = True
+            if "suiveur" in v and A["max"] >= v["suiveur"] and dern[c] <= A["prix"] + 0.01 and invB[0] < 1e-9:
+                pv = max(0.01, dern[c] - 0.01); qa = A["q"]
+                pnl += qa * (pv - FEE(pv) - A["prix"]); etat = "suiveur"; A["fini"] = True; break
+            if up == c and p >= 0.90 and invB[0] < 1e-9:
+                pnl += A["q"] * (0.90 - FEE(0.90) - A["prix"]); etat = "sortie"; A["fini"] = True; break
+        if A is None: return None
+        if not A.get("fini"):
+            g = A["cote"] == m["up_gagne"]; qa = A["q"] - invB[0]
+            pnl += qa * ((1 if g else 0) - A["prix"]) + invB[0] * (1 - A["prix"]) - invB[1]
+            etat = "fin " + ("gagnee" if g else "perdue")
+        return {"pnl": pnl, "etat": etat, "aurait": A.get("aurait"), "ts": A["ts"], "max": A["max"], "q0": A["q0"]}
+
+    # ---------- passe de reference : distribution des signaux a l'entree (jours 1-8 pour les seuils)
+    F = {"exces": [], "vr": [], "vr60": [], "avance": [], "gros_contre": [], "gros_pour": []}
+    def noter(m, t, d, av):
+        if t >= coupe: return
+        e = exces(t); r = vr(t); r6 = vr(t, 60, 3600)
+        if e is not None: F["exces"].append(d * e)
+        if r is not None: F["vr"].append(r)
+        if r6 is not None: F["vr60"].append(r6)
+        F["avance"].append(av); F["gros_contre"].append(gros(t, d, 5, True)); F["gros_pour"].append(gros(t, d, 10, False))
+    REF = [x for x in (sim(m, {"noter": noter}) for m in M) if x]
+    print(prefixe, "reference", len(REF), "(%.0fs)" % (time.time() - t0)); sys.stdout.flush()
+    Q = lambda k, x: q(F[k], x)
+    ex67, ex80, ex90, ex20 = Q("exces", .67), Q("exces", .80), Q("exces", .90), Q("exces", .20)
+    exabs90 = q([abs(x) for x in F["exces"]], .90)
+    vr20, vr33, vr50, vr80 = Q("vr", .2), Q("vr", .33), Q("vr", .5), Q("vr", .8)
+    v6_20, v6_33 = Q("vr60", .2), Q("vr60", .33)
+    g67, g80, g90 = Q("gros_contre", .67), Q("gros_contre", .80), Q("gros_contre", .90)
+    gp50 = Q("gros_pour", .5)
+    moy_av = statistics.mean(F["avance"]); med_av = statistics.median(F["avance"])
+    moy_av2 = statistics.mean(a * a for a in F["avance"])
+    k_ = lambda x: f"{x / 1000:.0f} k$"
+
+    def ex_ok(t): return exces(t)
+    variantes = [
+        ("Reference V1 (stop -15 pts, sortie 0,90)", {}),
+        # idee 3
+        (f"3. Refuser si perp en avance dans notre sens > {ex67:.2f} pb (tiers haut)", {"refuser": lambda t, d, up, pr: (exces(t) is not None and d * exces(t) > ex67)}),
+        (f"3. Refuser si perp en avance > {ex80:.2f} pb (20 % haut)", {"refuser": lambda t, d, up, pr: (exces(t) is not None and d * exces(t) > ex80)}),
+        (f"3. Refuser si perp en avance > {ex90:.2f} pb (10 % haut)", {"refuser": lambda t, d, up, pr: (exces(t) is not None and d * exces(t) > ex90)}),
+        (f"3. Refuser si perp en retard < {ex20:.2f} pb (20 % bas)", {"refuser": lambda t, d, up, pr: (exces(t) is not None and d * exces(t) < ex20)}),
+        (f"3. Sortir si l'ecart perp-spot passe contre nous de {exabs90:.2f} pb", {"alarme": lambda t, d, c, pr, te: (exces(t) is not None and d * exces(t) < -exabs90)}),
+        # idee 4
+        (f"4. Refuser si gros ordre perp contre nous (5 s) > {k_(g67)}", {"refuser": lambda t, d, up, pr: gros(t, d, 5, True) > g67}),
+        (f"4. Refuser si gros ordre contre > {k_(g80)}", {"refuser": lambda t, d, up, pr: gros(t, d, 5, True) > g80}),
+        (f"4. Refuser si gros ordre contre > {k_(g90)}", {"refuser": lambda t, d, up, pr: gros(t, d, 5, True) > g90}),
+        (f"4. Exiger un gros ordre pour nous (10 s) > {k_(gp50)}", {"refuser": lambda t, d, up, pr: gros(t, d, 10, False) <= gp50}),
+        (f"4. Sortir si gros ordre contre nous > {k_(g80)} pendant le trade", {"alarme": lambda t, d, c, pr, te: gros(t, d, 2, True) > g80}),
+        (f"4. Sortir si gros ordre contre nous > {k_(g90)} pendant le trade", {"alarme": lambda t, d, c, pr, te: gros(t, d, 2, True) > g90}),
+        # idee 5
+        (f"5. Refuser si allers-retours (ratio 30 min < {vr20:.2f}, 20 % bas)", {"refuser": lambda t, d, up, pr: (vr(t) is not None and vr(t) < vr20)}),
+        (f"5. Refuser si ratio 30 min < {vr33:.2f} (tiers bas)", {"refuser": lambda t, d, up, pr: (vr(t) is not None and vr(t) < vr33)}),
+        (f"5. Refuser si ratio 30 min < {vr50:.2f} (moitie basse)", {"refuser": lambda t, d, up, pr: (vr(t) is not None and vr(t) < vr50)}),
+        (f"5. Refuser si forte tendance (ratio > {vr80:.2f}, controle)", {"refuser": lambda t, d, up, pr: (vr(t) is not None and vr(t) > vr80)}),
+        (f"5. Refuser si ratio 1 h (pas 60 s) < {v6_20:.2f}", {"refuser": lambda t, d, up, pr: (vr(t, 60, 3600) is not None and vr(t, 60, 3600) < v6_20)}),
+        (f"5. Refuser si ratio 1 h < {v6_33:.2f}", {"refuser": lambda t, d, up, pr: (vr(t, 60, 3600) is not None and vr(t, 60, 3600) < v6_33)}),
+        # idee 6
+        ("6. Mise proportionnelle a l'avance du modele (meme mise moyenne)", {"mise": lambda av: max(0.25, av / moy_av)}),
+        ("6. Mise selon l'avance au carre (meme mise moyenne)", {"mise": lambda av: max(0.25, av * av / moy_av2)}),
+        ("6. Demi-mise si avance < mediane, 1,5x sinon", {"mise": lambda av: 0.5 if av < med_av else 1.5}),
+        # idee 7
+        ("7. Vendre la moitie a 0,70, le reste a 0,90", {"partiel": (0.70, 0.5)}),
+        ("7. Vendre la moitie a 0,75, le reste a 0,90", {"partiel": (0.75, 0.5)}),
+        ("7. Vendre 1/3 a 0,70, le reste a 0,90", {"partiel": (0.70, 1 / 3)}),
+        ("7. Moitie a 0,70 + reste sorti a 0,56 s'il redescend", {"partiel": (0.70, 0.5), "suiveur": 0.70}),
+        ("7. Stop suiveur seul : apres 0,75, sortir a 0,56 s'il redescend", {"suiveur": 0.75}),
+        ("7. Stop suiveur seul : apres 0,70, sortir a 0,56 s'il redescend", {"suiveur": 0.70}),
+        # idee 1 approximee par les echanges Polymarket
+        ("1. Sortir si achats agressifs du cote oppose > 100 parts en 3 s", {"alarme": lambda t, d, c, pr, te: pr(not c, t - 2, t) > 100}),
+        ("1. Sortir si achats agressifs du cote oppose > 250 parts en 3 s", {"alarme": lambda t, d, c, pr, te: pr(not c, t - 2, t) > 250}),
+        ("1. Sortir si achats agressifs du cote oppose > 500 parts en 3 s", {"alarme": lambda t, d, c, pr, te: pr(not c, t - 2, t) > 500}),
+        ("1. Refuser si achats du cote oppose > 250 parts dans les 10 s avant", {"refuser": lambda t, d, up, pr: pr(not up, t - 9, t) > 250}),
+    ]
+    jours_a = (coupe - debut) / 86400; jours_b = (fin - coupe) / 86400
+    rap = [f"\n## {prefixe.upper()} — {len(M)} cycles, {JOURS} jours, 100 parts, retard 1 s\n",
+           f"Seuils choisis sur les jours 1-{jours_a:.0f} ; les jours {jours_a + 1:.0f}-{JOURS} n'ont jamais servi a les choisir.\n",
+           "| Idee | Trades | Gain net | Gain/jour | Pertes totales | Pire baisse | Gain/jour jours 1-8 | **Gain/jour jours 9-12 (jamais vus)** | Mise moy. |",
+           "|---|---|---|---|---|---|---|---|---|"]
+    ref = None
+    for nom, v in variantes:
+        R = REF if not v else [x for x in (sim(m, v) for m in M) if x]
+        cum = pic = dd = 0
+        for x in sorted(R, key=lambda x: x["ts"]):
+            cum += x["pnl"]; pic = max(pic, cum); dd = max(dd, pic - cum)
+        net = sum(x["pnl"] for x in R); per = sum(x["pnl"] for x in R if x["pnl"] < 0)
+        ga = sum(x["pnl"] for x in R if x["ts"] < coupe) / jours_a; gb = sum(x["pnl"] for x in R if x["ts"] >= coupe) / jours_b
+        if ref is None: ref = (net, per, ga, gb)
+        rap.append(f"| {nom} | {len(R)} | {net:+.0f} $ ({net - ref[0]:+.0f}) | {net / JOURS:+.0f} $ | {per:+.0f} $ ({per - ref[1]:+.0f}) | -{dd:.0f} $ | {ga:+.0f} $ ({ga - ref[2]:+.0f}) | **{gb:+.0f} $ ({gb - ref[3]:+.0f})** | {statistics.mean(x['q0'] for x in R) * 0.55:.0f} $ |")
+        print(rap[-1]); sys.stdout.flush()
+    # diagnostic idee 7 : jusqu'ou montent les trades avant de mal finir
+    rap += ["\n### Idee 7 — jusqu'ou le jeton est monte avant la sortie (reference)\n", "| Issue | Trades | a touche 0,65 | 0,70 | 0,75 | 0,80 |", "|---|---|---|---|---|---|"]
+    for et in sorted({x["etat"] for x in REF}):
+        G = [x for x in REF if x["etat"] == et]
+        rap.append(f"| {et} | {len(G)} | " + " | ".join(f"{sum(1 for x in G if x['max'] >= lv)} ({100 * sum(1 for x in G if x['max'] >= lv) / len(G):.0f} %)" for lv in (0.65, 0.70, 0.75, 0.80)) + " |")
+    rap.append(f"\nReperes (jours 1-8) : ecart perp-spot a l'entree mediane {Q('exces', .5):.2f} pb ; plus gros ordre contre nous (5 s) median {k_(Q('gros_contre', .5))} ; ratio de variance 30 min median {vr50:.2f}, 1 h median {Q('vr60', .5):.2f} ; avance moyenne du modele {moy_av:.3f}.")
+    return rap
 
 
 def main():
-    A = "BTC"
-    C = charger_brut(A); sts = sorted(C)
-    for st in sts: resultat(A, st)
-    mi = sts[len(sts) // 2]
-    # serie globale du perp pour la tendance et la volatilite
-    serie = sorted((r[0], r[11]) for st in sts for r in C[st] if r[11])
-    ts = [x[0] for x in serie]; ps = [x[1] for x in serie]
-    def px_at(t):
-        k = bisect.bisect_right(ts, t) - 1
-        return ps[k] if k >= 0 and t - ts[k] < 30 else None
-    def vol60(t):
-        k1 = bisect.bisect_right(ts, t); k0 = bisect.bisect_left(ts, t - 60)
-        v = ps[k0:k1]
-        if len(v) < 20: return None
-        d = np.diff(np.array(v)); return float(np.std(d)) or None
-    # evenements : 1er instant zone par cycle et cote ; et 1er desaccord >= 0,10 (pour calibration et juges)
-    Z, CAL = [], []
-    for st in sts:
-        R = C[st]; g = RES.get((A, st))
-        if g is None: continue
-        for up in (True, False):
-            sg = 1 if up else -1; gm = g if up else (not g); deja_cal = False
-            for i, r in enumerate(R):
-                tl = st + 300 - r[0]
-                if tl < 10: break
-                ask = r[4] if up else r[6]; fair = r[2] if up else 1 - r[2]
-                bid = r[3] if up else r[5]
-                if ask is None or bid is None: continue
-                mid = (ask + bid) / 2
-                if not deja_cal and fair - ask >= 0.10 and 0.03 <= ask <= 0.97:
-                    CAL.append({"st": st, "tl": tl, "fair": fair, "mid": mid, "ask": ask, "gm": gm}); deja_cal = True
-                if not (0.15 <= ask < 0.35 and fair - ask >= 0.30 and tl > 60): continue
-                def back(n):
-                    j = i
-                    while j > 0 and r[0] - R[j][0] < n: j -= 1
-                    return R[j] if r[0] - R[j][0] >= n - 0.5 else None
-                h3 = back(3)
-                d3 = lambda c: ((r[c] - h3[c]) * sg) if h3 and h3[c] and r[c] else 0.0
-                vv = vol60(r[0])
-                p15, p60, p0 = px_at(r[0] - 900), px_at(r[0] - 3600), r[11]
-                ask3 = (h3[4] if up else h3[6]) if h3 else None; fair3 = (h3[2] if up else 1 - h3[2]) if h3 else None
-                # execution : prix au vendeur 1 / 2 / 4 lignes plus tard (~0,25 / 0,5 / 1 s), rempli seulement si <= ask + 0,01
-                ex = {}
-                for k, lab in ((1, "0,25 s"), (2, "0,5 s"), (4, "1 s")):
-                    if i + k < len(R):
-                        a2 = R[i + k][4] if up else R[i + k][6]
-                        ex[lab] = a2 if a2 is not None and a2 <= ask + 0.01 else None
-                    else: ex[lab] = None
-                Z.append({"st": st, "t": r[0], "up": up, "gm": gm, "tl": tl, "ask": ask, "fair": fair, "mid": mid, "edge": fair - ask,
-                          "taille": (r[8] if up else r[10]) or 0, "bn": d3(14), "perp": d3(11), "okx": d3(12), "cb": d3(13),
-                          "zbn": d3(14) / (vv * math.sqrt(3)) if vv else 0.0, "zperp": d3(11) / (vv * math.sqrt(3)) if vv else 0.0,
-                          "tr15": ((p0 - p15) * sg) if p15 and p0 else 0.0, "tr60": ((p0 - p60) * sg) if p60 and p0 else 0.0,
-                          "dask3": (ask - ask3) if ask3 is not None else 0.0, "dfair3": (fair - fair3) if fair3 is not None else 0.0,
-                          "ex": ex, "pnl": pnl(ask, gm)})
-                break
-    J = {"n_zone": len(Z), "n_cal": len(CAL)}
-    rap = [f"# 7 idees testees sur la zone — BTC, vrais carnets ({len(Z)} trades zone, {len(CAL)} desaccords >= 0,10 pour la calibration)", ""]
-    ligne = lambda nom, X: (f"| {nom} | {len(X)} | {sum(1 for e in X if e['gm'])} | {sum(e['p'] for e in X if e['st'] < mi):+.0f} $ | {sum(e['p'] for e in X if e['st'] >= mi):+.0f} $ | **{sum(e['p'] for e in X):+.0f} $** | {sum(e['p'] for e in X) / max(1, len(X)):+.1f} $ |")
-    H = "| Regle | Trades | Gagnes | 1re moitie | 2e moitie | **Total** | Par trade |\n|---|---|---|---|---|---|---|"
-    for e in Z: e["p"] = e["pnl"]
-    base = Z
-    # ---- 1. juges : regression logistique sur la 1re moitie (y = gagne ; x = logit modele, logit milieu Poly)
-    from sklearn.linear_model import LogisticRegression
-    tr = [c for c in CAL if c["st"] < mi]
-    Xtr = np.array([[lg(c["fair"]), lg(c["mid"])] for c in tr]); ytr = np.array([c["gm"] for c in tr])
-    m = LogisticRegression(C=1.0).fit(Xtr, ytr)
-    J["juges_coef"] = {"modele": float(m.coef_[0][0]), "poly": float(m.coef_[0][1]), "const": float(m.intercept_[0])}
-    for e in Z: e["pj"] = float(m.predict_proba([[lg(e["fair"]), lg(e["mid"])]])[0][1])
-    def brier(X, k): return statistics.mean((x[k] - (1 if x["gm"] else 0)) ** 2 for x in X)
-    te = [c for c in CAL if c["st"] >= mi]
-    for c in te: c["pj"] = float(m.predict_proba([[lg(c["fair"]), lg(c["mid"])]])[0][1])
-    rap += ["## 1. Les deux juges (modele + prix Polymarket)", "",
-            f"Appris sur la 1re moitie : poids du modele **{m.coef_[0][0]:.2f}**, poids du prix Polymarket **{m.coef_[0][1]:.2f}** (en echelle logit).",
-            f"Precision sur la 2e moitie (Brier, plus bas = mieux) : modele seul {brier(te, 'fair'):.3f} · Polymarket seul {brier(te, 'mid'):.3f} · **melange {brier(te, 'pj'):.3f}**", "", H]
-    rap.append(ligne("zone (reference)", base))
-    for x in (0.0, 0.03, 0.05, 0.10):
-        rap.append(ligne(f"zone + juge : proba melangee >= prix + {round(100 * x)} c", [e for e in base if e["pj"] - e["ask"] >= x]))
-    # ---- 2. calibration selon le temps restant
-    rap += ["", "## 2. Calibration du modele selon le temps restant (desaccords >= 0,10)", "", "| Temps restant | Desaccords | Modele moyen | Prix Polymarket moyen | **Gagnes en vrai** |", "|---|---|---|---|---|"]
-    J["calib"] = []
-    for a, b in ((10, 60), (60, 120), (120, 200), (200, 300)):
-        X = [c for c in CAL if a <= c["tl"] < b]
-        if X:
-            row = (f"{a}-{b} s", len(X), statistics.mean(c["fair"] for c in X), statistics.mean(c["mid"] for c in X), statistics.mean(1 if c["gm"] else 0 for c in X))
-            J["calib"].append(row); rap.append(f"| {row[0]} | {row[1]} | {row[2]:.2f} | {row[3]:.2f} | **{row[4]:.2f}** |")
-    rap += ["", "| Modele dit | Desaccords | **Gagnes en vrai** | Prix Polymarket moyen |", "|---|---|---|---|"]
-    for a, b in ((0.1, 0.3), (0.3, 0.45), (0.45, 0.6), (0.6, 0.8), (0.8, 1.0)):
-        X = [c for c in CAL if a <= c["fair"] < b]
-        if X: rap.append(f"| {a:.2f}-{b:.2f} | {len(X)} | **{statistics.mean(1 if c['gm'] else 0 for c in X):.2f}** | {statistics.mean(c['mid'] for c in X):.2f} |")
-    # ---- 5. horloge elastique
-    rap += ["", "## 5. Horloge elastique : mouvements divises par la volatilite de la derniere minute", "", H]
-    rap.append(ligne("zone (reference)", base))
-    rap.append(ligne("Binance et perp >= 0 (brut)", [e for e in base if e["bn"] >= 0 and e["perp"] >= 0]))
-    for s_ in (-0.5, -1.0):
-        rap.append(ligne(f"Binance et perp >= {s_} ecart-type (elastique)", [e for e in base if e["zbn"] >= s_ and e["zperp"] >= s_]))
-    rap.append(ligne("Binance et perp >= +0,5 ecart-type (vraiment avec nous)", [e for e in base if e["zbn"] >= 0.5 and e["zperp"] >= 0.5]))
-    # ---- 6. execution
-    rap += ["", "## 6. Execution reelle : et si l'ordre arrive 0,25 / 0,5 / 1 s plus tard ?", "",
-            "Ordre a cours limite = prix vu + 1 c. Rempli seulement si le vendeur est encore la a ce prix.", "",
-            "| Delai | Remplis | Non remplis | Resultat des remplis | Par trade | Gain perdu vs instantane |", "|---|---|---|---|---|---|"]
-    tot0 = sum(e["pnl"] for e in base)
-    rap.append(f"| instantane (reference) | {len(base)} | 0 | {tot0:+.0f} $ | {tot0 / max(1, len(base)):+.1f} $ | — |")
-    J["exec"] = {}
-    for lab in ("0,25 s", "0,5 s", "1 s"):
-        X = [(e, e["ex"][lab]) for e in base if e["ex"][lab] is not None]
-        t = sum(pnl(p, e["gm"]) for e, p in X)
-        nf = len(base) - len(X); nfw = sum(1 for e in base if e["ex"][lab] is None and e["gm"])
-        J["exec"][lab] = (len(X), nf, t)
-        rap.append(f"| {lab} | {len(X)} | {nf} (dont {nfw} gagnants) | {t:+.0f} $ | {t / max(1, len(X)):+.1f} $ | {t - tot0:+.0f} $ |")
-    petits = [e for e in base if e["taille"] < 50 / e["ask"]]
-    rap.append(f"\nTaille : le meilleur vendeur avait moins que les parts voulues (50 $) dans **{len(petits)} / {len(base)}** cas ; ces trades font {sum(e['pnl'] for e in petits):+.0f} $.")
-    # ---- 7. origine
-    def origine(e):
-        mo, pb = e["dfair3"] >= 0.03, e["dask3"] <= -0.03
-        return "les deux" if mo and pb else "le modele monte" if mo else "Polymarket baisse" if pb else "deja la (rien n'a bouge en 3 s)" if abs(e["dfair3"]) < 0.03 and abs(e["dask3"]) < 0.03 else "autre"
-    rap += ["", "## 7. D'ou vient le desaccord (3 s avant l'achat) ?", "", H]
-    for o in ("le modele monte", "Polymarket baisse", "les deux", "deja la (rien n'a bouge en 3 s)", "autre"):
-        rap.append(ligne(o, [e for e in base if origine(e) == o]))
-    # ---- 8. tendance
-    rap += ["", "## 8. Tendance du BTC (perp) avant l'achat — dans le sens du trade ou contre", "", H]
-    for k, lab in (("tr15", "15 min"), ("tr60", "60 min")):
-        rap.append(ligne(f"tendance {lab} DANS notre sens", [e for e in base if e[k] > 0]))
-        rap.append(ligne(f"tendance {lab} CONTRE nous", [e for e in base if e[k] < 0]))
-    rap.append(ligne("cote Up (pour comparer)", [e for e in base if e["up"]]))
-    rap.append(ligne("cote Down (pour comparer)", [e for e in base if not e["up"]]))
-    # ---- 9. bilan des filtres
-    F = {"Binance et perp >= 0": lambda e: e["bn"] >= 0 and e["perp"] >= 0, "perp >= 0": lambda e: e["perp"] >= 0,
-         "juge >= prix": lambda e: e["pj"] >= e["ask"], "juge >= prix + 5 c": lambda e: e["pj"] >= e["ask"] + 0.05,
-         "pas « Polymarket baisse »": lambda e: origine(e) != "Polymarket baisse", "pas « modele monte »": lambda e: origine(e) != "le modele monte",
-         "tendance 15 min >= 0": lambda e: e["tr15"] >= 0, "tendance 60 min >= 0": lambda e: e["tr60"] >= 0,
-         "elastique Binance et perp >= -0,5": lambda e: e["zbn"] >= -0.5 and e["zperp"] >= -0.5}
-    rap += ["", "## 9. Chaque filtre : pertes evitees contre gagnants perdus", "",
-            "| Filtre | Trades ecartes | Perdants ecartes | Gagnants ecartes | Pertes evitees | Gains perdus | **Net du filtre** | Net 1re moitie | Net 2e moitie |", "|---|---|---|---|---|---|---|---|---|"]
-    J["filtres"] = []
-    for nom, f in F.items():
-        out = [e for e in base if not f(e)]
-        perd = [e for e in out if not e["gm"]]; gagn = [e for e in out if e["gm"]]
-        ev, gp = -sum(e["pnl"] for e in perd), sum(e["pnl"] for e in gagn)
-        n1 = -sum(e["pnl"] for e in out if e["st"] < mi); n2 = -sum(e["pnl"] for e in out if e["st"] >= mi)
-        J["filtres"].append((nom, len(out), len(perd), len(gagn), ev, gp, ev - gp, n1, n2))
-        rap.append(f"| {nom} | {len(out)} | {len(perd)} | {len(gagn)} | {ev:+.0f} $ | {gp:+.0f} $ | **{ev - gp:+.0f} $** | {n1:+.0f} $ | {n2:+.0f} $ |")
+    t0 = time.time()
+    fin = int(time.time()) // 300 * 300 - 900
+    debut = fin - JOURS * 86400
+    jours = sorted({datetime.fromtimestamp(t, timezone.utc).strftime("%Y-%m-%d") for t in range(debut - 3700, fin + 600, 3600)})
+    jours = [j for j in jours if j < datetime.now(timezone.utc).strftime("%Y-%m-%d")]
+    fin = min(fin, int(datetime.strptime(jours[-1], "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp()) + 86400 - 300)
+    coupe = debut + int(JOURS * 2 / 3) * 86400
+    rap = [f"# Idees anti-pertes pour V1 — {JOURS} jours ({jours[0]} -> {jours[-1]})",
+           "Entre parentheses : difference avec la reference. Gains pour 100 parts par trade (environ 55 $ de mise)."]
+    for prefixe, sym in (("btc", "BTCUSDT"), ("eth", "ETHUSDT")):
+        rap += etudier(prefixe, sym, jours, debut, fin, coupe)
+        open(OUT + "resultat_idees.md", "w").write("\n".join(rap))
+    rap.append(f"\nDuree : {time.time() - t0:.0f} s")
     open(OUT + "resultat_idees.md", "w").write("\n".join(rap))
-    json.dump(J, open(OUT + "idees.json", "w"), ensure_ascii=False, default=str)
     print("\n".join(rap))
 
 

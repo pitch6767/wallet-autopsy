@@ -1,8 +1,8 @@
-name: Idees
+name: Idees zone
 on:
   push:
     branches: [main]
-    paths: [etude/bot5min/idees.py]
+    paths: [etude/bot5min/idees_zone.py]
 permissions:
   contents: write
 jobs:
@@ -18,8 +18,8 @@ jobs:
         run: |
           pip install -q lightgbm numpy scikit-learn
           set +e
-          python3 -u etude/bot5min/idees.py > etude/bot5min/journal_idees.txt 2>&1
-          echo "code sortie: $?" >> etude/bot5min/journal_idees.txt
+          python3 -u etude/bot5min/idees_zone.py > etude/bot5min/journal_idees_zone.txt 2>&1
+          echo "code sortie: $?" >> etude/bot5min/journal_idees_zone.txt
           git config user.name tests; git config user.email bot@users.noreply.github.com
           git add etude/bot5min/
-          git commit -m "Resultats idees [skip ci]"; for k in $(seq 1 25); do git pull --rebase -q origin main && git push && break; sleep 7; done
+          git commit -m "Resultats idees zone [skip ci]"; for k in $(seq 1 25); do git pull --rebase -q origin main && git push && break; sleep 7; done
