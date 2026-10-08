@@ -1,0 +1,25 @@
+name: Bilan rapide
+on:
+  push:
+    branches: [main]
+    paths: [bot95/bilan_go.txt]
+permissions:
+  contents: write
+jobs:
+  b:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sS -m 60 https://bot95.pitch67.workers.dev/api/nouveaux > /tmp/n.json
+          python3 - <<'P' > bot95/bilan.txt
+          import json
+          d=json.load(open('/tmp/n.json'))
+          R=d.get('resume',{}); A=set(d.get('actives',[]))
+          rows=[(k,v) for k,v in R.items() if k[:k.rfind(' ')] in A]
+          for k,v in sorted(rows,key=lambda x:-x[1]['pnl']):
+              print(f"{k} | n={v['n']} g={v['gains']} p={v['pertes']} pnl={v['pnl']:+.0f} depuis={v['depuis']} creux={v.get('creux')}")
+          B=d.get('blink',{}); print('BLINK', json.dumps(B)[:1500])
+          P
+          git config user.name b; git config user.email bot@users.noreply.github.com
+          git add bot95/bilan.txt; git commit -m "bilan [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
