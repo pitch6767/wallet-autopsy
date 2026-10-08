@@ -20,6 +20,8 @@ jobs:
           for k,v in sorted(rows,key=lambda x:-x[1]['pnl']):
               print(f"{k} | n={v['n']} g={v['gains']} p={v['pertes']} pnl={v['pnl']:+.0f} depuis={v['depuis']} creux={v.get('creux')}")
           B=d.get('blink',{}); print('BLINK', json.dumps(B)[:1500])
+          Z={k:v for k,v in d.get('strats',{}).items() if 'zone' in k or 'desaccord 30' in k}
+          json.dump(Z,open('bot95/zone_trades.json','w'),ensure_ascii=False)
           P
           git config user.name b; git config user.email bot@users.noreply.github.com
-          git add bot95/bilan.txt; git commit -m "bilan [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
+          git add bot95/bilan.txt bot95/zone_trades.json; git commit -m "bilan [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
