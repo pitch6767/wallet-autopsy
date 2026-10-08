@@ -11,8 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          curl -sS -m 60 https://bot95.pitch67.workers.dev/api/nouveaux > /tmp/n.json
-          python3 - <<'P' > bot95/bilan.txt
+          set +e
+          curl -sS -m 90 https://bot95.pitch67.workers.dev/api/nouveaux > /tmp/n.json; echo "taille $(wc -c < /tmp/n.json)" > bot95/bilan_err.txt; head -c 300 /tmp/n.json >> bot95/bilan_err.txt
+          python3 - <<'P' > bot95/bilan.txt 2>>bot95/bilan_err.txt
           import json
           d=json.load(open('/tmp/n.json'))
           R=d.get('resume',{}); A=set(d.get('actives',[]))
@@ -24,4 +25,4 @@ jobs:
           json.dump(Z,open('bot95/zone_trades.json','w'),ensure_ascii=False)
           P
           git config user.name b; git config user.email bot@users.noreply.github.com
-          git add bot95/bilan.txt bot95/zone_trades.json; git commit -m "bilan [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
+          git add bot95/; git commit -m "bilan [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
