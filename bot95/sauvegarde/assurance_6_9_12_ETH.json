@@ -1311,17 +1311,117 @@
 ],
 "start": 1791538500,
 "slug": "eth-updown-5m-1791538500"
+},
+"2026-10-09T17:16:43.777Z|Up": {
+"heure": "2026-10-09T17:16:43.777Z",
+"cote": "Up",
+"prix": 0.5532,
+"parts": 90.39,
+"U": 0,
+"D": 0,
+"cash": 24.060292907999994,
+"net": 24.06,
+"issue": "sortie 90",
+"proba0": 0.718,
+"journal": [
+"103.8s entrée Up 90.4 parts à 0.5532 (proba 0.718)",
+"103.8s assurance +22.6 à 0.548 (baisse 7 pts)",
+"113.7s assurance retirée 22.6 parts",
+"154.6s sortie 0,90"
+],
+"start": 1791566100,
+"slug": "eth-updown-5m-1791566100"
+},
+"2026-10-09T15:55:28.728Z|Up": {
+"heure": "2026-10-09T15:55:28.728Z",
+"cote": "Up",
+"prix": 0.55,
+"parts": 90.91,
+"U": 90.91,
+"D": 90.91,
+"cash": 13.31131972999998,
+"net": 13.31,
+"issue": "paire",
+"gagnant": "Up",
+"proba0": 0.632,
+"journal": [
+"35.6s offre opposée servie 7.0 à 0.12",
+"35.6s offre opposée servie 3.0 à 0.12",
+"35.6s offre opposée servie 1.1 à 0.12",
+"35.6s offre opposée servie 5.1 à 0.12",
+"42.4s assurance retirée 22.7 parts",
+"43.5s offre opposée servie 49.9 à 0.11"
+],
+"start": 1791561300,
+"slug": "eth-updown-5m-1791561300"
+},
+"2026-10-09T15:22:07.021Z|Up": {
+"heure": "2026-10-09T15:22:07.021Z",
+"cote": "Up",
+"prix": 0.558,
+"parts": 89.61,
+"U": 89.61,
+"D": 0,
+"cash": -51.591,
+"net": -51.59,
+"issue": "fin perdue",
+"gagnant": "Down",
+"proba0": 0.682,
+"journal": [
+"127.0s entrée Up 89.6 parts à 0.558 (proba 0.682)"
+],
+"start": 1791559200,
+"slug": "eth-updown-5m-1791559200"
+},
+"2026-10-09T14:35:36.279Z|Down": {
+"heure": "2026-10-09T14:35:36.279Z",
+"cote": "Down",
+"prix": 0.55,
+"parts": 90.91,
+"U": 0,
+"D": 0,
+"cash": 28.744212792000006,
+"net": 28.74,
+"issue": "sortie 90",
+"proba0": 0.687,
+"journal": [
+"36.3s entrée Down 90.9 parts à 0.55 (proba 0.687)",
+"117.1s sortie 0,90"
+],
+"start": 1791556500,
+"slug": "eth-updown-5m-1791556500"
+},
+"2026-10-09T13:44:00.452Z|Down": {
+"heure": "2026-10-09T13:44:00.452Z",
+"cote": "Down",
+"prix": 0.5589,
+"parts": 89.46,
+"U": 0,
+"D": 89.46,
+"cash": -68.066361272,
+"net": -68.07,
+"issue": "fin perdue",
+"gagnant": "Up",
+"proba0": 0.874,
+"journal": [
+"240.5s entrée Down 89.5 parts à 0.5589 (proba 0.874)",
+"241.5s assurance +22.4 à 0.744 (baisse 8 pts)",
+"247.9s assurance +22.4 à 0.859 (baisse 10 pts)",
+"256.8s assurance retirée 44.7 parts"
+],
+"start": 1791553200,
+"slug": "eth-updown-5m-1791553200"
 }
 },
 "resume_bot": {
 "depuis": 1791282814.023,
-"n": 98,
-"gains": 49,
-"pertes": 49,
-"pnl": -114.08000000000001
+"n": 103,
+"gains": 52,
+"pertes": 51,
+"pnl": -167.63
 },
-"n_sauves": 64,
-"maj": "2026-10-09 12:08 UTC",
+"n_sauves": 69,
+"maj": "2026-10-09 18:10 UTC",
 "archive": [
 [
 "2026-10-09T07:25:54.271Z",
@@ -1357,6 +1457,51 @@ null
 -14.56,
 "paire",
 0.635,
+null
+],
+[
+"2026-10-09T13:44:00.452Z",
+"Down",
+0.5589,
+-68.07,
+"fin perdue",
+0.874,
+null
+],
+[
+"2026-10-09T14:35:36.279Z",
+"Down",
+0.55,
+28.74,
+"sortie 90",
+0.687,
+null
+],
+[
+"2026-10-09T15:22:07.021Z",
+"Up",
+0.558,
+-51.59,
+"fin perdue",
+0.682,
+null
+],
+[
+"2026-10-09T15:55:28.728Z",
+"Up",
+0.55,
+13.31,
+"paire",
+0.632,
+null
+],
+[
+"2026-10-09T17:16:43.777Z",
+"Up",
+0.5532,
+24.06,
+"sortie 90",
+0.718,
 null
 ]
 ]
