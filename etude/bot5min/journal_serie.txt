@@ -1,6 +1,6 @@
-# La serie de pertes de V2-F — rejeu sur les vrais carnets (07.10 08:00 -> 09.10 08:05)
+# La serie de pertes de V2-F — rejeu sur les vrais carnets (07.10 08:00 -> 09.10 08:20)
 
-444 trades rejoues, 106 gagnes (23.9 %). Plus longue serie de pertes : **25** du 07.10 22:32 au 08.10 00:36.
+448 trades rejoues, 107 gagnes (23.9 %). Plus longue serie de pertes : **25** du 07.10 22:32 au 08.10 00:36.
 
 ## 1. La serie comparee aux autres trades
 
@@ -9,21 +9,21 @@
 | 16 trades avant | 16 | 5 | 0.40 | 0.17 | 0.24 | 180 s | 3.2 | -0.66 | 6/10 | -27 | 9 / 3 / 1 / 2 / 1 |
 | **la serie (25)** | 25 | 0 | 0.41 | 0.19 | 0.22 | 188 s | 2.0 | -0.53 | 14/11 | -40 | 5 / 13 / 0 / 7 / 0 |
 | 14 trades apres | 14 | 2 | 0.42 | 0.20 | 0.22 | 242 s | 1.9 | -0.61 | 10/4 | -55 | 2 / 10 / 1 / 1 / 0 |
-| tous les trades | 444 | 106 | 0.42 | 0.19 | 0.23 | 169 s | 4.5 | -0.45 | 225/219 | -33 | 124 / 144 / 34 / 88 / 54 |
+| tous les trades | 448 | 107 | 0.42 | 0.19 | 0.23 | 169 s | 4.5 | -0.45 | 226/222 | -33 | 125 / 146 / 35 / 88 / 54 |
 
 ## 2. Qui a cree l'ecart qui grandit — sur tous les trades
 
 | Origine | Trades | Gagnes | % gagnes | Resultat rejoue |
 |---|---|---|---|---|
-| le modele monte, Poly stable | 124 | 26 | 21 % | +3796 $ |
-| Poly baisse, modele stable | 144 | 42 | 29 % | +2793 $ |
-| modele monte ET Poly baisse | 34 | 9 | 26 % | +737 $ |
+| le modele monte, Poly stable | 125 | 26 | 21 % | +3743 $ |
+| Poly baisse, modele stable | 146 | 43 | 29 % | +2823 $ |
+| modele monte ET Poly baisse | 35 | 9 | 26 % | +684 $ |
 | les deux baissent, Poly plus | 88 | 14 | 16 % | -1482 $ |
 | autre | 54 | 15 | 28 % | +328 $ |
 
 ## 3. Une serie de 25 est-elle normale ?
 
-- Avec 23.9 % de gagnants et 430 trades (V2-F en direct), une serie d'au moins 25 pertes arrive dans **10.4 %** des simulations (20000 tirages).
+- Avec 23.9 % de gagnants et 430 trades (V2-F en direct), une serie d'au moins 25 pertes arrive dans **10.3 %** des simulations (20000 tirages).
 - Selon **notre modele**, ces 25 trades devaient gagner 10.3 fois en moyenne ; probabilite de tous les perdre = 1.43e-06.
 - Selon **le prix Polymarket**, ils devaient gagner 4.8 fois ; probabilite de tous les perdre = 4.48e-03.
 
@@ -31,19 +31,19 @@
 
 | Signal (on achete seulement si…) | Pertes de la serie evitees | Trades gardes (tous) | Gagnes gardes | Des 10 plus gros gagnants, gardes | Resultat rejoue (tous) |
 |---|---|---|---|---|---|
-| (aucun filtre) | 0 / 25 | 444 | 106 | 10 / 10 | +6171 $ |
-| pas « Poly baisse, modele stable » | 13 / 25 | 300 | 64 | 8 / 10 | +3378 $ |
-| seulement « le modele monte » | 20 / 25 | 158 | 35 | 7 / 10 | +4532 $ |
-| distance Chainlink < 0 (on perd encore) | 2 / 25 | 369 | 77 | 10 / 10 | +5810 $ |
-| distance Chainlink < -0,3 | 9 / 25 | 269 | 50 | 10 / 10 | +5248 $ |
-| tendance 15 min >= 0 | 18 / 25 | 214 | 51 | 6 / 10 | +3008 $ |
-| prix >= 0,10 | 3 / 25 | 363 | 99 | 3 / 10 | +3850 $ |
-| pas « les deux baissent, Poly plus » | 7 / 25 | 356 | 92 | 10 / 10 | +7653 $ |
-| volatilite >= 2 $/s | 14 / 25 | 353 | 84 | 9 / 10 | +5114 $ |
-| volatilite >= 3 $/s | 18 / 25 | 279 | 70 | 9 / 10 | +5663 $ |
-| pas « les deux baissent » ET volatilite >= 2 | 18 / 25 | 288 | 74 | 9 / 10 | +6468 $ |
-| reste >= 60 s | 1 / 25 | 429 | 105 | 10 / 10 | +6731 $ |
-| modele <= 0,60 | 0 / 25 | 423 | 93 | 10 / 10 | +5620 $ |
+| (aucun filtre) | 0 / 25 | 448 | 107 | 10 / 10 | +6096 $ |
+| pas « Poly baisse, modele stable » | 13 / 25 | 302 | 64 | 8 / 10 | +3273 $ |
+| seulement « le modele monte » | 20 / 25 | 160 | 35 | 7 / 10 | +4427 $ |
+| distance Chainlink < 0 (on perd encore) | 2 / 25 | 372 | 77 | 10 / 10 | +5651 $ |
+| distance Chainlink < -0,3 | 9 / 25 | 271 | 50 | 10 / 10 | +5142 $ |
+| tendance 15 min >= 0 | 18 / 25 | 216 | 51 | 6 / 10 | +2903 $ |
+| prix >= 0,10 | 3 / 25 | 367 | 100 | 3 / 10 | +3774 $ |
+| pas « les deux baissent, Poly plus » | 7 / 25 | 360 | 93 | 10 / 10 | +7578 $ |
+| volatilite >= 2 $/s | 14 / 25 | 356 | 85 | 9 / 10 | +5091 $ |
+| volatilite >= 3 $/s | 18 / 25 | 281 | 71 | 9 / 10 | +5694 $ |
+| pas « les deux baissent » ET volatilite >= 2 | 18 / 25 | 291 | 75 | 9 / 10 | +6446 $ |
+| reste >= 60 s | 1 / 25 | 433 | 106 | 10 / 10 | +6655 $ |
+| modele <= 0,60 | 0 / 25 | 427 | 94 | 10 / 10 | +5544 $ |
 
 ## Annexe — les trades de la serie
 
