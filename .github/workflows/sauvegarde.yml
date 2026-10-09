@@ -1,0 +1,21 @@
+name: Sauvegarde des trades
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  push:
+    branches: [main]
+    paths: [bot95/sauvegarde_go.txt]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set +e
+          if [ -f bot95/zone_trades.json ] && [ ! -f bot95/sauvegarde/.importe ]; then python3 etude/bot5min/sauvegarde.py bot95/zone_trades.json > /tmp/s.log 2>&1 && touch bot95/sauvegarde/.importe; else python3 etude/bot5min/sauvegarde.py > /tmp/s.log 2>&1; fi
+          tail -60 /tmp/s.log
+          git config user.name sauvegarde; git config user.email bot@users.noreply.github.com
+          git add bot95/sauvegarde/; git commit -q -m "Sauvegarde des trades [skip ci]"; for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push -q && break; sleep 7; done
