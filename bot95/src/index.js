@@ -512,12 +512,14 @@ export class Bot {
         const d = m.data || {}, a = V1.ACTIFS.find((k) => k + "USDT" === d.s);
         if (a && +d.p > 0) this.noter(a, "bn", +d.p, now());
       });
-    if (!this.ws.perp || (this.ageMax("perp") > 20 && depuis("perp") > 20)) {
+    // 09.10.2026 : on ne relance que si le flux entier est muet 20 s (avant : dès qu'UNE petite crypto n'avait pas de trade depuis 20 s → coupure toutes les 20-30 s)
+    const muet = (k) => t - (this.ws[k + "_msg"] || this.ws[k + "_ouvert"] || 0);
+    if (!this.ws.perp || (muet("perp") > 20 && depuis("perp") > 20)) {
       for (const a of LISTE) this.livre[a] = { b: new Map(), a: new Map() };
       const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`, `orderbook.50.${ACTIFS[a].bybit}`, `allLiquidation.${ACTIFS[a].bybit}`]);
       this.connecter("perp", "https://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args })], (m) => this.surPerp(m), JSON.stringify({ op: "ping" }), 10000);
     }
-    if (!this.ws.cb || (this.ageMax("cb") > 30 && depuis("cb") > 30)) {
+    if (!this.ws.cb || (muet("cb") > 30 && depuis("cb") > 30)) {
       const ids = LISTE.map((a) => ACTIFS[a].spot).filter(Boolean);
       this.connecter("cb", "https://advanced-trade-ws.coinbase.com", [JSON.stringify({ type: "subscribe", product_ids: ids, channel: "ticker" })], (m) => this.surCb(m));
     }
@@ -540,7 +542,7 @@ export class Bot {
       for (const id of Object.keys(this.pb)) if (!jetons.includes(id)) delete this.pb[id];
       this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPoly(m), "PING", 10000);
     }
-    if (!this.ws.cl || (this.ageMax("cl") > 20 && depuis("cl") > 20)) this.connecter("cl", "https://ws-live-data.polymarket.com",
+    if (!this.ws.cl || (muet("cl") > 20 && depuis("cl") > 20)) this.connecter("cl", "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surCl(m), "PING", 5000);
   }
 
@@ -556,6 +558,7 @@ export class Bot {
       ws.accept();
       ws.addEventListener("message", (ev) => {
         if (typeof ev.data !== "string" || ev.data === "PONG" || ev.data === "PING" || ev.data === "pong") return;
+        this.ws[nom + "_msg"] = now();
         try { surMsg(JSON.parse(ev.data)); } catch (_) {}
       });
       const fin = () => { if (this.ws[nom] === ws) this.ws[nom] = null; };

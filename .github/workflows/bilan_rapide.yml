@@ -17,7 +17,7 @@ jobs:
           import json
           d=json.load(open('/tmp/n.json'))
           R=d.get('resume',{}); A=set(d.get('actives',[]))
-          rows=[(k,v) for k,v in R.items() if k[:k.rfind(' ')] in A]
+          rows=[(k,v) for k,v in R.items()]
           for k,v in sorted(rows,key=lambda x:-x[1]['pnl']):
               print(f"{k} | n={v['n']} g={v['gains']} p={v['pertes']} pnl={v['pnl']:+.0f} depuis={v['depuis']} creux={v.get('creux')} serieMax={v.get('serieMax')} serie={v.get('serie')} series={v.get('series')}")
           B=d.get('blink',{}); print('BLINK', json.dumps(B)[:1500])
