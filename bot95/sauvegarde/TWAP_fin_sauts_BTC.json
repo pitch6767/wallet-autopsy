@@ -1,0 +1,191 @@
+{
+"nom": "TWAP fin sauts BTC",
+"trades": {
+"2026-10-09T23:13:47.313Z|Up": {
+"heure": "2026-10-09T23:13:47.313Z",
+"cote": "Up",
+"prix": 0.6468,
+"parts": 9.62,
+"U": 9.62,
+"D": 0,
+"cash": -6.222054384,
+"net": -6.22,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.879,
+"restant_s": 73,
+"journal": [
+"227.3s TWAP fin sauts : probabilité 0.879, vendeur 0.63, 73 s restantes → achat Up 9.6 parts"
+],
+"start": 1791587400,
+"slug": "btc-updown-5m-1791587400",
+"tAchat": 1791587627.313,
+"tailleAffichee": 9.62,
+"prixABattre": 82555.8,
+"clObs": 1791587623,
+"clRecu": 1791587626.829,
+"clDernier": 82577.58935225982,
+"btc": 82563.39
+},
+"2026-10-09T23:03:43.783Z|Up": {
+"heure": "2026-10-09T23:03:43.783Z",
+"cote": "Up",
+"prix": 0.1906,
+"parts": 30,
+"U": 30,
+"D": 0,
+"cash": -5.7188159999999995,
+"net": -5.72,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.61,
+"restant_s": 76,
+"journal": [
+"223.8s TWAP fin sauts : probabilité 0.610, vendeur 0.18, 76 s restantes → achat Up 30.0 parts"
+],
+"start": 1791586800,
+"slug": "btc-updown-5m-1791586800",
+"tAchat": 1791587023.783,
+"tailleAffichee": 30,
+"prixABattre": 82560.78,
+"clObs": 1791587023,
+"clRecu": 1791587023.768,
+"clDernier": 82543.567288805,
+"btc": 82562.97
+},
+"2026-10-09T22:53:30.002Z|Up": {
+"heure": "2026-10-09T22:53:30.002Z",
+"cote": "Up",
+"prix": 0.7151,
+"parts": 71.43,
+"U": 71.42857142857143,
+"D": 0,
+"cash": 20.348571428571432,
+"net": 20.35,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.921,
+"restant_s": 90,
+"journal": [
+"210.0s TWAP fin sauts : probabilité 0.921, vendeur 0.7, 90 s restantes → achat Up 71.4 parts"
+],
+"start": 1791586200,
+"slug": "btc-updown-5m-1791586200",
+"tAchat": 1791586410.002,
+"tailleAffichee": 73.98,
+"prixABattre": 82555.4,
+"clObs": 1791586409,
+"clRecu": 1791586409.807,
+"clDernier": 82556.426229325,
+"btc": 82556.19
+},
+"2026-10-09T22:48:30.000Z|Down": {
+"heure": "2026-10-09T22:48:30.000Z",
+"cote": "Down",
+"prix": 0.5678,
+"parts": 79.38,
+"U": 0,
+"D": 79.38,
+"cash": -45.0735516,
+"net": -45.07,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.776,
+"restant_s": 90,
+"journal": [
+"210.0s TWAP fin sauts : probabilité 0.776, vendeur 0.55, 90 s restantes → achat Down 79.4 parts"
+],
+"start": 1791585900,
+"slug": "btc-updown-5m-1791585900",
+"tAchat": 1791586110,
+"tailleAffichee": 79.38,
+"prixABattre": 82555.13,
+"clObs": 1791586108,
+"clRecu": 1791586109.026,
+"clDernier": 82553.938979205,
+"btc": 82549.69
+},
+"2026-10-09T22:43:37.301Z|Down": {
+"heure": "2026-10-09T22:43:37.301Z",
+"cote": "Down",
+"prix": 0.538,
+"parts": 96.15,
+"U": 0,
+"D": 96.15384615384615,
+"cash": 44.425846153846145,
+"net": 44.43,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.771,
+"restant_s": 83,
+"journal": [
+"217.3s TWAP fin sauts : probabilité 0.771, vendeur 0.52, 83 s restantes → achat Down 96.2 parts"
+],
+"start": 1791585600,
+"slug": "btc-updown-5m-1791585600",
+"tAchat": 1791585817.301,
+"tailleAffichee": 525.6,
+"prixABattre": 82559.71,
+"clObs": 1791585816,
+"clRecu": 1791585816.723,
+"clDernier": 82552.48078144272,
+"btc": 82552.46
+}
+},
+"resume_bot": {
+"depuis": 1791586315.723,
+"n": 5,
+"gains": 2,
+"pertes": 3,
+"pnl": 7.770000000000002
+},
+"archive": [
+[
+"2026-10-09T22:43:37.301Z",
+"Down",
+0.538,
+44.43,
+"une seule jambe",
+0.771,
+83
+],
+[
+"2026-10-09T22:48:30.000Z",
+"Down",
+0.5678,
+-45.07,
+"une seule jambe",
+0.776,
+90
+],
+[
+"2026-10-09T22:53:30.002Z",
+"Up",
+0.7151,
+20.35,
+"une seule jambe",
+0.921,
+90
+],
+[
+"2026-10-09T23:03:43.783Z",
+"Up",
+0.1906,
+-5.72,
+"une seule jambe",
+0.61,
+76
+],
+[
+"2026-10-09T23:13:47.313Z",
+"Up",
+0.6468,
+-6.22,
+"une seule jambe",
+0.879,
+73
+]
+],
+"n_sauves": 5,
+"maj": "2026-10-09 23:33 UTC"
+}
