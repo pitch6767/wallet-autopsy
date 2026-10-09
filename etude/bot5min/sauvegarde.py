@@ -38,3 +38,9 @@ try:                                                         # reglements offici
     old += [x for x in R.get("lignes", []) if (x["a"], x["start"]) not in vu]
     old.sort(key=lambda x: (x["start"], x["a"])); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("reglements", len(old))
 except Exception as e: print("reglements", e)
+try:                                                         # journal du fantome « TWAP fin confirme Chainlink » (tous les signaux, achetes ou abandonnes)
+    J = get(U + "/api/twap_confirme").get("signaux", []); f = "bot95/twap_confirme.json"
+    old = json.load(open(f)) if os.path.exists(f) else []
+    vu = {x["start"] for x in old}; old += [x for x in J if x["start"] not in vu]
+    old.sort(key=lambda x: x["start"]); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("twap_confirme", len(old))
+except Exception as e: print("twap_confirme", e)
