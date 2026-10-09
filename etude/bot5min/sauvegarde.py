@@ -13,7 +13,7 @@ def fichier(nom): return D + re.sub(r"[^A-Za-z0-9,.+-]+", "_", nom).strip("_") +
 def fusion(nom, trades, resume=None, archive=None):
     f = fichier(nom); old = json.load(open(f)) if os.path.exists(f) else {"nom": nom, "trades": {}}
     for t in trades:
-        k = f"{t.get('heure')}|{t.get('cote')}"; old["trades"][k] = {**old["trades"].get(k, {}), **{x: t.get(x) for x in ("heure", "cote", "prix", "parts", "U", "D", "cash", "net", "issue", "gagnant", "proba0", "restant_s", "journal", "start", "slug", "carnet") if x in t}}
+        k = f"{t.get('heure')}|{t.get('cote')}"; old["trades"][k] = {**old["trades"].get(k, {}), **{x: t.get(x) for x in ("heure", "cote", "prix", "parts", "U", "D", "cash", "net", "issue", "gagnant", "proba0", "restant_s", "journal", "start", "slug", "carnet", "tAchat", "tailleAffichee", "prixABattre", "clObs", "clRecu", "clDernier", "btc") if x in t}}
     if resume: old["resume_bot"] = resume
     if archive:                                              # archive compacte du bot : [heure, cote, prix, net, issue, proba0, restant_s]
         A = {f"{l[0]}|{l[1]}": l for l in old.get("archive", [])}
