@@ -2003,8 +2003,16 @@ export class Bot {
         const e = ev[0], m = e.markets[0];
         let meta = e.eventMetadata || m.eventMetadata || {}; if (typeof meta === "string") meta = JSON.parse(meta);
         const px = JSON.parse(m.outcomePrices || "[]").map(Number), outs = JSON.parse(m.outcomes || "[]");
-        if (!(px.includes(1) && px.includes(0)) || meta.finalPrice == null) continue;
-        RG.lignes.unshift({ ...L, gagnant: outs[px.indexOf(1)], ptb: +meta.priceToBeat, final: +meta.finalPrice, vu: Math.round(t - L.start - 300) });
+        if (!(px.includes(1) && px.includes(0))) continue;
+        let cp = null, op = null;
+        try {
+          const iso = (x) => new Date(x * 1000).toISOString().replace(".000", "");
+          const r2 = await fetch(`https://polymarket.com/api/crypto/crypto-price?symbol=${L.a}&eventStartTime=${iso(L.start)}&variant=fiveminute&endDate=${iso(L.start + 300)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
+          if (r2.ok) { const d2 = await r2.json(); op = d2.openPrice != null ? +d2.openPrice : null; cp = d2.closePrice != null ? +d2.closePrice : null; L.brut = JSON.stringify(d2).slice(0, 300); }
+        } catch (_) {}
+        const fin = meta.finalPrice != null ? +meta.finalPrice : cp;
+        if (fin == null && t < L.start + 300 + 300) continue;
+        RG.lignes.unshift({ ...L, gagnant: outs[px.indexOf(1)], ptb: meta.priceToBeat != null ? +meta.priceToBeat : op, final: fin, ouvertureApi: op, clotureApi: cp, vu: Math.round(t - L.start - 300) });
         delete RG.attente[k];
       } catch (_) {}
     }
