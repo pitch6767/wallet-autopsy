@@ -22,7 +22,7 @@ const NV = {
   // 07.10.2026 (décision de Pitch) : on ne garde que V1, assurance et désaccord 20 — tout le reste est arrêté (résultats figés sur la page)
   // 07.10.2026 (décision de Pitch) : on oublie ETH — plus aucun trade ETH (les données ETH restent enregistrées)
   TRADE: ["BTC"],
-  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord 20 sans nuit", "desaccord confirme", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-G jury des bourses", "V2-H veto complet", "V5 gain attendu", "V6 loterie", "desaccord 20 Poly rejoint 3 s", "desaccord 20 Poly rejoint 10 s", "desaccord 20 Poly rejoint 3 s sans nuit", "desaccord 20 Poly rejoint 10 s sans nuit", "desaccord 20 Binance avec nous", "desaccord 20 Binance avec nous sans nuit", "desaccord 20 Binance ou perp avec nous", "desaccord 20 Binance ou perp avec nous sans nuit", "desaccord 20 aucune bourse contre + sortie 10 s", "desaccord 20 aucune bourse contre + sortie 10 s sans nuit", "desaccord 30 zone 0,15-0,35", "desaccord 30 zone 0,15-0,35 + Binance et perp", "desaccord 30 zone + sortie modele -10", "desaccord 30 zone + Binance et perp + sortie modele -10", "desaccord 30 0,15-0,60 + perp + ecart qui grandit", "desaccord 30 zone + modele monte", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50"],
+  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord 20 sans nuit", "desaccord confirme", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-F + pas les deux baissent", "V2-F + pas les deux baissent + volatilite >= 2", "V2-G jury des bourses", "V2-H veto complet", "V5 gain attendu", "V6 loterie", "desaccord 20 Poly rejoint 3 s", "desaccord 20 Poly rejoint 10 s", "desaccord 20 Poly rejoint 3 s sans nuit", "desaccord 20 Poly rejoint 10 s sans nuit", "desaccord 20 Binance avec nous", "desaccord 20 Binance avec nous sans nuit", "desaccord 20 Binance ou perp avec nous", "desaccord 20 Binance ou perp avec nous sans nuit", "desaccord 20 aucune bourse contre + sortie 10 s", "desaccord 20 aucune bourse contre + sortie 10 s sans nuit", "desaccord 30 zone 0,15-0,35", "desaccord 30 zone 0,15-0,35 + Binance et perp", "desaccord 30 zone + sortie modele -10", "desaccord 30 zone + Binance et perp + sortie modele -10", "desaccord 30 0,15-0,60 + perp + ecart qui grandit", "desaccord 30 zone + modele monte", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50"],
   // 07.10.2026 : désaccord CONFIRMÉ (analyse sur les vrais carnets) : écart >= 0,20 (BTC) / 0,10 (ETH) repéré, on attend 20 s,
   // on n'achète que si notre côté a déjà monté de 3 cents vers le modèle et que le modèle garde 3 cents d'avance ; gardé jusqu'à la fin.
   CONFIRME: { ECART: { BTC: 0.20, ETH: 0.10 }, ATTENTE_S: 20, HAUSSE: 0.03, AVANCE_MIN: 0.03, MISE: 50 },
@@ -1618,6 +1618,9 @@ export class Bot {
     if (!H.r.length || t - H.r[H.r.length - 1].t >= 0.25) {
       H.r.push({ t, pu, um: (ub[0] + ua[0]) / 2, dm: (db[0] + da[0]) / 2, ua: ua[0], da: da[0], perp: px("perp"), okx: px("okx"), bn: px("bn"), cb: px("cb") });
       while (H.r.length && t - H.r[0].t > 12) H.r.shift();
+      // volatilité du perp sur 60 s (09.10.2026)
+      const VRr = ((this._vr = this._vr || {})[a] = this._vr[a] || []);
+      if (px("perp")) { VRr.push({ t, p: px("perp") }); while (VRr.length && t - VRr[0].t > 60) VRr.shift(); }
     }
     try { this.blinkSuivre(a, mk, pu, tleft, ua, da, H); } catch (err) { this.erreur("qui converge", err); }
     // sortie « modèle -10 pts » (08.10.2026) : revente au meilleur acheteur si le modèle a perdu 10 pts depuis l'entrée
@@ -1689,6 +1692,10 @@ export class Bot {
       const recents = H.r.filter((x) => t - x.t <= 1.5);
       const persistant = recents.length >= 4 && recents.every((x) => edgeDe(x) >= 0.20) && t - H.r[0].t >= 1.5;
       const grandit = h3 ? edge - edgeDe(h3) >= 0.03 : false;
+      const dmo = h3 ? fair - (up ? h3.pu : 1 - h3.pu) : 0, dpo = h3 ? k[0] - (up ? h3.ua : h3.da) : 0;
+      const deuxBaissent = !!h3 && dmo < 0 && dpo < dmo && !(Math.abs(dmo) < 0.02 && dpo <= -0.02);
+      const VR = (this._vr = this._vr || {})[a] || [];
+      let vol60 = null; if (VR.length > 20) { const d = []; for (let q = 1; q < VR.length; q++) d.push(VR[q].p - VR[q - 1].p); const m = d.reduce((x, y) => x + y, 0) / d.length; vol60 = Math.sqrt(d.reduce((x, y) => x + (y - m) ** 2, 0) / d.length) * 2; }
       const d3 = ["perp", "okx", "bn", "cb"].map((src) => dir(src, 3));
       const jury = d3.every((v) => v != null && v >= 0) && d3.some((v) => v > 0) && h3 && (fair - (up ? h3.pu : 1 - h3.pu)) - (midDe(H.r[H.r.length - 1]) - midDe(h3)) >= 0.03;
       const vetos = [
@@ -1705,7 +1712,10 @@ export class Bot {
         "V2-E persistant": persistant,
         "V2-F ecart qui grandit": grandit,
         "V2-G jury des bourses": !!jury,
-        "V2-H veto complet": !vetos.some(Boolean) };
+        "V2-H veto complet": !vetos.some(Boolean),
+        // 09.10.2026 (figés) : V2-F sans « les deux baissent, Polymarket plus fort », et la même + volatilité perp >= 2 $/s sur 60 s
+        "V2-F + pas les deux baissent": grandit && !deuxBaissent,
+        "V2-F + pas les deux baissent + volatilite >= 2": grandit && !deuxBaissent && vol60 != null && vol60 >= 2 };
       for (const [nom, ok] of Object.entries(V)) {
         if (!ok || H.fait[nom]) continue;
         const r = this.nAcheter(up ? mk.up : mk.down, 50 / k[0], k[0] + 0.01); if (r.parts < 1) continue;
@@ -2075,7 +2085,7 @@ const ENTREE={"V1 actuel (avec stop)":"V1 d'origine : achète la jambe à 0,55�
 "V2-C perp":"V2-C : désaccord 20 seulement si le perp Bybit va dans notre sens sur 5 s.",
 "V2-D perp 120-269 s":"V2-D : désaccord 20 + perp avec nous + entre 120 et 269 s de la fin.",
 "V2-E persistant":"V2-E : désaccord 20 seulement s'il tient au moins 1,5 s (pas un éclair).",
-"V2-F ecart qui grandit":"V2-F : désaccord 20 seulement si l'écart a grandi d'au moins 3 pts sur 3 s.",
+"V2-F ecart qui grandit":"V2-F : désaccord 20 seulement si l'écart a grandi d'au moins 3 pts sur 3 s.","V2-F + pas les deux baissent":"V2-F SANS « LES DEUX BAISSENT » : comme V2-F, mais pas d'achat quand, sur les 3 s, le modèle ET le prix Polymarket ont baissé et que Polymarket a baissé plus fort (16 % de gagnants seulement dans l'historique).","V2-F + pas les deux baissent + volatilite >= 2":"V2-F SANS « LES DEUX BAISSENT » + MARCHÉ ACTIF : comme la précédente, et seulement si le perp BTC bouge d'au moins 2 $ par seconde en moyenne sur 60 s (pas de marché calme).",
 "V2-G jury des bourses":"V2-G : désaccord 20 seulement si Bybit, OKX, Binance et Coinbase vont tous dans notre sens sur 3 s ET que Polymarket a moins suivi que le modèle (en retard).",
 "V2-H veto complet":"V2-H : désaccord 20 sauf veto : écart qui fond, Binance contre nous, Bybit+OKX contre nous, 60-89 s, Polymarket déjà en train de corriger, vendeur < 20 parts.",
 "desaccord confirme":"Désaccord CONFIRMÉ : le modèle a 20 pts d'avance (BTC) ou 10 pts (ETH) ; on attend 20 s et on n'achète que si le marché est déjà monté de 3 cents vers le modèle (il garde 3 cents d'avance). Gardé jusqu'à la fin.",
