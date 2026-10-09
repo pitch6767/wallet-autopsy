@@ -676,15 +676,17 @@ export class Bot {
     const m0 = await meta(mk.start); if (+m0.priceToBeat > 0) { k = +m0.priceToBeat; src = "priceToBeat"; }
     if (k == null) { const m1 = await meta(mk.start - 300); if (+m1.finalPrice > 0) { k = +m1.finalPrice; src = "finalPrice du cycle précédent"; } }
     if (k == null) return;
+    mk.ptbOff = true; mk.ptbOfficiel = k;
+    if (mk.twapK) return;
     if (mk.strike && Math.abs(mk.strike - k) > 0.01) mk.strikeAvant = mk.strike;
-    mk.strike = k; mk.ptbOff = true; mk.strikeSrc = src; mk.ptbVu = +(now() - mk.start).toFixed(1);
+    mk.strike = k; mk.strikeSrc = src; mk.ptbVu = +(now() - mk.start).toFixed(1);
   }
   async ouvertureOfficielle(a, mk) {
     const iso = (t) => new Date(t * 1000).toISOString().replace(".000", "");
     const r = await fetch(`https://polymarket.com/api/crypto/crypto-price?symbol=${a}&eventStartTime=${iso(mk.start)}&variant=fiveminute&endDate=${iso(mk.end)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
     if (!r.ok) throw new Error(a + " prix d'ouverture HTTP " + r.status);
     const d = await r.json();
-    if (d && +d.openPrice > 0) mk.strike = +d.openPrice;
+    if (d && +d.openPrice > 0) { mk.strikeSite = +d.openPrice; if (!mk.twapK) mk.strike = +d.openPrice; }
   }
   async carnets(tokens) {
     const r = await fetch(`${C}/books`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(tokens.map((t) => ({ token_id: t }))) });
@@ -703,11 +705,17 @@ export class Bot {
     await Promise.all(LISTE.map(async (a) => {
       let mk = this.mk[a];
       if (!mk || mk.start !== start) {
-        if (mk) { (this._kPrec = this._kPrec || {})[a + mk.start] = { k: mk.strike ?? null, src: mk.strikeSrc || null, vu: mk.ptbVu ?? null, avant: mk.strikeAvant ?? null, serie: mk.kSerie || null }; this.finFenetre(a, mk); }
+        if (mk) { (this._kPrec = this._kPrec || {})[a + mk.start] = { k: mk.strike ?? null, src: mk.strikeSrc || null, vu: mk.ptbVu ?? null, avant: mk.strikeAvant ?? null, serie: mk.kSerie || null, site: mk.strikeSite ?? null }; this.finFenetre(a, mk); }
         mk = this.mk[a] = (V1.ACTIFS.includes(a) && this.mkNx[a] && this.mkNx[a].start === start) ? { ...this.mkNx[a] } : { start, end: start + 300 };
       }
       try {
         if (!mk.slug && t - (mk.essai || 0) > 10) { mk.essai = t; Object.assign(mk, await this.chargerMarche(a, start)); }
+        // PRIX À BATTRE = MOYENNE CHAINLINK DES 60 SECONDES AVANT LE DÉBUT (découvert le 09.10.2026 : colle au prix officiel à 0,19 $ près en médiane,
+        // sur 710 cycles ; le chiffre affiché par le site est le prix instantané, faux de 10 $ en médiane). Calculé dès la 2e seconde du cycle.
+        if (!mk.twapK && t >= start + 2) {
+          const v = []; for (let s2 = start - 60; s2 <= start - 1; s2++) { const o2 = this.sec[a].get(s2); if (o2 && o2.cl != null) v.push(o2.cl); }
+          if (v.length >= 40) { if (mk.strike) mk.strikeSite = mk.strike; mk.strike = v.reduce((x, y) => x + y, 0) / v.length; mk.twapK = true; mk.strikeSrc = "moyenne Chainlink 60 s"; mk.ptbVu = +(t - start).toFixed(1); }
+        }
         // prix à battre OFFICIEL : priceToBeat de la fiche du marché (API Polymarket), relu toutes les 3 s tant qu'il manque (09.10.2026)
         if (!mk.ptbOff && ["BTC", "ETH"].includes(a) && t - (mk.essaiPtb || 0) > (t - start < 60 ? 5 : 15)) { mk.essaiPtb = t; await this.prixABattreOfficiel(a, mk); }
         // secours seulement si la fiche ne le donne pas encore après 20 s
@@ -1023,11 +1031,11 @@ export class Bot {
     if (sgc.base == null) return null;
     const S = this.prixRapide(a);                             // prix le plus récent (Bybit ou OKX), ramené au niveau Chainlink
     if (S == null) return null;
-    const sg = sgc.v, ts = Math.floor(t), deb = mk.end - 59;
+    const sg = sgc.v, ts = Math.floor(t), deb = mk.end - 60;          // règlement = moyenne Chainlink des secondes fin-60 … fin-1 (vérifié le 09.10.2026)
     let E, v;
     if (ts >= deb) {
-      const connus = []; for (let s2 = deb; s2 <= ts; s2++) { const x = this.prixA(a, "cl", s2); if (x) connus.push(x); }
-      const nr = Math.max(1, mk.end - ts);
+      const connus = []; for (let s2 = deb; s2 <= Math.min(ts, mk.end - 1); s2++) { const x = this.prixA(a, "cl", s2); if (x) connus.push(x); }
+      const nr = Math.max(1, mk.end - 1 - ts);
       E = (connus.reduce((x, y) => x + y, 0) + nr * S) / (connus.length + nr); v = (sg * S) ** 2 * nr ** 3 / 3 / 3600;
     } else { E = S; v = (sg * S) ** 2 * ((deb - ts) + 20); }
     return phi((E - K) / Math.sqrt(v + (sdRel * S) ** 2));
@@ -2041,7 +2049,7 @@ export class Bot {
       const st = cur - 300, k = a + st;
       if (!RG.attente[k] && !RG.lignes.some((x) => x.a === a && x.start === st)) {
         const B = (this._clBrut || {})[a] || [], fen = (c) => B.filter((x) => Math.abs(x[0] - c) <= 15).map((x) => [+(x[0] - c).toFixed(3), +(x[1] - c).toFixed(3), +(x[2] - c).toFixed(3), x[3]]);
-        RG.attente[k] = { a, start: st, obsDebut: fen(st), obsFin: fen(st + 300), notreK: ((this._kPrec || {})[a + st] || {}).k ?? null, sourceK: ((this._kPrec || {})[a + st] || {}).src ?? null, kVuApres_s: ((this._kPrec || {})[a + st] || {}).vu ?? null, kAvant: ((this._kPrec || {})[a + st] || {}).avant ?? null, kSerie: ((this._kPrec || {})[a + st] || {}).serie ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
+        RG.attente[k] = { a, start: st, obsDebut: fen(st), obsFin: fen(st + 300), notreK: ((this._kPrec || {})[a + st] || {}).k ?? null, sourceK: ((this._kPrec || {})[a + st] || {}).src ?? null, kVuApres_s: ((this._kPrec || {})[a + st] || {}).vu ?? null, kAvant: ((this._kPrec || {})[a + st] || {}).avant ?? null, kSerie: ((this._kPrec || {})[a + st] || {}).serie ?? null, kSite: ((this._kPrec || {})[a + st] || {}).site ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
       }
     }
     let n = 0;
