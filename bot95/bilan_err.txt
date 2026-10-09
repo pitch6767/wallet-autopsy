@@ -1,2 +1,15 @@
-taille 543307
-{"depuis":1791267886.977,"typesDesaccord":{"début (>4 min) | 0,30-0,50 | perp avec nous | marché ? | autre crypto d'accord":{"demi":{"n":11,"g":3,"pnl":-23.02,"etats":{"CONFIRMÉ":6,"PAS DE SUITE":5}},"validation":{"n":11,"g":3,"pnl":-125.58,"etats":{"CONFIRMÉ":6,"PAS DE SUITE":5}},"validation+in
+taille 0
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
