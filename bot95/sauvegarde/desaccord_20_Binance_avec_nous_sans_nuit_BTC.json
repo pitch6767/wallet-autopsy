@@ -836,15 +836,101 @@
 ],
 "start": 1791402900,
 "slug": "btc-updown-5m-1791402900"
+},
+"2026-10-09T07:33:50.542Z|Up": {
+"heure": "2026-10-09T07:33:50.542Z",
+"cote": "Up",
+"prix": 0.5678,
+"parts": 90.91,
+"U": 90.9090909090909,
+"D": 0,
+"cash": 39.28909090909091,
+"net": 39.29,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.844,
+"restant_s": 69,
+"journal": [
+"230.5s désaccord 20 (modèle 0.844, vendeur 0.55) ; 3 s avant : Binance 0.6 pb, perp 0.02 pb, OKX -0.01 pb, Coinbase 1.19 pb (+ = dans notre sens) → achat à 0.5678"
+],
+"start": 1791531000,
+"slug": "btc-updown-5m-1791531000"
+},
+"2026-10-09T07:25:51.202Z|Down": {
+"heure": "2026-10-09T07:25:51.202Z",
+"cote": "Down",
+"prix": 0.3882,
+"parts": 36.22,
+"U": 0,
+"D": 36.22,
+"cash": 22.159812496,
+"net": 22.16,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.572,
+"restant_s": 249,
+"journal": [
+"51.2s désaccord 20 (modèle 0.572, vendeur 0.37) ; 3 s avant : Binance 0.86 pb, perp 1.37 pb, OKX 1.57 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.3882"
+],
+"start": 1791530700,
+"slug": "btc-updown-5m-1791530700"
+},
+"2026-10-09T07:15:34.022Z|Down": {
+"heure": "2026-10-09T07:15:34.022Z",
+"cote": "Down",
+"prix": 0.2066,
+"parts": 57.14,
+"U": 0,
+"D": 57.14,
+"cash": -11.802932912,
+"net": -11.8,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.409,
+"restant_s": 266,
+"journal": [
+"34.0s désaccord 20 (modèle 0.409, vendeur 0.19) ; 3 s avant : Binance 0.1 pb, perp 0.92 pb, OKX 0.68 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.2066"
+],
+"start": 1791530100,
+"slug": "btc-updown-5m-1791530100"
 }
 },
 "resume_bot": {
 "depuis": 1791403635.549,
-"n": 44,
-"gains": 12,
-"pertes": 32,
-"pnl": 117.33999999999982
+"n": 47,
+"gains": 14,
+"pertes": 33,
+"pnl": 166.9899999999998
 },
-"n_sauves": 44,
-"maj": "2026-10-09 05:49 UTC"
+"n_sauves": 47,
+"maj": "2026-10-09 09:18 UTC",
+"archive": [
+[
+"2026-10-09T07:15:34.022Z",
+"Down",
+0.2066,
+-11.8,
+"perdu",
+0.409,
+266
+],
+[
+"2026-10-09T07:25:51.202Z",
+"Down",
+0.3882,
+22.16,
+"gagné",
+0.572,
+249
+],
+[
+"2026-10-09T07:33:50.542Z",
+"Up",
+0.5678,
+39.29,
+"gagné",
+0.844,
+69
+]
+]
 }

@@ -1030,15 +1030,132 @@
 ],
 "start": 1791281100,
 "slug": "btc-updown-5m-1791281100"
+},
+"2026-10-09T08:31:24.740Z|Down": {
+"heure": "2026-10-09T08:31:24.740Z",
+"cote": "Down",
+"prix": 0.56,
+"parts": 89.29,
+"U": 89.29,
+"D": 89.29,
+"cash": 17.169300000000007,
+"net": 17.17,
+"issue": "paire",
+"gagnant": "Down",
+"proba0": 0.682,
+"journal": [
+"84.7s entrée Down 89.3 parts à 0.56 (proba 0.682)",
+"180.9s offre opposée servie 89.3 à 0.23"
+],
+"start": 1791534600,
+"slug": "btc-updown-5m-1791534600"
+},
+"2026-10-09T07:14:00.690Z|Down": {
+"heure": "2026-10-09T07:14:00.690Z",
+"cote": "Down",
+"prix": 0.56,
+"parts": 89.29,
+"U": 89.29,
+"D": 89.29,
+"cash": 15.383499999999998,
+"net": 15.38,
+"issue": "paire",
+"gagnant": "Down",
+"proba0": 0.666,
+"journal": [
+"240.7s entrée Down 89.3 parts à 0.56 (proba 0.666)",
+"240.7s offre opposée servie 89.3 à 0.25"
+],
+"start": 1791529800,
+"slug": "btc-updown-5m-1791529800"
+},
+"2026-10-09T06:21:47.136Z|Up": {
+"heure": "2026-10-09T06:21:47.136Z",
+"cote": "Up",
+"prix": 0.56,
+"parts": 89.29,
+"U": 89.29,
+"D": 0,
+"cash": -51.584,
+"net": -51.58,
+"issue": "fin perdue",
+"gagnant": "Down",
+"proba0": 0.635,
+"journal": [
+"107.1s entrée Up 89.3 parts à 0.56 (proba 0.635)"
+],
+"start": 1791526800,
+"slug": "btc-updown-5m-1791526800"
+},
+"2026-10-09T06:00:36.385Z|Up": {
+"heure": "2026-10-09T06:00:36.385Z",
+"cote": "Up",
+"prix": 0.55,
+"parts": 90.91,
+"U": 90.91,
+"D": 90.91,
+"cash": 15.653400000000005,
+"net": 15.65,
+"issue": "paire",
+"gagnant": "Up",
+"proba0": 0.636,
+"journal": [
+"36.5s offre opposée servie 7.0 à 0.26",
+"36.5s offre opposée servie 55.0 à 0.26",
+"36.5s offre opposée servie 7.0 à 0.26",
+"36.5s offre opposée servie 1.4 à 0.26",
+"36.5s offre opposée servie 6.0 à 0.26",
+"36.5s offre opposée servie 9.5 à 0.26"
+],
+"start": 1791525600,
+"slug": "btc-updown-5m-1791525600"
 }
 },
 "resume_bot": {
 "depuis": 1791281714.03,
-"n": 48,
-"gains": 33,
-"pertes": 15,
-"pnl": 157.49999999999997
+"n": 52,
+"gains": 36,
+"pertes": 16,
+"pnl": 154.12
 },
-"n_sauves": 48,
-"maj": "2026-10-09 05:49 UTC"
+"n_sauves": 52,
+"maj": "2026-10-09 09:18 UTC",
+"archive": [
+[
+"2026-10-09T06:00:36.385Z",
+"Up",
+0.55,
+15.65,
+"paire",
+0.636,
+null
+],
+[
+"2026-10-09T06:21:47.136Z",
+"Up",
+0.56,
+-51.58,
+"fin perdue",
+0.635,
+null
+],
+[
+"2026-10-09T07:14:00.690Z",
+"Down",
+0.56,
+15.38,
+"paire",
+0.666,
+null
+],
+[
+"2026-10-09T08:31:24.740Z",
+"Down",
+0.56,
+17.17,
+"paire",
+0.682,
+null
+]
+]
 }
