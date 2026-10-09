@@ -1,0 +1,74 @@
+{
+"nom": "desaccord maker 10 +validation+inversion ETH",
+"trades": {
+"2026-10-06T21:47:13.637Z|Down": {
+"heure": "2026-10-06T21:47:13.637Z",
+"cote": "Down",
+"prix": 0.41,
+"parts": 121.95,
+"U": 0,
+"D": 121.95121951219512,
+"cash": -49.99999999999999,
+"net": -50,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.509,
+"restant_s": 166,
+"journal": [
+"133.6s entrée Down 122.0 parts à 0.41 (validation+inversion)",
+"153.6s état : PAS DE SUITE (marché 0.045, modèle 0.426)"
+],
+"start": 1791323100,
+"slug": "eth-updown-5m-1791323100"
+},
+"2026-10-06T19:43:34.657Z|Up": {
+"heure": "2026-10-06T19:43:34.657Z",
+"cote": "Up",
+"prix": 0.27,
+"parts": 185.19,
+"U": 185.18518518518516,
+"D": 0,
+"cash": -50,
+"net": -50,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.328,
+"restant_s": 85,
+"journal": [
+"214.7s entrée Up 185.2 parts à 0.27 (validation+inversion)",
+"234.7s état : PAS DE SUITE (marché 0.025, modèle 0.323)"
+],
+"start": 1791315600,
+"slug": "eth-updown-5m-1791315600"
+},
+"2026-10-06T19:21:10.421Z|Down": {
+"heure": "2026-10-06T19:21:10.421Z",
+"cote": "Down",
+"prix": 0.38,
+"parts": 131.58,
+"U": 0,
+"D": 131.57894736842104,
+"cash": 81.57894736842104,
+"net": 81.58,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.602,
+"restant_s": 230,
+"journal": [
+"70.4s entrée Down 131.6 parts à 0.38 (validation+inversion)",
+"74.6s état : CONFIRMÉ (marché 0.410, modèle 0.608)"
+],
+"start": 1791314400,
+"slug": "eth-updown-5m-1791314400"
+}
+},
+"resume_bot": {
+"depuis": 1791315058.266,
+"n": 3,
+"gains": 1,
+"pertes": 2,
+"pnl": -18.42
+},
+"n_sauves": 3,
+"maj": "2026-10-09 05:49 UTC"
+}
