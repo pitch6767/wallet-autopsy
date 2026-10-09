@@ -697,7 +697,7 @@ export class Bot {
     await Promise.all(LISTE.map(async (a) => {
       let mk = this.mk[a];
       if (!mk || mk.start !== start) {
-        if (mk) { (this._kPrec = this._kPrec || {})[a + mk.start] = { k: mk.strike ?? null, src: mk.strikeSrc || null, vu: mk.ptbVu ?? null, avant: mk.strikeAvant ?? null }; this.finFenetre(a, mk); }
+        if (mk) { (this._kPrec = this._kPrec || {})[a + mk.start] = { k: mk.strike ?? null, src: mk.strikeSrc || null, vu: mk.ptbVu ?? null, avant: mk.strikeAvant ?? null, serie: mk.kSerie || null }; this.finFenetre(a, mk); }
         mk = this.mk[a] = (V1.ACTIFS.includes(a) && this.mkNx[a] && this.mkNx[a].start === start) ? { ...this.mkNx[a] } : { start, end: start + 300 };
       }
       try {
@@ -705,7 +705,12 @@ export class Bot {
         // prix à battre OFFICIEL : priceToBeat de la fiche du marché (API Polymarket), relu toutes les 3 s tant qu'il manque (09.10.2026)
         if (!mk.ptbOff && ["BTC", "ETH"].includes(a) && t - (mk.essaiPtb || 0) > (t - start < 60 ? 5 : 15)) { mk.essaiPtb = t; await this.prixABattreOfficiel(a, mk); }
         // secours seulement si la fiche ne le donne pas encore après 20 s
-        if (!mk.strike && (t - start > 20 || !["BTC", "ETH"].includes(a)) && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); if (mk.strike) mk.strikeSrc = "crypto-price"; }
+        // prix d'ouverture Polymarket (celui affiché sur le site) : relu toutes les 5 s pendant les 2 premières minutes (BTC, ETH), chaque valeur notée (09.10.2026)
+        if (["BTC", "ETH"].includes(a) && !mk.ptbOff && t - start < 120 && t - (mk.essaiOff || 0) > 5) {
+          mk.essaiOff = t; const avant = mk.strike;
+          try { await this.ouvertureOfficielle(a, mk); } catch (err) { (mk.kSerie = mk.kSerie || []).push([+(t - start).toFixed(1), "err " + String(err.message || err).slice(-3)]); throw err; }
+          if (mk.strike) { mk.strikeSrc = "crypto-price"; const L2 = (mk.kSerie = mk.kSerie || []); if (!L2.length || L2[L2.length - 1][1] !== mk.strike) L2.push([+(t - start).toFixed(1), mk.strike]); if (avant && avant !== mk.strike) mk.strikeAvant = avant; }
+        } else if (!mk.strike && !["BTC", "ETH"].includes(a) && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); if (mk.strike) mk.strikeSrc = "crypto-price"; }
       } catch (err) { if (tleft < 200) this.erreur(a, err); }
     }));
     // V1 : préchargement du cycle BTC suivant (carnet en direct prêt dès la première seconde)
@@ -2008,7 +2013,7 @@ export class Bot {
     for (const a of ["BTC", "ETH"]) {
       const st = cur - 300, k = a + st;
       if (!RG.attente[k] && !RG.lignes.some((x) => x.a === a && x.start === st)) {
-        RG.attente[k] = { a, start: st, notreK: ((this._kPrec || {})[a + st] || {}).k ?? null, sourceK: ((this._kPrec || {})[a + st] || {}).src ?? null, kVuApres_s: ((this._kPrec || {})[a + st] || {}).vu ?? null, kAvant: ((this._kPrec || {})[a + st] || {}).avant ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
+        RG.attente[k] = { a, start: st, notreK: ((this._kPrec || {})[a + st] || {}).k ?? null, sourceK: ((this._kPrec || {})[a + st] || {}).src ?? null, kVuApres_s: ((this._kPrec || {})[a + st] || {}).vu ?? null, kAvant: ((this._kPrec || {})[a + st] || {}).avant ?? null, kSerie: ((this._kPrec || {})[a + st] || {}).serie ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
       }
     }
     let n = 0;
