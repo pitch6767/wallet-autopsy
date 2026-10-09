@@ -20,6 +20,24 @@ for f in sorted(glob.glob("bot95/donnees/*/rec_BTC.json.gz")):
     for doc in json.load(gzip.open(f, "rt")).values():
         for r in doc["lignes"]: rows[r[0]] = r
 rows = sorted(rows.values(), key=lambda r: r[0])
+SIG = {}
+for f in sorted(glob.glob("bot95/donnees/*/sig_BTC.json.gz")):
+    for doc in json.load(gzip.open(f, "rt")).values():
+        cols = doc["colonnes"]; ix = {c: i for i, c in enumerate(cols)}
+        for l in doc["lignes"]:
+            g2 = lambda c: l[ix[c]] if c in ix and ix[c] < len(l) else None
+            SIG[int(l[0])] = dict(flux=(g2("perp_achats_usd") or 0) - (g2("perp_ventes_usd") or 0), liqL=g2("liq_longs_usd") or 0, liqC=g2("liq_courts_usd") or 0,
+                                  a3=g2("prof_achat_3pb") or 0, v3=g2("prof_vente_3pb") or 0, der=g2("deribit_perp"), by=g2("bybit_perp"),
+                                  pmUa=(g2("pm_up_ajout_achat") or 0) - (g2("pm_up_retrait_achat") or 0))
+ETH = {}
+for f in sorted(glob.glob("bot95/donnees/*/rec_ETH.json.gz")):
+    for doc in json.load(gzip.open(f, "rt")).values():
+        for l in doc["lignes"]:
+            if l[11]: ETH[int(l[0])] = l[11]
+def sigsum(k, s, w): return sum((SIG.get(j) or {}).get(k, 0) or 0 for j in range(s - w, s))
+def ethret(s, w):
+    a, b = ETH.get(s), ETH.get(s - w)
+    return (a / b - 1) * 1e4 if a and b else None
 SER = {}
 for nom, i in (("cl", 15), ("perp", 11), ("okx", 12), ("cb", 13), ("bn", 14)):
     T = [r[0] for r in rows if r[i]]; V = [r[i] for r in rows if r[i]]; SER[nom] = (T, V)
@@ -77,6 +95,8 @@ for st in sorted(C):
         v = sg ** 2 * (rem ** 3 / 3 / 3600 if s >= deb else ((deb - s) + 20)) + 0.25
         sd = math.sqrt(v)
         S0 = lev["perp"]; Sc = float(np.median(list(lev.values())))
+        spots = [lev[k] for k in ("bn", "cb") if k in lev]; Ss = float(np.mean(spots)) if spots else S0
+        Sbn = lev.get("bn", S0)
         E0, Ec = E_of(S0), E_of(Sc)
         mom = {w: (S0 - (sec("perp", s - w) - (base("perp", s) or 0))) if sec("perp", s - w) else 0.0 for w in (5, 15, 30)}
         p0 = phi((E0 - K) / sd); hist.append(p0)
@@ -87,12 +107,16 @@ for st in sorted(C):
             cf = np.polyfit(np.arange(len(x30)), x30, 2); curv, slope = cf[0], cf[1] + 2 * cf[0] * len(x30)
         else: curv = slope = 0.0
         ub, ua, db, da = r[3], r[4], r[5], r[6]
-        D.append(dict(st=st, t=t, tl=tl, up=g == "Up", K=K, E0=E0, Ec=Ec, sd=sd, rem=rem, p0=p0, pC=phi((Ec - K) / sd),
+        D.append(dict(st=st, t=t, tl=tl, up=g == "Up", K=K, E0=E0, Ec=Ec, sd=sd, rem=rem, p0=p0, pC=phi((Ec - K) / sd), pS=phi((E_of(Ss) - K) / sd), pBN=phi((E_of(Sbn) - K) / sd),
                       pT=float(student.cdf((E0 - K) / sd * math.sqrt(4 / 2), 4)), z=(E0 - K) / sd,
                       m5=mom[5] / (sg * 3), m15=mom[15] / (sg * 4), m30=mom[30] / (sg * 6), volr=(sg30 or sg) / sg, agecl=min(age_cl(t), 30),
                       spread=(lev.get("cb", S0) - S0) / sg, spread_bn=(lev.get("bn", S0) - S0) / sg, dp3=p0 - (hist[-4] if len(hist) > 3 else p0),
                       stab=float(np.std(h10)) if len(h10) > 2 else 0.0, flips=flips, slope=slope / sg, curv=curv * 100 / sg,
-                      fin_err=(fin_off - E0) / sd if fin_off else None, ua=ua, da=da, uz=r[8] or 0, dz=r[10] or 0))
+                      fin_err=(fin_off - E0) / sd if fin_off else None,
+                      fl5=sigsum("flux", s, 5) / 1e5, fl15=sigsum("flux", s, 15) / 1e5, liq15=(sigsum("liqC", s, 15) - sigsum("liqL", s, 15)) / 1e5,
+                      imb=((SIG.get(s - 1) or {}).get("a3", 0) - (SIG.get(s - 1) or {}).get("v3", 0)) / max(1, (SIG.get(s - 1) or {}).get("a3", 0) + (SIG.get(s - 1) or {}).get("v3", 0)),
+                      derib=(((SIG.get(s - 1) or {}).get("der") or 0) - ((SIG.get(s - 1) or {}).get("by") or 0)) / sg if (SIG.get(s - 1) or {}).get("der") and (SIG.get(s - 1) or {}).get("by") else 0.0,
+                      eth5=ethret(s, 5), eth15=ethret(s, 15), ua=ua, da=da, uz=r[8] or 0, dz=r[10] or 0))
 D.sort(key=lambda x: x["t"])
 cyc = sorted({d["st"] for d in D}); cut = cyc[int(len(cyc) * 0.6)]
 TR = [d for d in D if d["st"] < cut]; TE = [d for d in D if d["st"] >= cut]
@@ -102,6 +126,9 @@ FEAT = lambda d: [lg(d["p0"]), lg(d["pC"]), d["m5"], d["m15"], d["m30"], d["volr
 y_tr = np.array([d["up"] for d in TR]); X_tr = np.array([FEAT(d) for d in TR])
 mB = LogisticRegression(C=0.5, max_iter=3000).fit(X_tr, y_tr)
 for d in TE: d["pB"] = float(mB.predict_proba(np.array([FEAT(d)]))[0, 1])
+FEATF = lambda d: FEAT(d) + [d["fl5"], d["fl15"], d["liq15"], d["imb"], d["derib"], (d["eth5"] or 0) / 5, (d["eth15"] or 0) / 5]
+mF = LogisticRegression(C=0.5, max_iter=3000).fit(np.array([FEATF(d) for d in TR]), y_tr)
+for d in TE: d["pF"] = float(mF.predict_proba(np.array([FEATF(d)]))[0, 1])
 # distribution empirique des erreurs standardisees de la moyenne finale (apprise sur le passe)
 errs = collections.defaultdict(list)
 for d in TR:
@@ -113,8 +140,8 @@ JX = lambda d: [d["z"], d["tl"] / 30, d["m15"], d["m30"], d["volr"]]
 nn = NearestNeighbors(n_neighbors=60).fit(np.array([JX(d) for d in TR]))
 _, ind = nn.kneighbors(np.array([JX(d) for d in TE]))
 for d, ii in zip(TE, ind): d["pJ"] = float(np.mean(y_tr[ii]))
-PR = {"moteur actuel (perp)": "p0", "C : nowcast 4 bourses": "pC", "sauts (loi de Student)": "pT", "distribution empirique des erreurs": "pE",
-      "jumeaux (60 plus proches cas passés)": "pJ", "B : correction apprise": "pB"}
+PR = {"moteur actuel (perp)": "p0", "C : nowcast 4 bourses": "pC", "C2 : prix spot (Binance + Coinbase) au lieu du perp": "pS", "C3 : Binance spot seul": "pBN", "sauts (loi de Student)": "pT", "distribution empirique des erreurs": "pE",
+      "jumeaux (60 plus proches cas passés)": "pJ", "B : correction apprise": "pB", "B + flux d'ordres, liquidations, profondeur, Deribit, ETH": "pF"}
 rap = [f"# Recherche TWAP fin — BTC, {len(cyc)} cycles ({hs(cyc[0])} → {hs(cyc[-1] + 300)})", "",
        f"Apprentissage sur les {sum(1 for c in cyc if c < cut)} premiers cycles (jusqu'au {hs(cut)}), **test sur les {sum(1 for c in cyc if c >= cut)} cycles suivants, jamais vus**. "
        f"Une mesure par seconde entre 90 et 20 s de la fin ({len(TE)} mesures de test).", "",
@@ -174,10 +201,22 @@ rap += coupe("Idée 21 — côté acheté", [("Up", lambda l: l["up"]), ("Down",
 rap += coupe("Idée 27 — avance des bourses : Coinbase par rapport au perp, dans notre sens", [("Coinbase dans notre sens", lambda l: l["d"]["spread"] * sgn(l) > 0.2), ("neutre", lambda l: abs(l["d"]["spread"]) <= 0.2), ("Coinbase contre nous", lambda l: l["d"]["spread"] * sgn(l) < -0.2)])
 rap += coupe("Idée 3 — fraîcheur du dernier prix Chainlink reçu", [("< 2 s", lambda l: l["d"]["agecl"] < 2), ("2-5 s", lambda l: 2 <= l["d"]["agecl"] < 5), ("≥ 5 s", lambda l: l["d"]["agecl"] >= 5)])
 rap += coupe("Écart annoncé", [("20-30 pts", lambda l: ed(l) < 0.30), ("30-50 pts", lambda l: 0.30 <= ed(l) < 0.50), ("≥ 50 pts", lambda l: ed(l) >= 0.50)])
+rac = lambda l, k: l["d"][k] * sgn(l)
+rap += coupe("Idées 19/23/24 — flux d'ordres agressifs Bybit sur 15 s, dans notre sens", [("acheteurs dans notre sens (> 0,5 M$)", lambda l: rac(l, "fl15") > 5), ("neutre", lambda l: abs(l["d"]["fl15"]) <= 5), ("contre nous (< −0,5 M$)", lambda l: rac(l, "fl15") < -5)])
+rap += coupe("Idée 24 — déséquilibre du carnet Bybit à 3 points de base, dans notre sens", [("carnet dans notre sens (> +0,2)", lambda l: rac(l, "imb") > 0.2), ("équilibré", lambda l: abs(l["d"]["imb"]) <= 0.2), ("contre nous (< −0,2)", lambda l: rac(l, "imb") < -0.2)])
+rap += coupe("Idée 19 — liquidations sur 15 s, dans notre sens", [("liquidations qui poussent dans notre sens", lambda l: rac(l, "liq15") > 0.5), ("aucune / faibles", lambda l: abs(l["d"]["liq15"]) <= 0.5), ("contre nous", lambda l: rac(l, "liq15") < -0.5)])
+rap += coupe("Idée 6 — ETH sur 15 s, dans notre sens", [("ETH monte dans notre sens (> 1 pb)", lambda l: l["d"]["eth15"] is not None and l["d"]["eth15"] * sgn(l) > 1), ("ETH neutre", lambda l: l["d"]["eth15"] is not None and abs(l["d"]["eth15"]) <= 1),
+                                                        ("ETH contre nous", lambda l: l["d"]["eth15"] is not None and l["d"]["eth15"] * sgn(l) < -1), ("pas de donnée ETH", lambda l: l["d"]["eth15"] is None)])
 # idee 5 : biais de l'erreur de moyenne finale
 E = [(d["fin_err"], d["m15"], d["m30"], d["z"]) for d in D if d["fin_err"] is not None]
 a = np.array(E)
 rap += ["", "## 4. Idée 5 — l'erreur de la moyenne finale prévue a-t-elle un sens ?", "",
         f"Erreur standardisée (officiel − prévu, en écarts-types du moteur) : moyenne {a[:, 0].mean():+.3f}, écart-type {a[:, 0].std():.2f} (1,00 = moteur bien calibré).",
         f"Corrélation avec le mouvement 15 s : {np.corrcoef(a[:, 0], a[:, 1])[0, 1]:+.3f} ; 30 s : {np.corrcoef(a[:, 0], a[:, 2])[0, 1]:+.3f} (positif = le mouvement continue, négatif = il revient)."]
+F2 = [d for d in D if d["fin_err"] is not None]
+rap += ["", "Ce qui prédit l'erreur de la moyenne finale (corrélation, sur toutes les mesures) :", ""]
+for k, lab in (("fl5", "flux d'ordres 5 s"), ("fl15", "flux d'ordres 15 s"), ("liq15", "liquidations 15 s"), ("imb", "déséquilibre carnet Bybit"), ("derib", "écart Deribit − Bybit"), ("spread", "écart Coinbase − perp"), ("spread_bn", "écart Binance − perp"), ("m15", "mouvement 15 s"), ("eth15", "ETH 15 s"), ("agecl", "âge du dernier Chainlink")):
+    X2 = [(d[k], d["fin_err"]) for d in F2 if d.get(k) is not None]
+    if len(X2) > 100:
+        a2 = np.array(X2, float); rap.append(f"- {lab} : {np.corrcoef(a2[:, 0], a2[:, 1])[0, 1]:+.3f} ({len(X2)} mesures)")
 open("etude/bot5min/resultat_twap_recherche.md", "w").write("\n".join(rap)); print("\n".join(rap))

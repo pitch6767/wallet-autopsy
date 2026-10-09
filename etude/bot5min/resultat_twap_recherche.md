@@ -8,10 +8,13 @@ Apprentissage sur les 415 premiers cycles (jusqu'au 08.10 20:30), **test sur les
 |---|---|---|
 | moteur actuel (perp) | 0.0424 | 0.1405 |
 | C : nowcast 4 bourses | 0.0424 | 0.1404 |
+| C2 : prix spot (Binance + Coinbase) au lieu du perp | 0.0429 | 0.1420 |
+| C3 : Binance spot seul | 0.0435 | 0.1426 |
 | sauts (loi de Student) | 0.0423 | 0.1393 |
 | distribution empirique des erreurs | 0.0423 | 0.1402 |
 | jumeaux (60 plus proches cas passés) | 0.0475 | 0.1767 |
 | B : correction apprise | 0.0436 | 0.1424 |
+| B + flux d'ordres, liquidations, profondeur, Deribit, ETH | 0.0474 | 0.1558 |
 | *(carnet Polymarket, sur les 7480 mesures où il existe ; moteur sur les mêmes : 0.1050)* | 0.1065 | |
 
 ## 2. Règle TWAP fin (probabilité − prix ≥ 0,20, 90-20 s, un achat par cycle, quantité affichée) — cycles de test
@@ -20,10 +23,13 @@ Apprentissage sur les 415 premiers cycles (jusqu'au 08.10 20:30), **test sur les
 |---|---|---|---|---|---|---|---|---|---|
 | moteur actuel (perp) | 41 | 44 % | 28 $ | **+438 $** | +38 % | −323 $ | 6 | 6 | +417 $ / +22 $ |
 | C : nowcast 4 bourses | 29 | 38 % | 30 $ | **+632 $** | +73 % | −245 $ | 5 | 4 | +408 $ / +224 $ |
+| C2 : prix spot (Binance + Coinbase) au lieu du perp | 42 | 38 % | 31 $ | **+543 $** | +41 % | −228 $ | 6 | 7 | +443 $ / +99 $ |
+| C3 : Binance spot seul | 41 | 32 % | 30 $ | **+192 $** | +16 % | −371 $ | 13 | 4 | +407 $ / −215 $ |
 | sauts (loi de Student) | 40 | 52 % | 29 $ | **+617 $** | +54 % | −242 $ | 4 | 5 | +477 $ / +139 $ |
 | distribution empirique des erreurs | 42 | 57 % | 27 $ | **+660 $** | +58 % | −222 $ | 4 | 3 | +562 $ / +98 $ |
 | jumeaux (60 plus proches cas passés) | 109 | 38 % | 40 $ | **+1'369 $** | +31 % | −511 $ | 7 | 11 | +1'571 $ / −203 $ |
 | B : correction apprise | 41 | 49 % | 32 $ | **+732 $** | +56 % | −214 $ | 6 | 6 | +479 $ / +253 $ |
+| B + flux d'ordres, liquidations, profondeur, Deribit, ETH | 56 | 46 % | 37 $ | **+758 $** | +37 % | −310 $ | 6 | 7 | +869 $ / −110 $ |
 
 ## 3. Les trades du moteur actuel (tous les cycles), découpés selon les idées de ChatGPT
 
@@ -101,7 +107,53 @@ Apprentissage sur les 415 premiers cycles (jusqu'au 08.10 20:30), **test sur les
 | 30-50 pts | 17 | 53 % | 18 $ | **+82 $** | +27 % | −60 $ | 2 | 0 | +36 $ / +46 $ |
 | ≥ 50 pts | 3 | 67 % | 15 $ | **+40 $** | +88 % | −16 $ | 1 | 0 | +51 $ / −11 $ |
 
+### Idées 19/23/24 — flux d'ordres agressifs Bybit sur 15 s, dans notre sens
+
+| Groupe | Achats | Gagnés | Mise remplie | Résultat | Par $ | Creux | Pertes de suite max | Gains ≥ +100 $ | 1re / 2e moitié du test |
+|---|---|---|---|---|---|---|---|---|---|
+| acheteurs dans notre sens (> 0,5 M$) | 16 | 56 % | 19 $ | **+550 $** | +184 % | −51 $ | 2 | 2 | +459 $ / +91 $ |
+| neutre | 88 | 36 % | 26 $ | **+651 $** | +28 % | −370 $ | 6 | 11 | −113 $ / +764 $ |
+| contre nous (< −0,5 M$) | 5 | 40 % | 10 $ | **+71 $** | +148 % | −7 $ | 2 | 0 | +17 $ / +54 $ |
+
+### Idée 24 — déséquilibre du carnet Bybit à 3 points de base, dans notre sens
+
+| Groupe | Achats | Gagnés | Mise remplie | Résultat | Par $ | Creux | Pertes de suite max | Gains ≥ +100 $ | 1re / 2e moitié du test |
+|---|---|---|---|---|---|---|---|---|---|
+| carnet dans notre sens (> +0,2) | 40 | 35 % | 26 $ | **+37 $** | +4 % | −213 $ | 5 | 2 | +42 $ / −5 $ |
+| équilibré | 42 | 36 % | 26 $ | **+887 $** | +81 % | −219 $ | 7 | 8 | +127 $ / +760 $ |
+| contre nous (< −0,2) | 27 | 52 % | 19 $ | **+348 $** | +68 % | −101 $ | 2 | 3 | +284 $ / +65 $ |
+
+### Idée 19 — liquidations sur 15 s, dans notre sens
+
+| Groupe | Achats | Gagnés | Mise remplie | Résultat | Par $ | Creux | Pertes de suite max | Gains ≥ +100 $ | 1re / 2e moitié du test |
+|---|---|---|---|---|---|---|---|---|---|
+| liquidations qui poussent dans notre sens | 0 | | | | | | |
+| aucune / faibles | 109 | 39 % | 24 $ | **+1'272 $** | +48 % | −323 $ | 6 | 13 | +401 $ / +871 $ |
+| contre nous | 0 | | | | | | |
+
+### Idée 6 — ETH sur 15 s, dans notre sens
+
+| Groupe | Achats | Gagnés | Mise remplie | Résultat | Par $ | Creux | Pertes de suite max | Gains ≥ +100 $ | 1re / 2e moitié du test |
+|---|---|---|---|---|---|---|---|---|---|
+| ETH monte dans notre sens (> 1 pb) | 41 | 37 % | 23 $ | **+115 $** | +12 % | −195 $ | 5 | 3 | −105 $ / +219 $ |
+| ETH neutre | 30 | 50 % | 28 $ | **+653 $** | +78 % | −129 $ | 4 | 6 | +388 $ / +265 $ |
+| ETH contre nous | 8 | 12 % | 28 $ | **+39 $** | +17 % | −133 $ | 6 | 1 | +79 $ / −40 $ |
+| pas de donnée ETH | 30 | 40 % | 21 $ | **+466 $** | +74 % | −97 $ | 5 | 3 | +268 $ / +198 $ |
+
 ## 4. Idée 5 — l'erreur de la moyenne finale prévue a-t-elle un sens ?
 
 Erreur standardisée (officiel − prévu, en écarts-types du moteur) : moyenne -0.023, écart-type 0.90 (1,00 = moteur bien calibré).
 Corrélation avec le mouvement 15 s : -0.092 ; 30 s : -0.099 (positif = le mouvement continue, négatif = il revient).
+
+Ce qui prédit l'erreur de la moyenne finale (corrélation, sur toutes les mesures) :
+
+- flux d'ordres 5 s : -0.031 (47534 mesures)
+- flux d'ordres 15 s : -0.038 (47534 mesures)
+- liquidations 15 s : -0.004 (47534 mesures)
+- déséquilibre carnet Bybit : +0.034 (47534 mesures)
+- écart Deribit − Bybit : -0.022 (47534 mesures)
+- écart Coinbase − perp : +0.142 (47534 mesures)
+- écart Binance − perp : +0.226 (47534 mesures)
+- mouvement 15 s : -0.092 (47534 mesures)
+- ETH 15 s : -0.014 (34861 mesures)
+- âge du dernier Chainlink : +0.008 (47534 mesures)
