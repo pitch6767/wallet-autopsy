@@ -660,10 +660,18 @@ export class Bot {
     return { slug: e.slug, up: toks[iUp], down: toks[1 - iUp] };
   }
   async prixABattreOfficiel(a, mk) {
-    const ev = await (await fetch(`${G}/events?slug=${a.toLowerCase()}-updown-5m-${mk.start}`)).json();
-    const e = ev && ev[0], m = e && e.markets && e.markets[0]; if (!e) return;
-    let meta = e.eventMetadata || (m && m.eventMetadata) || {}; if (typeof meta === "string") meta = JSON.parse(meta);
-    if (meta && +meta.priceToBeat > 0) { if (mk.strike && Math.abs(mk.strike - +meta.priceToBeat) > 0.01) mk.strikeAvant = mk.strike; mk.strike = +meta.priceToBeat; mk.ptbOff = true; mk.strikeSrc = "priceToBeat"; mk.ptbVu = +(now() - mk.start).toFixed(1); }
+    // 1) priceToBeat officiel du cycle (publié tard) ; 2) sinon finalPrice officiel du cycle précédent (= prix à battre de celui-ci)
+    const meta = async (st) => {
+      const ev = await (await fetch(`${G}/events?slug=${a.toLowerCase()}-updown-5m-${st}`)).json();
+      const e = ev && ev[0], m = e && e.markets && e.markets[0]; if (!e) return {};
+      let x = e.eventMetadata || (m && m.eventMetadata) || {}; if (typeof x === "string") x = JSON.parse(x); return x || {};
+    };
+    let k = null, src = null;
+    const m0 = await meta(mk.start); if (+m0.priceToBeat > 0) { k = +m0.priceToBeat; src = "priceToBeat"; }
+    if (k == null) { const m1 = await meta(mk.start - 300); if (+m1.finalPrice > 0) { k = +m1.finalPrice; src = "finalPrice du cycle précédent"; } }
+    if (k == null) return;
+    if (mk.strike && Math.abs(mk.strike - k) > 0.01) mk.strikeAvant = mk.strike;
+    mk.strike = k; mk.ptbOff = true; mk.strikeSrc = src; mk.ptbVu = +(now() - mk.start).toFixed(1);
   }
   async ouvertureOfficielle(a, mk) {
     const iso = (t) => new Date(t * 1000).toISOString().replace(".000", "");
@@ -695,9 +703,9 @@ export class Bot {
       try {
         if (!mk.slug && t - (mk.essai || 0) > 10) { mk.essai = t; Object.assign(mk, await this.chargerMarche(a, start)); }
         // prix à battre OFFICIEL : priceToBeat de la fiche du marché (API Polymarket), relu toutes les 3 s tant qu'il manque (09.10.2026)
-        if (!mk.ptbOff && t - (mk.essaiPtb || 0) > (t - start < 60 ? 3 : 15)) { mk.essaiPtb = t; await this.prixABattreOfficiel(a, mk); }
+        if (!mk.ptbOff && ["BTC", "ETH"].includes(a) && t - (mk.essaiPtb || 0) > (t - start < 60 ? 5 : 15)) { mk.essaiPtb = t; await this.prixABattreOfficiel(a, mk); }
         // secours seulement si la fiche ne le donne pas encore après 20 s
-        if (!mk.strike && t - start > 20 && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); if (mk.strike) mk.strikeSrc = "crypto-price"; }
+        if (!mk.strike && (t - start > 20 || !["BTC", "ETH"].includes(a)) && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); if (mk.strike) mk.strikeSrc = "crypto-price"; }
       } catch (err) { if (tleft < 200) this.erreur(a, err); }
     }));
     // V1 : préchargement du cycle BTC suivant (carnet en direct prêt dès la première seconde)
