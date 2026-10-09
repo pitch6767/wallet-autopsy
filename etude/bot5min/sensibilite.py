@@ -75,12 +75,12 @@ def preparer(T0):
                                     "pnl_c": parts * ((1 if gm else 0) - ask - FEE(ask)), "mise_c": parts * ask, "reste": round(tl)}); fait = True; break
                 if fait: break
         return out
-    return rejouer
+    return rejouer, C, RES, modele, CL1
 
 
 def main():
     T0 = json.load(open(OUT + "v2f_tous.json"))
-    rejouer = preparer(T0)
+    rejouer = preparer(T0)[0]
     V = [("bot enregistré 0,08 % (V2-F)", None), ("reconstruit 0,08 %", 8e-4), ("0,04 %", 4e-4), ("0,03 %", 3e-4), ("0,02 %", 2e-4), ("0,015 % (fantôme « corrigé » en direct)", 1.5e-4),
          ("0,0125 %", 1.25e-4), ("0,01 %", 1e-4), ("0,0075 %", 7.5e-5), ("0,005 %", 5e-5), ("0 % (aucune marge)", 1e-9)]
     R = {nom: rejouer(sd) for nom, sd in V}
