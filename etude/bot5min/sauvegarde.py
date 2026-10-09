@@ -31,3 +31,10 @@ def main():
         h = get(U + "/api/hist?s=" + urllib.parse.quote(nom))
         print(nom, fusion(nom, h.get("derniers", []), h.get("resume"), h.get("archive")))
 main()
+try:                                                         # reglements officiels (prix a battre, prix final, gagnant) contre nos donnees
+    R = get(U + "/api/reglements"); f = "bot95/reglements.json"
+    old = json.load(open(f)) if os.path.exists(f) else []
+    vu = {(x["a"], x["start"]) for x in old}
+    old += [x for x in R.get("lignes", []) if (x["a"], x["start"]) not in vu]
+    old.sort(key=lambda x: (x["start"], x["a"])); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("reglements", len(old))
+except Exception as e: print("reglements", e)

@@ -224,6 +224,7 @@ export class Bot {
     if (u.pathname === "/api/etat") return json(this.vue());
     if (u.pathname === "/api/reprendre" && req.method === "POST") { this.e.pause = false; await this.sauver(); return json({ ok: true }); }
     if (u.pathname === "/api/reveil") return json({ ok: true });
+    if (u.pathname === "/api/reglements") { const RG = this.RG || (await this.state.storage.get("regl")) || { lignes: [], attente: {} }; return json(RG); }
     if (u.pathname === "/api/hist") {
       const nom = u.searchParams.get("s") || "", S2 = this.N.strats[nom];
       return json({ nom, resume: S2 ? { depuis: S2.depuis, n: S2.n, gains: S2.gains, pertes: S2.pertes, pnl: S2.pnl } : null, archive: (await this.state.storage.get("hist:" + nom)) || [], derniers: S2 ? S2.trades : [] });
@@ -682,7 +683,7 @@ export class Bot {
     await Promise.all(LISTE.map(async (a) => {
       let mk = this.mk[a];
       if (!mk || mk.start !== start) {
-        if (mk) this.finFenetre(a, mk);
+        if (mk) { (this._kPrec = this._kPrec || {})[a + mk.start] = mk.strike ?? null; this.finFenetre(a, mk); }
         mk = this.mk[a] = (V1.ACTIFS.includes(a) && this.mkNx[a] && this.mkNx[a].start === start) ? { ...this.mkNx[a] } : { start, end: start + 300 };
       }
       try {
@@ -1981,9 +1982,40 @@ export class Bot {
     }
   }
 
+  // ================= règlement officiel de chaque cycle (09.10.2026) : prix à battre et prix final officiels + gagnant, contre nos données
+  // (enregistrement seulement ; on réessaie jusqu'à 15 min après la fin, toutes les 30 s au plus)
+  async nReglements() {
+    const t = now(), cur = Math.floor(t / 300) * 300;
+    if (t - (this._rgT || 0) < 30) return; this._rgT = t;
+    const RG = (this.RG = this.RG || (await this.state.storage.get("regl")) || { lignes: [], attente: {} });
+    for (const a of ["BTC", "ETH"]) {
+      const st = cur - 300, k = a + st;
+      if (!RG.attente[k] && !RG.lignes.some((x) => x.a === a && x.start === st)) {
+        RG.attente[k] = { a, start: st, notreK: (this._kPrec || {})[a + st] ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
+      }
+    }
+    let n = 0;
+    for (const [k, L] of Object.entries(RG.attente)) {
+      if (t > L.start + 300 + 900) { RG.lignes.unshift({ ...L, gagnant: null, ptb: null, final: null, abandon: true }); delete RG.attente[k]; continue; }
+      if (n++ >= 2) break;
+      try {
+        const ev = await (await fetch(`${G}/events?slug=${L.a.toLowerCase()}-updown-5m-${L.start}`)).json();
+        const e = ev[0], m = e.markets[0];
+        let meta = e.eventMetadata || m.eventMetadata || {}; if (typeof meta === "string") meta = JSON.parse(meta);
+        const px = JSON.parse(m.outcomePrices || "[]").map(Number), outs = JSON.parse(m.outcomes || "[]");
+        if (!(px.includes(1) && px.includes(0)) || meta.finalPrice == null) continue;
+        RG.lignes.unshift({ ...L, gagnant: outs[px.indexOf(1)], ptb: +meta.priceToBeat, final: +meta.finalPrice, vu: Math.round(t - L.start - 300) });
+        delete RG.attente[k];
+      } catch (_) {}
+    }
+    RG.lignes.length = Math.min(RG.lignes.length, 2500);
+    this.state.storage.put("regl", RG).catch((err) => this.erreur("sauvegarde regl", err));
+  }
+
   // ---- règlement : résultat officiel Polymarket (20 s après la fin)
   async nRegler() {
     try { await this.nAudit(); } catch (_) {}
+    try { await this.nReglements(); } catch (err) { this.erreur("règlements", err); }
     // résultat des ordres fantômes
     const cacheG = this._cacheG = this._cacheG || {};
     for (const O of (this.N.ordres || [])) {
