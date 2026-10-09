@@ -22,6 +22,7 @@ const NV = {
   // 07.10.2026 (décision de Pitch) : on ne garde que V1, assurance et désaccord 20 — tout le reste est arrêté (résultats figés sur la page)
   // 07.10.2026 (décision de Pitch) : on oublie ETH — plus aucun trade ETH (les données ETH restent enregistrées)
   TRADE: ["BTC"],
+  CORRIGE_ACTIFS: ["BTC", "ETH"],                // cohorte « corrigé » aussi testée sur ETH (09.10.2026)
   ACTIVES: ["desaccord 20 sans nuit", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-F + pas les deux baissent", "V2-F + plus de 120 s", "V2-G jury des bourses", "V2-H veto complet", "desaccord 20 Poly rejoint 10 s sans nuit", "desaccord 20 Binance avec nous", "desaccord 20 Binance avec nous sans nuit", "desaccord 20 Binance ou perp avec nous", "desaccord 20 Binance ou perp avec nous sans nuit", "desaccord 30 zone 0,15-0,35", "desaccord 30 zone 0,15-0,35 + Binance et perp", "desaccord 30 zone + sortie modele -10", "desaccord 30 zone + Binance et perp + sortie modele -10", "desaccord 30 0,15-0,60 + perp + ecart qui grandit", "desaccord 30 zone + modele monte", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50", "corrige : desaccord 20", "corrige : V2-F ecart qui grandit", "corrige : V2-F + pas les deux baissent", "corrige : zone + Binance et perp + sortie -10"],
   // 09.10.2026 : stratégies à plus de 500 $ de pertes (et leurs lignes sœurs) — supprimées du bot et de la page ; trades sauvés dans bot95/sauvegarde sur GitHub
   SUPPRIMEES: ["V5 gain attendu BTC", "V5 gain attendu ETH", "V6 loterie BTC", "V6 loterie ETH", "desaccord 10 +convergence BTC", "desaccord 10 +convergence ETH", "desaccord 10 +demi ETH", "desaccord 10 +freeroll BTC", "desaccord 10 +freeroll ETH", "desaccord 10 +validation ETH", "desaccord 10 +validation+inversion ETH", "desaccord 10 +verrou BTC", "desaccord 10 +verrou ETH", "desaccord 10 ETH", "desaccord 15 +convergence BTC", "desaccord 15 +convergence ETH", "desaccord 15 +demi ETH", "desaccord 15 +freeroll BTC", "desaccord 15 +freeroll ETH", "desaccord 15 +validation ETH", "desaccord 15 +validation+inversion ETH", "desaccord 15 +verrou BTC", "desaccord 15 +verrou ETH", "desaccord 15 ETH", "desaccord 20 +convergence BTC", "desaccord 20 +convergence ETH", "desaccord 20 +demi BTC", "desaccord 20 +demi ETH", "desaccord 20 +freeroll BTC", "desaccord 20 +freeroll ETH", "desaccord 20 +validation BTC", "desaccord 20 +validation ETH", "desaccord 20 +validation+inversion BTC", "desaccord 20 +validation+inversion ETH", "desaccord 20 +verrou BTC", "desaccord 20 +verrou ETH", "desaccord 20 ETH", "desaccord 20 Poly rejoint 3 s BTC", "desaccord 20 Poly rejoint 3 s sans nuit BTC", "desaccord combine 2.5 +convergence BTC", "desaccord combine 2.5 +convergence ETH", "desaccord combine 2.5 +freeroll ETH", "desaccord combine 2.5 +validation+inversion ETH", "desaccord combine 2.5 +verrou BTC", "desaccord combine 2.5 +verrou ETH", "desaccord combine 2.5 ETH", "desaccord combine 4 +convergence BTC", "desaccord combine 4 +convergence ETH", "desaccord combine 4 +freeroll ETH", "desaccord combine 4 +validation+inversion ETH", "desaccord combine 4 +verrou ETH", "desaccord combine 4 ETH", "desaccord confirme BTC", "desaccord confirme ETH", "desaccord croise 10 +convergence BTC", "desaccord croise 10 +convergence ETH", "desaccord croise 10 +freeroll BTC", "desaccord croise 10 +freeroll ETH", "desaccord croise 10 +validation+inversion ETH", "desaccord croise 10 +verrou BTC", "desaccord croise 10 +verrou ETH", "desaccord croise 10 ETH", "desaccord maker 10 +convergence BTC", "desaccord maker 10 +freeroll BTC", "desaccord maker 10 +validation+inversion BTC", "desaccord maker 10 +verrou BTC", "desaccord maker 10 BTC", "inverse desaccord 10 BTC", "inverse desaccord 15 BTC", "V2-F + pas les deux baissent + volatilite >= 2 BTC", "desaccord 20 aucune bourse contre + sortie 10 s BTC", "desaccord 20 aucune bourse contre + sortie 10 s sans nuit BTC", "desaccord 20 Poly rejoint 10 s BTC", "assurance 6/9/12 BTC", "assurance 6/9/12 ETH", "assurance 4/7/10 BTC", "assurance 4/7/10 ETH", "desaccord 20 BTC"],
@@ -1333,7 +1334,10 @@ export class Bot {
         break;
       }
     }
-    if (!NV.TRADE.includes(a)) return;                                  // ETH : enregistrement seulement
+    if (!NV.TRADE.includes(a)) {                                        // ETH : enregistrement + cohorte « corrigé » seulement (09.10.2026)
+      if ((NV.CORRIGE_ACTIFS || []).includes(a)) { try { this.dV2(a, mk, pu, tleft, true); } catch (err) { this.erreur("corrigé " + a, err); } }
+      return;
+    }
     try { this.dV2(a, mk, pu, tleft); } catch (err) { this.erreur("désaccord V2", err); }
     try { this.dConfirme(a, mk, pu, tleft); } catch (err) { this.erreur("désaccord confirmé", err); }
     // ---- 4. désaccord : le modèle donne au moins X de plus que le meilleur vendeur → achat, une fois par cycle et par variante
@@ -1662,7 +1666,7 @@ export class Bot {
     }
   }
 
-  dV2(a, mk, pu, tleft) {
+  dV2(a, mk, pu, tleft, seulCorrige = false) {
     const t = now(), px = (src) => (this.f[a][src] ? +this.f[a][src].p : null);
     const ub = this.livreTrie(mk.up, "bids")[0], ua = this.livreTrie(mk.up, "asks")[0], db = this.livreTrie(mk.down, "bids")[0], da = this.livreTrie(mk.down, "asks")[0];
     if (!ub || !ua || !db || !da) return;
@@ -1675,6 +1679,7 @@ export class Bot {
       const VRr = ((this._vr = this._vr || {})[a] = this._vr[a] || []);
       if (px("perp")) { VRr.push({ t, p: px("perp") }); while (VRr.length && t - VRr[0].t > 60) VRr.shift(); }
     }
+    if (seulCorrige) { this.dCorrige(a, mk, tleft, ua, da, H, px); return; }
     try { this.blinkSuivre(a, mk, pu, tleft, ua, da, H); } catch (err) { this.erreur("qui converge", err); }
     try { this.dCorrige(a, mk, tleft, ua, da, H, px); } catch (err) { this.erreur("modèle corrigé", err); }
     // sortie « modèle -10 pts » (08.10.2026) : revente au meilleur acheteur si le modèle a perdu 10 pts depuis l'entrée
