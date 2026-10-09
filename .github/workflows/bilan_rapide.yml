@@ -23,6 +23,7 @@ jobs:
           B=d.get('blink',{}); print('BLINK', json.dumps(B)[:1500])
           Z={k:v for k,v in d.get('strats',{}).items() if 'zone' in k or 'desaccord 30' in k}
           json.dump(Z,open('bot95/zone_trades.json','w'),ensure_ascii=False)
+          json.dump(d.get('audit',[]),open('bot95/audit.json','w'),ensure_ascii=False)
           P
           curl -sS -m 60 https://bot95.pitch67.workers.dev/api/etat | python3 -c "import json,sys,time;d=json.load(sys.stdin);print(time.strftime('%H:%M:%S'),json.dumps(d.get('diag'),ensure_ascii=False)[:1500])" >> bot95/diag.txt
           git config user.name b; git config user.email bot@users.noreply.github.com
