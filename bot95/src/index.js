@@ -1630,6 +1630,12 @@ export class Bot {
     const last = H.r[H.r.length - 1]; if (!last || last.pu2 == null) return;
     const t = now(), pu2 = last.pu2;
     const ilya = (sec) => { for (let i = H.r.length - 1; i >= 0; i--) if (t - H.r[i].t >= sec) return H.r[i]; return null; };
+    // carnet complet (8 niveaux de vendeurs) à l'achat puis 1, 3 et 10 s après — enregistrement seulement (09.10.2026)
+    const niveaux = (idv) => this.livreTrie(idv, "asks").slice(0, 8).map(([p, z]) => [p, Math.round(z)]);
+    for (const P of this.N.ouvertes) {
+      if (P.actif !== a || P.start !== mk.start || !P.carnet || !P.t0) continue;
+      for (const d of [1, 3, 10]) if (!P.carnet[d] && t - P.t0 >= d) P.carnet[d] = niveaux(P.cote === "Up" ? mk.up : mk.down);
+    }
     // sortie -10 sur le modèle corrigé (avec plancher)
     for (const P of this.N.ouvertes) {
       if (P.actif !== a || P.start !== mk.start || !P.strat.startsWith("corrige :") || !P.strat.includes("sortie -10")) continue;
@@ -1660,6 +1666,7 @@ export class Bot {
         H.fait[nom] = true;
         const P = this.nPos(nom, a, mk, { famille: "desaccord", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0) });
         P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
+        P.t0 = t; P.carnet = { 0: niveaux(up ? mk.up : mk.down), achat: [+r.parts.toFixed(2), +r.cout.toFixed(2)] };
         this.nNote(P, `modèle corrigé ${fair.toFixed(3)} (ancien ${(up ? last.pu : 1 - last.pu).toFixed(3)}), vendeur ${k[0]}, écart ${edge.toFixed(2)}, ${tleft.toFixed(0)} s restantes → achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix}`);
         this.nSauver();
       }
