@@ -217,6 +217,10 @@ export class Bot {
     if (u.pathname === "/api/etat") return json(this.vue());
     if (u.pathname === "/api/reprendre" && req.method === "POST") { this.e.pause = false; await this.sauver(); return json({ ok: true }); }
     if (u.pathname === "/api/reveil") return json({ ok: true });
+    if (u.pathname === "/api/hist") {
+      const nom = u.searchParams.get("s") || "", S2 = this.N.strats[nom];
+      return json({ nom, resume: S2 ? { depuis: S2.depuis, n: S2.n, gains: S2.gains, pertes: S2.pertes, pnl: S2.pnl } : null, archive: (await this.state.storage.get("hist:" + nom)) || [], derniers: S2 ? S2.trades : [] });
+    }
     if (u.pathname === "/api/latence") {
       // mesure SANS ordre réel : aller-retour HTTP vers le carnet Polymarket (GET /time) et vers la porte des ordres (POST /order vide, refusé)
       const n = Math.min(30, +(u.searchParams.get("n") || 15)), mes = { time: [], order: [] }, codes = {};
@@ -1210,6 +1214,9 @@ export class Bot {
     (S2.issues[issue] = S2.issues[issue] || { n: 0, pnl: 0 }).n++; S2.issues[issue].pnl += P.net;
     P.journal = P.journal.slice(-6);
     S2.trades.unshift(P); S2.trades.length = Math.min(S2.trades.length, 60);
+    // archive compacte de TOUS les trades (09.10.2026) : [heure, côté, prix, net, issue, modèle, secondes restantes]
+    const kh = "hist:" + P.strat + " " + P.actif, ligne = [P.heure, P.cote || null, P.prix ?? null, P.net, issue, P.proba0 ?? null, P.restant_s ?? null];
+    this.state.storage.get(kh).then((L) => { L = L || []; L.push(ligne); if (L.length > 1500) L.splice(0, L.length - 1500); return this.state.storage.put(kh, L); }).catch((err) => this.erreur("archive " + kh, err));
     this.N.ouvertes = this.N.ouvertes.filter((x) => x !== P);
     this.nSauver();
   }
