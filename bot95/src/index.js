@@ -22,7 +22,7 @@ const NV = {
   // 07.10.2026 (décision de Pitch) : on ne garde que V1, assurance et désaccord 20 — tout le reste est arrêté (résultats figés sur la page)
   // 07.10.2026 (décision de Pitch) : on oublie ETH — plus aucun trade ETH (les données ETH restent enregistrées)
   TRADE: ["BTC"],
-  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord 20 sans nuit", "desaccord confirme", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-F + pas les deux baissent", "V2-F + pas les deux baissent + volatilite >= 2", "V2-F + plus de 120 s", "V2-G jury des bourses", "V2-H veto complet", "V5 gain attendu", "V6 loterie", "desaccord 20 Poly rejoint 3 s", "desaccord 20 Poly rejoint 10 s", "desaccord 20 Poly rejoint 3 s sans nuit", "desaccord 20 Poly rejoint 10 s sans nuit", "desaccord 20 Binance avec nous", "desaccord 20 Binance avec nous sans nuit", "desaccord 20 Binance ou perp avec nous", "desaccord 20 Binance ou perp avec nous sans nuit", "desaccord 20 aucune bourse contre + sortie 10 s", "desaccord 20 aucune bourse contre + sortie 10 s sans nuit", "desaccord 30 zone 0,15-0,35", "desaccord 30 zone 0,15-0,35 + Binance et perp", "desaccord 30 zone + sortie modele -10", "desaccord 30 zone + Binance et perp + sortie modele -10", "desaccord 30 0,15-0,60 + perp + ecart qui grandit", "desaccord 30 zone + modele monte", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50"],
+  ACTIVES: ["V1 actuel (avec stop)", "assurance 6/9/12", "assurance 4/7/10", "desaccord 20", "desaccord 20 sans nuit", "desaccord confirme", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-F + pas les deux baissent", "V2-F + pas les deux baissent + volatilite >= 2", "V2-F + plus de 120 s", "V2-G jury des bourses", "V2-H veto complet", "V5 gain attendu", "V6 loterie", "desaccord 20 Poly rejoint 3 s", "desaccord 20 Poly rejoint 10 s", "desaccord 20 Poly rejoint 3 s sans nuit", "desaccord 20 Poly rejoint 10 s sans nuit", "desaccord 20 Binance avec nous", "desaccord 20 Binance avec nous sans nuit", "desaccord 20 Binance ou perp avec nous", "desaccord 20 Binance ou perp avec nous sans nuit", "desaccord 20 aucune bourse contre + sortie 10 s", "desaccord 20 aucune bourse contre + sortie 10 s sans nuit", "desaccord 30 zone 0,15-0,35", "desaccord 30 zone 0,15-0,35 + Binance et perp", "desaccord 30 zone + sortie modele -10", "desaccord 30 zone + Binance et perp + sortie modele -10", "desaccord 30 0,15-0,60 + perp + ecart qui grandit", "desaccord 30 zone + modele monte", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50", "corrige : desaccord 20", "corrige : V2-F ecart qui grandit", "corrige : V2-F + pas les deux baissent", "corrige : zone + Binance et perp + sortie -10"],
   // 07.10.2026 : désaccord CONFIRMÉ (analyse sur les vrais carnets) : écart >= 0,20 (BTC) / 0,10 (ETH) repéré, on attend 20 s,
   // on n'achète que si notre côté a déjà monté de 3 cents vers le modèle et que le modèle garde 3 cents d'avance ; gardé jusqu'à la fin.
   CONFIRME: { ECART: { BTC: 0.20, ETH: 0.10 }, ATTENTE_S: 20, HAUSSE: 0.03, AVANCE_MIN: 0.03, MISE: 50 },
@@ -64,6 +64,7 @@ const CFG = {
   ECART_MAX: 0.02,             // écart achat/vente maxi
   LIQ_CONTRE_USD: 250000,      // liquidations contre nous sur 10 s
   DESEQ_CONTRE: 0.6,           // déséquilibre du carnet perp contre nous (5 premiers niveaux)
+  SD_CORRIGE: 1.5e-4,          // modèle corrigé (09.10.2026) : la marge 0,08 % était un écart MAXIMUM, pas une incertitude ; 0,015 % est la plus précise sur 3 677 situations
   SD_ECART_REL: 8e-4,          // incertitude du prix d'exercice publié en direct par Polymarket : écart max mesuré 0,08 % (validé le 05.10.2026)
   SORTIE_Z: 1.0,               // sortie d'urgence si la distance passe sous 1 écart-type
   FEE_RATE: 0.072,             // frais taker : parts x 0,072 x p x (1-p)
@@ -967,7 +968,7 @@ export class Bot {
     try { this.v1Eval(source, ts, a); } catch (err) { this.erreur("V1 " + a, err); }
   }
 
-  probaV1(a, mk) {
+  probaV1(a, mk, sdRel = CFG.SD_ECART_REL) {
     const K = mk.strike, perp = this.f[a].perp, cl = this.f[a].cl;
     if (!K || !perp || !cl) return null;
     const t = now();
@@ -991,7 +992,7 @@ export class Bot {
       const nr = Math.max(1, mk.end - ts);
       E = (connus.reduce((x, y) => x + y, 0) + nr * S) / (connus.length + nr); v = (sg * S) ** 2 * nr ** 3 / 3 / 3600;
     } else { E = S; v = (sg * S) ** 2 * ((deb - ts) + 20); }
-    return phi((E - K) / Math.sqrt(v + (CFG.SD_ECART_REL * S) ** 2));
+    return phi((E - K) / Math.sqrt(v + (sdRel * S) ** 2));
   }
 
   prixRapide(a) {
@@ -1610,19 +1611,62 @@ export class Bot {
     return { depuis: this.BL.depuis, n: this.BL.evts.length, regles: E.length, parH, attendre3: { n: PR.length, g: PR.filter((e) => e.g).length, pnl: r2(PR.reduce((s2, e) => s2 + e.pnl3, 0)) }, sens };
   }
 
+  // COHORTE « MODÈLE CORRIGÉ » (09.10.2026, figée) : mêmes règles que les meilleures stratégies, mais avec la probabilité corrigée (marge 0,015 %).
+  dCorrige(a, mk, tleft, ua, da, H, px) {
+    const last = H.r[H.r.length - 1]; if (!last || last.pu2 == null) return;
+    const t = now(), pu2 = last.pu2;
+    const ilya = (sec) => { for (let i = H.r.length - 1; i >= 0; i--) if (t - H.r[i].t >= sec) return H.r[i]; return null; };
+    // sortie -10 sur le modèle corrigé (avec plancher)
+    for (const P of this.N.ouvertes) {
+      if (P.actif !== a || P.start !== mk.start || !P.strat.startsWith("corrige :") || !P.strat.includes("sortie -10")) continue;
+      const parts = P.cote === "Up" ? P.U : P.D; if (!(parts > 0)) continue;
+      const fair = P.cote === "Up" ? pu2 : 1 - pu2; if (fair > P.proba0 - 0.10) continue;
+      const idv = P.cote === "Up" ? mk.up : mk.down, B = this.livreTrie(idv, "bids"); if (!B.length) continue;
+      const plancher = Math.max(0.05, B[0][0] - 0.02); let reste = parts, recu = 0;
+      for (const [pb, sz] of B) { if (pb < plancher) break; const q2 = Math.min(sz, reste); recu += q2 * pb - q2 * CFG.FEE_RATE * pb * (1 - pb); reste -= q2; if (reste <= 1e-9) break; }
+      if (parts - reste <= 1e-9) continue;
+      P.cash += recu; if (P.cote === "Up") P.U = reste; else P.D = reste;
+      this.nNote(P, `modèle corrigé passé de ${P.proba0} à ${fair.toFixed(3)} → revente de ${(parts - reste).toFixed(1)} parts pour ${recu.toFixed(2)} $`); this.nSauver();
+    }
+    if (tleft < 5) return;
+    const h3 = ilya(3);
+    for (const up of [true, false]) {
+      const k = up ? ua : da, fair = up ? pu2 : 1 - pu2, edge = fair - k[0], sg = up ? 1 : -1;
+      if (k[0] < 0.03 || k[0] > 0.97 || edge < 0.20) continue;
+      const e3 = h3 && h3.pu2 != null ? (up ? h3.pu2 - h3.ua : (1 - h3.pu2) - h3.da) : null;
+      const grandit = e3 != null && edge - e3 >= 0.03;
+      const dmo = h3 && h3.pu2 != null ? fair - (up ? h3.pu2 : 1 - h3.pu2) : 0, dpo = h3 ? k[0] - (up ? h3.ua : h3.da) : 0;
+      const deuxBaissent = !!h3 && dmo < 0 && dpo < dmo && !(Math.abs(dmo) < 0.02 && dpo <= -0.02);
+      const dz = (src) => (h3 && h3[src] && last[src] ? (last[src] - h3[src]) * sg : 0);
+      const W = { "corrige : desaccord 20": true, "corrige : V2-F ecart qui grandit": grandit, "corrige : V2-F + pas les deux baissent": grandit && !deuxBaissent,
+        "corrige : zone + Binance et perp + sortie -10": k[0] >= 0.15 && k[0] < 0.35 && edge >= 0.30 && tleft > 60 && dz("bn") >= 0 && dz("perp") >= 0 };
+      for (const [nom, ok] of Object.entries(W)) {
+        if (!ok || H.fait[nom] || !NV.ACTIVES.includes(nom)) continue;
+        const r = this.nAcheter(up ? mk.up : mk.down, 50 / k[0], k[0] + 0.01); if (r.parts < 1) continue;
+        H.fait[nom] = true;
+        const P = this.nPos(nom, a, mk, { famille: "desaccord", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0) });
+        P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
+        this.nNote(P, `modèle corrigé ${fair.toFixed(3)} (ancien ${(up ? last.pu : 1 - last.pu).toFixed(3)}), vendeur ${k[0]}, écart ${edge.toFixed(2)}, ${tleft.toFixed(0)} s restantes → achat ${P.cote} ${r.parts.toFixed(1)} parts à ${P.prix}`);
+        this.nSauver();
+      }
+    }
+  }
+
   dV2(a, mk, pu, tleft) {
     const t = now(), px = (src) => (this.f[a][src] ? +this.f[a][src].p : null);
     const ub = this.livreTrie(mk.up, "bids")[0], ua = this.livreTrie(mk.up, "asks")[0], db = this.livreTrie(mk.down, "bids")[0], da = this.livreTrie(mk.down, "asks")[0];
     if (!ub || !ua || !db || !da) return;
     const H = ((this._v2h = this._v2h || {})[a] = this._v2h[a] && this._v2h[a].start === mk.start ? this._v2h[a] : { start: mk.start, r: [], fait: {} });
     if (!H.r.length || t - H.r[H.r.length - 1].t >= 0.25) {
-      H.r.push({ t, pu, um: (ub[0] + ua[0]) / 2, dm: (db[0] + da[0]) / 2, ua: ua[0], da: da[0], perp: px("perp"), okx: px("okx"), bn: px("bn"), cb: px("cb") });
+      let pu2 = null; try { pu2 = this.probaV1(a, mk, CFG.SD_CORRIGE); } catch (_) {}
+      H.r.push({ t, pu, pu2, um: (ub[0] + ua[0]) / 2, dm: (db[0] + da[0]) / 2, ua: ua[0], da: da[0], perp: px("perp"), okx: px("okx"), bn: px("bn"), cb: px("cb") });
       while (H.r.length && t - H.r[0].t > 12) H.r.shift();
       // volatilité du perp sur 60 s (09.10.2026)
       const VRr = ((this._vr = this._vr || {})[a] = this._vr[a] || []);
       if (px("perp")) { VRr.push({ t, p: px("perp") }); while (VRr.length && t - VRr[0].t > 60) VRr.shift(); }
     }
     try { this.blinkSuivre(a, mk, pu, tleft, ua, da, H); } catch (err) { this.erreur("qui converge", err); }
+    try { this.dCorrige(a, mk, tleft, ua, da, H, px); } catch (err) { this.erreur("modèle corrigé", err); }
     // sortie « modèle -10 pts » (08.10.2026) : revente au meilleur acheteur si le modèle a perdu 10 pts depuis l'entrée
     for (const P of this.N.ouvertes) {
       if (P.actif !== a || P.start !== mk.start || !P.strat.includes("sortie modele -10")) continue;
@@ -2091,7 +2135,7 @@ const ENTREE={"V1 actuel (avec stop)":"V1 d'origine : achète la jambe à 0,55�
 "V2-H veto complet":"V2-H : désaccord 20 sauf veto : écart qui fond, Binance contre nous, Bybit+OKX contre nous, 60-89 s, Polymarket déjà en train de corriger, vendeur < 20 parts.",
 "desaccord confirme":"Désaccord CONFIRMÉ : le modèle a 20 pts d'avance (BTC) ou 10 pts (ETH) ; on attend 20 s et on n'achète que si le marché est déjà monté de 3 cents vers le modèle (il garde 3 cents d'avance). Gardé jusqu'à la fin.",
 "desaccord confirme perp":"Désaccord CONFIRMÉ + PERP : pareil, et en plus le perp Bybit doit aller dans notre sens sur les 5 dernières secondes.",
-"desaccord 20 Binance avec nous":"Désaccord 20 + BINANCE AVEC NOUS : modèle ≥ meilleur vendeur + 20 pts ET Binance a bougé dans notre sens sur les 3 s avant → achat immédiat 50 $, garde jusqu'à la fin.","desaccord 20 Binance avec nous sans nuit":"Désaccord 20 + BINANCE AVEC NOUS : modèle ≥ meilleur vendeur + 20 pts ET Binance a bougé dans notre sens sur les 3 s avant → achat immédiat 50 $, garde jusqu'à la fin. SANS LA NUIT : aucun achat entre 00h et 08h (heure suisse).","desaccord 20 Binance ou perp avec nous":"Désaccord 20 + BINANCE OU PERP AVEC NOUS : pareil, il suffit que Binance OU le perp Bybit ait bougé dans notre sens sur 3 s.","desaccord 20 Binance ou perp avec nous sans nuit":"Désaccord 20 + BINANCE OU PERP AVEC NOUS : pareil, il suffit que Binance OU le perp Bybit ait bougé dans notre sens sur 3 s. SANS LA NUIT : aucun achat entre 00h et 08h (heure suisse).","desaccord 20 aucune bourse contre + sortie 10 s":"Désaccord 20 + AUCUNE BOURSE CONTRE NOUS (Binance, perp, OKX, Coinbase sur 3 s) → achat immédiat ; 10 s après, si Polymarket n'a pas rejoint le modèle, revente au meilleur acheteur, sinon garde jusqu'à la fin.","desaccord 20 aucune bourse contre + sortie 10 s sans nuit":"Désaccord 20 + AUCUNE BOURSE CONTRE NOUS (Binance, perp, OKX, Coinbase sur 3 s) → achat immédiat ; 10 s après, si Polymarket n'a pas rejoint le modèle, revente au meilleur acheteur, sinon garde jusqu'à la fin. SANS LA NUIT : aucun achat entre 00h et 08h (heure suisse).","desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50":"COMBINÉ : zone + Binance et perp + sortie -10 + pas « Polymarket qui baisse », et mise de 25 $ seulement si le modèle n'a pas monté d'au moins 3 pts dans les 3 s avant (50 $ sinon).","desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse":"ZONE + BINANCE ET PERP + SORTIE -10 + PAS « POLYMARKET QUI BAISSE » : comme zone + Binance et perp + sortie -10, mais on n'achète pas si le désaccord vient d'un vendeur Polymarket qui a baissé son prix d'au moins 3 c en 3 s sans que le modèle monte. Revente plafonnée (jamais sous 0,05 $ ni 2 c sous le meilleur acheteur).","desaccord 30 zone + modele monte":"ZONE + LE MODÈLE A MONTÉ : zone (écart >= 30 pts, 0,15-0,35 $, > 60 s) et le désaccord vient du modèle qui a monté d'au moins 3 pts sur les 3 dernières secondes (le BTC a bougé, Polymarket pas encore). Garde jusqu'à la fin.","desaccord 30 zone + sortie modele -10":"ZONE + SORTIE MODÈLE -10 : comme Désaccord 30 zone 0,15-0,35, mais on revend au meilleur acheteur dès que le modèle a perdu 10 pts par rapport à l'entrée.","desaccord 30 zone + Binance et perp + sortie modele -10":"ZONE + BINANCE ET PERP + SORTIE MODÈLE -10 : zone, Binance et perp pas contre nous sur 3 s, et revente si le modèle perd 10 pts.","desaccord 30 0,15-0,60 + perp + ecart qui grandit":"DÉSACCORD 30 LARGE + PERP + ÉCART QUI GRANDIT : écart >= 30 pts, jeton entre 0,15 et 0,60 $, plus de 60 s, perp pas contre nous sur 3 s et écart plus grand qu'il y a 3 s. Garde jusqu'à la fin.","desaccord 30 zone 0,15-0,35":"Désaccord 30 ZONE 0,15-0,35 : modèle ≥ meilleur vendeur + 30 pts, jeton vendu entre 0,15 et 0,35 $, plus de 60 s restantes → achat 50 $, garde jusqu'à la fin. Zone robuste trouvée le 08.10 (positive sur les 4 quarts des 48 h).","desaccord 30 zone 0,15-0,35 + Binance et perp":"Désaccord 30 ZONE 0,15-0,35 + BINANCE ET PERP : pareil, et Binance et le perp Bybit ne vont pas contre nous sur les 3 s avant.","desaccord 20 Poly rejoint 3 s":"Désaccord 20 POLY REJOINT 3 s : quand le modèle dépasse le meilleur vendeur de 20 pts, on attend 3 s ; on achète 50 $ seulement si Polymarket a monté d'au moins 3 c vers le modèle (et le modèle n'a pas baissé de 3 c). Garde jusqu'à la fin.","desaccord 20 Poly rejoint 10 s":"Désaccord 20 POLY REJOINT 10 s : pareil, mais on attend 10 s avant de vérifier que Polymarket a rejoint le modèle.","desaccord 20 Poly rejoint 3 s sans nuit":"Désaccord 20 POLY REJOINT 3 s SANS LA NUIT : comme « Poly rejoint 3 s », aucun achat entre 00h et 08h (heure suisse).","desaccord 20 Poly rejoint 10 s sans nuit":"Désaccord 20 POLY REJOINT 10 s SANS LA NUIT : comme « Poly rejoint 10 s », aucun achat entre 00h et 08h (heure suisse).","desaccord 20 sans nuit":"Désaccord 20 SANS LA NUIT : exactement comme Désaccord 20, mais aucun achat entre 00h et 08h (heure suisse).","desaccord 20":"Désaccord 20 : achète le côté que le modèle estime à au moins 20 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
+"desaccord 20 Binance avec nous":"Désaccord 20 + BINANCE AVEC NOUS : modèle ≥ meilleur vendeur + 20 pts ET Binance a bougé dans notre sens sur les 3 s avant → achat immédiat 50 $, garde jusqu'à la fin.","desaccord 20 Binance avec nous sans nuit":"Désaccord 20 + BINANCE AVEC NOUS : modèle ≥ meilleur vendeur + 20 pts ET Binance a bougé dans notre sens sur les 3 s avant → achat immédiat 50 $, garde jusqu'à la fin. SANS LA NUIT : aucun achat entre 00h et 08h (heure suisse).","desaccord 20 Binance ou perp avec nous":"Désaccord 20 + BINANCE OU PERP AVEC NOUS : pareil, il suffit que Binance OU le perp Bybit ait bougé dans notre sens sur 3 s.","desaccord 20 Binance ou perp avec nous sans nuit":"Désaccord 20 + BINANCE OU PERP AVEC NOUS : pareil, il suffit que Binance OU le perp Bybit ait bougé dans notre sens sur 3 s. SANS LA NUIT : aucun achat entre 00h et 08h (heure suisse).","desaccord 20 aucune bourse contre + sortie 10 s":"Désaccord 20 + AUCUNE BOURSE CONTRE NOUS (Binance, perp, OKX, Coinbase sur 3 s) → achat immédiat ; 10 s après, si Polymarket n'a pas rejoint le modèle, revente au meilleur acheteur, sinon garde jusqu'à la fin.","desaccord 20 aucune bourse contre + sortie 10 s sans nuit":"Désaccord 20 + AUCUNE BOURSE CONTRE NOUS (Binance, perp, OKX, Coinbase sur 3 s) → achat immédiat ; 10 s après, si Polymarket n'a pas rejoint le modèle, revente au meilleur acheteur, sinon garde jusqu'à la fin. SANS LA NUIT : aucun achat entre 00h et 08h (heure suisse).","desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50":"COMBINÉ : zone + Binance et perp + sortie -10 + pas « Polymarket qui baisse », et mise de 25 $ seulement si le modèle n'a pas monté d'au moins 3 pts dans les 3 s avant (50 $ sinon).","desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse":"ZONE + BINANCE ET PERP + SORTIE -10 + PAS « POLYMARKET QUI BAISSE » : comme zone + Binance et perp + sortie -10, mais on n'achète pas si le désaccord vient d'un vendeur Polymarket qui a baissé son prix d'au moins 3 c en 3 s sans que le modèle monte. Revente plafonnée (jamais sous 0,05 $ ni 2 c sous le meilleur acheteur).","corrige : desaccord 20":"MODÈLE CORRIGÉ — DÉSACCORD 20 : comme désaccord 20, mais avec la probabilité du modèle corrigé (marge d'incertitude 0,015 % au lieu de 0,08 %, qui gonflait les chances des outsiders).","corrige : V2-F ecart qui grandit":"MODÈLE CORRIGÉ — V2-F : désaccord 20 qui grandit d'au moins 3 pts en 3 s, calculé avec le modèle corrigé.","corrige : V2-F + pas les deux baissent":"MODÈLE CORRIGÉ — V2-F sans « les deux baissent, Polymarket plus fort ».","corrige : zone + Binance et perp + sortie -10":"MODÈLE CORRIGÉ — ZONE : écart >= 30 pts, jeton 0,15-0,35 $, > 60 s, Binance et perp pas contre nous ; revente (plancher 0,05 $) si le modèle corrigé perd 10 pts.","desaccord 30 zone + modele monte":"ZONE + LE MODÈLE A MONTÉ : zone (écart >= 30 pts, 0,15-0,35 $, > 60 s) et le désaccord vient du modèle qui a monté d'au moins 3 pts sur les 3 dernières secondes (le BTC a bougé, Polymarket pas encore). Garde jusqu'à la fin.","desaccord 30 zone + sortie modele -10":"ZONE + SORTIE MODÈLE -10 : comme Désaccord 30 zone 0,15-0,35, mais on revend au meilleur acheteur dès que le modèle a perdu 10 pts par rapport à l'entrée.","desaccord 30 zone + Binance et perp + sortie modele -10":"ZONE + BINANCE ET PERP + SORTIE MODÈLE -10 : zone, Binance et perp pas contre nous sur 3 s, et revente si le modèle perd 10 pts.","desaccord 30 0,15-0,60 + perp + ecart qui grandit":"DÉSACCORD 30 LARGE + PERP + ÉCART QUI GRANDIT : écart >= 30 pts, jeton entre 0,15 et 0,60 $, plus de 60 s, perp pas contre nous sur 3 s et écart plus grand qu'il y a 3 s. Garde jusqu'à la fin.","desaccord 30 zone 0,15-0,35":"Désaccord 30 ZONE 0,15-0,35 : modèle ≥ meilleur vendeur + 30 pts, jeton vendu entre 0,15 et 0,35 $, plus de 60 s restantes → achat 50 $, garde jusqu'à la fin. Zone robuste trouvée le 08.10 (positive sur les 4 quarts des 48 h).","desaccord 30 zone 0,15-0,35 + Binance et perp":"Désaccord 30 ZONE 0,15-0,35 + BINANCE ET PERP : pareil, et Binance et le perp Bybit ne vont pas contre nous sur les 3 s avant.","desaccord 20 Poly rejoint 3 s":"Désaccord 20 POLY REJOINT 3 s : quand le modèle dépasse le meilleur vendeur de 20 pts, on attend 3 s ; on achète 50 $ seulement si Polymarket a monté d'au moins 3 c vers le modèle (et le modèle n'a pas baissé de 3 c). Garde jusqu'à la fin.","desaccord 20 Poly rejoint 10 s":"Désaccord 20 POLY REJOINT 10 s : pareil, mais on attend 10 s avant de vérifier que Polymarket a rejoint le modèle.","desaccord 20 Poly rejoint 3 s sans nuit":"Désaccord 20 POLY REJOINT 3 s SANS LA NUIT : comme « Poly rejoint 3 s », aucun achat entre 00h et 08h (heure suisse).","desaccord 20 Poly rejoint 10 s sans nuit":"Désaccord 20 POLY REJOINT 10 s SANS LA NUIT : comme « Poly rejoint 10 s », aucun achat entre 00h et 08h (heure suisse).","desaccord 20 sans nuit":"Désaccord 20 SANS LA NUIT : exactement comme Désaccord 20, mais aucun achat entre 00h et 08h (heure suisse).","desaccord 20":"Désaccord 20 : achète le côté que le modèle estime à au moins 20 points de plus que le prix du meilleur vendeur, garde jusqu'à la fin.",
 "desaccord combine 2.5":"Valeur combinée 2,5 : on mélange le prix du marché (≈70 %) et notre modèle (≈30 %) ; achète si cette valeur combinée dépasse le vendeur d'au moins 2,5 points.",
 "desaccord combine 4":"Valeur combinée 4 : on mélange le prix du marché (≈70 %) et notre modèle (≈30 %) ; achète si cette valeur combinée dépasse le vendeur d'au moins 4 points.",
 "desaccord maker 10":"Maker : quand le modèle voit 10 points d'avantage, on POSE une offre d'achat (sans frais) au lieu d'acheter au vendeur ; retirée si l'avantage fond ou après 30 s.",
