@@ -1,0 +1,121 @@
+{
+"nom": "TWAP fin BTC",
+"trades": {
+"2026-10-09T22:23:37.590Z|Down": {
+"heure": "2026-10-09T22:23:37.590Z",
+"cote": "Down",
+"prix": 0.1697,
+"parts": 312.5,
+"U": 0,
+"D": 312.5,
+"cash": 259.476,
+"net": 259.48,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.525,
+"restant_s": 82,
+"journal": [
+"217.6s moteur TWAP 0.525, vendeur 0.16, 82 s restantes → achat Down 312.5 parts"
+],
+"start": 1791584400,
+"slug": "btc-updown-5m-1791584400",
+"tAchat": 1791584617.59,
+"tailleAffichee": 934.44,
+"prixABattre": 82457.6,
+"clObs": 1791584616,
+"clRecu": 1791584617.335,
+"clDernier": 82460.70221330284,
+"btc": 82457.07
+},
+"2026-10-09T21:59:01.545Z|Up": {
+"heure": "2026-10-09T21:59:01.545Z",
+"cote": "Up",
+"prix": 0.6664,
+"parts": 76.92,
+"U": 76.92307692307692,
+"D": 0,
+"cash": 25.663076923076922,
+"net": 25.66,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.932,
+"restant_s": 58,
+"journal": [
+"241.5s moteur TWAP 0.932, vendeur 0.65, 58 s restantes → achat Up 76.9 parts"
+],
+"start": 1791582900,
+"slug": "btc-updown-5m-1791582900",
+"tAchat": 1791583141.545,
+"tailleAffichee": 171.42,
+"prixABattre": 82460.42,
+"clObs": 1791583140,
+"clRecu": 1791583141.002,
+"clDernier": 82470.83380307275,
+"btc": 82473.99
+},
+"2026-10-09T21:53:37.520Z|Up": {
+"heure": "2026-10-09T21:53:37.520Z",
+"cote": "Up",
+"prix": 0.2842,
+"parts": 5,
+"U": 5,
+"D": 0,
+"cash": -1.420956,
+"net": -1.42,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.475,
+"restant_s": 82,
+"journal": [
+"217.5s moteur TWAP 0.475, vendeur 0.27, 82 s restantes → achat Up 5.0 parts"
+],
+"start": 1791582600,
+"slug": "btc-updown-5m-1791582600",
+"tAchat": 1791582817.52,
+"tailleAffichee": 5,
+"prixABattre": 82462.09,
+"clObs": 1791582816,
+"clRecu": 1791582817.368,
+"clDernier": 82458.6598650567,
+"btc": 82461.04
+}
+},
+"resume_bot": {
+"depuis": 1791583183.792,
+"n": 3,
+"gains": 2,
+"pertes": 1,
+"pnl": 283.72
+},
+"archive": [
+[
+"2026-10-09T21:53:37.520Z",
+"Up",
+0.2842,
+-1.42,
+"une seule jambe",
+0.475,
+82
+],
+[
+"2026-10-09T21:59:01.545Z",
+"Up",
+0.6664,
+25.66,
+"une seule jambe",
+0.932,
+58
+],
+[
+"2026-10-09T22:23:37.590Z",
+"Down",
+0.1697,
+259.48,
+"une seule jambe",
+0.525,
+82
+]
+],
+"n_sauves": 3,
+"maj": "2026-10-09 22:46 UTC"
+}
