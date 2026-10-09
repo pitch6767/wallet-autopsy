@@ -57,7 +57,7 @@ def main():
                     p15 = px(r[0] - 900)
                     T.append({"t": r[0], "st": st, "cote": "Up" if up else "Down", "prix": ask, "modele": round(fair, 3), "ecart": round(fair - ask, 3),
                               "dmod": round(dm, 3), "dpoly": round(da, 3), "origine": orig, "reste": round(tl), "vol": round(sig, 2), "z": round(z, 2),
-                              "tend15": round(((r[11] - p15) * sg) if p15 and r[11] else 0.0, 1), "gagne": bool(gm),
+                              "tend15": round(((r[11] - p15) * sg) if p15 and r[11] else 0.0, 1), "gagne": bool(gm), "oa": (r[6] if up else r[4]), "pmid": round(((r[3] + r[4]) / 2 if up else (r[5] + r[6]) / 2), 3) if None not in (r[3], r[4], r[5], r[6]) else None,
                               "pnl": round((50 / ask) * ((1 if gm else 0) - ask - FEE(ask)), 2)})
                     done = True; break
             if done: break
@@ -125,6 +125,7 @@ def main():
         rap.append(f"| {nom} | {sum(1 for t in S if not f(t))} / {best} | {len(X)} | {sum(t['gagne'] for t in X)} | {sum(1 for t in gros if f(t))} / 10 | {sum(t['pnl'] for t in X):+.0f} $ |")
     J = {"serie": S, "avant": AV, "apres": AP, "n": len(T), "best": best}
     json.dump(J, open(OUT + "serie.json", "w"), ensure_ascii=False)
+    json.dump(T, open(OUT + "v2f_tous.json", "w"), ensure_ascii=False)
     rap += ["", "## Annexe — les trades de la serie", "", "| # | Heure | Cote | Prix | Modele | Ecart | dModele 3 s | dPoly 3 s | Origine | Reste | Distance | Gagne |", "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for i, t in enumerate(AV + S + AP, 1):
         tag = "avant" if t in AV else ("SERIE" if t in S else "apres")
