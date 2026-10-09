@@ -51,7 +51,7 @@ def main():
                     else: orig = "autre"
                     W = [x for x in R[:i + 1] if r[0] - x[0] <= 60 and x[11]]
                     d = np.diff([x[11] for x in W]) if len(W) > 5 else np.array([0.0])
-                    sig = float(np.std(d)) * 2 or 1e-9
+                    sig = max(float(np.std(d)) * 2, 0.5)
                     cl, k = r[15], r[16]
                     z = ((cl - k) * sg) / (sig * math.sqrt(max(tl, 1))) if cl and k else 0.0
                     p15 = px(r[0] - 900)
@@ -76,10 +76,10 @@ def main():
         o = lambda k: sum(1 for t in X if t["origine"] == k)
         return (f"| {nom} | {len(X)} | {sum(t['gagne'] for t in X)} | {statistics.mean(t['modele'] for t in X):.2f} | {statistics.mean(t['prix'] for t in X):.2f} | "
                 f"{statistics.mean(t['ecart'] for t in X):.2f} | {statistics.mean(t['reste'] for t in X):.0f} s | {statistics.mean(t['vol'] for t in X):.1f} | "
-                f"{statistics.mean(t['z'] for t in X):+.2f} | {sum(t['cote'] == 'Up' for t in X)}/{sum(t['cote'] == 'Down' for t in X)} | {statistics.mean(t['tend15'] for t in X):+.0f} | "
+                f"{statistics.median(t['z'] for t in X):+.2f} | {sum(t['cote'] == 'Up' for t in X)}/{sum(t['cote'] == 'Down' for t in X)} | {statistics.mean(t['tend15'] for t in X):+.0f} | "
                 f"{o('le modele monte, Poly stable')} / {o('Poly baisse, modele stable')} / {o('modele monte ET Poly baisse')} / {o('les deux baissent, Poly plus')} / {o('autre')} |")
     rap += ["## 1. La serie comparee aux autres trades", "",
-            "| Groupe | Trades | Gagnes | Modele moyen | Prix moyen | Ecart | Reste | Volatilite ($/s) | Distance Chainlink (ecarts-types, + = on gagne deja) | Up/Down | Tendance BTC 15 min ($, + = notre sens) | Origine : modele monte / Poly baisse / les deux / les deux baissent / autre |",
+            "| Groupe | Trades | Gagnes | Modele moyen | Prix moyen | Ecart | Reste | Volatilite ($/s) | Distance Chainlink (mediane, ecarts-types, + = on gagne deja) | Up/Down | Tendance BTC 15 min ($, + = notre sens) | Origine : modele monte / Poly baisse / les deux / les deux baissent / autre |",
             "|---|---|---|---|---|---|---|---|---|---|---|---|",
             resume(f"16 trades avant", AV), resume(f"**la serie ({best})**", S), resume("14 trades apres", AP), resume("tous les trades", T), ""]
     # gagnants par origine sur tous
@@ -109,6 +109,10 @@ def main():
         "distance Chainlink < -0,3": lambda t: t["z"] < -0.3,
         "tendance 15 min >= 0": lambda t: t["tend15"] >= 0,
         "prix >= 0,10": lambda t: t["prix"] >= 0.10,
+        "pas « les deux baissent, Poly plus »": lambda t: t["origine"] != "les deux baissent, Poly plus",
+        "volatilite >= 2 $/s": lambda t: t["vol"] >= 2.0,
+        "volatilite >= 3 $/s": lambda t: t["vol"] >= 3.0,
+        "pas « les deux baissent » ET volatilite >= 2": lambda t: t["origine"] != "les deux baissent, Poly plus" and t["vol"] >= 2.0,
         "reste >= 60 s": lambda t: t["reste"] >= 60,
         "modele <= 0,60": lambda t: t["modele"] <= 0.60,
     }
