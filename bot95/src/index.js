@@ -723,7 +723,7 @@ export class Bot {
         if (["BTC", "ETH"].includes(a) && !mk.ptbOff && t - start < 120 && t - (mk.essaiOff || 0) > 5) {
           mk.essaiOff = t; const avant = mk.strike;
           try { await this.ouvertureOfficielle(a, mk); } catch (err) { (mk.kSerie = mk.kSerie || []).push([+(t - start).toFixed(1), "err " + String(err.message || err).slice(-3)]); throw err; }
-          if (mk.strike) { mk.strikeSrc = "crypto-price"; const L2 = (mk.kSerie = mk.kSerie || []); if (!L2.length || L2[L2.length - 1][1] !== mk.strike) L2.push([+(t - start).toFixed(1), mk.strike]); if (avant && avant !== mk.strike) mk.strikeAvant = avant; }
+          if (mk.strike) { if (!mk.twapK) mk.strikeSrc = "crypto-price"; const L2 = (mk.kSerie = mk.kSerie || []); if (!L2.length || L2[L2.length - 1][1] !== mk.strike) L2.push([+(t - start).toFixed(1), mk.strike]); if (avant && avant !== mk.strike) mk.strikeAvant = avant; }
         } else if (!mk.strike && !["BTC", "ETH"].includes(a) && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); if (mk.strike) mk.strikeSrc = "crypto-price"; }
       } catch (err) { if (tleft < 200) this.erreur(a, err); }
     }));
