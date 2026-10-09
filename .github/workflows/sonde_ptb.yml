@@ -1,0 +1,17 @@
+name: Sonde prix a battre
+on:
+  push:
+    branches: [main]
+    paths: [etude/bot5min/sonde_ptb.py, bot95/sonde_go.txt]
+permissions:
+  contents: write
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set +e
+          python3 -u etude/bot5min/sonde_ptb.py > bot95/sonde_ptb.txt 2>&1
+          git config user.name s; git config user.email bot@users.noreply.github.com
+          git add bot95/sonde_ptb.txt; git commit -q -m "sonde prix a battre [skip ci]"; for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
