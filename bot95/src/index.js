@@ -1706,7 +1706,9 @@ export class Bot {
         if (!k || k[0] < 0.02 || k[0] > 0.98 || fair - k[0] < 0.20) continue;
         const r = this.nAcheter(up ? mk.up : mk.down, 50 / k[0], k[0]); if (r.parts < 1) continue;
         H.fait["TWAP fin"] = true;
-        const P = this.nPos("TWAP fin", a, mk, { famille: "twap", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0) });
+        const B0 = ((this._clBrut || {})[a] || []).slice(-1)[0] || [];
+        const P = this.nPos("TWAP fin", a, mk, { famille: "twap", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0),
+          tAchat: +now().toFixed(3), tailleAffichee: k[1], prixABattre: +mk.strike.toFixed(2), clObs: B0[0] ?? null, clRecu: B0[2] ?? null, clDernier: B0[3] ?? null, btc: +(this.prixRapide(a) || 0).toFixed(2) });
         P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
         this.nNote(P, `moteur TWAP ${fair.toFixed(3)}, vendeur ${k[0]}, ${tleft.toFixed(0)} s restantes → achat ${P.cote} ${r.parts.toFixed(1)} parts`);
         this.nSauver(); break;
