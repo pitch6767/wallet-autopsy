@@ -640,6 +640,12 @@ export class Bot {
     const p = m.payload || {}, sym = (p.symbol || "").toUpperCase().split("/")[0];
     if (!ACTIFS[sym] || !(+p.value > 0)) return;
     this.noter(sym, "cl", +p.value, now());
+    // horodatages bruts du flux (audit du 09.10.2026) : heure de l'observation (p.timestamp), du message (m.timestamp), de réception
+    if (sym === "BTC" || sym === "ETH") {
+      const B = ((this._clBrut = this._clBrut || {})[sym] = this._clBrut[sym] || []);
+      B.push([+(p.timestamp || 0) / 1000, +(m.timestamp || 0) / 1000, now(), +p.value]);
+      while (B.length && now() - B[0][2] > 420) B.shift();
+    }
   }
 
   serie(a, k, n) {
@@ -2034,7 +2040,8 @@ export class Bot {
     for (const a of ["BTC", "ETH"]) {
       const st = cur - 300, k = a + st;
       if (!RG.attente[k] && !RG.lignes.some((x) => x.a === a && x.start === st)) {
-        RG.attente[k] = { a, start: st, notreK: ((this._kPrec || {})[a + st] || {}).k ?? null, sourceK: ((this._kPrec || {})[a + st] || {}).src ?? null, kVuApres_s: ((this._kPrec || {})[a + st] || {}).vu ?? null, kAvant: ((this._kPrec || {})[a + st] || {}).avant ?? null, kSerie: ((this._kPrec || {})[a + st] || {}).serie ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
+        const B = (this._clBrut || {})[a] || [], fen = (c) => B.filter((x) => Math.abs(x[0] - c) <= 15).map((x) => [+(x[0] - c).toFixed(3), +(x[1] - c).toFixed(3), +(x[2] - c).toFixed(3), x[3]]);
+        RG.attente[k] = { a, start: st, obsDebut: fen(st), obsFin: fen(st + 300), notreK: ((this._kPrec || {})[a + st] || {}).k ?? null, sourceK: ((this._kPrec || {})[a + st] || {}).src ?? null, kVuApres_s: ((this._kPrec || {})[a + st] || {}).vu ?? null, kAvant: ((this._kPrec || {})[a + st] || {}).avant ?? null, kSerie: ((this._kPrec || {})[a + st] || {}).serie ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
       }
     }
     let n = 0;
