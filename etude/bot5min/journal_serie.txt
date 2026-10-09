@@ -1,29 +1,29 @@
-# La serie de pertes de V2-F — rejeu sur les vrais carnets (07.10 07:30 -> 09.10 08:00)
+# La serie de pertes de V2-F — rejeu sur les vrais carnets (07.10 08:00 -> 09.10 08:05)
 
-448 trades rejoues, 105 gagnes (23.4 %). Plus longue serie de pertes : **25** du 07.10 22:32 au 08.10 00:36.
+444 trades rejoues, 106 gagnes (23.9 %). Plus longue serie de pertes : **25** du 07.10 22:32 au 08.10 00:36.
 
 ## 1. La serie comparee aux autres trades
 
-| Groupe | Trades | Gagnes | Modele moyen | Prix moyen | Ecart | Reste | Volatilite ($/s) | Distance Chainlink (ecarts-types, + = on gagne deja) | Up/Down | Tendance BTC 15 min ($, + = notre sens) | Origine : modele monte / Poly baisse / les deux / les deux baissent / autre |
+| Groupe | Trades | Gagnes | Modele moyen | Prix moyen | Ecart | Reste | Volatilite ($/s) | Distance Chainlink (mediane, ecarts-types, + = on gagne deja) | Up/Down | Tendance BTC 15 min ($, + = notre sens) | Origine : modele monte / Poly baisse / les deux / les deux baissent / autre |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 16 trades avant | 16 | 5 | 0.40 | 0.17 | 0.24 | 180 s | 3.1 | +47479444.45 | 6/10 | -27 | 9 / 3 / 1 / 2 / 1 |
-| **la serie (25)** | 25 | 0 | 0.41 | 0.19 | 0.22 | 188 s | 1.9 | -10691699.65 | 14/11 | -40 | 5 / 13 / 0 / 7 / 0 |
-| 14 trades apres | 14 | 2 | 0.42 | 0.20 | 0.22 | 242 s | 1.9 | -8236574.70 | 10/4 | -55 | 2 / 10 / 1 / 1 / 0 |
-| tous les trades | 448 | 105 | 0.42 | 0.19 | 0.23 | 170 s | 4.5 | -82279744.37 | 225/223 | -33 | 125 / 148 / 33 / 89 / 53 |
+| 16 trades avant | 16 | 5 | 0.40 | 0.17 | 0.24 | 180 s | 3.2 | -0.66 | 6/10 | -27 | 9 / 3 / 1 / 2 / 1 |
+| **la serie (25)** | 25 | 0 | 0.41 | 0.19 | 0.22 | 188 s | 2.0 | -0.53 | 14/11 | -40 | 5 / 13 / 0 / 7 / 0 |
+| 14 trades apres | 14 | 2 | 0.42 | 0.20 | 0.22 | 242 s | 1.9 | -0.61 | 10/4 | -55 | 2 / 10 / 1 / 1 / 0 |
+| tous les trades | 444 | 106 | 0.42 | 0.19 | 0.23 | 169 s | 4.5 | -0.45 | 225/219 | -33 | 124 / 144 / 34 / 88 / 54 |
 
 ## 2. Qui a cree l'ecart qui grandit — sur tous les trades
 
 | Origine | Trades | Gagnes | % gagnes | Resultat rejoue |
 |---|---|---|---|---|
-| le modele monte, Poly stable | 125 | 26 | 21 % | +3743 $ |
-| Poly baisse, modele stable | 148 | 42 | 28 % | +2582 $ |
-| modele monte ET Poly baisse | 33 | 9 | 27 % | +790 $ |
-| les deux baissent, Poly plus | 89 | 14 | 16 % | -1535 $ |
-| autre | 53 | 14 | 26 % | +202 $ |
+| le modele monte, Poly stable | 124 | 26 | 21 % | +3796 $ |
+| Poly baisse, modele stable | 144 | 42 | 29 % | +2793 $ |
+| modele monte ET Poly baisse | 34 | 9 | 26 % | +737 $ |
+| les deux baissent, Poly plus | 88 | 14 | 16 % | -1482 $ |
+| autre | 54 | 15 | 28 % | +328 $ |
 
 ## 3. Une serie de 25 est-elle normale ?
 
-- Avec 23.4 % de gagnants et 430 trades (V2-F en direct), une serie d'au moins 25 pertes arrive dans **11.6 %** des simulations (20000 tirages).
+- Avec 23.9 % de gagnants et 430 trades (V2-F en direct), une serie d'au moins 25 pertes arrive dans **10.4 %** des simulations (20000 tirages).
 - Selon **notre modele**, ces 25 trades devaient gagner 10.3 fois en moyenne ; probabilite de tous les perdre = 1.43e-06.
 - Selon **le prix Polymarket**, ils devaient gagner 4.8 fois ; probabilite de tous les perdre = 4.48e-03.
 
@@ -31,21 +31,25 @@
 
 | Signal (on achete seulement si…) | Pertes de la serie evitees | Trades gardes (tous) | Gagnes gardes | Des 10 plus gros gagnants, gardes | Resultat rejoue (tous) |
 |---|---|---|---|---|---|
-| (aucun filtre) | 0 / 25 | 448 | 105 | 10 / 10 | +5782 $ |
-| pas « Poly baisse, modele stable » | 13 / 25 | 300 | 63 | 8 / 10 | +3200 $ |
+| (aucun filtre) | 0 / 25 | 444 | 106 | 10 / 10 | +6171 $ |
+| pas « Poly baisse, modele stable » | 13 / 25 | 300 | 64 | 8 / 10 | +3378 $ |
 | seulement « le modele monte » | 20 / 25 | 158 | 35 | 7 / 10 | +4532 $ |
-| distance Chainlink < 0 (on perd encore) | 2 / 25 | 371 | 76 | 10 / 10 | +5525 $ |
-| distance Chainlink < -0,3 | 8 / 25 | 273 | 51 | 10 / 10 | +5223 $ |
-| tendance 15 min >= 0 | 18 / 25 | 215 | 50 | 6 / 10 | +2777 $ |
-| prix >= 0,10 | 3 / 25 | 367 | 98 | 3 / 10 | +3460 $ |
-| reste >= 60 s | 1 / 25 | 433 | 104 | 10 / 10 | +6342 $ |
-| modele <= 0,60 | 0 / 25 | 427 | 92 | 10 / 10 | +5230 $ |
+| distance Chainlink < 0 (on perd encore) | 2 / 25 | 369 | 77 | 10 / 10 | +5810 $ |
+| distance Chainlink < -0,3 | 9 / 25 | 269 | 50 | 10 / 10 | +5248 $ |
+| tendance 15 min >= 0 | 18 / 25 | 214 | 51 | 6 / 10 | +3008 $ |
+| prix >= 0,10 | 3 / 25 | 363 | 99 | 3 / 10 | +3850 $ |
+| pas « les deux baissent, Poly plus » | 7 / 25 | 356 | 92 | 10 / 10 | +7653 $ |
+| volatilite >= 2 $/s | 14 / 25 | 353 | 84 | 9 / 10 | +5114 $ |
+| volatilite >= 3 $/s | 18 / 25 | 279 | 70 | 9 / 10 | +5663 $ |
+| pas « les deux baissent » ET volatilite >= 2 | 18 / 25 | 288 | 74 | 9 / 10 | +6468 $ |
+| reste >= 60 s | 1 / 25 | 429 | 105 | 10 / 10 | +6731 $ |
+| modele <= 0,60 | 0 / 25 | 423 | 93 | 10 / 10 | +5620 $ |
 
 ## Annexe — les trades de la serie
 
 | # | Heure | Cote | Prix | Modele | Ecart | dModele 3 s | dPoly 3 s | Origine | Reste | Distance | Gagne |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 avant | 07.10 20:58 | Up | 0.20 | 0.54 | 0.34 | -0.01 | -0.19 | Poly baisse, modele stable | 112 s | +759671124.52 | non |
+| 1 avant | 07.10 20:58 | Up | 0.20 | 0.54 | 0.34 | -0.01 | -0.19 | Poly baisse, modele stable | 112 s | +1.52 | non |
 | 2 avant | 07.10 21:02 | Down | 0.03 | 0.27 | 0.24 | +0.09 | +0.00 | le modele monte, Poly stable | 154 s | -1.42 | oui |
 | 3 avant | 07.10 21:08 | Up | 0.06 | 0.26 | 0.20 | +0.03 | +0.00 | le modele monte, Poly stable | 117 s | -1.42 | oui |
 | 4 avant | 07.10 21:11 | Up | 0.20 | 0.41 | 0.21 | +0.05 | +0.01 | le modele monte, Poly stable | 233 s | -0.61 | non |
@@ -63,34 +67,34 @@
 | 16 avant | 07.10 22:25 | Up | 0.35 | 0.57 | 0.23 | +0.03 | -0.01 | le modele monte, Poly stable | 240 s | +0.45 | oui |
 | 17 SERIE | 07.10 22:32 | Up | 0.14 | 0.35 | 0.21 | -0.00 | -0.05 | Poly baisse, modele stable | 143 s | -0.99 | non |
 | 18 SERIE | 07.10 22:35 | Up | 0.13 | 0.33 | 0.20 | +0.01 | -0.03 | Poly baisse, modele stable | 267 s | -1.70 | non |
-| 19 SERIE | 07.10 22:42 | Down | 0.22 | 0.43 | 0.21 | +0.00 | -0.03 | Poly baisse, modele stable | 163 s | -20.18 | non |
+| 19 SERIE | 07.10 22:42 | Down | 0.22 | 0.43 | 0.21 | +0.00 | -0.03 | Poly baisse, modele stable | 163 s | -1.89 | non |
 | 20 SERIE | 07.10 22:47 | Up | 0.20 | 0.44 | 0.24 | -0.00 | -0.08 | Poly baisse, modele stable | 139 s | -0.29 | non |
 | 21 SERIE | 07.10 22:51 | Down | 0.18 | 0.40 | 0.22 | +0.07 | +0.01 | le modele monte, Poly stable | 201 s | -0.53 | non |
 | 22 SERIE | 07.10 22:56 | Down | 0.21 | 0.41 | 0.20 | -0.04 | -0.18 | les deux baissent, Poly plus | 203 s | -0.18 | non |
 | 23 SERIE | 07.10 23:09 | Up | 0.25 | 0.46 | 0.20 | +0.00 | -0.09 | Poly baisse, modele stable | 59 s | -1.05 | non |
 | 24 SERIE | 07.10 23:12 | Up | 0.15 | 0.35 | 0.20 | +0.02 | -0.01 | le modele monte, Poly stable | 178 s | -0.90 | non |
 | 25 SERIE | 07.10 23:17 | Down | 0.23 | 0.45 | 0.22 | +0.00 | -0.03 | Poly baisse, modele stable | 177 s | -1.00 | non |
-| 26 SERIE | 07.10 23:21 | Down | 0.28 | 0.50 | 0.22 | +0.00 | -0.08 | Poly baisse, modele stable | 185 s | -0.32 | non |
+| 26 SERIE | 07.10 23:21 | Down | 0.28 | 0.50 | 0.22 | +0.00 | -0.08 | Poly baisse, modele stable | 185 s | -0.18 | non |
 | 27 SERIE | 07.10 23:25 | Up | 0.11 | 0.34 | 0.23 | -0.07 | -0.11 | les deux baissent, Poly plus | 251 s | -0.34 | non |
 | 28 SERIE | 07.10 23:31 | Up | 0.20 | 0.42 | 0.22 | -0.00 | -0.04 | Poly baisse, modele stable | 236 s | -0.50 | non |
 | 29 SERIE | 07.10 23:37 | Up | 0.12 | 0.35 | 0.23 | -0.14 | -0.43 | les deux baissent, Poly plus | 137 s | +0.06 | non |
-| 30 SERIE | 07.10 23:42 | Up | 0.16 | 0.40 | 0.24 | -0.05 | -0.12 | les deux baissent, Poly plus | 129 s | -267292415.81 | non |
+| 30 SERIE | 07.10 23:42 | Up | 0.16 | 0.40 | 0.24 | -0.05 | -0.12 | les deux baissent, Poly plus | 129 s | -0.53 | non |
 | 31 SERIE | 07.10 23:47 | Up | 0.27 | 0.48 | 0.21 | +0.00 | -0.24 | Poly baisse, modele stable | 180 s | -0.08 | non |
-| 32 SERIE | 07.10 23:53 | Up | 0.22 | 0.43 | 0.21 | -0.02 | -0.11 | les deux baissent, Poly plus | 105 s | -1.29 | non |
+| 32 SERIE | 07.10 23:53 | Up | 0.22 | 0.43 | 0.21 | -0.02 | -0.11 | les deux baissent, Poly plus | 105 s | -1.19 | non |
 | 33 SERIE | 07.10 23:56 | Down | 0.09 | 0.30 | 0.21 | -0.07 | -0.11 | les deux baissent, Poly plus | 189 s | -1.43 | non |
 | 34 SERIE | 08.10 00:02 | Down | 0.04 | 0.26 | 0.22 | +0.08 | +0.01 | le modele monte, Poly stable | 138 s | -1.12 | non |
 | 35 SERIE | 08.10 00:06 | Down | 0.21 | 0.45 | 0.23 | -0.03 | -0.07 | les deux baissent, Poly plus | 223 s | -0.15 | non |
 | 36 SERIE | 08.10 00:10 | Down | 0.29 | 0.49 | 0.20 | +0.02 | -0.01 | le modele monte, Poly stable | 269 s | -0.14 | non |
 | 37 SERIE | 08.10 00:16 | Up | 0.17 | 0.38 | 0.21 | -0.00 | -0.08 | Poly baisse, modele stable | 197 s | -0.91 | non |
-| 38 SERIE | 08.10 00:21 | Down | 0.09 | 0.41 | 0.32 | -0.00 | -0.04 | Poly baisse, modele stable | 211 s | -28.40 | non |
-| 39 SERIE | 08.10 00:26 | Down | 0.29 | 0.52 | 0.23 | +0.00 | -0.04 | Poly baisse, modele stable | 238 s | +1.16 | non |
-| 40 SERIE | 08.10 00:30 | Up | 0.24 | 0.45 | 0.21 | +0.00 | -0.03 | Poly baisse, modele stable | 262 s | -14.95 | non |
+| 38 SERIE | 08.10 00:21 | Down | 0.09 | 0.41 | 0.32 | -0.00 | -0.04 | Poly baisse, modele stable | 211 s | -2.76 | non |
+| 39 SERIE | 08.10 00:26 | Down | 0.29 | 0.52 | 0.23 | +0.00 | -0.04 | Poly baisse, modele stable | 238 s | +0.38 | non |
+| 40 SERIE | 08.10 00:30 | Up | 0.24 | 0.45 | 0.21 | +0.00 | -0.03 | Poly baisse, modele stable | 262 s | -1.00 | non |
 | 41 SERIE | 08.10 00:36 | Up | 0.30 | 0.53 | 0.23 | +0.10 | +0.02 | le modele monte, Poly stable | 228 s | -0.24 | non |
-| 42 apres | 08.10 00:40 | Up | 0.21 | 0.46 | 0.25 | +0.01 | -0.05 | Poly baisse, modele stable | 264 s | -2.28 | oui |
+| 42 apres | 08.10 00:40 | Up | 0.21 | 0.46 | 0.25 | +0.01 | -0.05 | Poly baisse, modele stable | 264 s | -0.80 | oui |
 | 43 apres | 08.10 00:45 | Up | 0.18 | 0.39 | 0.21 | +0.02 | -0.03 | Poly baisse, modele stable | 267 s | -0.42 | non |
 | 44 apres | 08.10 00:51 | Up | 0.21 | 0.47 | 0.26 | -0.02 | -0.16 | Poly baisse, modele stable | 188 s | -0.03 | non |
 | 45 apres | 08.10 00:56 | Down | 0.12 | 0.32 | 0.20 | +0.01 | -0.04 | Poly baisse, modele stable | 213 s | -1.14 | non |
-| 46 apres | 08.10 01:00 | Up | 0.31 | 0.52 | 0.21 | +0.03 | +0.00 | le modele monte, Poly stable | 279 s | -115312035.64 | non |
+| 46 apres | 08.10 01:00 | Up | 0.31 | 0.52 | 0.21 | +0.03 | +0.00 | le modele monte, Poly stable | 279 s | -0.23 | non |
 | 47 apres | 08.10 01:06 | Up | 0.19 | 0.45 | 0.26 | -0.00 | -0.05 | Poly baisse, modele stable | 233 s | -1.02 | non |
 | 48 apres | 08.10 01:10 | Up | 0.22 | 0.44 | 0.22 | +0.00 | -0.07 | Poly baisse, modele stable | 281 s | -0.06 | oui |
 | 49 apres | 08.10 01:20 | Down | 0.27 | 0.47 | 0.20 | -0.03 | -0.17 | les deux baissent, Poly plus | 257 s | +0.02 | non |
