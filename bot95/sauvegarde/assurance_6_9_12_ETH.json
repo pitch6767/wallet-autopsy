@@ -1246,17 +1246,82 @@
 ],
 "start": 1791530700,
 "slug": "eth-updown-5m-1791530700"
+},
+"2026-10-09T12:01:11.782Z|Down": {
+"heure": "2026-10-09T12:01:11.782Z",
+"cote": "Down",
+"prix": 0.56,
+"parts": 89.29,
+"U": 89.29,
+"D": 89.29,
+"cash": -14.555017336000006,
+"net": -14.56,
+"issue": "paire",
+"gagnant": "Up",
+"proba0": 0.635,
+"journal": [
+"71.8s entrée Down 89.3 parts à 0.56 (proba 0.635)",
+"87.4s assurance +22.3 à 0.568 (baisse 8 pts)",
+"90.2s assurance +22.3 à 0.568 (baisse 10 pts)",
+"105.6s assurance +44.6 à 0.603 (baisse 13 pts)"
+],
+"start": 1791547200,
+"slug": "eth-updown-5m-1791547200"
+},
+"2026-10-09T11:25:41.201Z|Down": {
+"heure": "2026-10-09T11:25:41.201Z",
+"cote": "Down",
+"prix": 0.5594,
+"parts": 89.37,
+"U": 89.37,
+"D": 89.37,
+"cash": -31.248973538,
+"net": -31.25,
+"issue": "paire",
+"gagnant": "Up",
+"proba0": 0.641,
+"journal": [
+"41.2s entrée Down 89.4 parts à 0.5594 (proba 0.641)",
+"191.2s assurance +22.3 à 0.697 (baisse 7 pts)",
+"201.3s assurance +22.3 à 0.675 (baisse 9 pts)",
+"220.1s assurance +44.7 à 0.859 (baisse 13 pts)"
+],
+"start": 1791545100,
+"slug": "eth-updown-5m-1791545100"
+},
+"2026-10-09T09:38:12.832Z|Down": {
+"heure": "2026-10-09T09:38:12.832Z",
+"cote": "Down",
+"prix": 0.56,
+"parts": 89.29,
+"U": 89.29,
+"D": 89.29,
+"cash": 22.68988001000001,
+"net": 22.69,
+"issue": "paire",
+"gagnant": "Down",
+"proba0": 0.682,
+"journal": [
+"225.7s offre opposée servie 5.0 à 0.16",
+"226.5s offre opposée servie 1.1 à 0.16",
+"228.6s offre opposée servie 2.9 à 0.16",
+"229.8s offre opposée servie 24.0 à 0.17",
+"229.8s offre opposée servie 8.4 à 0.17",
+"230.2s offre opposée servie 39.3 à 0.17"
+],
+"start": 1791538500,
+"slug": "eth-updown-5m-1791538500"
 }
 },
 "resume_bot": {
 "depuis": 1791282814.023,
-"n": 95,
-"gains": 48,
-"pertes": 47,
-"pnl": -90.96000000000001
+"n": 98,
+"gains": 49,
+"pertes": 49,
+"pnl": -114.08000000000001
 },
-"n_sauves": 61,
-"maj": "2026-10-09 09:18 UTC",
+"n_sauves": 64,
+"maj": "2026-10-09 12:08 UTC",
 "archive": [
 [
 "2026-10-09T07:25:54.271Z",
@@ -1265,6 +1330,33 @@
 28.7,
 "sortie 90",
 0.699,
+null
+],
+[
+"2026-10-09T09:38:12.832Z",
+"Down",
+0.56,
+22.69,
+"paire",
+0.682,
+null
+],
+[
+"2026-10-09T11:25:41.201Z",
+"Down",
+0.5594,
+-31.25,
+"paire",
+0.641,
+null
+],
+[
+"2026-10-09T12:01:11.782Z",
+"Down",
+0.56,
+-14.56,
+"paire",
+0.635,
 null
 ]
 ]
