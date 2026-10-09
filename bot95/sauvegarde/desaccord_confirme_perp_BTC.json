@@ -1596,17 +1596,74 @@
 ],
 "start": 1791549300,
 "slug": "btc-updown-5m-1791549300"
+},
+"2026-10-09T19:03:08.665Z|Down": {
+"heure": "2026-10-09T19:03:08.665Z",
+"cote": "Down",
+"prix": 0.3459,
+"parts": 151.52,
+"U": 0,
+"D": 151.5151515151515,
+"cash": -52.412,
+"net": -52.41,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.445,
+"restant_s": 111,
+"journal": [
+"188.7s désaccord repéré à 0.115 il y a 20 s, marché monté à 0.325 → achat Down 151.5 parts à 0.3459 (modèle 0.445)"
+],
+"start": 1791572400,
+"slug": "btc-updown-5m-1791572400"
+},
+"2026-10-09T18:50:35.832Z|Down": {
+"heure": "2026-10-09T18:50:35.832Z",
+"cote": "Down",
+"prix": 0.305,
+"parts": 172.41,
+"U": 0,
+"D": 172.41379310344828,
+"cash": -52.585998082758614,
+"net": -52.59,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.489,
+"restant_s": 264,
+"journal": [
+"35.8s désaccord repéré à 0.205 il y a 20 s, marché monté à 0.285 → achat Down 172.4 parts à 0.305 (modèle 0.489)"
+],
+"start": 1791571800,
+"slug": "btc-updown-5m-1791571800"
+},
+"2026-10-09T18:48:15.237Z|Down": {
+"heure": "2026-10-09T18:48:15.237Z",
+"cote": "Down",
+"prix": 0.4507,
+"parts": 99.76,
+"U": 0,
+"D": 99.76,
+"cash": -44.957670207999996,
+"net": -44.96,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.469,
+"restant_s": 105,
+"journal": [
+"195.2s désaccord repéré à 0.105 il y a 20 s, marché monté à 0.425 → achat Down 99.8 parts à 0.4507 (modèle 0.469)"
+],
+"start": 1791571500,
+"slug": "btc-updown-5m-1791571500"
 }
 },
 "resume_bot": {
 "depuis": 1791373218.602,
-"n": 124,
+"n": 127,
 "gains": 41,
-"pertes": 83,
-"pnl": 96.3799999999998
+"pertes": 86,
+"pnl": -53.580000000000204
 },
-"n_sauves": 84,
-"maj": "2026-10-09 18:39 UTC",
+"n_sauves": 87,
+"maj": "2026-10-09 19:09 UTC",
 "archive": [
 [
 "2026-10-09T05:32:14.182Z",
@@ -1823,6 +1880,33 @@
 "perdu",
 0.362,
 114
+],
+[
+"2026-10-09T18:48:15.237Z",
+"Down",
+0.4507,
+-44.96,
+"perdu",
+0.469,
+105
+],
+[
+"2026-10-09T18:50:35.832Z",
+"Down",
+0.305,
+-52.59,
+"perdu",
+0.489,
+264
+],
+[
+"2026-10-09T19:03:08.665Z",
+"Down",
+0.3459,
+-52.41,
+"perdu",
+0.445,
+111
 ]
 ]
 }

@@ -1577,14 +1577,71 @@
 ],
 "start": 1791570300,
 "slug": "btc-updown-5m-1791570300"
+},
+"2026-10-09T18:50:21.147Z|Down": {
+"heure": "2026-10-09T18:50:21.147Z",
+"cote": "Down",
+"prix": 0.2452,
+"parts": 168.47,
+"U": 0,
+"D": 168.47,
+"cash": -41.311558664,
+"net": -41.31,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.467,
+"restant_s": 279,
+"journal": [
+"21.1s écart 0.24, 279 s restantes → achat Down 168.5 parts à 0.2452 (modèle 0.467)"
+],
+"start": 1791571800,
+"slug": "btc-updown-5m-1791571800"
+},
+"2026-10-09T18:46:23.589Z|Up": {
+"heure": "2026-10-09T18:46:23.589Z",
+"cote": "Up",
+"prix": 0.1276,
+"parts": 416.67,
+"U": 416.6666666666667,
+"D": 0,
+"cash": 363.4986666666667,
+"net": 363.5,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.348,
+"restant_s": 216,
+"journal": [
+"83.6s écart 0.23, 216 s restantes → achat Up 416.7 parts à 0.1276 (modèle 0.348)"
+],
+"start": 1791571500,
+"slug": "btc-updown-5m-1791571500"
+},
+"2026-10-09T18:42:26.593Z|Down": {
+"heure": "2026-10-09T18:42:26.593Z",
+"cote": "Down",
+"prix": 0.1359,
+"parts": 416.67,
+"U": 0,
+"D": 416.6666666666667,
+"cash": -56.63214666666667,
+"net": -56.63,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.337,
+"restant_s": 153,
+"journal": [
+"146.6s écart 0.22, 153 s restantes → achat Down 416.7 parts à 0.1359 (modèle 0.337)"
+],
+"start": 1791571200,
+"slug": "btc-updown-5m-1791571200"
 }
 },
 "resume_bot": {
 "depuis": 1791527569.329,
-"n": 83,
-"gains": 19,
-"pertes": 64,
-"pnl": 95.68999999999996
+"n": 86,
+"gains": 20,
+"pertes": 66,
+"pnl": 361.24999999999994
 },
 "archive": [
 [
@@ -2333,8 +2390,35 @@
 "une seule jambe",
 0.392,
 141
+],
+[
+"2026-10-09T18:42:26.593Z",
+"Down",
+0.1359,
+-56.63,
+"une seule jambe",
+0.337,
+153
+],
+[
+"2026-10-09T18:46:23.589Z",
+"Up",
+0.1276,
+363.5,
+"une seule jambe",
+0.348,
+216
+],
+[
+"2026-10-09T18:50:21.147Z",
+"Down",
+0.2452,
+-41.31,
+"une seule jambe",
+0.467,
+279
 ]
 ],
-"n_sauves": 83,
-"maj": "2026-10-09 18:39 UTC"
+"n_sauves": 86,
+"maj": "2026-10-09 19:09 UTC"
 }

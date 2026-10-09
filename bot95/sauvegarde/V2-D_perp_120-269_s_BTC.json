@@ -2793,17 +2793,74 @@
 ],
 "start": 1791570300,
 "slug": "btc-updown-5m-1791570300"
+},
+"2026-10-09T18:50:31.645Z|Down": {
+"heure": "2026-10-09T18:50:31.645Z",
+"cote": "Down",
+"prix": 0.31,
+"parts": 10,
+"U": 0,
+"D": 10,
+"cash": -3.099724,
+"net": -3.1,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.514,
+"restant_s": 268,
+"journal": [
+"31.6s écart 0.22, 268 s restantes → achat Down 10.0 parts à 0.31 (modèle 0.514)"
+],
+"start": 1791571800,
+"slug": "btc-updown-5m-1791571800"
+},
+"2026-10-09T18:46:23.589Z|Up": {
+"heure": "2026-10-09T18:46:23.589Z",
+"cote": "Up",
+"prix": 0.1276,
+"parts": 416.67,
+"U": 416.6666666666667,
+"D": 0,
+"cash": 363.4986666666667,
+"net": 363.5,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.348,
+"restant_s": 216,
+"journal": [
+"83.6s écart 0.23, 216 s restantes → achat Up 416.7 parts à 0.1276 (modèle 0.348)"
+],
+"start": 1791571500,
+"slug": "btc-updown-5m-1791571500"
+},
+"2026-10-09T18:42:37.312Z|Down": {
+"heure": "2026-10-09T18:42:37.312Z",
+"cote": "Down",
+"prix": 0.0941,
+"parts": 351,
+"U": 0,
+"D": 351,
+"cash": -33.0239208,
+"net": -33.02,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.284,
+"restant_s": 143,
+"journal": [
+"157.3s écart 0.20, 143 s restantes → achat Down 351.0 parts à 0.0941 (modèle 0.284)"
+],
+"start": 1791571200,
+"slug": "btc-updown-5m-1791571200"
 }
 },
 "resume_bot": {
 "depuis": 1791373568.406,
-"n": 376,
-"gains": 92,
-"pertes": 284,
-"pnl": 2994.440000000002
+"n": 379,
+"gains": 93,
+"pertes": 286,
+"pnl": 3321.820000000002
 },
-"n_sauves": 147,
-"maj": "2026-10-09 18:39 UTC",
+"n_sauves": 150,
+"maj": "2026-10-09 19:09 UTC",
 "archive": [
 [
 "2026-10-09T05:31:54.168Z",
@@ -3605,6 +3662,33 @@
 "une seule jambe",
 0.314,
 123
+],
+[
+"2026-10-09T18:42:37.312Z",
+"Down",
+0.0941,
+-33.02,
+"une seule jambe",
+0.284,
+143
+],
+[
+"2026-10-09T18:46:23.589Z",
+"Up",
+0.1276,
+363.5,
+"une seule jambe",
+0.348,
+216
+],
+[
+"2026-10-09T18:50:31.645Z",
+"Down",
+0.31,
+-3.1,
+"une seule jambe",
+0.514,
+268
 ]
 ]
 }
