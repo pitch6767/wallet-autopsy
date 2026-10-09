@@ -224,6 +224,7 @@ export class Bot {
     if (u.pathname === "/api/etat") return json(this.vue());
     if (u.pathname === "/api/reprendre" && req.method === "POST") { this.e.pause = false; await this.sauver(); return json({ ok: true }); }
     if (u.pathname === "/api/reveil") return json({ ok: true });
+    if (u.pathname === "/api/twap_carnets") { const J = (this._twj || {}).twcarnet || (await this.state.storage.get("twcarnet")) || []; return json({ signaux: J }); }
     if (u.pathname === "/api/twap_confirme") { const J = this.TWC || (await this.state.storage.get("twc")) || []; return json({ signaux: J }); }
     if (u.pathname === "/api/reglements") { const RG = this.RG || (await this.state.storage.get("regl")) || { lignes: [], attente: {} }; return json(RG); }
     if (u.pathname === "/api/hist") {
@@ -1723,12 +1724,14 @@ export class Bot {
           for (const up of [true, false]) {
             const k = up ? ua : da, fair = up ? p4 : 1 - p4;
             if (!k || k[0] < 0.02 || k[0] > 0.98 || fair - k[0] < 0.20) continue;
+            this.twSignal(H, nom, mk, up, tleft, fair, k);
             const r = this.nAcheter(up ? mk.up : mk.down, 50 / k[0], k[0]); if (r.parts < 1) continue;
             H.fait[nom] = true;
             const B0 = ((this._clBrut || {})[a] || []).slice(-1)[0] || [];
             const P = this.nPos(nom, a, mk, { famille: "twap", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0),
               tAchat: +now().toFixed(3), tailleAffichee: k[1], prixABattre: +mk.strike.toFixed(2), clObs: B0[0] ?? null, clRecu: B0[2] ?? null, clDernier: B0[3] ?? null, btc: +(Sp || 0).toFixed(2),
               z: +Z.z.toFixed(3), correction: +dlt.toFixed(2) });
+            P.t0 = now(); P.carnet = { 0: niveaux(up ? mk.up : mk.down), achat: [+r.parts.toFixed(2), +r.cout.toFixed(2)] };
             P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
             this.nNote(P, `${nom} : probabilité ${fair.toFixed(3)}, vendeur ${k[0]}, ${tleft.toFixed(0)} s restantes → achat ${P.cote} ${r.parts.toFixed(1)} parts`);
             this.nSauver(); break;
@@ -1747,6 +1750,7 @@ export class Bot {
               if (!k || k[0] < 0.02 || k[0] > 0.98 || !(k[1] > 0) || fair - k[0] < 0.20) continue;
               H.twc = { start: mk.start, cote: up ? "Up" : "Down", tSignal: +now().toFixed(3), restant_s: +tleft.toFixed(1), proba: +fair.toFixed(3), vendeur: k[0], taille: k[1],
                 clObs: clDer[0] ?? null, clRecu: clDer[2] ?? null, clValeur: clDer[3] ?? null, etat: "attente" };
+              this.twSignal(H, NC, mk, up, tleft, fair, k);
               break;
             }
           } else if (H.twc.etat === "attente" && clDer[2] != null && H.twc.clRecu != null && clDer[2] > H.twc.clRecu && clDer[0] > (H.twc.clObs || 0)) {
@@ -1759,6 +1763,8 @@ export class Bot {
                 S.etat = "achat";
                 const P = this.nPos(NC, a, mk, { famille: "twap", cote: S.cote, prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: S.proba2, restant_s: +tleft.toFixed(0),
                   tAchat: +now().toFixed(3), tailleAffichee: k[1], prixABattre: +mk.strike.toFixed(2), signal: { ...S } });
+                P.t0 = now(); P.carnet = { 0: niveaux(up ? mk.up : mk.down), achat: [+r.parts.toFixed(2), +r.cout.toFixed(2)] };
+                if (H.tws && H.tws[NC]) H.tws[NC].carnetConfirmation = { t: +now().toFixed(3), asks: niveaux(up ? mk.up : mk.down), bids: this.livreTrie(up ? mk.up : mk.down, "bids").slice(0, 8).map(([p, z]) => [p, Math.round(z)]) };
                 P.cash = -r.cout; if (up) P.U = r.parts; else P.D = r.parts;
                 this.nNote(P, `signal à ${S.restant_s} s (proba ${S.proba}, vendeur ${S.vendeur}) ; Chainlink suivant reçu ${S.attente_s} s après → proba ${S.proba2}, vendeur ${k[0]} → achat ${S.cote} ${r.parts.toFixed(1)} parts`);
                 this.nSauver();
@@ -1767,6 +1773,17 @@ export class Bot {
           }
           if (H.twc && H.twc.etat !== "attente") { H.fait[NC] = true; this.twcJournal(H.twc); }
         }
+      }
+    }
+    // carnets (8 niveaux vendeurs et acheteurs) après chaque signal TWAP fin : 0,25 / 0,5 / 1 / 2 / 5 s — enregistrement seulement (10.10.2026)
+    if (a === "BTC" && H.tws) {
+      for (const S of Object.values(H.tws)) {
+        if (S.ecrit) continue;
+        const idv = S.cote === "Up" ? mk.up : mk.down, dt = now() - S.t0;
+        for (const d of ["0.25", "0.5", "1", "2", "5"]) if (!S.asks[d] && dt >= +d) {
+          S.asks[d] = niveaux(idv); S.bids[d] = this.livreTrie(idv, "bids").slice(0, 8).map(([p, z]) => [p, Math.round(z)]); S.dt[d] = +dt.toFixed(3);
+        }
+        if (S.asks["5"] || tleft < 12) { S.ecrit = true; this.twJournal("twcarnet", S); }
       }
     }
     // le signal confirmé-Chainlink en attente quand la fenêtre se ferme (moins de 20 s) est abandonné et journalisé
@@ -2117,6 +2134,23 @@ export class Bot {
 
   // ================= règlement officiel de chaque cycle (09.10.2026) : prix à battre et prix final officiels + gagnant, contre nos données
   // (enregistrement seulement ; on réessaie jusqu'à 15 min après la fin, toutes les 30 s au plus)
+  // premier signal de chaque modèle TWAP fin dans le cycle : carnet complet au signal (puis suivi dans dCorrige)
+  twSignal(H, nom, mk, up, tleft, fair, k) {
+    H.tws = H.tws || {};
+    if (H.tws[nom]) return;
+    const idv = up ? mk.up : mk.down, nv = (side) => this.livreTrie(idv, side).slice(0, 8).map(([p, z]) => [p, Math.round(z)]);
+    H.tws[nom] = { nom, start: mk.start, cote: up ? "Up" : "Down", t0: +now().toFixed(3), restant_s: +tleft.toFixed(1), proba: +fair.toFixed(3), vendeur: k[0], taille: k[1],
+      asks: { 0: nv("asks") }, bids: { 0: nv("bids") }, dt: { 0: 0 } };
+  }
+  twJournal(cle, S) {
+    const go = async () => {
+      const J = ((this._twj = this._twj || {})[cle] = this._twj[cle] || (await this.state.storage.get(cle)) || []);
+      if (!J.some((x) => x.start === S.start && x.nom === S.nom)) J.push({ ...S });
+      while (J.length > 2000) J.shift();
+      await this.state.storage.put(cle, J);
+    };
+    go().catch((err) => this.erreur("journal " + cle, err));
+  }
   // journal de tous les signaux « TWAP fin confirmé Chainlink » (achetés ou abandonnés), pour la comparaison avec TWAP fin original
   twcJournal(S) {
     const go = async () => {

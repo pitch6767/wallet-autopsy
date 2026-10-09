@@ -44,3 +44,9 @@ try:                                                         # journal du fantom
     vu = {x["start"] for x in old}; old += [x for x in J if x["start"] not in vu]
     old.sort(key=lambda x: x["start"]); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("twap_confirme", len(old))
 except Exception as e: print("twap_confirme", e)
+try:                                                         # carnets 8 niveaux au signal TWAP fin et 0,25 / 0,5 / 1 / 2 / 5 s apres
+    J = get(U + "/api/twap_carnets").get("signaux", []); f = "bot95/twap_carnets.json"
+    old = json.load(open(f)) if os.path.exists(f) else []
+    vu = {(x["start"], x["nom"]) for x in old}; old += [x for x in J if (x["start"], x["nom"]) not in vu]
+    old.sort(key=lambda x: (x["start"], x["nom"])); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("twap_carnets", len(old))
+except Exception as e: print("twap_carnets", e)
