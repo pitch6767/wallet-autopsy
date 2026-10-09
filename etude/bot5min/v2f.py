@@ -14,7 +14,10 @@ OUT = "etude/bot5min/"
 
 def main():
     nom = "V2-F ecart qui grandit BTC"
-    live = get(f"{U}/api/hist?s=" + urllib.parse.quote(nom))
+    live = {}
+    for k in range(5):
+        try: live = get(f"{U}/api/hist?s=" + urllib.parse.quote(nom)); break
+        except Exception as e: print("hist", e); import time; time.sleep(20)
     C = charger_brut("BTC"); sts = sorted(C)
     for st in sts: resultat("BTC", st)
     T = []
