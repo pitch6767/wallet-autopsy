@@ -659,6 +659,12 @@ export class Bot {
     const iUp = outs.findIndex((o) => String(o).toLowerCase() === "up");
     return { slug: e.slug, up: toks[iUp], down: toks[1 - iUp] };
   }
+  async prixABattreOfficiel(a, mk) {
+    const ev = await (await fetch(`${G}/events?slug=${a.toLowerCase()}-updown-5m-${mk.start}`)).json();
+    const e = ev && ev[0], m = e && e.markets && e.markets[0]; if (!e) return;
+    let meta = e.eventMetadata || (m && m.eventMetadata) || {}; if (typeof meta === "string") meta = JSON.parse(meta);
+    if (meta && +meta.priceToBeat > 0) { if (mk.strike && Math.abs(mk.strike - +meta.priceToBeat) > 0.01) mk.strikeAvant = mk.strike; mk.strike = +meta.priceToBeat; mk.ptbOff = true; mk.strikeSrc = "priceToBeat"; mk.ptbVu = +(now() - mk.start).toFixed(1); }
+  }
   async ouvertureOfficielle(a, mk) {
     const iso = (t) => new Date(t * 1000).toISOString().replace(".000", "");
     const r = await fetch(`https://polymarket.com/api/crypto/crypto-price?symbol=${a}&eventStartTime=${iso(mk.start)}&variant=fiveminute&endDate=${iso(mk.end)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
@@ -683,12 +689,15 @@ export class Bot {
     await Promise.all(LISTE.map(async (a) => {
       let mk = this.mk[a];
       if (!mk || mk.start !== start) {
-        if (mk) { (this._kPrec = this._kPrec || {})[a + mk.start] = mk.strike ?? null; this.finFenetre(a, mk); }
+        if (mk) { (this._kPrec = this._kPrec || {})[a + mk.start] = { k: mk.strike ?? null, src: mk.strikeSrc || null, vu: mk.ptbVu ?? null, avant: mk.strikeAvant ?? null }; this.finFenetre(a, mk); }
         mk = this.mk[a] = (V1.ACTIFS.includes(a) && this.mkNx[a] && this.mkNx[a].start === start) ? { ...this.mkNx[a] } : { start, end: start + 300 };
       }
       try {
         if (!mk.slug && t - (mk.essai || 0) > 10) { mk.essai = t; Object.assign(mk, await this.chargerMarche(a, start)); }
-        if (!mk.strike && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); }
+        // prix à battre OFFICIEL : priceToBeat de la fiche du marché (API Polymarket), relu toutes les 3 s tant qu'il manque (09.10.2026)
+        if (!mk.ptbOff && t - (mk.essaiPtb || 0) > (t - start < 60 ? 3 : 15)) { mk.essaiPtb = t; await this.prixABattreOfficiel(a, mk); }
+        // secours seulement si la fiche ne le donne pas encore après 20 s
+        if (!mk.strike && t - start > 20 && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); if (mk.strike) mk.strikeSrc = "crypto-price"; }
       } catch (err) { if (tleft < 200) this.erreur(a, err); }
     }));
     // V1 : préchargement du cycle BTC suivant (carnet en direct prêt dès la première seconde)
@@ -1991,7 +2000,7 @@ export class Bot {
     for (const a of ["BTC", "ETH"]) {
       const st = cur - 300, k = a + st;
       if (!RG.attente[k] && !RG.lignes.some((x) => x.a === a && x.start === st)) {
-        RG.attente[k] = { a, start: st, notreK: (this._kPrec || {})[a + st] ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
+        RG.attente[k] = { a, start: st, notreK: ((this._kPrec || {})[a + st] || {}).k ?? null, sourceK: ((this._kPrec || {})[a + st] || {}).src ?? null, kVuApres_s: ((this._kPrec || {})[a + st] || {}).vu ?? null, kAvant: ((this._kPrec || {})[a + st] || {}).avant ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
       }
     }
     let n = 0;
