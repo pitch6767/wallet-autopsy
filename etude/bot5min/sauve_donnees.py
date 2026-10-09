@@ -16,14 +16,17 @@ def tout(kind, a, n):
         for k, doc in zip(d["cles"], d["docs"]): out[k] = doc
         if not d["cles"] or len(d["cles"]) < n: return out
         apres = d["suivant"]
-for kind, n in (("rec", 60), ("sig", 120)):
-    M = tout(kind, "BTC", n); par_jour = {}
-    for k, doc in M.items():
-        minute = int(k.split(":")[2]); jour = time.strftime("%Y-%m-%d", time.gmtime(minute * 60))
-        par_jour.setdefault(jour, {})[k] = doc
-    for jour, docs in par_jour.items():
-        os.makedirs(D + jour, exist_ok=True); f = f"{D}{jour}/{kind}_BTC.json.gz"
-        old = json.load(gzip.open(f, "rt")) if os.path.exists(f) else {}
-        old.update(docs)
-        with gzip.open(f, "wt") as g: json.dump(old, g, separators=(",", ":"))
-        print(kind, jour, len(old), "minutes", os.path.getsize(f) // 1024, "Ko")
+for a, kind, n in (("BTC", "rec", 60), ("BTC", "sig", 120), ("ETH", "rec", 60), ("ETH", "sig", 120)):
+  try:
+      M = tout(kind, a, n); par_jour = {}
+      for k, doc in M.items():
+          minute = int(k.split(":")[2]); jour = time.strftime("%Y-%m-%d", time.gmtime(minute * 60))
+          par_jour.setdefault(jour, {})[k] = doc
+      for jour, docs in par_jour.items():
+          os.makedirs(D + jour, exist_ok=True); f = f"{D}{jour}/{kind}_{a}.json.gz"
+          old = json.load(gzip.open(f, "rt")) if os.path.exists(f) else {}
+          old.update(docs)
+          with gzip.open(f, "wt") as g: json.dump(old, g, separators=(",", ":"))
+          print(kind, jour, len(old), "minutes", os.path.getsize(f) // 1024, "Ko")
+
+  except Exception as e: print(a, kind, "erreur", e)
