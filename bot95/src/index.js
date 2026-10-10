@@ -270,7 +270,18 @@ export class Bot {
       const calibration = Object.fromEntries(Object.entries(cal).map(([k, B2]) => [k, B2.map((b, i) => ({ tranche: i * 10 + "-" + (i * 10 + 10) + " %", n: b[0], probaMoyenne: b[0] ? +(b[1] / b[0]).toFixed(3) : null, upReel: b[0] ? +(b[2] / b[0]).toFixed(3) : null }))]));
       const regimes = Object.fromEntries(Object.entries(reg).map(([r, o]) => [r, { mesures: o.n, brierA: +(o.A / o.n).toFixed(4), brierE: +(o.E / o.n).toFixed(4), brierCarnet: +(o.C / o.n).toFixed(4) }]));
       const couverture = Object.fromEntries(Object.entries(cov).map(([k, c]) => [k, { mesures: c.n, i50: c.n ? +(c.c50 / c.n).toFixed(3) : null, i80: c.n ? +(c.c80 / c.n).toFixed(3) : null, i95: c.n ? +(c.c95 / c.n).toFixed(3) : null }]));
-      return json({ regle: "CUSUM : on ajoute (Brier moteur − Brier carnet − 0,005) par tranche de 3 h, plancher 0 ; alerte au-dessus de 0,03. Aucune décision n'est modifiée.", blocs, regimes, calibration, couverture });
+      // observation des signaux TWAP fin selon l'avantage au signal et le retrait de liquidité (achat théorique au meilleur vendeur, 50 $ max, frais compris)
+      const Jc = (this._twj || {}).twcarnet || (await this.state.storage.get("twcarnet")) || [];
+      const sigs = {};
+      for (const e of Jc) {
+        const g = G.get(e.start); if (!g || !e.asks || !e.asks[0] || !e.asks[0][0]) continue;
+        const [pr, z] = e.asks[0][0], av = e.avantage ?? (e.proba - e.vendeur), gm = g === e.cote, q = Math.min(z, 50 / pr), pn = q * ((gm ? 1 : 0) - pr - CFG.FEE_RATE * pr * (1 - pr));
+        for (const k of [av >= 0.30 ? "avantage ≥ 30 pts" : "avantage 20-30 pts", e.retrait == null ? null : e.retraitFort ? "retrait de liquidité ≥ 50 % sur 0,5 s" : "pas de retrait fort"]) {
+          if (!k) continue; const o = (sigs[k] = sigs[k] || { signaux: 0, gagnes: 0, resultat: 0 }); o.signaux++; o.gagnes += gm; o.resultat += pn;
+        }
+      }
+      for (const o of Object.values(sigs)) o.resultat = +o.resultat.toFixed(2);
+      return json({ regle: "CUSUM : on ajoute (Brier moteur − Brier carnet − 0,005) par tranche de 3 h, plancher 0 ; alerte au-dessus de 0,03. Aucune décision n'est modifiée.", blocs, regimes, calibration, couverture, signaux: sigs });
     }
     if (u.pathname === "/api/twap_carnets") { const J = (this._twj || {}).twcarnet || (await this.state.storage.get("twcarnet")) || []; return json({ signaux: J }); }
     if (u.pathname === "/api/twap_confirme") { const J = this.TWC || (await this.state.storage.get("twc")) || []; return json({ signaux: J }); }
@@ -1760,6 +1771,11 @@ export class Bot {
     // entre 90 et 20 s de la fin ; 50 $ au meilleur vendeur seulement (quantité affichée) ; un achat par cycle ; gardé jusqu'au règlement. BTC.
     // Variantes du 10.10.2026 : « sauts » (loi de Student à 4 degrés, même variance) ; « correction spot-perp » (moyenne prévue corrigée de
     // 0,40 × (Binance − perp) + 0,16 × (Coinbase − perp), au prorata de la fenêtre restante — coefficients figés, appris sur 07-09.10).
+    // historique court du meilleur vendeur (2 s) pour mesurer le retrait de liquidité au moment des signaux (enregistrement seulement, 10.10.2026)
+    if (a === "BTC") {
+      const hb = (H.hb = H.hb || []); hb.push([now(), ua ? ua[0] : null, ua ? ua[1] : null, da ? da[0] : null, da ? da[1] : null]);
+      while (hb.length && now() - hb[0][0] > 2) hb.shift();
+    }
     if (a === "BTC" && mk.twapK && tleft <= 90 && tleft >= 20) {
       let Z = null; try { Z = this.probaV1(a, mk, 0.5 / (this.prixRapide(a) || 1e9), true); } catch (_) {}
       if (Z) {
@@ -2230,7 +2246,15 @@ export class Bot {
     H.tws = H.tws || {};
     if (H.tws[nom]) return;
     const idv = up ? mk.up : mk.down, nv = (side) => this.livreTrie(idv, side).slice(0, 8).map(([p, z]) => [p, Math.round(z)]);
+    // retrait de liquidité : quantité au meilleur vendeur il y a ~0,5 s au même prix, comparée à maintenant
+    let retrait = null;
+    try {
+      const hb = H.hb || [], t5 = now() - 0.5; let e = null;
+      for (const x of hb) if (x[0] <= t5) e = x;
+      if (e) { const p0 = up ? e[1] : e[3], z0 = up ? e[2] : e[4]; if (p0 === k[0] && z0 > 0) retrait = +(1 - k[1] / z0).toFixed(3); }
+    } catch (_) {}
     H.tws[nom] = { nom, start: mk.start, cote: up ? "Up" : "Down", t0: +now().toFixed(3), restant_s: +tleft.toFixed(1), proba: +fair.toFixed(3), vendeur: k[0], taille: k[1],
+      avantage: +(fair - k[0]).toFixed(3), retrait, retraitFort: retrait != null && retrait >= 0.5,
       asks: { 0: nv("asks") }, bids: { 0: nv("bids") }, dt: { 0: 0 } };
   }
   twJournal(cle, S) {
@@ -2508,6 +2532,7 @@ h+="</table>";
 const R=d.regimes||{};if(Object.keys(R).length){h+="<div style='margin-top:10px'><b>Brier par régime</b></div><table><tr><th>Régime</th><th>Mesures</th><th>A</th><th>E</th><th>Carnet</th></tr>";for(const [r,o] of Object.entries(R))h+="<tr><td>"+r+"</td><td>"+o.mesures+"</td><td>"+o.brierA.toFixed(3)+"</td><td>"+o.brierE.toFixed(3)+"</td><td>"+o.brierCarnet.toFixed(3)+"</td></tr>";h+="</table>";}
 const C=d.couverture||{};if(C.A&&C.A.mesures){const pc=(x)=>x==null?"—":Math.round(x*100)+" %";h+="<div style='margin-top:10px'><b>Intervalles de prévision de la moyenne finale</b> : part des résultats officiels tombés dedans (idéal 50 / 80 / 95 %)</div><table><tr><th>Modèle</th><th>Mesures</th><th>50 %</th><th>80 %</th><th>95 %</th></tr>";for(const k of ["A","E"])if(C[k])h+="<tr><td>"+k+"</td><td>"+C[k].mesures+"</td><td>"+pc(C[k].i50)+"</td><td>"+pc(C[k].i80)+"</td><td>"+pc(C[k].i95)+"</td></tr>";h+="</table>";}
 const K=d.calibration||{};if(K.A){h+="<div style='margin-top:10px'><b>Calibration</b> : quand le modèle annonce Up à x %, Up gagne-t-il vraiment x % du temps ?</div><table><tr><th>Annoncé</th><th>A : mesures</th><th>A : Up réel</th><th>E : mesures</th><th>E : Up réel</th></tr>";for(let i=0;i<10;i++){const a=K.A[i],e=K.E[i];if(!a.n&&!e.n)continue;h+="<tr><td>"+a.tranche+"</td><td>"+a.n+"</td><td>"+(a.upReel==null?"—":Math.round(a.upReel*100)+" %")+"</td><td>"+e.n+"</td><td>"+(e.upReel==null?"—":Math.round(e.upReel*100)+" %")+"</td></tr>";}h+="</table>";}
+const SG=d.signaux||{};if(Object.keys(SG).length){h+="<div style='margin-top:10px'><b>Signaux TWAP fin en observation</b> (tous les modèles, achat théorique au meilleur vendeur, 50 $ max, frais compris)</div><table><tr><th>Groupe</th><th>Signaux</th><th>Gagnés</th><th>Résultat</th></tr>";for(const [k,o] of Object.entries(SG))h+="<tr><td>"+k+"</td><td>"+o.signaux+"</td><td>"+Math.round(100*o.gagnes/Math.max(1,o.signaux))+" %</td><td>"+(o.resultat>=0?"<span class='ok'>+":"<span class='ko'>")+o.resultat.toFixed(0)+" $</span></td></tr>";h+="</table>";}
 box.innerHTML=h+"</div>";}).catch(()=>{});
 </script></body></html>`;
 const PAGE_N_V = (() => { let h = 5381; for (let i = 0; i < PAGE_N.length; i++) h = ((h * 33) ^ PAGE_N.charCodeAt(i)) >>> 0; return h.toString(36); })();
