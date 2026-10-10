@@ -276,7 +276,8 @@ export class Bot {
       for (const e of Jc) {
         const g = G.get(e.start); if (!g || !e.asks || !e.asks[0] || !e.asks[0][0]) continue;
         const [pr, z] = e.asks[0][0], av = e.avantage ?? (e.proba - e.vendeur), gm = g === e.cote, q = Math.min(z, 50 / pr), pn = q * ((gm ? 1 : 0) - pr - CFG.FEE_RATE * pr * (1 - pr));
-        for (const k of [av >= 0.30 ? "avantage ≥ 30 pts" : "avantage 20-30 pts", e.retrait == null ? null : e.retraitFort ? "retrait de liquidité ≥ 50 % sur 0,5 s" : "pas de retrait fort"]) {
+        for (const k of [av >= 0.30 ? "avantage ≥ 30 pts" : "avantage 20-30 pts", e.retrait == null ? null : e.retraitFort ? "retrait de liquidité ≥ 50 % sur 0,5 s" : "pas de retrait fort",
+          e.fauxCadeau == null ? null : e.fauxCadeau ? "FAUX CADEAU (prix effondré ≥ 30 c en 3 s, proba quasi inchangée)" : "pas de faux cadeau"]) {
           if (!k) continue; const o = (sigs[k] = sigs[k] || { signaux: 0, gagnes: 0, resultat: 0 }); o.signaux++; o.gagnes += gm; o.resultat += pn;
         }
       }
@@ -1774,7 +1775,7 @@ export class Bot {
     // historique court du meilleur vendeur (2 s) pour mesurer le retrait de liquidité au moment des signaux (enregistrement seulement, 10.10.2026)
     if (a === "BTC") {
       const hb = (H.hb = H.hb || []); hb.push([now(), ua ? ua[0] : null, ua ? ua[1] : null, da ? da[0] : null, da ? da[1] : null]);
-      while (hb.length && now() - hb[0][0] > 2) hb.shift();
+      while (hb.length && now() - hb[0][0] > 4) hb.shift();
     }
     if (a === "BTC" && mk.twapK && tleft <= 90 && tleft >= 20) {
       let Z = null; try { Z = this.probaV1(a, mk, 0.5 / (this.prixRapide(a) || 1e9), true); } catch (_) {}
@@ -1787,13 +1788,16 @@ export class Bot {
         //   sens d'au moins la moitié sur les mêmes 2 s (sinon on garde le prix d'il y a 2 s) ;
         // « prévision Chainlink » : prix futurs = dernier Chainlink + 0,98 × (médiane des 4 exchanges ramenés au niveau Chainlink − dernier Chainlink) — 0,98 appris sur 07-08.10.
         let zAS = Z.z, zPC = null;
+        try { const hb = H.hb || []; if (hb.length) hb[hb.length - 1][5] = phi(Z.z); } catch (_) {}
+        H.cert = { mv2: null, confirme: null, volS: null, regime: null };
         try {
           const ts0 = Math.floor(now()), sgc = this._sgA[a], volS = sgc && Sp ? sgc.v * Sp : null;
           const p2 = this.prixA(a, "perp", ts0 - 2), p0 = this.prixA(a, "perp", ts0);
           if (Sp != null && volS && p2 && p0 && sgc.base != null) {
-            const S2 = p2 - sgc.base, mv = Sp - S2;
+            const S2 = p2 - sgc.base, mv = Sp - S2; H.cert.mv2 = +mv.toFixed(2); H.cert.volS = +volS.toFixed(2);
             if (Math.abs(mv) >= Math.max(3, 4 * volS * Math.SQRT2)) {
               const conf = ["okx", "bn", "cb"].some((x) => { const a0 = this.prixA(a, x, ts0), a2 = this.prixA(a, x, ts0 - 2); return a0 && a2 && Math.sign(a0 - a2) === Math.sign(mv) && Math.abs(a0 - a2) >= Math.abs(mv) / 2; });
+              H.cert.confirme = conf; H.cert.saut = true;
               if (!conf) zAS = Z.z + Z.remf * (S2 - Sp) / Z.sd;
             }
           }
@@ -1808,6 +1812,7 @@ export class Bot {
           const ts1 = Math.floor(now()), deb1 = mk.end - 60, rem1 = Z.remf * 60, sgq = this._sgA[a];
           const bk = ts1 < deb1 ? "avant la fenêtre" : rem1 > 45 ? "45-60 s restantes" : rem1 > 30 ? "30-45 s" : rem1 > 15 ? "15-30 s" : "< 15 s";
           regime = sgq && Sp ? (sgq.v * Sp < 2 ? "calme" : "agité") : null;
+          if (H.cert) H.cert.regime = regime;
           const pq = survieQ(QTWAP[bk + "|" + regime] ? bk + "|" + regime : bk + "|*", -Z.z);
           if (pq != null) V["TWAP fin quantiles"] = pq;
         } catch (_) {}
@@ -2254,8 +2259,22 @@ export class Bot {
       if (e) { const p0 = up ? e[1] : e[3], z0 = up ? e[2] : e[4]; if (p0 === k[0] && z0 > 0) retrait = +(1 - k[1] / z0).toFixed(3); }
     } catch (_) {}
     H.tws[nom] = { nom, start: mk.start, cote: up ? "Up" : "Down", t0: +now().toFixed(3), restant_s: +tleft.toFixed(1), proba: +fair.toFixed(3), vendeur: k[0], taille: k[1],
-      avantage: +(fair - k[0]).toFixed(3), retrait, retraitFort: retrait != null && retrait >= 0.5,
+      avantage: +(fair - k[0]).toFixed(3), retrait, retraitFort: retrait != null && retrait >= 0.5, ...this.certificat(H, up, k),
       asks: { 0: nv("asks") }, bids: { 0: nv("bids") }, dt: { 0: 0 } };
+  }
+  // certificat de naissance du signal (10.10.2026, enregistrement seulement) : proba du moteur original et prix vendeur 1 s et 3 s avant,
+  // dernier Chainlink reçu, saut des exchanges sur 2 s, régime ; « faux cadeau » = prix vendeur effondré d'au moins 30 c en 3 s alors que la proba a bougé de moins de 5 pts
+  certificat(H, up, k) {
+    try {
+      const hb = H.hb || [], t = now(), av = (dt) => { let e = null; for (const x of hb) if (x[0] <= t - dt) e = x; return e; };
+      const e1 = av(1), e3 = av(3), sd = (p) => (p == null ? null : up ? p : 1 - p), pa = (e) => (e ? (up ? e[1] : e[3]) : null);
+      const pNow = hb.length ? sd(hb[hb.length - 1][5]) : null;
+      const cl = ((this._clBrut || {}).BTC || []).slice(-1)[0] || [];
+      const pr3 = pa(e3), p3 = e3 ? sd(e3[5]) : null;
+      const faux = pr3 != null && pr3 - k[0] >= 0.30 && p3 != null && pNow != null && Math.abs(pNow - p3) < 0.05;
+      return { cert: { probaMoteur: pNow != null ? +pNow.toFixed(3) : null, proba1s: e1 ? sd(e1[5]) : null, proba3s: p3, vendeur1s: pa(e1), vendeur3s: pr3,
+        clValeur: cl[3] ?? null, clObs: cl[0] ?? null, clRecu: cl[2] ?? null, ...(H.cert || {}) }, fauxCadeau: faux };
+    } catch (_) { return {}; }
   }
   twJournal(cle, S) {
     const go = async () => {
