@@ -79,3 +79,5 @@ out += ["", "Corrélation entre les propriétés (toutes opportunités) : 20-30 
 labs = ["20-30 pts", "≥ 2 Chainlink", "indépendant", "baisse modérée"]
 out += ["| | " + " | ".join(labs) + " |", "|---|---|---|---|---|"] + [f"| {labs[i]} | " + " | ".join(f"{corr_[i, j]:+.2f}" for j in range(4)) + " |" for i in range(4)]
 open("etude/bot5min/resultat_combinaison_D.md", "w").write("\n".join(out)); print("\n".join(out))
+json.dump({str(st): dict(per=per2(st), up=d["up"], gm=d["gm"], a=d["a"], edge=d["edge"], ncl=d["ncl"], indep=d["indep"], baisse=d["baisse"], pn=d["it"][0], mise=d["it"][1], t=d["t"])
+           for st, d in FIRST.items()}, open("etude/bot5min/combinaison_D_opportunites.json", "w"), indent=0)
