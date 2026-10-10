@@ -5890,17 +5890,74 @@
 ],
 "start": 1791597000,
 "slug": "btc-updown-5m-1791597000"
+},
+"2026-10-10T05:30:50.283Z|Down": {
+"heure": "2026-10-10T05:30:50.283Z",
+"cote": "Down",
+"prix": 0.2529,
+"parts": 217.39,
+"U": 0,
+"D": 217.39130434782606,
+"cash": -54.97696156521738,
+"net": -54.98,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.435,
+"restant_s": 250,
+"journal": [
+"50.3s écart 0.20, 250 s restantes → achat Down 217.4 parts à 0.2529 (modèle 0.435)"
+],
+"start": 1791610200,
+"slug": "btc-updown-5m-1791610200"
+},
+"2026-10-10T05:25:19.063Z|Down": {
+"heure": "2026-10-10T05:25:19.063Z",
+"cote": "Down",
+"prix": 0.2522,
+"parts": 217.39,
+"U": 0,
+"D": 217.39130434782606,
+"cash": 162.57006678260868,
+"net": 162.57,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.437,
+"restant_s": 281,
+"journal": [
+"19.1s écart 0.21, 281 s restantes → achat Down 217.4 parts à 0.2522 (modèle 0.437)"
+],
+"start": 1791609900,
+"slug": "btc-updown-5m-1791609900"
+},
+"2026-10-10T05:23:11.266Z|Up": {
+"heure": "2026-10-10T05:23:11.266Z",
+"cote": "Up",
+"prix": 0.3216,
+"parts": 94.58,
+"U": 94.58,
+"D": 0,
+"cash": -30.4208976,
+"net": -30.42,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.501,
+"restant_s": 109,
+"journal": [
+"191.3s écart 0.20, 109 s restantes → achat Up 94.6 parts à 0.3216 (modèle 0.501)"
+],
+"start": 1791609600,
+"slug": "btc-updown-5m-1791609600"
 }
 },
 "resume_bot": {
 "depuis": 1791373568.406,
-"n": 682,
-"gains": 154,
-"pertes": 528,
-"pnl": 1242.2000000000037
+"n": 685,
+"gains": 155,
+"pertes": 530,
+"pnl": 1319.3700000000035
 },
-"n_sauves": 310,
-"maj": "2026-10-10 05:26 UTC",
+"n_sauves": 313,
+"maj": "2026-10-10 05:39 UTC",
 "archive": [
 [
 "2026-10-09T05:31:54.168Z",
@@ -8142,6 +8199,33 @@
 "une seule jambe",
 0.497,
 299
+],
+[
+"2026-10-10T05:23:11.266Z",
+"Up",
+0.3216,
+-30.42,
+"une seule jambe",
+0.501,
+109
+],
+[
+"2026-10-10T05:25:19.063Z",
+"Down",
+0.2522,
+162.57,
+"une seule jambe",
+0.437,
+281
+],
+[
+"2026-10-10T05:30:50.283Z",
+"Down",
+0.2529,
+-54.98,
+"une seule jambe",
+0.435,
+250
 ]
 ]
 }
