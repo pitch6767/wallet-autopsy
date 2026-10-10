@@ -249,7 +249,28 @@ export class Bot {
         const be = o.se / o.n, bm = o.sm / o.n, d = be - bm; cus = Math.max(0, cus + d - 0.005);
         return { bloc: o.bloc, cycles: o.cycles, mesures: o.n, calme: +(o.calme / o.n).toFixed(2), brierMoteur: +be.toFixed(4), brierCarnet: +bm.toFixed(4), ecart: +d.toFixed(4), cusum: +cus.toFixed(3), alerte: cus > 0.03 };
       });
-      return json({ regle: "CUSUM : on ajoute (Brier moteur − Brier carnet − 0,005) par tranche de 3 h, plancher 0 ; alerte au-dessus de 0,03. Aucune décision n'est modifiée.", blocs });
+      const F = new Map(RG.lignes.filter((x) => x.a === "BTC" && x.final != null).map((x) => [x.start, x.final]));
+      const cal = { A: Array.from({ length: 10 }, () => [0, 0, 0]), E: Array.from({ length: 10 }, () => [0, 0, 0]) };
+      const reg = {}, cov = { A: { n: 0, c50: 0, c80: 0, c95: 0 }, E: { n: 0, c50: 0, c80: 0, c95: 0 } };
+      const qE = (cle, pr) => { const T = QTWAP[cle]; if (!T) return null; const L = T.q.length - 1; return T.q[Math.min(L, Math.round(pr * L))]; };
+      for (const e of J) {
+        const g = G.get(e.start); if (!g || !e.ech) continue; const y = g === "Up" ? 1 : 0, fin = F.get(e.start);
+        for (const [pa, pe, m, Ep, sd, calme, cle] of e.ech) {
+          const r = calme ? "calme" : "agité", o = (reg[r] = reg[r] || { n: 0, A: 0, E: 0, C: 0 });
+          o.n++; o.A += (pa - y) ** 2; o.E += ((pe ?? pa) - y) ** 2; o.C += (m - y) ** 2;
+          for (const [k, p] of [["A", pa], ["E", pe ?? pa]]) { const b = cal[k][Math.min(9, Math.floor(p * 10))]; b[0]++; b[1] += p; b[2] += y; }
+          if (fin != null && sd > 0) {
+            const u = (fin - Ep) / sd;
+            cov.A.n++; cov.A.c50 += Math.abs(u) <= 0.674; cov.A.c80 += Math.abs(u) <= 1.2816; cov.A.c95 += Math.abs(u) <= 1.96;
+            const inter = (c) => { const lo = qE(cle, (1 - c) / 2), hi = qE(cle, 1 - (1 - c) / 2); return lo != null && u >= lo && u <= hi; };
+            if (QTWAP[cle]) { cov.E.n++; cov.E.c50 += inter(0.5); cov.E.c80 += inter(0.8); cov.E.c95 += inter(0.95); }
+          }
+        }
+      }
+      const calibration = Object.fromEntries(Object.entries(cal).map(([k, B2]) => [k, B2.map((b, i) => ({ tranche: i * 10 + "-" + (i * 10 + 10) + " %", n: b[0], probaMoyenne: b[0] ? +(b[1] / b[0]).toFixed(3) : null, upReel: b[0] ? +(b[2] / b[0]).toFixed(3) : null }))]));
+      const regimes = Object.fromEntries(Object.entries(reg).map(([r, o]) => [r, { mesures: o.n, brierA: +(o.A / o.n).toFixed(4), brierE: +(o.E / o.n).toFixed(4), brierCarnet: +(o.C / o.n).toFixed(4) }]));
+      const couverture = Object.fromEntries(Object.entries(cov).map(([k, c]) => [k, { mesures: c.n, i50: c.n ? +(c.c50 / c.n).toFixed(3) : null, i80: c.n ? +(c.c80 / c.n).toFixed(3) : null, i95: c.n ? +(c.c95 / c.n).toFixed(3) : null }]));
+      return json({ regle: "CUSUM : on ajoute (Brier moteur − Brier carnet − 0,005) par tranche de 3 h, plancher 0 ; alerte au-dessus de 0,03. Aucune décision n'est modifiée.", blocs, regimes, calibration, couverture });
     }
     if (u.pathname === "/api/twap_carnets") { const J = (this._twj || {}).twcarnet || (await this.state.storage.get("twcarnet")) || []; return json({ signaux: J }); }
     if (u.pathname === "/api/twap_confirme") { const J = this.TWC || (await this.state.storage.get("twc")) || []; return json({ signaux: J }); }
@@ -1780,6 +1801,12 @@ export class Bot {
           const bu = this.livreTrie(mk.up, "bids")[0], au = ua;
           if (ts2 !== hs2.last && bu && au && au[0] != null) {
             const p = phi(Z.z), m = (bu[0] + au[0]) / 2; hs2.last = ts2; hs2.n++; hs2.sp += p; hs2.sp2 += p * p; hs2.sm += m; hs2.sm2 += m * m; if (regime === "calme") hs2.calme++;
+            // échantillon toutes les 5 s pour la calibration et les intervalles : [proba A, proba E, milieu carnet, moyenne prévue, écart-type, calme 1/0, case de la table E]
+            if (ts2 % 5 === 0) {
+              const deb1 = mk.end - 60, rem1 = Z.remf * 60, bk = ts2 < deb1 ? "avant la fenêtre" : rem1 > 45 ? "45-60 s restantes" : rem1 > 30 ? "30-45 s" : rem1 > 15 ? "15-30 s" : "< 15 s";
+              const cle = QTWAP[bk + "|" + regime] ? bk + "|" + regime : bk + "|*";
+              (hs2.ech = hs2.ech || []).push([+p.toFixed(4), V["TWAP fin quantiles"] != null ? +V["TWAP fin quantiles"].toFixed(4) : null, +m.toFixed(3), +(mk.strike + Z.z * Z.sd).toFixed(2), +Z.sd.toFixed(3), regime === "calme" ? 1 : 0, cle]);
+            }
           }
         } catch (_) {}
         for (const [nom, p4] of Object.entries(V)) {
@@ -2472,6 +2499,16 @@ h+="<div style='margin-top:6px'>"+S.trades.slice(0,25).map(T=>"<div style='borde
 if(d.ouvertes.length)h+="<div class='card' style='margin-top:12px'><h2>Positions ouvertes</h2>"+d.ouvertes.map(P=>"<div>"+(noms[P.strat]||P.strat)+" "+P.actif+" — "+P.journal.slice(-3).join(" · ")+"</div>").join("")+"</div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,5000);
+</script>
+<script>
+fetch("/api/sante").then(r=>r.json()).then(d=>{const b=(d.blocs||[]).slice(-8);const box=document.getElementById("sante");if(!b.length){box.innerHTML="<div class='mu'>Santé du moteur TWAP : pas encore de cycle réglé enregistré.</div>";return;}
+const al=b[b.length-1].alerte;let h="<div class='card'><b>Santé du moteur TWAP fin</b> "+(al?"<span class='ko'>⚠ le moteur fait durablement moins bien que le carnet</span>":"<span class='ok'>normal</span>")+"<div class='mu'>Surveillance seulement : aucune décision n'est modifiée. Mesures entre 90 et 20 s avant la fin. Brier : erreur de prévision, plus bas = meilleur. A = TWAP fin original, E = TWAP fin quantiles.</div><table><tr><th>Tranche de 3 h</th><th>Cycles</th><th>Marché calme</th><th>Moteur A</th><th>Carnet</th><th>Alerte</th></tr>";
+for(const x of b){const t=new Date(x.bloc*1000);const lab=String(t.getUTCDate()).padStart(2,"0")+"."+String(t.getUTCMonth()+1).padStart(2,"0")+" "+String(t.getUTCHours()).padStart(2,"0")+":00";h+="<tr><td>"+lab+"</td><td>"+x.cycles+"</td><td>"+Math.round(x.calme*100)+" %</td><td>"+x.brierMoteur.toFixed(3)+"</td><td>"+x.brierCarnet.toFixed(3)+"</td><td>"+(x.alerte?"<span class='ko'>⚠ "+x.cusum.toFixed(3)+"</span>":x.cusum.toFixed(3))+"</td></tr>";}
+h+="</table>";
+const R=d.regimes||{};if(Object.keys(R).length){h+="<div style='margin-top:10px'><b>Brier par régime</b></div><table><tr><th>Régime</th><th>Mesures</th><th>A</th><th>E</th><th>Carnet</th></tr>";for(const [r,o] of Object.entries(R))h+="<tr><td>"+r+"</td><td>"+o.mesures+"</td><td>"+o.brierA.toFixed(3)+"</td><td>"+o.brierE.toFixed(3)+"</td><td>"+o.brierCarnet.toFixed(3)+"</td></tr>";h+="</table>";}
+const C=d.couverture||{};if(C.A&&C.A.mesures){const pc=(x)=>x==null?"—":Math.round(x*100)+" %";h+="<div style='margin-top:10px'><b>Intervalles de prévision de la moyenne finale</b> : part des résultats officiels tombés dedans (idéal 50 / 80 / 95 %)</div><table><tr><th>Modèle</th><th>Mesures</th><th>50 %</th><th>80 %</th><th>95 %</th></tr>";for(const k of ["A","E"])if(C[k])h+="<tr><td>"+k+"</td><td>"+C[k].mesures+"</td><td>"+pc(C[k].i50)+"</td><td>"+pc(C[k].i80)+"</td><td>"+pc(C[k].i95)+"</td></tr>";h+="</table>";}
+const K=d.calibration||{};if(K.A){h+="<div style='margin-top:10px'><b>Calibration</b> : quand le modèle annonce Up à x %, Up gagne-t-il vraiment x % du temps ?</div><table><tr><th>Annoncé</th><th>A : mesures</th><th>A : Up réel</th><th>E : mesures</th><th>E : Up réel</th></tr>";for(let i=0;i<10;i++){const a=K.A[i],e=K.E[i];if(!a.n&&!e.n)continue;h+="<tr><td>"+a.tranche+"</td><td>"+a.n+"</td><td>"+(a.upReel==null?"—":Math.round(a.upReel*100)+" %")+"</td><td>"+e.n+"</td><td>"+(e.upReel==null?"—":Math.round(e.upReel*100)+" %")+"</td></tr>";}h+="</table>";}
+box.innerHTML=h+"</div>";}).catch(()=>{});
 </script></body></html>`;
 const PAGE_N_V = (() => { let h = 5381; for (let i = 0; i < PAGE_N.length; i++) h = ((h * 33) ^ PAGE_N.charCodeAt(i)) >>> 0; return h.toString(36); })();
 const RAPPORT = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rapport des refus</title>${STYLE}</head><body>
