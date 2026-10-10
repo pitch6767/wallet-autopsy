@@ -2242,17 +2242,74 @@
 ],
 "start": 1791618300,
 "slug": "btc-updown-5m-1791618300"
+},
+"2026-10-10T09:07:13.871Z|Down": {
+"heure": "2026-10-10T09:07:13.871Z",
+"cote": "Down",
+"prix": 0.4476,
+"parts": 116.28,
+"U": 0,
+"D": 116.27906976744187,
+"cash": -52.052,
+"net": -52.05,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.491,
+"restant_s": 166,
+"journal": [
+"133.9s désaccord 20 vu à 0.29 (modèle 0.492) ; 10 s plus tard Polymarket a rejoint le modèle → achat à 0.4476, 166 s restantes"
+],
+"start": 1791623100,
+"slug": "btc-updown-5m-1791623100"
+},
+"2026-10-10T08:55:17.001Z|Down": {
+"heure": "2026-10-10T08:55:17.001Z",
+"cote": "Down",
+"prix": 0.3551,
+"parts": 86.57,
+"U": 0,
+"D": 86.57,
+"cash": -30.744757944000003,
+"net": -30.74,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.441,
+"restant_s": 283,
+"journal": [
+"17.0s désaccord 20 vu à 0.25 (modèle 0.454) ; 10 s plus tard Polymarket a rejoint le modèle → achat à 0.3551, 283 s restantes"
+],
+"start": 1791622500,
+"slug": "btc-updown-5m-1791622500"
+},
+"2026-10-10T08:45:44.370Z|Up": {
+"heure": "2026-10-10T08:45:44.370Z",
+"cote": "Up",
+"prix": 0.2842,
+"parts": 185.19,
+"U": 185.18518518518516,
+"D": 0,
+"cash": -52.628,
+"net": -52.63,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.422,
+"restant_s": 256,
+"journal": [
+"44.4s désaccord 20 vu à 0.18 (modèle 0.392) ; 10 s plus tard Polymarket a rejoint le modèle → achat à 0.2842, 256 s restantes"
+],
+"start": 1791621900,
+"slug": "btc-updown-5m-1791621900"
 }
 },
 "resume_bot": {
 "depuis": 1791394682.491,
-"n": 128,
+"n": 131,
 "gains": 49,
-"pertes": 79,
-"pnl": 344.5300000000001
+"pertes": 82,
+"pnl": 209.11000000000007
 },
-"n_sauves": 118,
-"maj": "2026-10-10 08:47 UTC",
+"n_sauves": 121,
+"maj": "2026-10-10 09:21 UTC",
 "archive": [
 [
 "2026-10-09T06:02:51.270Z",
@@ -2775,6 +2832,33 @@
 "gagné",
 0.496,
 69
+],
+[
+"2026-10-10T08:45:44.370Z",
+"Up",
+0.2842,
+-52.63,
+"perdu",
+0.422,
+256
+],
+[
+"2026-10-10T08:55:17.001Z",
+"Down",
+0.3551,
+-30.74,
+"perdu",
+0.441,
+283
+],
+[
+"2026-10-10T09:07:13.871Z",
+"Down",
+0.4476,
+-52.05,
+"perdu",
+0.491,
+166
 ]
 ]
 }
