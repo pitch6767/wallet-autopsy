@@ -2451,16 +2451,73 @@
 ],
 "start": 1791624600,
 "slug": "btc-updown-5m-1791624600"
+},
+"2026-10-10T11:27:41.934Z|Up": {
+"heure": "2026-10-10T11:27:41.934Z",
+"cote": "Up",
+"prix": 0.2529,
+"parts": 217.39,
+"U": 217.39130434782606,
+"D": 0,
+"cash": 162.4177687106087,
+"net": 162.42,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.531,
+"restant_s": 138,
+"journal": [
+"161.9s écart 0.30 (modèle 0.531, vendeur 0.23), 138 s restantes ; 3 s avant : Binance 0.0, perp -0.1 (+ = dans notre sens)"
+],
+"start": 1791631500,
+"slug": "btc-updown-5m-1791631500"
+},
+"2026-10-10T11:18:31.156Z|Up": {
+"heure": "2026-10-10T11:18:31.156Z",
+"cote": "Up",
+"prix": 0.1592,
+"parts": 8,
+"U": 8,
+"D": 0,
+"cash": -1.27344,
+"net": -1.27,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.487,
+"restant_s": 89,
+"journal": [
+"211.2s écart 0.34 (modèle 0.487, vendeur 0.15), 89 s restantes ; 3 s avant : Binance 0.0, perp 8.6 (+ = dans notre sens)"
+],
+"start": 1791630900,
+"slug": "btc-updown-5m-1791630900"
+},
+"2026-10-10T10:36:17.333Z|Down": {
+"heure": "2026-10-10T10:36:17.333Z",
+"cote": "Down",
+"prix": 0.2014,
+"parts": 174.11,
+"U": 0,
+"D": 174.11,
+"cash": -35.065819024,
+"net": -35.07,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.501,
+"restant_s": 223,
+"journal": [
+"77.3s écart 0.31 (modèle 0.501, vendeur 0.19), 223 s restantes ; 3 s avant : Binance -0.0, perp 0.1 (+ = dans notre sens)"
+],
+"start": 1791628500,
+"slug": "btc-updown-5m-1791628500"
 }
 },
-"n_sauves": 129,
-"maj": "2026-10-10 10:38 UTC",
+"n_sauves": 132,
+"maj": "2026-10-10 11:50 UTC",
 "resume_bot": {
 "depuis": 1791443011.094,
-"n": 129,
-"gains": 44,
-"pertes": 85,
-"pnl": 2672.39
+"n": 132,
+"gains": 45,
+"pertes": 87,
+"pnl": 2798.47
 },
 "archive": [
 [
@@ -3101,6 +3158,33 @@
 "perdu",
 0.475,
 143
+],
+[
+"2026-10-10T10:36:17.333Z",
+"Down",
+0.2014,
+-35.07,
+"perdu",
+0.501,
+223
+],
+[
+"2026-10-10T11:18:31.156Z",
+"Up",
+0.1592,
+-1.27,
+"perdu",
+0.487,
+89
+],
+[
+"2026-10-10T11:27:41.934Z",
+"Up",
+0.2529,
+162.42,
+"gagné",
+0.531,
+138
 ]
 ]
 }
