@@ -1,4 +1,5 @@
 import { Reel } from "./reel.js";
+import { RAPIDE_VERSION, RAPIDE_CODE, RAPIDE_LAUNCHER } from "./rapide_code.js";
 import { QTWAP } from "./quantiles_twap.js";
 // bot95 v2 — option A sur les 7 cryptos 5 min de Polymarket (BTC, ETH, SOL, XRP, DOGE, BNB, HYPE).
 // MODE FANTÔME : aucun ordre réel, aucune clé. Le bot note ce qu'il aurait fait.
@@ -301,6 +302,30 @@ export class Bot {
       }
       for (const o of Object.values(sigs)) o.resultat = +o.resultat.toFixed(2);
       return json({ regle: "CUSUM : on ajoute (Brier moteur − Brier carnet − 0,005) par tranche de 3 h, plancher 0 ; alerte au-dessus de 0,03. Aucune décision n'est modifiée.", blocs, regimes, calibration, couverture, signaux: sigs });
+    }
+    // ---- bot95 RAPIDE sur le VPS de Dublin (10.10.2026) : sert le code au VPS et reçoit ses mesures (jeton requis, haché ici)
+    if (u.pathname.startsWith("/api/rapide/")) {
+      const jeton = req.headers.get("x-rapide") || "";
+      const h = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(jeton)))].map((x) => x.toString(16).padStart(2, "0")).join("");
+      if (h !== "b0629aefe453fe1063c1dd8c27242736d59b30e6939e0cecc52c64de8898e03b") return new Response("non", { status: 403 });
+      if (u.pathname === "/api/rapide/version") return json({ version: RAPIDE_VERSION });
+      if (u.pathname === "/api/rapide/code") return json({ version: RAPIDE_VERSION, code: RAPIDE_CODE });
+      if (u.pathname === "/api/rapide/launcher") return new Response(RAPIDE_LAUNCHER, { headers: { "content-type": "text/plain; charset=utf-8" } });
+      if (u.pathname === "/api/rapide/donnees" && req.method === "POST") {
+        const d = await req.json();
+        await this.state.storage.put("rap:etat", { recu: now(), version: d.version, latence: d.latence, flux: d.flux });
+        for (const S of d.signaux || []) {
+          const cle = "rap:" + Math.floor(S.start / 3600), J = (await this.state.storage.get(cle)) || [];
+          if (!J.some((x) => x.start === S.start && x.nom === S.nom)) { J.push(S); await this.state.storage.put(cle, J); }
+        }
+        return json({ ok: true, n: (d.signaux || []).length });
+      }
+      return new Response("?", { status: 404 });
+    }
+    if (u.pathname === "/api/rapide") {
+      const M = await this.state.storage.list({ prefix: "rap:" }); const J = []; let etat = null;
+      for (const [k, v] of M) { if (k === "rap:etat") etat = v; else J.push(...v); }
+      J.sort((x, y) => x.start - y.start); return json({ etat, signaux: J });
     }
     if (u.pathname === "/api/vitesse") { const M = await this.state.storage.list({ prefix: "vit:" }); const J = []; for (const v of M.values()) J.push(...v); J.sort((x, y) => x.start - y.start); return json({ signaux: J, latPoly: { med: this.latPoly.length ? qtl(this.latPoly, 0.5) : null, p90: this.latPoly.length ? qtl(this.latPoly, 0.9) : null }, latDec: { med: this.latDec.length ? qtl(this.latDec, 0.5) : null, p90: this.latDec.length ? qtl(this.latDec, 0.9) : null } }); }
     if (u.pathname === "/api/v2f_variantes") { const M = await this.state.storage.list({ prefix: "v2fx:" }); const J = []; for (const v of M.values()) J.push(...v); J.sort((x, y) => x.start - y.start); return json({ signaux: J }); }

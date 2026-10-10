@@ -62,3 +62,10 @@ try:                                                         # vitesse (10.10) :
     vu = {(x["start"], x["nom"]) for x in old}; old += [x for x in J if (x["start"], x["nom"]) not in vu]
     old.sort(key=lambda x: (x["start"], x["nom"])); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("vitesse", len(old), d.get("latPoly"), d.get("latDec"))
 except Exception as e: print("vitesse", e)
+try:                                                         # bot95 rapide (VPS de Dublin) : signaux mesures a la milliseconde
+    d = get(U + "/api/rapide"); J = d.get("signaux", []); f = "bot95/rapide.json"
+    old = json.load(open(f)) if os.path.exists(f) else {"signaux": []}
+    vu = {(x["start"], x["nom"]) for x in old["signaux"]}; old["signaux"] += [x for x in J if (x["start"], x["nom"]) not in vu]
+    old["signaux"].sort(key=lambda x: (x["start"], x["nom"])); old["etat"] = d.get("etat")
+    json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("rapide", len(old["signaux"]), d.get("etat"))
+except Exception as e: print("rapide", e)
