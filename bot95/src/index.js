@@ -211,6 +211,24 @@ export class Bot {
         for (const P of [...this.N.ouvertes, ...this.N.attente]) if (P.strat === ancien) P.strat = neuf;
       }
       for (const k of NV.SUPPRIMEES) { delete this.N.strats[k]; await this.state.storage.delete(["nv:strat:" + k, "hist:" + k]); }
+      // REMISE À ZÉRO demandée par Pitch le 10.10.2026 13:43 : P&L, gains et pertes à 0 pour tous ; les trades d'avant sont gardés
+      // (copie complète dans raz:<id>:<stratégie>, archive hist:<stratégie> intacte, sauvegarde GitHub intacte, résumé d'avant dans avantRaz)
+      const RAZ_ID = "2026-10-10 13:43";
+      if (base && (await this.state.storage.get("nv:raz")) !== RAZ_ID) {
+        const t0 = now();
+        for (const [k, v] of Object.entries(this.N.strats)) {
+          const hk = await this.state.storage.get("hist:" + k);
+          await this.state.storage.put("raz:" + RAZ_ID + ":" + k, { depuis: v.depuis, jusqua: t0, n: v.n, pnl: v.pnl, gains: v.gains, pertes: v.pertes, issues: v.issues, trades: v.trades });
+          if (hk) { await this.state.storage.put("raz:" + RAZ_ID + ":hist:" + k, hk); await this.state.storage.delete("hist:" + k); }
+          v.avantRaz = { depuis: v.depuis, jusqua: t0, n: v.n, pnl: +(+v.pnl || 0).toFixed(2), gains: v.gains, pertes: v.pertes };
+          v.memoire = (v.trades || []).filter((P) => P.fini).slice(0, 60).map((P) => ({ start: P.start, end: P.end, prix: P.prix, net: P.net, fini: true }));
+          v.trades = []; v.n = 0; v.pnl = 0; v.gains = 0; v.pertes = 0; v.issues = {}; v.rq = null; v.depuis = t0;
+          await this.state.storage.put("nv:strat:" + k, v);
+        }
+        this.N.depuis = t0;
+        await this.state.storage.put("nv:base", { ...base, depuis: t0 });
+        await this.state.storage.put("nv:raz", RAZ_ID);
+      }
       const garde = (P) => !NV.SUPPRIMEES.includes(P.strat + " " + P.actif);
       this.N.ouvertes = (this.N.ouvertes || []).filter(garde); this.N.attente = (this.N.attente || []).filter(garde);
       this.BL = (await this.state.storage.get("blink")) || { depuis: now(), evts: [] };
@@ -2113,7 +2131,7 @@ export class Bot {
     // 3. PAUSE MÉMOIRE : 20 derniers trades RÉGLÉS de V2-F original ; pause si somme(1 si gagné sinon 0 − prix payé) < −2 ; reprise dès que la somme repasse à −2 ou plus
     if (NV.ACTIVES.includes("V2-F pause memoire") && !H.fait["V2-F pause memoire"]) {
       H.fait["V2-F pause memoire"] = true;
-      const R = (this.nStrat("V2-F ecart qui grandit " + a).trades || []).filter((P) => P.fini && P.end <= t).slice(0, 20);
+      const S0 = this.nStrat("V2-F ecart qui grandit " + a), R = [...(S0.trades || []), ...(S0.memoire || [])].filter((P) => P.fini && P.end <= t).slice(0, 20);
       const somme = R.reduce((x, P) => x + ((P.net > 0 ? 1 : 0) - (P.prix || 0)), 0);
       const pause = R.length === 20 && somme < -2;
       const S = { ...base, nom: "V2-F pause memoire", nRegles: R.length, somme20: +somme.toFixed(3), derniersRegles: R.map((P) => P.start) };
