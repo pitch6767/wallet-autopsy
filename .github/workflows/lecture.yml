@@ -1,5 +1,5 @@
 # lecture des résultats fantômes du bot (aucun déploiement) — relancer en modifiant la ligne suivante
-# demande: 15
+# demande: 16
 name: Lecture bot95
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
 jobs:
   lire:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Lire
@@ -23,5 +23,17 @@ jobs:
           curl -sS -m 30 "$U/api/rec?a=BTC&n=60" | python3 -c "import json,sys;d=json.load(sys.stdin);print('cles',d['cles']);print([ (len(x['lignes']), x['lignes'][0][:3], x['lignes'][-1][:3]) for x in d['docs']])" > bot95/rec_diag.txt 2>&1
           curl -sS -m 30 "$U/api/m97/compte" > bot95/m97.txt 2>&1; echo >> bot95/m97.txt; curl -sS -m 60 "$U/api/m97?n=2" | python3 -c "import json,sys;d=json.load(sys.stdin);[print(json.dumps({k:(v if k!='boite' else len(v['lignes'])) for k,v in x.items()})[:3000]) for x in d['docs']]" >> bot95/m97.txt 2>&1
           curl -sS -m 60 "$U/api/sig?a=BTC&n=3" | python3 -c "import json,sys;d=json.load(sys.stdin);print(d['cles']);x=d['docs'][-1];print(len(x['lignes']),'lignes');print(dict(zip(x['colonnes'],x['lignes'][-1])))" > bot95/sig.txt 2>&1
+          python3 - <<'P' > bot95/lead_err.txt 2>&1
+          import json, gzip, urllib.request
+          U = "https://bot95.pitch67.workers.dev"; D = []; apres = None
+          for _ in range(400):
+              d = json.load(urllib.request.urlopen(U + "/api/lead?n=40" + (f"&apres={apres}" if apres else ""), timeout=90))
+              D += d["docs"]
+              if len(d["cles"]) < 40: break
+              apres = d["suivant"]
+          json.dump(D, gzip.open("bot95/lead.json.gz", "wt")); print("photos", len(D))
+          e = json.load(urllib.request.urlopen(U + "/api/etat", timeout=90))["v1"]
+          json.dump({"btc": e["trades"], "eth": e["eth"]["trades"]}, open("bot95/v1_trades.json", "w"), ensure_ascii=False); print("v1", len(e["trades"]))
+          P
           git config user.name lecture; git config user.email bot@users.noreply.github.com
-          git add bot95/sig.txt bot95/m97.txt bot95/rec_diag.txt bot95/debug.txt bot95/nouveaux.json bot95/v1.json bot95/lecture_err.txt; git commit -q -m "Lecture bot95 [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
+          git add bot95/lead.json.gz bot95/v1_trades.json bot95/lead_err.txt bot95/sig.txt bot95/m97.txt bot95/rec_diag.txt bot95/debug.txt bot95/nouveaux.json bot95/v1.json bot95/lecture_err.txt; git commit -q -m "Lecture bot95 [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
