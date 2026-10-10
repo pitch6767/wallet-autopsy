@@ -3,15 +3,14 @@
 # Ne touche à rien d'autre sur le serveur (arb-bot, event_arb restent intacts). N'ouvre aucun port.
 set -euo pipefail
 TOKEN="${1:?jeton manquant}"
-# 1. Node.js 22 si absent ou trop ancien (WebSocket natif nécessaire)
-if ! command -v node >/dev/null || [ "$(node -p 'process.versions.node.split(".")[0]')" -lt 22 ]; then
-  curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-  apt-get install -y nodejs
-fi
-NODE=$(command -v node)
-# 2. horloge synchronisée (mesures à la milliseconde)
-command -v chronyc >/dev/null || apt-get install -y chrony
-systemctl enable --now chrony || systemctl enable --now chronyd || true
+# 1. Node.js 22 PRIVÉ dans /opt/bot95-rapide/node (le Node du système, s'il existe, n'est pas touché)
+id bot95 >/dev/null 2>&1 || useradd --system --create-home --home-dir /opt/bot95-rapide --shell /usr/sbin/nologin bot95
+mkdir -p /opt/bot95-rapide/node
+ARCH=$(uname -m); case "$ARCH" in x86_64) NA=x64;; aarch64) NA=arm64;; *) echo "architecture $ARCH non prévue"; exit 1;; esac
+curl -fsSL "https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-$NA.tar.xz" | tar -xJ -C /opt/bot95-rapide/node --strip-components=1
+NODE=/opt/bot95-rapide/node/bin/node
+# 2. horloge : on vérifie seulement qu'elle est synchronisée (rien n'est installé)
+timedatectl show -p NTPSynchronized || true
 # 3. utilisateur dédié, sans droits root, sans accès aux autres bots
 id bot95 >/dev/null 2>&1 || useradd --system --create-home --home-dir /opt/bot95-rapide --shell /usr/sbin/nologin bot95
 mkdir -p /opt/bot95-rapide
@@ -45,8 +44,8 @@ SVC
 systemctl daemon-reload
 systemctl enable --now bot95-rapide
 sleep 15
-echo "=== node"; node --version
-echo "=== horloge"; chronyc tracking 2>/dev/null | head -5 || timedatectl
+echo "=== node"; $NODE --version
+echo "=== horloge"; timedatectl
 echo "=== service"; systemctl --no-pager status bot95-rapide | head -12
 echo "=== journal"; journalctl -u bot95-rapide --no-pager -n 20
 echo "=== latence vers Polymarket"; for i in 1 2 3 4 5; do curl -s -o /dev/null -w "%{time_connect} %{time_starttransfer}\n" https://clob.polymarket.com/time; done
