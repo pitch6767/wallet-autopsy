@@ -18,4 +18,4 @@ jobs:
           if [ -f bot95/zone_trades.json ] && [ ! -f bot95/sauvegarde/.importe ]; then python3 etude/bot5min/sauvegarde.py bot95/zone_trades.json > /tmp/s.log 2>&1 && touch bot95/sauvegarde/.importe; else python3 etude/bot5min/sauvegarde.py > /tmp/s.log 2>&1; fi
           tail -60 /tmp/s.log
           git config user.name sauvegarde; git config user.email bot@users.noreply.github.com
-          for f in bot95/sauvegarde bot95/reglements.json bot95/twap_confirme.json bot95/twap_carnets.json; do [ -e "$f" ] && git add "$f"; done; git commit -q -m "Sauvegarde des trades [skip ci]"; for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push -q && break; sleep 7; done
+          for f in bot95/sauvegarde bot95/reglements.json bot95/twap_confirme.json bot95/twap_carnets.json bot95/v2f_variantes.json; do [ -e "$f" ] && git add "$f"; done; git commit -q -m "Sauvegarde des trades [skip ci]"; for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push -q && break; sleep 7; done

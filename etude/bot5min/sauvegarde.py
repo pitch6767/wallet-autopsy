@@ -50,3 +50,9 @@ try:                                                         # carnets 8 niveaux
     vu = {(x["start"], x["nom"]) for x in old}; old += [x for x in J if (x["start"], x["nom"]) not in vu]
     old.sort(key=lambda x: (x["start"], x["nom"])); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("twap_carnets", len(old))
 except Exception as e: print("twap_carnets", e)
+try:                                                         # V2-F et ses 3 variantes (10.10) : chaque opportunite achetee ou refusee
+    J = get(U + "/api/v2f_variantes").get("signaux", []); f = "bot95/v2f_variantes.json"
+    old = json.load(open(f)) if os.path.exists(f) else []
+    vu = {(x["start"], x["nom"]) for x in old}; old += [x for x in J if (x["start"], x["nom"]) not in vu]
+    old.sort(key=lambda x: (x["start"], x["nom"])); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("v2f_variantes", len(old))
+except Exception as e: print("v2f_variantes", e)
