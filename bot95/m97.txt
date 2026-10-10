@@ -1,3 +1,15 @@
-{"n":40}
-{"actif": "BTC", "start": 1791357000, "slug": "btc-updown-5m-1791357000", "phase": "entree", "t": 1791357169.74, "tleft": 130.3, "cote": "Up", "ask": 0.98, "proba_modele": 0.8291739700801639, "strike": 84128.99989206198, "perp": 84181.6, "chainlink": 84210.12321203834, "spot_binance": 84230, "coinbase": 84204.95, "liq_30s": [], "boite": 100, "bybit_prof": {"tranches_pb": [2, 5, 10, 20, 50, 100, 200], "achat": [2770680, 10095388, 15778471, 0, 0, 0, 0], "vente": [1823127, 8404755, 13045157, 0, 0, 0, 0], "entre_prix_et_strike_achat": 16752039, "entre_prix_et_strike_vente": 0}, "interet_ouvert": [[1791357000000, 58957.724], [1791356700000, 58914.222], [1791356400000, 58887.043], [1791356100000, 58907.646], [1791355800000, 58909.857], [1791355500000, 58945.004]]}
-{"actif": "ETH", "start": 1791357000, "slug": "eth-updown-5m-1791357000", "phase": "entree", "t": 1791357197.61, "tleft": 102.4, "cote": "Up", "ask": 0.93, "proba_modele": 0.7358559705031056, "strike": 2616.469715795, "perp": 2617.29, "chainlink": 2617.2146384834723, "spot_binance": 2618.18, "coinbase": 2617.74, "liq_30s": [], "boite": 100, "bybit_prof": {"tranches_pb": [2, 5, 10, 20, 50, 100, 200], "achat": [1109575, 2723314, 7500893, 16642093, 4763527, 0, 0], "vente": [1014870, 3746991, 9704401, 19077419, 3773718, 0, 0], "entre_prix_et_strike_achat": 2073241, "entre_prix_et_strike_vente": 0}, "interet_ouvert": [[1791357000000, 863257.75], [1791356700000, 862978.4], [1791356400000, 863200.73], [1791356100000, 863393.99], [1791355800000, 863754.32], [1791355500000, 864806.41]], "options_oi": [[2540, 0, 1385], [2550, 0, 180], [2560, 0, 952], [2580, 0, 1601], [2600, 640, 2030], [2620, 549, 1045], [2640, 410, 1469], [2660, 192, 2709], [2680, 1249, 4059]]}
+{"n":1959}
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
