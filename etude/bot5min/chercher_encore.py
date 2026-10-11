@@ -52,7 +52,7 @@ def main():
     for st, mk in M.items():
         g = mk["gagnant"]
         for w, role, out, side, sz, p, ts in mk["ex"]:
-            if role != "P": continue
+            if role != "P" or not (st <= ts < st + 300): continue        # horodatages hors du marché (rares) ignorés
             X, px = (out, p) if side == "BUY" else (("Down" if out == "Up" else "Up"), 1 - p)
             win = 1.0 if g == X else 0.0; fee = sz * 0.07 * p * (1 - p)
             for k in (("prix", min(int(px * 10), 9)), ("minute", min(int((ts - st) // 60), 4)), ("taille", 0 if sz * p < 10 else 1 if sz * p < 50 else 2 if sz * p < 200 else 3)):

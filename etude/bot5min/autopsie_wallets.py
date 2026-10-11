@@ -149,6 +149,21 @@ def main():
         seuil = {"0,95–0,97": "≈ 96 %", "0,97–0,98": "≈ 97,5 %", "0,98–0,99": "≈ 98,5 %", "≥ 0,99": "≈ 99,3 %"}[b]
         w(f"| {b} | {x['n']} | {x['parts']:.0f} | {len(x['marches'])} | {x['perdues']} | {seuil} | {100 * (1 - x['perdues'] / x['n']):.2f} % | {x['gain']:+.0f} $ | {100 * x['gain'] / x['parts']:+.2f} c | {max(x['pertes']) if x['pertes'] else 0:.0f} $ |")
     w("\nLecture : à 0,98, une seule part perdue coûte 0,98 $ et efface 49 parts gagnées. Une politique plafonnée à 0,95 se lit sur la 1re ligne.\n")
+    # même mesure séparée par fenêtre de fin de cycle (30–15 s, 15–5 s, 5–0 s restantes)
+    w("**Séparation par temps restant** (achats maker, mêmes tranches de prix)\n")
+    w("| Prix | 30–15 s restantes : remplis / perdants / résultat | 15–5 s | 5–0 s |\n|---|---|---|---|")
+    F_ = collections.defaultdict(lambda: [0, 0, 0.0])
+    for st, mk in M.items():
+        if st in tronques: continue
+        g = mk["gagnant"]
+        for wal, role, out, side, sz, p, ts in mk["ex"]:
+            if role != "M" or side != "BUY" or p < 0.95 or not (270 <= ts - st < 300): continue
+            b = "0,95–0,97" if p < 0.97 else ("0,97–0,98" if p < 0.98 else ("0,98–0,99" if p < 0.99 else "≥ 0,99"))
+            fen = "30–15" if ts - st < 285 else ("15–5" if ts - st < 295 else "5–0")
+            win = 1.0 if out == g else 0.0; x = F_[(b, fen)]; x[0] += 1; x[1] += (win == 0); x[2] += sz * (win - p)
+    for b in ("0,95–0,97", "0,97–0,98", "0,98–0,99", "≥ 0,99"):
+        w(f"| {b} | " + " | ".join(f"{F_[(b, f)][0]} / {F_[(b, f)][1]} / {F_[(b, f)][2]:+.0f} $" for f in ("30–15", "15–5", "5–0")) + " |")
+    w("")
     # ---------------- P5 intégrité
     w("## 5. Intégrité des données\n")
     w(f"- Marchés lus : {len(M)} ; incomplets (≥ 10 000 exécutions) : {len(tronques)} (exclus des résultats). Plafond de l'API Data : décalage ≤ 10 000.")
