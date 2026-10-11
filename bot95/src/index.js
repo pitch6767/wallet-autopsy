@@ -351,6 +351,7 @@ export class Bot {
       for (let i = 0; i < v.parts; i++) { const c = await this.state.storage.get(`rapc:${st}:${String(i).padStart(3, "0")}`); out.set(c, o); o += c.length; }
       return new Response(out, { headers: { "content-type": "application/gzip", "cache-control": "no-store" } });
     }
+    if (u.pathname === "/api/pbdiag") { try { const c = await identifiantsLecture(this.state.storage); return json({ ok: true, adresse: c.adresse, cle: !!c.apiKey }); } catch (e) { return json({ ok: false, erreur: String((e && e.stack) || e).slice(0, 800) }); } }
     if (u.pathname === "/api/rapidemaker") { const M = await this.state.storage.list({ prefix: "rapm:" }); const J = []; for (const v of M.values()) J.push(...v); J.sort((x, y) => x.tPose - y.tPose); return json({ offres: J }); }
     if (u.pathname === "/api/rapide") {
       const M = await this.state.storage.list({ prefix: "rap:" }); const J = []; let etat = null;
