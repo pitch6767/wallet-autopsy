@@ -24342,49 +24342,49 @@
 }
 ],
 "etat": {
-"recu": 1791723353.674,
+"recu": 1791723713.629,
 "version": "1b7a7fdde32b",
 "latence": {
 "rttClob_ms": {
-"med": 28.14,
-"p10": 26.08,
-"p90": 32.55,
-"n": 7
+"med": 32.07,
+"p10": 26.85,
+"p90": 37.61,
+"n": 31
 },
 "polyVersNous_ms": {
-"med": 18.47802734375,
-"p10": 17.76171875,
-"p90": 20.0771484375
+"med": 10.29833984375,
+"p10": 9.5498046875,
+"p90": 14.222900390625
 },
 "calcul_us": {
-"med": null,
-"p90": null
+"med": 215.103,
+"p90": 874.343
 },
-"evaluations": 13888
+"evaluations": 170044
 },
 "flux": {
 "perp": {
-"muet_s": 1.4,
+"muet_s": 2.5,
 "reconnexions": 1
 },
 "okx": {
-"muet_s": 0.9,
+"muet_s": 0.7,
 "reconnexions": 1
 },
 "bn": {
-"muet_s": 0.3,
+"muet_s": 0.1,
 "reconnexions": 1
 },
 "cb": {
-"muet_s": 0.5,
+"muet_s": 0,
 "reconnexions": 1
 },
 "cl": {
-"muet_s": 0.6,
+"muet_s": 0.5,
 "reconnexions": 1
 },
 "pb": {
-"muet_s": 0.8,
+"muet_s": 0.7,
 "reconnexions": 1
 },
 "bnd": {
@@ -24392,79 +24392,79 @@
 "reconnexions": 1
 },
 "byob": {
-"muet_s": 0.2,
+"muet_s": 0.1,
 "reconnexions": 1
 },
 "poly": {
 "muet_s": 0,
-"reconnexions": 3
+"reconnexions": 5
 }
 },
 "systeme": {
-"rss_Mo": 100,
-"tas_Mo": 18,
+"rss_Mo": 142,
+"tas_Mo": 24,
 "disque": {
 "libre_Mo": 51819,
 "total_Mo": 61225
 },
 "dernierCycle": {
-"start": 1791723000,
-"ev": 14950,
-"ex": 186,
-"octets": 61694,
+"start": 1791723300,
+"ev": 257063,
+"ex": 764,
+"octets": 525682,
 "coupe": false
 }
 },
 "chainlink": {
 "decomposition_rtds_ms": {
 "publication": {
-"med": 1130,
-"p10": 823,
-"p90": 1477,
-"n": 116
+"med": 1125,
+"p10": 832,
+"p90": 1517,
+"n": 472
 },
 "transport": {
-"med": 329.66845703125,
-"p10": 184.10693359375,
-"p90": 412.73095703125,
-"n": 116
+"med": 291.897705078125,
+"p10": 181.996826171875,
+"p90": 414.736083984375,
+"n": 472
 },
 "traitement_boucle": {
-"med": 0.12109375,
+"med": 0.219970703125,
 "p10": 0,
-"p90": 0.81982421875,
-"n": 1197
+"p90": 0.923095703125,
+"n": 2000
 }
 },
 "rtds_ms": {
-"med": 1408.62451171875,
-"p10": 1076.82861328125,
-"p90": 1783.000244140625,
-"n": 116
+"med": 1417.16259765625,
+"p10": 1095.119384765625,
+"p90": 1805.944091796875,
+"n": 472
 },
 "polybolt_ms": {
-"med": 1259.318603515625,
-"p10": 972.700439453125,
-"p90": 1665.927490234375,
-"n": 115
+"med": 1277.410888671875,
+"p10": 983.6220703125,
+"p90": 1631.190673828125,
+"n": 471
 },
 "twap_ms": {
-"med": 1320.5654296875,
-"p10": 1041.450439453125,
+"med": 1343.064453125,
+"p10": 1050.641357421875,
 "p90": 1689.891845703125,
-"n": 115
+"n": 471
 },
 "premier": {
-"rtds": 7,
-"pb": 108
+"rtds": 28,
+"pb": 443
 },
 "avanceDuPremier_ms": {
-"rtds": 10.6,
-"polybolt": 172.6
+"rtds": 23.1,
+"polybolt": 142.5
 },
 "messages": {
-"rtds": 116,
-"pb": 115
+"rtds": 472,
+"pb": 471
 },
 "exemples": [
 "{\"v\":1,\"channel\":\"price.crypto\",\"seq\":1,\"ts\":1791723234000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83040.614787275\",\"timestamp\":1791723116000,\"value\":83040.614787275},{\"full_accuracy_value\":\"83040.55721969\",\"timestamp\":1791723117000,\"value\":83040.55721969},{\"full_accuracy_value\":\"83040.548629915\",\"timestamp\":1791723118000,\"value\":83040.54862991499},{\"full_accuracy_value\":\"83040.42789078678\",\"timestamp\":1791723119000,\"value\":83040.42789078677},{\"full_accuracy_value\":\"83038.863837204695\",\"timestamp\":1791723120000,\"value\":83038.86383720468},{\"full_accuracy_value\":\"83037.1716941",
@@ -24485,138 +24485,197 @@
 },
 "makerEnCours": {
 "offres": {
-"M3 anticipation Chainlink": {
-"posees": 0,
-"remplies": 1
-},
-"M5 remplissage attendu": {
-"posees": 0,
-"remplies": 6
-},
 "M2 cotation marge 5 c": {
-"posees": 2,
-"remplies": 7
+"posees": 0,
+"remplies": 3
 },
 "M4 retrait toxique": {
-"posees": 2,
-"remplies": 6
+"posees": 1,
+"remplies": 8
 },
 "M4a seul bourses -10 $": {
-"posees": 2,
-"remplies": 7
+"posees": 0,
+"remplies": 3
 },
 "M4b seul flux agressif": {
-"posees": 2,
-"remplies": 7
+"posees": 0,
+"remplies": 3
 },
 "M4c seul ventes Polymarket": {
-"posees": 2,
-"remplies": 6
+"posees": 1,
+"remplies": 7
 },
-"M6 duree de vie 1000 ms": {
-"posees": 2,
-"remplies": 5
-},
-"M6 duree de vie 500 ms": {
-"posees": 2,
-"remplies": 1
+"M6 duree de vie 100 ms": {
+"posees": 0,
+"remplies": 4
 },
 "M6 duree de vie 250 ms": {
 "posees": 1,
 "remplies": 2
 },
-"M6 duree de vie 100 ms": {
-"posees": 2,
-"remplies": 1
+"M6 duree de vie 500 ms": {
+"posees": 0,
+"remplies": 3
+},
+"M6 duree de vie 1000 ms": {
+"posees": 0,
+"remplies": 3
+},
+"M5 remplissage attendu": {
+"posees": 0,
+"remplies": 4
 },
 "M2 cotation marge 10 c": {
-"posees": 2,
-"remplies": 0
+"posees": 0,
+"remplies": 3
 }
 },
 "compteurs": {
 "M3 anticipation Chainlink": {
-"posees": 4,
+"posees": 12,
 "rejetees": 0,
-"annulees": 4,
-"remplies": 1,
-"retraitsToxiques": 0
-},
-"M2 cotation marge 5 c": {
-"posees": 49,
-"rejetees": 0,
-"annulees": 47,
-"remplies": 9,
-"retraitsToxiques": 0
-},
-"M2 cotation marge 10 c": {
-"posees": 56,
-"rejetees": 0,
-"annulees": 54,
-"remplies": 0,
-"retraitsToxiques": 0
-},
-"M4 retrait toxique": {
-"posees": 52,
-"rejetees": 0,
-"annulees": 50,
-"remplies": 8,
-"retraitsToxiques": 6
-},
-"M4a seul bourses -10 $": {
-"posees": 50,
-"rejetees": 0,
-"annulees": 48,
-"remplies": 9,
-"retraitsToxiques": 0
-},
-"M4b seul flux agressif": {
-"posees": 49,
-"rejetees": 0,
-"annulees": 47,
-"remplies": 9,
-"retraitsToxiques": 0
-},
-"M4c seul ventes Polymarket": {
-"posees": 51,
-"rejetees": 0,
-"annulees": 49,
-"remplies": 8,
-"retraitsToxiques": 0
-},
-"M6 duree de vie 100 ms": {
-"posees": 602,
-"rejetees": 0,
-"annulees": 600,
+"annulees": 12,
 "remplies": 2,
 "retraitsToxiques": 0
 },
-"M6 duree de vie 250 ms": {
-"posees": 312,
+"M2 cotation marge 5 c": {
+"posees": 106,
 "rejetees": 0,
-"annulees": 311,
-"remplies": 3,
+"annulees": 106,
+"remplies": 14,
+"retraitsToxiques": 0
+},
+"M2 cotation marge 10 c": {
+"posees": 115,
+"rejetees": 0,
+"annulees": 115,
+"remplies": 5,
+"retraitsToxiques": 0
+},
+"M4 retrait toxique": {
+"posees": 202,
+"rejetees": 1,
+"annulees": 200,
+"remplies": 19,
+"retraitsToxiques": 34
+},
+"M4a seul bourses -10 $": {
+"posees": 107,
+"rejetees": 0,
+"annulees": 107,
+"remplies": 15,
+"retraitsToxiques": 0
+},
+"M4b seul flux agressif": {
+"posees": 107,
+"rejetees": 0,
+"annulees": 107,
+"remplies": 14,
+"retraitsToxiques": 0
+},
+"M4c seul ventes Polymarket": {
+"posees": 201,
+"rejetees": 1,
+"annulees": 199,
+"remplies": 18,
+"retraitsToxiques": 0
+},
+"M6 duree de vie 100 ms": {
+"posees": 2688,
+"rejetees": 4,
+"annulees": 2683,
+"remplies": 9,
+"retraitsToxiques": 0
+},
+"M6 duree de vie 250 ms": {
+"posees": 1380,
+"rejetees": 3,
+"annulees": 1376,
+"remplies": 9,
 "retraitsToxiques": 0
 },
 "M6 duree de vie 500 ms": {
-"posees": 179,
+"posees": 565,
 "rejetees": 0,
-"annulees": 177,
-"remplies": 3,
+"annulees": 565,
+"remplies": 9,
 "retraitsToxiques": 0
 },
 "M6 duree de vie 1000 ms": {
-"posees": 111,
+"posees": 335,
 "rejetees": 0,
-"annulees": 109,
-"remplies": 8,
+"annulees": 335,
+"remplies": 14,
 "retraitsToxiques": 0
 },
 "M5 remplissage attendu": {
-"posees": 27,
+"posees": 78,
+"rejetees": 4,
+"annulees": 74,
+"remplies": 18,
+"retraitsToxiques": 0
+},
+"M0 temoin aleatoire": {
+"posees": 2,
 "rejetees": 0,
-"annulees": 27,
-"remplies": 8,
+"annulees": 2,
+"remplies": 2,
+"retraitsToxiques": 0
+},
+"M1 V2-F incertitude 0,01 %": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 1,
+"remplies": 0,
+"retraitsToxiques": 0
+},
+"M8 hybride V2-F incertitude 0,01 %": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 1,
+"remplies": 0,
+"retraitsToxiques": 0
+},
+"M1 cohorte B : V2-F corrige 0,015 %": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 1,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M8 hybride cohorte B : V2-F corrige 0,015 %": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 1,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M1 V2-F ecart qui grandit": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 1,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M8 hybride V2-F ecart qui grandit": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 1,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M1 desaccord 30": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 0,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M8 hybride desaccord 30": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 0,
+"remplies": 1,
 "retraitsToxiques": 0
 }
 }
