@@ -1,1 +1,688 @@
-[]
+[
+{
+"oid": "1791716100:1",
+"variante": "M1 V2-F ecart qui grandit",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.2,
+"parts": 250,
+"tPose": 1791716109580.1,
+"lat_ms": 15,
+"etat": "remplie",
+"qDevant": 79.86,
+"qp": 0,
+"qr": 14.03675634054426,
+"remplP": 250,
+"remplR": 250,
+"premierRempl_ms": 3022.5,
+"rempl": [
+[
+3022.5,
+"p",
+250
+],
+[
+3022.6,
+"r",
+250
+]
+],
+"modeleCle": "pu",
+"modele": 0.4642,
+"a0": 0.21,
+"tArrivee": 1791716109595.2,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -50,
+"proportionnel": -50
+}
+},
+{
+"oid": "1791716100:14",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.15,
+"parts": 333.33,
+"tPose": 1791716112859.5,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 133.33,
+"qp": 0,
+"qr": 0,
+"remplP": 127.4346,
+"remplR": 77.4346,
+"premierRempl_ms": 60.8,
+"rempl": [
+[
+60.8,
+"p",
+96.67
+],
+[
+60.8,
+"r",
+46.67
+],
+[
+158,
+"p",
+10.35
+],
+[
+158,
+"r",
+10.35
+],
+[
+191.7,
+"p",
+5.24
+],
+[
+191.7,
+"r",
+5.24
+],
+[
+198.7,
+"p",
+5.06
+],
+[
+198.7,
+"r",
+5.06
+],
+[
+797.4,
+"p",
+10.12
+],
+[
+797.4,
+"r",
+10.12
+]
+],
+"modele": 0.4318,
+"a0": 0.16,
+"tArrivee": 1791716112875,
+"tAnnulDemande": 1791716113682.4,
+"raison": "re-cotation",
+"tAnnulee": 1791716113697,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -19.12,
+"proportionnel": -11.62
+}
+},
+{
+"oid": "1791716100:15",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.15,
+"parts": 333.33,
+"tPose": 1791716112859.5,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 133.33,
+"qp": 0,
+"qr": 0,
+"remplP": 127.4346,
+"remplR": 77.4346,
+"premierRempl_ms": 60.8,
+"rempl": [
+[
+60.8,
+"p",
+96.67
+],
+[
+60.8,
+"r",
+46.67
+],
+[
+158,
+"p",
+10.35
+],
+[
+158,
+"r",
+10.35
+],
+[
+191.7,
+"p",
+5.24
+],
+[
+191.7,
+"r",
+5.24
+],
+[
+198.7,
+"p",
+5.06
+],
+[
+198.7,
+"r",
+5.06
+],
+[
+797.4,
+"p",
+10.12
+],
+[
+797.4,
+"r",
+10.12
+]
+],
+"modele": 0.4318,
+"a0": 0.16,
+"tArrivee": 1791716112875,
+"tAnnulDemande": 1791716113682.5,
+"raison": "re-cotation",
+"tAnnulee": 1791716113697.1,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -19.12,
+"proportionnel": -11.62
+}
+},
+{
+"oid": "1791716100:24",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.16,
+"parts": 239.91,
+"tPose": 1791716117282.1,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 173,
+"qp": 0,
+"qr": 0,
+"remplP": 0,
+"remplR": 13.8691,
+"premierRempl_ms": 1168.9,
+"rempl": [
+[
+1169,
+"r",
+1.19
+],
+[
+1414.1,
+"r",
+5
+],
+[
+3684.5,
+"r",
+5.3
+],
+[
+3788.6,
+"r",
+1.19
+],
+[
+3956.9,
+"r",
+1.19
+]
+],
+"modele": 0.4397,
+"a0": 0.17,
+"tArrivee": 1791716117296.6,
+"tAnnulDemande": 1791716121434.2,
+"raison": "re-cotation",
+"tAnnulee": 1791716121449.4,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": 0,
+"proportionnel": -2.22
+}
+},
+{
+"oid": "1791716100:25",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.16,
+"parts": 239.91,
+"tPose": 1791716117282.1,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 173,
+"qp": 0,
+"qr": 0,
+"remplP": 0,
+"remplR": 13.8691,
+"premierRempl_ms": 1169,
+"rempl": [
+[
+1169,
+"r",
+1.19
+],
+[
+1414.1,
+"r",
+5
+],
+[
+3684.5,
+"r",
+5.3
+],
+[
+3788.6,
+"r",
+1.19
+],
+[
+3957,
+"r",
+1.19
+]
+],
+"modele": 0.4397,
+"a0": 0.17,
+"tArrivee": 1791716117296.6,
+"tAnnulDemande": 1791716121434.3,
+"raison": "re-cotation",
+"tAnnulee": 1791716121449.4,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": 0,
+"proportionnel": -2.22
+}
+},
+{
+"oid": "1791716100:42",
+"variante": "M1 desaccord 30",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.14,
+"parts": 357.14,
+"tPose": 1791716123038.4,
+"lat_ms": 15,
+"etat": "remplie",
+"qDevant": 1078.8,
+"qp": 0,
+"qr": 0,
+"remplP": 357.14,
+"remplR": 357.14,
+"premierRempl_ms": 24965.8,
+"rempl": [
+[
+24965.8,
+"p",
+357.14
+],
+[
+24965.8,
+"r",
+357.14
+]
+],
+"modeleCle": "pu",
+"modele": 0.4534,
+"a0": 0.15,
+"tArrivee": 1791716123052.8,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -50,
+"proportionnel": -50
+}
+},
+{
+"oid": "1791716100:43",
+"variante": "M1 cohorte A : zone + modele monte",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.14,
+"parts": 357.14,
+"tPose": 1791716123041.1,
+"lat_ms": 15,
+"etat": "remplie",
+"qDevant": 1078.8,
+"qp": 0,
+"qr": 0,
+"remplP": 357.14,
+"remplR": 357.14,
+"premierRempl_ms": 24963.1,
+"rempl": [
+[
+24963.1,
+"p",
+357.14
+],
+[
+24963.1,
+"r",
+357.14
+]
+],
+"modeleCle": "pu",
+"modele": 0.4658,
+"a0": 0.15,
+"tArrivee": 1791716123055.8,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -50,
+"proportionnel": -50
+}
+},
+{
+"oid": "1791716100:44",
+"variante": "M1 cohorte B : V2-F corrige 0,015 %",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.14,
+"parts": 357.14,
+"tPose": 1791716123041.5,
+"lat_ms": 15,
+"etat": "remplie",
+"qDevant": 1078.8,
+"qp": 0,
+"qr": 0,
+"remplP": 357.14,
+"remplR": 357.14,
+"premierRempl_ms": 24962.7,
+"rempl": [
+[
+24962.7,
+"p",
+357.14
+],
+[
+24962.7,
+"r",
+357.14
+]
+],
+"modeleCle": "pu015",
+"modele": 0.3547,
+"a0": 0.15,
+"tArrivee": 1791716123055.8,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -50,
+"proportionnel": -50
+}
+},
+{
+"oid": "1791716100:51",
+"variante": "M1 V2-F incertitude 0,01 %",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.15,
+"parts": 333.33,
+"tPose": 1791716123212,
+"lat_ms": 15,
+"etat": "remplie",
+"qDevant": 0,
+"qp": 0,
+"qr": 0,
+"remplP": 333.33,
+"remplR": 333.33,
+"premierRempl_ms": 23105.5,
+"rempl": [
+[
+23105.6,
+"p",
+1.18
+],
+[
+23105.6,
+"r",
+1.18
+],
+[
+24792.2,
+"p",
+332.15
+],
+[
+24792.2,
+"r",
+332.15
+]
+],
+"modeleCle": "pu01",
+"modele": 0.5083,
+"a0": 0.16,
+"tArrivee": 1791716123232.4,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -50,
+"proportionnel": -50
+}
+},
+{
+"oid": "1791716100:64",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.39,
+"parts": 92.73,
+"tPose": 1791716123675.5,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 0,
+"qp": 0,
+"qr": 0,
+"remplP": 1.6393,
+"remplR": 1.6393,
+"premierRempl_ms": 92.4,
+"rempl": [
+[
+92.4,
+"p",
+1.64
+],
+[
+92.4,
+"r",
+1.64
+]
+],
+"modele": 0.5226,
+"a0": 0.4,
+"tArrivee": 1791716123691.8,
+"tAnnulDemande": 1791716123756.2,
+"raison": "re-cotation",
+"tAnnulee": 1791716123770.5,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -0.64,
+"proportionnel": -0.64
+}
+},
+{
+"oid": "1791716100:72",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.42,
+"parts": 86.11,
+"tPose": 1791716123805.6,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 50,
+"qp": 0,
+"qr": 50,
+"remplP": 86.11,
+"remplR": 86.11,
+"premierRempl_ms": 45.7,
+"rempl": [
+[
+45.7,
+"p",
+86.11
+],
+[
+45.7,
+"r",
+86.11
+]
+],
+"modele": 0.5232,
+"a0": 0.44,
+"tArrivee": 1791716123821.2,
+"tAnnulDemande": 1791716123851.4,
+"raison": "hors zone",
+"tAnnulee": 1791716123865.9,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -36.17,
+"proportionnel": -36.17
+}
+},
+{
+"oid": "1791716100:73",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.43,
+"parts": 84.11,
+"tPose": 1791716123814.9,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 0,
+"qp": 0,
+"qr": 0,
+"remplP": 84.11,
+"remplR": 84.11,
+"premierRempl_ms": 24.1,
+"rempl": [
+[
+24.1,
+"p",
+60
+],
+[
+24.2,
+"r",
+60
+],
+[
+36.4,
+"p",
+24.11
+],
+[
+36.5,
+"r",
+24.11
+]
+],
+"modele": 0.5232,
+"a0": 0.44,
+"tArrivee": 1791716123830.7,
+"tAnnulDemande": 1791716123851.4,
+"raison": "hors zone",
+"tAnnulee": 1791716123865.9,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -36.17,
+"proportionnel": -36.17
+}
+},
+{
+"oid": "1791716100:194",
+"variante": "M1 desaccord 20 60-180 s",
+"start": 1791716100,
+"cote": "Down",
+"prix": 0.06,
+"parts": 833.33,
+"tPose": 1791716220061.8,
+"lat_ms": 15,
+"etat": "remplie",
+"qDevant": 237.23,
+"qp": 0,
+"qr": 0,
+"remplP": 833.33,
+"remplR": 833.33,
+"premierRempl_ms": 5387.1,
+"rempl": [
+[
+5387.1,
+"r",
+9.75
+],
+[
+5729.6,
+"r",
+3.17
+],
+[
+5762.7,
+"r",
+3.17
+],
+[
+6537.5,
+"p",
+5
+],
+[
+6537.5,
+"r",
+5
+],
+[
+6564.9,
+"p",
+0.18
+],
+[
+6565,
+"r",
+0.18
+],
+[
+6577.4,
+"p",
+828.15
+],
+[
+6577.4,
+"r",
+812.06
+]
+],
+"modeleCle": "pu",
+"modele": 0.4144,
+"a0": 0.07,
+"tArrivee": 1791716220076.8,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -50,
+"proportionnel": -50
+}
+}
+]
