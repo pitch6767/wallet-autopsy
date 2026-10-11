@@ -6,7 +6,19 @@ import { createWalletClient, http } from "viem";
 import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
 import { polygon } from "viem/chains";
 
-axios.defaults.adapter = "fetch";   // Cloudflare Workers : pas de module http de Node
+// Cloudflare Workers : pas de module http de Node. L'adaptateur « fetch » d'axios (1.20) impose cache: "default" à chaque requête, ce que
+// Cloudflare refuse (« Unsupported cache mode: default ») : tous les appels du client officiel échouaient. Adaptateur minimal à la place.
+export async function adaptateurFetch(config) {
+  const url = axios.getUri(config), h = config.headers && config.headers.toJSON ? config.headers.toJSON() : { ...(config.headers || {}) };
+  const headers = {}; for (const [k, v] of Object.entries(h)) if (v != null && v !== false) headers[k] = String(v);
+  const r = await fetch(url, { method: (config.method || "get").toUpperCase(), headers, body: config.data == null ? undefined : config.data });
+  const data = config.responseType === "arraybuffer" ? await r.arrayBuffer() : await r.text();
+  const response = { data, status: r.status, statusText: r.statusText, headers: Object.fromEntries(r.headers.entries()), config, request: null };
+  const ok = config.validateStatus ? config.validateStatus(r.status) : r.status >= 200 && r.status < 300;
+  if (ok) return response;
+  throw new axios.AxiosError("Request failed with status code " + r.status, r.status >= 500 ? "ERR_BAD_RESPONSE" : "ERR_BAD_REQUEST", config, null, response);
+}
+axios.defaults.adapter = adaptateurFetch;
 const HOTE = "https://clob.polymarket.com";
 const norm = (k) => (k.startsWith("0x") ? k : "0x" + k).trim();
 
