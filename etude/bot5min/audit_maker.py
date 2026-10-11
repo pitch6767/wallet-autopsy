@@ -294,7 +294,7 @@ def main():
     for nom, pre in (("M0 témoin", "M0"), ("M1 maker sur signal", "M1"), ("M2 marge 5 c", "M2 cotation marge 5 c"), ("M4", "M4 retrait toxique"), ("M4a", "M4a"), ("M4b", "M4b"),
                      ("M4c", "M4c"), ("M6 100 ms", "M6 duree de vie 100 ms"), ("M6 250 ms", "M6 duree de vie 250 ms"), ("M6 500 ms", "M6 duree de vie 500 ms"),
                      ("M6 1000 ms", "M6 duree de vie 1000 ms"), ("M8 routeur", "M8 hybride"), ("M8b routeur corrigé", "M8b"), ("M9 fin de cycle", "M9"),
-                     ("M10 double maker", "M10"), ("M11 zone maker", "M11")):
+                     ("M10 double maker", "M10"), ("M11 zone maker", "M11"), ("M21 maker du favori", "M21")):
         pos = []
         for v, X in V.items():
             if not v.startswith(pre): continue

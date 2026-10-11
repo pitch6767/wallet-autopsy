@@ -615,6 +615,16 @@ function makerEvaluer(mk, tleft, ua, da, P) {
     coter(Q, "M11 zone maker", mk, up, zone ? prixAmeliore(id, ask) : null, zone && !tox && tleft > 60 && tleft < 290,
       { modele: +fair.toFixed(4), a0: ask, raisonHors: tox ? "toxique" : "hors zone" }, t);
   }
+  // M21 MAKER DU FAVORI (11.10.2026 16:22, accord de Pitch) — tiré de l'autopsie des makers réels : l'écart gagnants / perdants vient de l'endroit où
+  // ils achètent (le favori, pas l'outsider ; pas la 1re minute). Offre au MEILLEUR ACHETEUR (on rejoint la file) uniquement sur le côté dont le milieu
+  // du carnet est entre 0,50 et 0,90, de 60 à 240 s après le début du cycle ; retirée 2 s dès qu'une condition toxique de M4 apparaît contre ce côté.
+  // Jamais sur l'outsider. 50 $ par côté et par cycle. Aucun modèle Bot95 dans la décision (règle de marché pure).
+  for (const up of sides) {
+    const id = up ? mk.up : mk.down, ask = (up ? ua : da)[0], bb = meilleurAcheteur(id), m = bb > 0 ? (bb + ask) / 2 : null, X = TOX[id] || { a: 0, b: 0, c: 0 };
+    const tox = t - Math.max(X.a, X.b, X.c) <= 2000, ecoule = 300 - tleft;
+    const ok = m != null && m >= 0.50 && m <= 0.90 && ecoule >= 60 && ecoule <= 240 && !tox && bb < ask - 1e-9;
+    coter(Q, "M21 maker du favori", mk, up, ok ? r2(bb) : null, ok, { modele: +(up ? P.pu : 1 - P.pu).toFixed(4), a0: ask, milieu: m != null ? +m.toFixed(3) : null, raisonHors: tox ? "toxique" : "hors zone" }, t);
+  }
   // M5
   for (const up of sides) {
     const id = up ? mk.up : mk.down, fair = up ? P.pu : 1 - P.pu, ask = (up ? ua : da)[0], bb = meilleurAcheteur(id);
