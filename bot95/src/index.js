@@ -312,6 +312,16 @@ export class Bot {
       if (u.pathname === "/api/rapide/version") return json({ version: RAPIDE_VERSION });
       if (u.pathname === "/api/rapide/code") return json({ version: RAPIDE_VERSION, code: RAPIDE_CODE });
       if (u.pathname === "/api/rapide/launcher") return new Response(RAPIDE_LAUNCHER, { headers: { "content-type": "text/plain; charset=utf-8" } });
+      // enregistrements complets d'un cycle (gzip) : découpés en morceaux de 100 Ko, gardés environ 3 jours (900 cycles)
+      if (u.pathname === "/api/rapide/cycle" && req.method === "POST") {
+        const st = +u.searchParams.get("start"); if (!st) return new Response("start ?", { status: 400 });
+        const buf = new Uint8Array(await req.arrayBuffer()), N = 100000, parts = Math.ceil(buf.length / N);
+        for (let i = 0; i < parts; i++) await this.state.storage.put(`rapc:${st}:${String(i).padStart(3, "0")}`, buf.slice(i * N, (i + 1) * N));
+        const idx = (await this.state.storage.get("rapc-index")) || []; if (!idx.some((x) => x.start === st)) idx.push({ start: st, parts, octets: buf.length });
+        while (idx.length > 900) { const v = idx.shift(); const ks = []; for (let i = 0; i < v.parts; i++) ks.push(`rapc:${v.start}:${String(i).padStart(3, "0")}`); await this.state.storage.delete(ks); }
+        await this.state.storage.put("rapc-index", idx);
+        return json({ ok: true, parts });
+      }
       if (u.pathname === "/api/rapide/donnees" && req.method === "POST") {
         const d = await req.json();
         await this.state.storage.put("rap:etat", { recu: now(), version: d.version, latence: d.latence, flux: d.flux });
@@ -322,6 +332,14 @@ export class Bot {
         return json({ ok: true, n: (d.signaux || []).length });
       }
       return new Response("?", { status: 404 });
+    }
+    if (u.pathname === "/api/rapidecycles") { const idx = (await this.state.storage.get("rapc-index")) || []; const apres = +(u.searchParams.get("apres") || 0); return json({ cycles: idx.filter((x) => x.start > apres) }); }
+    if (u.pathname === "/api/rapidecycle") {
+      const st = +u.searchParams.get("start"), v = ((await this.state.storage.get("rapc-index")) || []).find((x) => x.start === st);
+      if (!v) return new Response("absent", { status: 404 });
+      const out = new Uint8Array(v.octets); let o = 0;
+      for (let i = 0; i < v.parts; i++) { const c = await this.state.storage.get(`rapc:${st}:${String(i).padStart(3, "0")}`); out.set(c, o); o += c.length; }
+      return new Response(out, { headers: { "content-type": "application/gzip", "cache-control": "no-store" } });
     }
     if (u.pathname === "/api/rapide") {
       const M = await this.state.storage.list({ prefix: "rap:" }); const J = []; let etat = null;

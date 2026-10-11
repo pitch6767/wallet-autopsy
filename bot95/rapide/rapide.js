@@ -64,6 +64,49 @@ function proba(mk, sdRel) {
   return phi((E - mk.strike) / Math.sqrt(v + (sdRel * S) ** 2));
 }
 
+// ---------------------------------------------------------------- ENREGISTREUR DE CYCLE (11.10.2026, demandé par Pitch) — aucun ordre
+// Par cycle : tous les messages Polymarket des 2 jetons (carnet complet, changements de niveau, transactions) avec heure de réception (VPS, NTP)
+// et heure Polymarket ; prix des 5 sources toutes les 50 ms (si changés) avec leur heure source ; carnet 5 niveaux chaque seconde ;
+// signaux des cohortes A et B ; journal des décisions. Écrit sur le disque du VPS et envoyé au bot Cloudflare.
+const zlib = require("zlib");
+const REC = {};
+const recDe = (start) => (REC[start] = REC[start] || { start, version: VERSION, ev: [], ex: [], snap: [], sig: [], dec: [], nEv: 0, coupe: false });
+const tokIdx = (id) => { for (const s of Object.keys(M)) { const m = M[s]; if (m.up === id) return [+s, 0]; if (m.down === id) return [+s, 1]; } return [null, null]; };
+function recEv(id, row) { const [st, k] = tokIdx(id); if (st == null) return; const R = recDe(st); R.nEv++; if (R.ev.length >= 150000) { R.coupe = true; return; } row.splice(3, 0, k); R.ev.push(row); }
+let exDernier = "";
+setInterval(() => {                                   // prix des sources toutes les 50 ms (seulement si un prix a changé)
+  const t = nowMs(), start = Math.floor(t / 300000) * 300;
+  const v = ["perp", "okx", "bn", "cb", "cl"].map((k) => (f[k] ? [f[k].p, f[k].tsSrc || null, +f[k].t.toFixed(3)] : null));
+  const cle = JSON.stringify(v.map((x) => x && x[0])); if (cle === exDernier) return; exDernier = cle;
+  recDe(start).ex.push([+t.toFixed(1), ...v]);
+}, 50);
+setInterval(() => {                                   // carnet 5 niveaux des 2 jetons chaque seconde (contrôle de la reconstruction)
+  const t = nowMs(), start = Math.floor(t / 300000) * 300, mk = M[start]; if (!mk || !mk.up) return;
+  const top = (id, c) => { const L = livres[id]; if (!L) return []; return [...L[c]].filter((x) => x[1] > 0).sort((a, b) => (c === "asks" ? a[0] - b[0] : b[0] - a[0])).slice(0, 5); };
+  recDe(start).snap.push([+t.toFixed(1), top(mk.up, "bids"), top(mk.up, "asks"), top(mk.down, "bids"), top(mk.down, "asks")]);
+}, 1000);
+function recFinir() {                                 // cycles terminés depuis plus de 10 s : compression, disque, envoi
+  const t = now();
+  for (const s of Object.keys(REC)) {
+    const R = REC[s]; if (t < +s + 310) continue; delete REC[s];
+    const m = M[s] || {}; R.marche = { slug: m.slug || null, up: m.up || null, down: m.down || null, strike: m.strike || null };
+    let gz; try { gz = zlib.gzipSync(JSON.stringify(R)); } catch (e) { log("compression", e.message); continue; }
+    STAT.dernierCycle = { start: +s, ev: R.nEv, ex: R.ex.length, octets: gz.length, coupe: R.coupe };
+    try { const d = new Date(+s * 1000).toISOString().slice(0, 10), dir = DIR + "/cycles/" + d; fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(dir + "/" + s + ".json.gz", gz); } catch (e) { log("disque", e.message); }
+    envoyerCycle(+s, gz).catch(() => {});
+  }
+  try { const base = DIR + "/cycles", lim = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);   // on garde 14 jours sur le disque
+    for (const d of fs.existsSync(base) ? fs.readdirSync(base) : []) if (d < lim) fs.rmSync(base + "/" + d, { recursive: true, force: true }); } catch (_) {}
+}
+async function envoyerCycle(start, gz) {
+  for (let essai = 0; essai < 3; essai++) {
+    try { const r = await fetch(`${U}/api/rapide/cycle?start=${start}`, { method: "POST", headers: { "content-type": "application/octet-stream", "x-rapide": TOKEN }, body: gz });
+      if (r.ok) return; log("cycle HTTP", r.status); } catch (e) { log("cycle", e.message); }
+    await new Promise((res) => setTimeout(res, 5000));
+  }
+}
+setInterval(recFinir, 5000);
+
 // ---------------------------------------------------------------- marchés et carnets Polymarket
 const M = {};                       // start -> marché { start, end, slug, up, down, strike }
 const livres = {};                  // token -> { asks: Map, bids: Map, tRecu, tsPoly }
@@ -82,11 +125,13 @@ function surPoly(m) {
   const tR = nowMs(), ts = +m.timestamp > 1e12 ? +m.timestamp : (+m.timestamp ? +m.timestamp * 1000 : null);
   const L = (id) => (livres[id] = livres[id] || { asks: new Map(), bids: new Map() });
   const touches = new Set();
+  if (m.event_type === "last_trade_price") { recEv(m.asset_id, ["T", +tR.toFixed(1), ts, m.side === "BUY" ? 1 : 0, +m.price, +m.size]); return; }
   if (m.event_type === "book") {
+    recEv(m.asset_id, ["B", +tR.toFixed(1), ts, (m.bids || []).map((x) => [+x.price, +x.size]), (m.asks || []).map((x) => [+x.price, +x.size])]);
     const B = L(m.asset_id); B.bids = new Map((m.bids || []).map((x) => [+x.price, +x.size])); B.asks = new Map((m.asks || []).map((x) => [+x.price, +x.size]));
     B.tRecu = tR; B.tsPoly = ts; touches.add(m.asset_id);
   } else if (m.event_type === "price_change") {
-    for (const c of m.price_changes || []) { const B = L(c.asset_id), cote = c.side === "BUY" ? B.bids : B.asks; +c.size ? cote.set(+c.price, +c.size) : cote.delete(+c.price); B.tRecu = tR; B.tsPoly = ts; touches.add(c.asset_id); }
+    for (const c of m.price_changes || []) { recEv(c.asset_id, ["P", +tR.toFixed(1), ts, c.side === "BUY" ? 0 : 1, +c.price, +c.size]); const B = L(c.asset_id), cote = c.side === "BUY" ? B.bids : B.asks; +c.size ? cote.set(+c.price, +c.size) : cote.delete(+c.price); B.tRecu = tR; B.tsPoly = ts; touches.add(c.asset_id); }
   } else return;
   if (ts) { STAT.retardPoly.push(tR - ts); if (STAT.retardPoly.length > 2000) STAT.retardPoly.shift(); }
   for (const id of touches) suivreSurvie(id);
@@ -103,10 +148,10 @@ function evaluer(source, tMsg) {
   if (!mk || !mk.up || !mk.strike) return;
   const tleft = mk.end - t; if (tleft < 5) return;
   const ua = asksTries(mk.up)[0], da = asksTries(mk.down)[0]; if (!ua || !da) return;
-  const pu = proba(mk, 8e-4), pu01 = proba(mk, 1e-4); if (pu == null) return;
+  const pu = proba(mk, 8e-4), pu01 = proba(mk, 1e-4), pu015 = proba(mk, 1.5e-4); if (pu == null) return;
   STAT.evaluations++;
   const h = (H[start] = H[start] || { r: [], fait: {} });
-  if (!h.r.length || t - h.r[h.r.length - 1].t >= 0.25) { h.r.push({ t, pu, pu01, ua: ua[0], da: da[0] }); while (h.r.length && t - h.r[0].t > 12) h.r.shift(); }
+  if (!h.r.length || t - h.r[h.r.length - 1].t >= 0.25) { h.r.push({ t, pu, pu01, pu015, ua: ua[0], da: da[0] }); while (h.r.length && t - h.r[0].t > 12) h.r.shift(); }
   const ilya = (s) => { for (let i = h.r.length - 1; i >= 0; i--) if (t - h.r[i].t >= s) return h.r[i]; return null; };
   const h3 = ilya(3);
   for (const up of [true, false]) {
@@ -117,6 +162,13 @@ function evaluer(source, tMsg) {
     if (pu01 != null && a >= 0.03 && a <= 0.97 && h3 && h3.pu01 != null) {
       const f1 = up ? pu01 : 1 - pu01, e1 = f1 - a;
       if (e1 >= 0.20) regle("V2-F incertitude 0,01 %", e1 - ((up ? h3.pu01 : 1 - h3.pu01) - (up ? h3.ua : h3.da)) >= 0.03, f1);
+    }
+    // cohorte A « désaccord 30 zone + modèle monte » : plus de 60 s, vendeur 0,15-0,35, écart >= 0,30, modèle +3 c en 3 s
+    if (h3 && tleft > 60 && a >= 0.15 && a < 0.35 && edge >= 0.30) regle("cohorte A : zone + modele monte", fair - (up ? h3.pu : 1 - h3.pu) >= 0.03, fair);
+    // cohorte B « V2-F corrigé 0,015 % » : règle V2-F avec l'incertitude 0,015 %
+    if (pu015 != null && h3 && h3.pu015 != null && a >= 0.03 && a <= 0.97) {
+      const f2 = up ? pu015 : 1 - pu015, e2 = f2 - a;
+      if (e2 >= 0.20) regle("cohorte B : V2-F corrige 0,015 %", e2 - ((up ? h3.pu015 : 1 - h3.pu015) - (up ? h3.ua : h3.da)) >= 0.03, f2);
     }
     if (a >= 0.02 && a <= 0.98) {
       regle("desaccord 30", edge >= 0.30, fair);
@@ -142,6 +194,8 @@ function signal(nom, mk, up, k, fair, tleft, source, tMsg, t0) {
     agePerp: age(f.perp), ageOkx: age(f.okx), ageBn: age(f.bn), ageCb: age(f.cb), ageCl: age(f.cl),
     achetable0: achetable(id, k[0]), apres: {}, premiereBaisse_ms: null, disparu_ms: null };
   SIGNAUX.push(S);
+  try { const R = recDe(mk.start); R.sig.push({ nom, cote: S.cote, tDecision: S.tDecision, a0: S.a0, q0: S.q0, modele: S.modele, ecart: S.ecart, restant_s: S.restant_s, declencheur: source });
+    R.dec.push([S.tDecision, nom, "signal", S.cote, S.a0]); } catch (_) {}
   for (const d of DELAIS) setTimeout(() => { S.apres[d] = { ...achetable(id, S.a0), reel_ms: +(nowMs() - S.tDecision).toFixed(2) }; }, d);
   setTimeout(() => { S.fini = true; }, 2100);
 }
@@ -229,6 +283,8 @@ async function envoyer() {
     latence: { rttClob_ms: { med: med(STAT.rttClob), p10: qtl(STAT.rttClob, 0.1), p90: qtl(STAT.rttClob, 0.9), n: STAT.rttClob.length },
       polyVersNous_ms: { med: med(STAT.retardPoly), p10: qtl(STAT.retardPoly, 0.1), p90: qtl(STAT.retardPoly, 0.9) },
       calcul_us: { med: med(STAT.decisionUs), p90: qtl(STAT.decisionUs, 0.9) }, evaluations: STAT.evaluations },
+    systeme: (() => { const m = process.memoryUsage(); let disque = null; try { const d = fs.statfsSync(DIR); disque = { libre_Mo: Math.round(d.bavail * d.bsize / 1e6), total_Mo: Math.round(d.blocks * d.bsize / 1e6) }; } catch (_) {}
+      return { rss_Mo: Math.round(m.rss / 1e6), tas_Mo: Math.round(m.heapUsed / 1e6), disque, dernierCycle: STAT.dernierCycle || null }; })(),
     flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly"].map((k) => [k, WS[k] ? { muet_s: +(now() - WS[k].msg).toFixed(1), reconnexions: WS[k].n } : null])) };
   try {
     const r = await fetch(`${U}/api/rapide/donnees`, { method: "POST", headers: { "content-type": "application/json", "x-rapide": TOKEN }, body: JSON.stringify(corps) });

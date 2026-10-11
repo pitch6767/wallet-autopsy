@@ -1,0 +1,46 @@
+# Export des enregistrements complets du bot rapide (VPS Dublin) vers la branche donnees-rapide (pas sur main, pour ne pas l'alourdir)
+name: Donnees bot rapide
+on:
+  push:
+    branches: [main]
+    paths: [bot95/rapide_go.txt]
+  schedule:
+    - cron: "17 */3 * * *"
+permissions:
+  contents: write
+concurrency: { group: rapide-donnees, cancel-in-progress: false }
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Branche donnees-rapide
+        run: |
+          git config user.name rapide; git config user.email bot@users.noreply.github.com
+          if git ls-remote --exit-code --heads origin donnees-rapide >/dev/null; then git checkout donnees-rapide; else git checkout --orphan donnees-rapide; git rm -rq . ; echo "Enregistrements du bot rapide (VPS Dublin), un fichier gzip par cycle BTC 5 min." > README.md; git add README.md; git commit -qm "debut"; fi
+      - name: Telecharger les nouveaux cycles
+        run: |
+          python3 - <<'P'
+          import json, os, glob, time, urllib.request
+          U = "https://bot95.pitch67.workers.dev"
+          def get(u, binaire=False):
+              for k in range(4):
+                  try:
+                      with urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "rapide"}), timeout=90) as r:
+                          d = r.read(); return d if binaire else json.loads(d)
+                  except Exception as e: err = e; time.sleep(4)
+              raise err
+          deja = {int(os.path.basename(p).split(".")[0]) for p in glob.glob("cycles/*/*.json.gz")}
+          L = get(U + "/api/rapidecycles?apres=0")["cycles"]; n = 0
+          for c in L:
+              st = c["start"]
+              if st in deja: continue
+              d = time.strftime("%Y-%m-%d", time.gmtime(st)); os.makedirs("cycles/" + d, exist_ok=True)
+              open(f"cycles/{d}/{st}.json.gz", "wb").write(get(f"{U}/api/rapidecycle?start={st}", True)); n += 1
+          print("nouveaux cycles", n, "dans le bot", len(L))
+          P
+          git add cycles README.md 2>/dev/null || true
+          git commit -qm "cycles bot rapide" || echo "rien de neuf"
+          for k in 1 2 3; do git push -q origin donnees-rapide && break; sleep 5; done
