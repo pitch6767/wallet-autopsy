@@ -91,8 +91,8 @@ def main():
             a0m = int(round(s["a0"] * 1000)); y = 1.0 if s["gagne"] else 0.0; t0 = s["tDecision"]
             base = dict(st=st, y=y, t0=t0, a0=s["a0"])
             # stratégie actuelle : 50 $ par signal (budget de Dublin en parts : 50 / a0), au prix du signal
-            LIG_A.append(dict(base, **{d: LH.acheter(E[t0 + d], s["cote"], a0m, 50.0 / s["a0"]) for d in DELAIS}))
-            if s in DEC: LIG_N.append(dict(base, **{d: acheter_mise(E[t0 + d], s["cote"], a0m, MISE) for d in DELAIS}))
+            x = dict(base); x.update({d: LH.acheter(E[t0 + d], s["cote"], a0m, 50.0 / s["a0"]) for d in DELAIS}); LIG_A.append(x)
+            if s in DEC: x = dict(base); x.update({d: acheter_mise(E[t0 + d], s["cote"], a0m, MISE) for d in DELAIS}); LIG_N.append(x)
     o = []; w = o.append
     w(f"# Bot95 — Test de robustesse H816 ({'PÉRIODE RÉSERVÉE' if HE else 'avant le 13.10'}) — protocole figé\n")
     w(f"Généré le {time.strftime('%d.%m.%Y %H:%M', time.gmtime())} UTC. Cycles avec carnet Dublin : {len(cycles)} ; signaux réglés : {len(SIG)} ; "
