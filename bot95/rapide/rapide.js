@@ -429,6 +429,7 @@ function makerSurSignal(S, mk, up, nom) {
   const p = prixAmeliore(up ? mk.up : mk.down, S.a0); if (p == null) return;
   poser("M1 " + nom, mk, up, p, 50, { modeleCle: MODELE_REGLE(nom), modele: S.modele, a0: S.a0, annulModele: 0.05 });
   hybride(S, mk, up, nom);
+  try { hybrideB(S, mk, up, nom); } catch (e) { log("M8b", e.message); }
 }
 // M8 HYBRIDE MAKER / PRENEUR (11.10.2026) : sur chaque signal, espérance preneur = parts disponibles au prix vu (50 $) × (modèle − prix − frais) ;
 // espérance maker = parts attendues en 10 s (modèle de file de M5) × (modèle − prix maker − 2 c). On prend la plus grande si elle est positive
@@ -456,6 +457,34 @@ function hybride(S, mk, up, nom) {
   } else if (evM >= 0.5) poser(v, mk, up, pm, 50, { mode: "maker", modeleCle: MODELE_REGLE(nom), modele: S.modele, a0, annulModele: 0.05, evPreneur: isFinite(evT) ? +evT.toFixed(2) : null, evMaker: +evM.toFixed(2) });
 }
 const MIN_PARTS_H = 5;
+// M8b ROUTEUR CORRIGÉ (11.10.2026 15:47, demandé par Pitch) — constantes FIXÉES sur les données d'avant le 13.10 (jamais sur la période réservée) :
+//   maker : E[gain] = parts attendues en 10 s (même modèle de file que M5 : P(remplissage) = parts attendues / taille) × (modèle − SÉLECTION ADVERSE MESURÉE − prix)
+//           sélection adverse mesurée sur M1 (offres posées au signal) à +10 s : −0,85 c → 1 c ; aucun frais maker, ristourne non comptée ;
+//   preneur : E[gain] = SURVIE MESURÉE de la quantité 164 ms après le signal (0,73, entre 0,77 à 100 ms et 0,68 à 250 ms) × (parts × modèle − coût frais compris) ;
+//   abstention si aucune voie n'atteint son seuil (preneur > 0 avec ≥ 5 parts ; maker ≥ 0,50 $). Exécution simulée identique à M8.
+const M8B = { adverse: 0.01, survie: 0.73 };
+function hybrideB(S, mk, up, nom) {
+  const id = up ? mk.up : mk.down, fair = S.modele, a0 = S.a0, t = nowMs();
+  let qT = 0, cT = 0; for (const [pp, z] of asksTries(id)) { if (pp > a0 + 1e-9) break; const x = Math.min(z, (50 - cT) / (pp + FEE7(pp))); if (x <= 0) break; qT += x; cT += x * (pp + FEE7(pp)); }
+  const evT = qT >= MIN_PARTS_H ? M8B.survie * (qT * fair - cT) : -Infinity;
+  const pm = prixAmeliore(id, a0), bb = meilleurAcheteur(id); let evM = -Infinity;
+  if (pm != null) { let vol = 0; for (let i = TRX.length - 1; i >= 0 && t - TRX[i].t <= 30000; i--) if (TRX[i].tok === id) vol += TRX[i].v;
+    const q = pm > bb + 1e-9 ? 0 : ((livres[id] && livres[id].bids.get(pm)) || 0), att = Math.min(50 / pm, Math.max(0, vol / 3 - q)); evM = att * (fair - M8B.adverse - pm); }
+  const v = "M8b routeur corrige " + nom;
+  if (evT > 0 && evT >= evM) {
+    const O = { oid: `${mk.start}:${++oidN}`, variante: v, mode: "preneur", start: mk.start, cote: up ? "Up" : "Down", id, prix: a0, parts: 0, tPose: +t.toFixed(1), lat_ms: LAT(), etat: "envoi",
+      remplP: 0, remplR: 0, remplO: 0, annulP: 0, annulR: 0, rempl: [], mo: { p: {}, r: {}, o: {} }, moModele: { p: {}, r: {}, o: {} }, toxRempl: [], evPreneur: +evT.toFixed(2), evMaker: isFinite(evM) ? +evM.toFixed(2) : null,
+      modele: fair, a0, restantPose_s: +(mk.end - t / 1000).toFixed(2), qDevant: 0 };
+    OFFRES.push(O); mstat(v).posees++;
+    setTimeout(() => {
+      let q = 0, c = 0; for (const [pp, z] of asksTries(id)) { if (pp > a0 + 1e-9) break; const x = Math.min(z, (50 - c) / (pp + FEE7(pp))); if (x <= 0) break; q += x; c += x * (pp + FEE7(pp)); }
+      if (q < MIN_PARTS_H) { O.etat = "manquee"; O.raison = "offre partie avant execution"; return; }
+      O.parts = +q.toFixed(2); O.remplP = O.remplR = O.remplO = O.parts; O.cout = +c.toFixed(4); O.prix = +(c / q).toFixed(4); O.etat = "executee"; O.premierRempl_ms = +(nowMs() - O.tPose).toFixed(1); mstat(v).remplies++;
+      for (const h of [1, 3, 5, 10]) setTimeout(() => { const m = milieu(id); if (m != null) for (const k of ["p", "r", "o"]) O.mo[k][h] = [q * (m - O.prix), q]; }, h * 1000);
+    }, O.lat_ms + 150);
+  } else if (evM >= 0.5) poser(v, mk, up, pm, 50, { mode: "maker", modeleCle: MODELE_REGLE(nom), modele: S.modele, a0, annulModele: 0.05, evPreneur: isFinite(evT) ? +evT.toFixed(2) : null, evMaker: +evM.toFixed(2) });
+  else { mstat(v).abstentions = (mstat(v).abstentions || 0) + 1; try { recDe(mk.start).dec.push([+t.toFixed(1), v, "abstention", up ? "Up" : "Down", a0]); } catch (_) {} }
+}
 // M0 TÉMOIN SANS SIGNAL : deux offres par cycle, à des instants et sur un côté tirés au hasard (entre 270 et 30 s de la fin), même prix et mêmes
 // annulations que M1 (30 s, 5 s de la fin), sans condition de modèle. Sert de comparaison à M1 et à toutes les variantes.
 // M2 : cotation permanente des deux côtés au prix du modèle moins une marge (5 c ou 10 c), arrondi au cent inférieur, toujours sous le vendeur.
@@ -482,13 +511,23 @@ function coter(Q, v, mk, up, px, ok, info, t) {                          // gest
   if (!S2.O && ok && t - S2.t >= 50) { S2.O = poser(v, mk, up, px, budget, info); S2.t = t; }
   return S2;
 }
+function coterX(Q, v, mk, up, px, ok, info, t, pmax) {                   // comme coter(), avec un prix maximal propre (M9 : jusqu'à 0,98)
+  const k = v + (up ? "U" : "D"), S2 = (Q[k] = Q[k] || { depense: 0, O: null, t: 0 });
+  const cur = S2.O && (S2.O.etat === "posee" || S2.O.etat === "envoi") && !S2.O.tAnnulDemande ? S2.O : null;
+  if (S2.O && S2.O !== cur) { S2.depense += S2.O.remplR * S2.O.prix; S2.O = cur; }
+  const budget = 50 - S2.depense - (cur ? cur.remplR * cur.prix : 0);
+  ok = ok && budget >= 1 && px != null && px >= 0.04 && px <= pmax;
+  if (cur && (!ok || Math.abs(cur.prix - px) > 1e-9)) { if (t - S2.t < 50 && ok) return S2; annuler(cur, ok ? "re-cotation" : "hors zone"); S2.depense += cur.remplR * cur.prix; S2.O = null; }
+  if (!S2.O && ok && t - S2.t >= 50) { S2.O = poser(v, mk, up, px, budget, info); S2.t = t; }
+  return S2;
+}
 function makerEvaluer(mk, tleft, ua, da, P) {
   const t = nowMs(), ts = t / 1000;
   DP[mk.start] = { pu: P.pu, t: ts }; for (const s of Object.keys(DP)) if (+s < mk.start - 600) delete DP[s];
   for (const O of OFFRES) {                                               // annulations M0 / M1 / M3
     if (O.start !== mk.start || !(O.etat === "posee" || O.etat === "envoi") || O.tAnnulDemande) continue;
     const v = O.variante;
-    if (v.startsWith("M1") || v.startsWith("M0") || v.startsWith("M8")) {
+    if (v.startsWith("M1") || v.startsWith("M0") || v.startsWith("M8")) {   // (M8b inclus : même préfixe)
       const pk = O.modeleCle ? P[O.modeleCle] : null, fair = pk == null ? null : (O.cote === "Up" ? pk : 1 - pk);
       if (tleft < 5) annuler(O, "5 s de la fin"); else if (t - O.tPose > 30000) annuler(O, "30 s");
       else if (O.annulModele && fair != null && fair - O.prix < O.annulModele) annuler(O, "modele a moins de 5 c");
@@ -548,6 +587,23 @@ function makerEvaluer(mk, tleft, ua, da, P) {
     if (S6 && S6.O && S6.O.etat === "posee" && !S6.O.tAnnulDemande && t - S6.O.tPose >= L) { annuler(S6.O, "duree de vie"); S6.depense += S6.O.remplR * S6.O.prix; S6.O = null; S6.attente = t + 2 * LAT(); }
     const px = Math.min(Math.floor((fair - 0.05) * 100 + 1e-9) / 100, r2(ask - 0.01));
     coter(Q, v, mk, up, px, tleft > 10 && tleft < 290 && t >= ((S6 && S6.attente) || 0), { modele: +fair.toFixed(4), a0: ask }, t);
+  }
+  // M9 FIN DE CYCLE, CÔTÉ PRESQUE ACQUIS (11.10.2026 15:47, idée de Claude validée par Pitch) : de 30 à 3 s de la fin, si le milieu du carnet d'un côté
+  // est ≥ 0,90, offre d'achat sur ce côté 1 c au-dessus du meilleur acheteur (ou au meilleur acheteur), jamais au-dessus de 0,98 ni au niveau du vendeur.
+  // Retirée si le milieu repasse sous 0,85. 50 $ par cycle.
+  for (const up of sides) {
+    const id = up ? mk.up : mk.down, ask = (up ? ua : da)[0], bb = meilleurAcheteur(id), m = bb > 0 ? (bb + ask) / 2 : null;
+    let px = null; if (bb > 0) { px = r2(bb + 0.01); if (px >= ask - 1e-9) px = r2(bb); px = Math.min(px, 0.98); }
+    const S9 = Q["M9 fin de cycle cote acquis" + (up ? "U" : "D")], deja = S9 && S9.O && !S9.O.tAnnulDemande;
+    const ok = tleft <= 30 && tleft > 3 && m != null && (m >= 0.90 || (deja && m >= 0.85)) && px != null && px >= 0.90;
+    coterX(Q, "M9 fin de cycle cote acquis", mk, up, px, ok, { modele: +(up ? P.pu : 1 - P.pu).toFixed(4), a0: ask, milieu: m != null ? +m.toFixed(3) : null }, t, 0.99);
+  }
+  // M10 DOUBLE MAKER AU MEILLEUR PRIX + RETRAIT TOXIQUE (11.10.2026 15:47) : une offre au meilleur acheteur de CHAQUE côté (Up et Down : écart capturé si les
+  // deux sont remplies) ; chaque côté est retiré 2 s dès qu'une des trois conditions de M4 se déclenche contre lui. 50 $ par côté et par cycle, de 290 à 10 s.
+  for (const up of sides) {
+    const id = up ? mk.up : mk.down, ask = (up ? ua : da)[0], bb = meilleurAcheteur(id), X = TOX[id] || { a: 0, b: 0, c: 0 };
+    const tox = t - Math.max(X.a, X.b, X.c) <= 2000;
+    coter(Q, "M10 double maker meilleur prix", mk, up, bb > 0 && bb < ask - 1e-9 ? r2(bb) : null, tleft > 10 && tleft < 290 && !tox, { modele: +(up ? P.pu : 1 - P.pu).toFixed(4), a0: ask, raisonHors: tox ? "toxique" : "hors zone" }, t);
   }
   // M5
   for (const up of sides) {
