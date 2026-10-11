@@ -30,7 +30,7 @@ function noter(src, p, tsSrc) {
   if (src === "perp" || src === "okx") evaluer(src);
 }
 // Chainlink arrive par deux flux (11.10.2026) : RTDS (ancien, public) et PolyBolt (nouveau, identifiants API). On garde l'observation la plus récente.
-const CLS = { delai: { rtds: [], pb: [] }, premier: { rtds: 0, pb: 0 }, avance: [], vu: new Map(), dernObs: { rtds: null, pb: null }, n: { rtds: 0, pb: 0 }, pbAuth: false, pbErreur: null, source: null, twap: [] };
+const CLS = { publication: [], transport: [], boucle: [], delai: { rtds: [], pb: [] }, premier: { rtds: 0, pb: 0 }, avance: [], vu: new Map(), dernObs: { rtds: null, pb: null }, n: { rtds: 0, pb: 0 }, pbAuth: false, pbErreur: null, source: null, twap: [] };
 function chainlink(feed, v, obsMs) {
   if (!(v > 0) || !(obsMs > 0)) return;
   const t = nowMs(); CLS.n[feed]++; CLS.dernObs[feed] = obsMs;
@@ -580,7 +580,10 @@ function flux() {
     (m) => { if (m.channel === "market_trades") { for (const ev of m.events || []) for (const y of ev.trades || []) flux50("cb", y.side === "BUY" ? "a" : "v", +y.size, +y.price); return; }
       if (m.channel !== "ticker") return; for (const ev of m.events || []) for (const x of ev.tickers || []) if (x.product_id === "BTC-USD" && x.price) noter("cb", +x.price, Date.parse(m.timestamp)); });
   if (muet("cl")) connecter("cl", "wss://ws-live-data.polymarket.com", [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })],
-    (m) => { if (m.topic !== "crypto_prices_chainlink") return; const p = m.payload || {}; if ((p.symbol || "").toUpperCase().startsWith("BTC") && +p.value > 0) chainlink("rtds", +p.value, +p.timestamp); }, "PING", 5000);
+    (m) => { if (m.topic !== "crypto_prices_chainlink") return; const p = m.payload || {}; if ((p.symbol || "").toUpperCase().startsWith("BTC") && +p.value > 0) {
+      const tR = nowMs(), pub = +m.timestamp;                             // RTDS : payload.timestamp = observation Chainlink ; timestamp = envoi par l'éditeur
+      if (pub > 0) { CLS.publication.push(pub - +p.timestamp); CLS.transport.push(tR - pub); if (CLS.publication.length > 2000) { CLS.publication.shift(); CLS.transport.shift(); } }
+      chainlink("rtds", +p.value, +p.timestamp); } }, "PING", 5000);
   if (muet("bnd")) connecter("bnd", "wss://stream.binance.com:9443/ws/btcusdt@depth20@100ms", [], (m) => { if (!m.bids) return; const o = OB.bn;
       o.b = new Map(m.bids.map((x) => [+x[0], +x[1]])); o.a = new Map(m.asks.map((x) => [+x[0], +x[1]])); o.t = nowMs(); });
   if (muet("byob")) connecter("byob", "wss://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args: ["orderbook.50.BTCUSDT"] })], (m) => {
@@ -591,6 +594,8 @@ function flux() {
 }
 // ---------------------------------------------------------------- PolyBolt (wss://ws-live-v2.polymarket.com/ws) : Chainlink BTC/USD et moyenne 60 s officielle
 let PB = null, pbDemande = 0;
+// traitement : retard de la boucle d'événements de Node (temps entre l'arrivée d'un message et son traitement), mesuré toutes les 100 ms
+let bouclePrec = nowMs(); setInterval(() => { const t = nowMs(); CLS.boucle.push(Math.max(0, t - bouclePrec - 100)); if (CLS.boucle.length > 2000) CLS.boucle.shift(); bouclePrec = t; }, 100);
 async function identifiantsPB() {
   if (PB || now() - pbDemande < 60) return; pbDemande = now();
   try { const d = await getJSON(`${U}/api/rapide/polycreds`, { headers: { "x-rapide": TOKEN } }); if (d && d.apiKey) { PB = d; log("PolyBolt : identifiants reçus"); } else CLS.pbErreur = "identifiants : " + JSON.stringify(d).slice(0, 200); }
@@ -673,7 +678,7 @@ async function envoyer() {
   const qd = (L) => ({ med: med(L), p10: qtl(L, 0.1), p90: qtl(L, 0.9), n: L.length });
   const enCours = {}; for (const O of OFFRES) { const e = (enCours[O.variante] = enCours[O.variante] || { posees: 0, remplies: 0 }); if (O.etat === "posee") e.posees++; if (O.remplR > 0) e.remplies++; }
   const corps = { version: VERSION, t: now(), signaux: FINIS.splice(0, FINIS.length).map(({ id, fini, envoye, ...s }) => s), maker: regles, makerEnCours: { offres: enCours, compteurs: MSTAT },
-    chainlink: { rtds_ms: qd(CLS.delai.rtds), polybolt_ms: qd(CLS.delai.pb), twap_ms: qd(CLS.twap), premier: CLS.premier, avanceDuPremier_ms: { rtds: med(CLS.avance.filter((x) => x[0] === "rtds").map((x) => x[1])), polybolt: med(CLS.avance.filter((x) => x[0] === "pb").map((x) => x[1])) },
+    chainlink: { decomposition_rtds_ms: { publication: qd(CLS.publication), transport: qd(CLS.transport), traitement_boucle: qd(CLS.boucle) }, rtds_ms: qd(CLS.delai.rtds), polybolt_ms: qd(CLS.delai.pb), twap_ms: qd(CLS.twap), premier: CLS.premier, avanceDuPremier_ms: { rtds: med(CLS.avance.filter((x) => x[0] === "rtds").map((x) => x[1])), polybolt: med(CLS.avance.filter((x) => x[0] === "pb").map((x) => x[1])) },
       messages: CLS.n, exemples: CLS.exemples || [], abonnements: CLS.pbAbos || [], polyboltConnecte: CLS.pbAuth, polyboltErreur: CLS.pbErreur, source: CLS.source, identifiants: !!PB },
     latence: { rttClob_ms: { med: med(STAT.rttClob), p10: qtl(STAT.rttClob, 0.1), p90: qtl(STAT.rttClob, 0.9), n: STAT.rttClob.length },
       polyVersNous_ms: { med: med(STAT.retardPoly), p10: qtl(STAT.retardPoly, 0.1), p90: qtl(STAT.retardPoly, 0.9) },

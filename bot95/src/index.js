@@ -351,6 +351,14 @@ export class Bot {
       for (let i = 0; i < v.parts; i++) { const c = await this.state.storage.get(`rapc:${st}:${String(i).padStart(3, "0")}`); out.set(c, o); o += c.length; }
       return new Response(out, { headers: { "content-type": "application/gzip", "cache-control": "no-store" } });
     }
+    if (u.pathname === "/api/chainlink_migration") {
+      const q = (L, x) => (L.length ? qtl(L, x) : null), par = {};
+      for (const [a, C] of Object.entries(this.clCmp || {})) {
+        const ec = C.ecart; par[a] = { messages: C.n, retard_ms: { rtds: q(C.retard.rtds, 0.5), polybolt: q(C.retard.pb, 0.5) }, avancePolybolt_ms: { med: q(C.avancePb, 0.5), p10: q(C.avancePb, 0.1), p90: q(C.avancePb, 0.9), n: C.avancePb.length },
+          ecartValeurRelatif: { med: q(ec, 0.5), max: ec.length ? Math.max(...ec) : null } };
+      }
+      return json({ moteurNourriPar: this.sourceCl(), reglage: "secret ou variable CHAINLINK_SOURCE : rtds (défaut) | polybolt | auto", polyboltConnecte: !!this.ws.cl2, authentifie: this.pbAuth || null, erreur: this.pbErreur || null, parActif: par, twapOfficiel: this.twOff || [] });
+    }
     if (u.pathname === "/api/pbdiag") { try { const c = await identifiantsLecture(this.state.storage); return json({ ok: true, adresse: c.adresse, cle: !!c.apiKey }); } catch (e) { return json({ ok: false, erreur: String((e && e.stack) || e).slice(0, 800) }); } }
     if (u.pathname === "/api/rapidemaker") { const M = await this.state.storage.list({ prefix: "rapm:" }); const J = []; for (const v of M.values()) J.push(...v); J.sort((x, y) => x.tPose - y.tPose); return json({ offres: J }); }
     if (u.pathname === "/api/rapide") {
@@ -689,6 +697,14 @@ export class Bot {
     }
     if (!this.ws.cl || (muet("cl") > 20 && depuis("cl") > 20)) this.connecter("cl", "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surCl(m), "PING", 5000);
+    // MIGRATION CHAINLINK (11.10.2026) : nouveau flux PolyBolt en PARALLÈLE (ombre). Il ne nourrit le moteur que si le réglage CHAINLINK_SOURCE
+    // vaut "polybolt" ou "auto" (absent = "rtds" : moteur inchangé). L'ancien flux RTDS doit fermer vers le 23.10.2026.
+    if (!this.pbCreds && !this._pbDem && (!this._pbT || t - this._pbT > 120)) {
+      this._pbDem = true; this._pbT = t;
+      identifiantsLecture(this.state.storage).then((c) => { this.pbCreds = c; }).catch((e) => this.erreur("polybolt identifiants", e)).finally(() => { this._pbDem = false; });
+    }
+    if (this.pbCreds && (!this.ws.cl2 || (muet("cl2") > 20 && depuis("cl2") > 20)))
+      this.connecter("cl2", "https://ws-live-v2.polymarket.com/ws", [JSON.stringify({ op: "auth", rid: "a1", auth: { apiKey: this.pbCreds.apiKey, secret: this.pbCreds.secret, passphrase: this.pbCreds.passphrase } })], (m) => this.surCl2(m), JSON.stringify({ op: "ping" }), 20000);
   }
 
   async connecter(nom, url, abos, surMsg, ping, periode) {
@@ -773,11 +789,36 @@ export class Bot {
       if (a && x.price) this.noter(a, "cb", +x.price, now());
     }
   }
+  sourceCl() { const s = (this.env.CHAINLINK_SOURCE || "rtds").toLowerCase(); return s === "polybolt" || s === "auto" ? s : "rtds"; }
+  clComparer(sym, flux, v, obs) {                       // ombre : même observation reçue par les deux flux ? valeur, retard, avance
+    const C = ((this.clCmp = this.clCmp || {})[sym] = this.clCmp[sym] || { obs: new Map(), n: { rtds: 0, pb: 0 }, retard: { rtds: [], pb: [] }, avancePb: [], ecart: [], derniereObs: 0 });
+    const tR = Date.now(); C.n[flux]++; const R = C.retard[flux]; R.push(tR - obs); if (R.length > 600) R.shift();
+    const e = C.obs.get(obs);
+    if (!e) { C.obs.set(obs, { [flux]: [v, tR] }); if (C.obs.size > 600) C.obs.delete(C.obs.keys().next().value); }
+    else if (!e[flux]) { e[flux] = [v, tR]; if (e.rtds && e.pb) { C.avancePb.push(e.rtds[1] - e.pb[1]); C.ecart.push(Math.abs(e.rtds[0] - e.pb[0]) / e.rtds[0]); if (C.avancePb.length > 600) { C.avancePb.shift(); C.ecart.shift(); } } }
+    const src = this.sourceCl();                         // réglage absent → seul RTDS nourrit le moteur (comportement d'avant)
+    const nourrit = src === "rtds" ? flux === "rtds" : src === "polybolt" ? flux === "pb" : obs > C.derniereObs;
+    if (nourrit) { C.derniereObs = Math.max(C.derniereObs, obs); }
+    return nourrit;
+  }
+  surCl2(m) {
+    if (m.op === "authed") { this.pbAuth = now();
+      const subs = []; for (const a of LISTE) { const sy = a.toLowerCase() + "usd"; subs.push({ channel: "price.crypto", filter: { symbol: sy } }, { channel: "price.crypto.twap", filter: { symbol: sy, window_seconds: 60 } }); }
+      try { this.ws.cl2.send(JSON.stringify({ op: "subscribe", rid: "s1", subscriptions: subs })); } catch (e) { this.erreur("polybolt abonnement", e); } return; }
+    if (m.op) { if (m.op !== "subscribed" && m.op !== "pong") this.pbErreur = JSON.stringify(m).slice(0, 300); return; }
+    if (m.snapshot) return;
+    const P = m.payload || {}, sym = String(P.symbol || "").toUpperCase().replace(/USD$/, ""), v = +(P.full_accuracy_value || P.value), obs = +P.timestamp;
+    if (!ACTIFS[sym] || !(v > 0) || !(obs > 0)) return;
+    if (m.channel === "price.crypto") { if (this.clComparer(sym, "pb", v, obs)) this.noter(sym, "cl", v, now()); }
+    else if (m.channel === "price.crypto.twap") {                        // moyenne 60 s officielle : gardée aux instants de début de cycle (prix à battre / prix final)
+      if (obs % 300000 === 0) { const L = (this.twOff = this.twOff || []); L.push({ a: sym, t: obs / 1000, twap: v, recu_ms: Date.now() - obs }); while (L.length > 2000) L.shift(); }
+    }
+  }
   surCl(m) {
     if (m.topic !== "crypto_prices_chainlink") return;
     const p = m.payload || {}, sym = (p.symbol || "").toUpperCase().split("/")[0];
     if (!ACTIFS[sym] || !(+p.value > 0)) return;
-    this.noter(sym, "cl", +p.value, now());
+    if (this.clComparer(sym, "rtds", +p.value, +p.timestamp)) this.noter(sym, "cl", +p.value, now());
     // horodatages bruts du flux (audit du 09.10.2026) : heure de l'observation (p.timestamp), du message (m.timestamp), de réception
     if (sym === "BTC" || sym === "ETH") {
       const B = ((this._clBrut = this._clBrut || {})[sym] = this._clBrut[sym] || []);

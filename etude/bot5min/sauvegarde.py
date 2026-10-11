@@ -75,3 +75,10 @@ try:                                                         # fantomes maker de
     vu = {x["oid"] for x in old}; old += [x for x in J if x["oid"] not in vu]
     old.sort(key=lambda x: x.get("tPose", 0)); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("maker", len(old))
 except Exception as e: print("maker", e)
+try:                                                         # migration Chainlink (ombre PolyBolt du bot Cloudflare), 11.10.2026
+    d = get(U + "/api/chainlink_migration"); f = "bot95/chainlink_migration.json"
+    old = json.load(open(f)) if os.path.exists(f) else {"twapOfficiel": []}
+    vu = {(x["a"], x["t"]) for x in old.get("twapOfficiel", [])}; tw = old.get("twapOfficiel", []) + [x for x in d.get("twapOfficiel", []) if (x["a"], x["t"]) not in vu]
+    d["twapOfficiel"] = sorted(tw, key=lambda x: (x["t"], x["a"])); d["lu"] = time.time(); d.setdefault("historique", old.get("historique", [])).append({k: d[k] for k in ("lu", "moteurNourriPar", "polyboltConnecte", "parActif")})
+    json.dump(d, open(f, "w"), ensure_ascii=False, indent=0); print("chainlink", d.get("polyboltConnecte"), d.get("erreur"))
+except Exception as e: print("chainlink", e)
