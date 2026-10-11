@@ -1,0 +1,38 @@
+# Suivi des makers et preneurs des marchés BTC 5 min (lecture seule, API publiques). Données brutes sur la branche donnees-makers (un seul commit).
+name: Suivi makers
+on:
+  push:
+    branches: [main]
+    paths: [bot95/makers_go.txt]
+  schedule:
+    - cron: "41 5 * * *"
+permissions:
+  contents: write
+concurrency: { group: suivi-makers, cancel-in-progress: false }
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Donnees precedentes et cycles Dublin
+        run: |
+          set +e
+          git fetch -q origin donnees-makers && git show origin/donnees-makers:makers_suivi.json > bot95/makers_suivi.json
+          mkdir -p /tmp/cyc && git fetch -q origin donnees-rapide && git archive origin/donnees-rapide cycles | tar x -C /tmp/cyc
+          pip install -q numpy 2>/dev/null; ls -la bot95/makers_suivi.json; ls /tmp/cyc/cycles | head
+      - name: Collecte et analyse
+        run: |
+          set +e
+          python3 etude/bot5min/makers_suivi.py 300 /tmp/cyc > /tmp/m.log 2>&1; echo "code $?" >> /tmp/m.log; tail -40 /tmp/m.log
+          cp /tmp/m.log etude/bot5min/journal_makers_suivi.txt
+      - name: Enregistrer
+        run: |
+          git config user.name makers; git config user.email bot@users.noreply.github.com
+          cp bot95/makers_suivi.json /tmp/base.json
+          git add etude/bot5min/resultat_makers_suivi.md etude/bot5min/journal_makers_suivi.txt; git commit -q -m "Suivi makers [skip ci]"
+          for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
+          cd /tmp && rm -rf dm && mkdir dm && cd dm && git init -q && git checkout -q -b donnees-makers && cp /tmp/base.json makers_suivi.json
+          git config user.name makers; git config user.email bot@users.noreply.github.com
+          git add makers_suivi.json && git commit -q -m "makers (un seul commit, 14 jours)"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" donnees-makers
