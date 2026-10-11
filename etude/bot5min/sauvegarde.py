@@ -69,3 +69,9 @@ try:                                                         # bot95 rapide (VPS
     old["signaux"].sort(key=lambda x: (x["start"], x["nom"])); old["etat"] = d.get("etat")
     json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("rapide", len(old["signaux"]), d.get("etat"))
 except Exception as e: print("rapide", e)
+try:                                                         # fantomes maker de Dublin (offres posees), 11.10.2026
+    d = get(U + "/api/rapidemaker"); J = d.get("offres", []); f = "bot95/rapide_maker.json"
+    old = json.load(open(f)) if os.path.exists(f) else []
+    vu = {x["oid"] for x in old}; old += [x for x in J if x["oid"] not in vu]
+    old.sort(key=lambda x: x.get("tPose", 0)); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("maker", len(old))
+except Exception as e: print("maker", e)
