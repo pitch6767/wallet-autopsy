@@ -119,10 +119,10 @@ function recFinir() {                                 // cycles terminés depuis
     // encodage compact : P = [écart en ms depuis le P précédent, retard Polymarket ms, côté 0 achat/1 vente, prix en cents, taille ×100]
     let prev = 0; const P = [], autres = [];
     for (const e of R.ev) {
-      if (e[0] === "P") { const t = Math.round(e[1]); P.push([t - prev, e[2] ? Math.round(e[1] - e[2]) : null, e[4], Math.round(e[5] * 100), Math.round(e[6] * 100)]); prev = t; }
+      if (e[0] === "P") { const t = Math.round(e[1]); P.push([t - prev, e[2] ? Math.round(e[1] - e[2]) : null, e[4], Math.round(e[5] * 1000), Math.round(e[6] * 100)]); prev = t; }
       else autres.push(e);
     }
-    R.ev = autres; R.p = P; R.format = "p=[dt_ms,retard_ms,cote,cents,taille*100] (jeton Up, ±3 c du meilleur) ; ev = B (carnet complet Up /10 s) et T (transactions des 2 jetons)";
+    R.ev = autres; R.p = P; R.format = "p=[dt_ms,retard_ms,cote,prix_en_milliemes,taille*100] (jeton Up, ±3 c du meilleur) ; ev = B (carnet complet Up /10 s) et T (transactions des 2 jetons)";
     let gz; try { gz = zlib.gzipSync(JSON.stringify(R)); } catch (e) { log("compression", e.message); continue; }
     STAT.dernierCycle = { start: +s, ev: R.nEv, ex: R.ex.length, octets: gz.length, coupe: R.coupe };
     try { const d = new Date(+s * 1000).toISOString().slice(0, 10), dir = DIR + "/cycles/" + d; fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(dir + "/" + s + ".json.gz", gz); } catch (e) { log("disque", e.message); }
