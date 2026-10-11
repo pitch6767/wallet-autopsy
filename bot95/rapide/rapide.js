@@ -474,12 +474,16 @@ const tsMs = (x) => (typeof x === "number" ? (x < 1e12 ? x * 1000 : x) : Date.pa
 function surPB(m) {
   if (m.op === "authed") { CLS.pbAuth = true; CLS.pbErreur = null;
     WS.pb.ws.send(JSON.stringify({ op: "subscribe", rid: "s1", subscriptions: [{ channel: "price.crypto", filter: { symbol: "btcusd" } }, { channel: "price.crypto.twap", filter: { symbol: "btcusd", window_seconds: 60 } }] })); return; }
-  if (m.op && m.op !== "pong") { CLS.pbErreur = JSON.stringify(m).slice(0, 300); return; }
-  const P = m.payload || {}; if (m.type !== "update" || String(P.symbol || "").toLowerCase() !== "btcusd") return;
-  if (P.source) CLS.source = P.source;
-  const v = +(P.full_accuracy_value || P.value), obs = tsMs(P.timestamp);
-  if (m.topic === "prices.crypto") chainlink("pb", v, obs);
-  else if (m.topic === "prices.crypto.twap") {
+  if (m.op && m.op !== "pong" && m.op !== "subscribed") { CLS.pbErreur = JSON.stringify(m).slice(0, 300); return; }
+  if (m.op === "subscribed") { (CLS.pbAbos = CLS.pbAbos || []).push(JSON.stringify(m).slice(0, 200)); return; }
+  if ((CLS.exemples = CLS.exemples || []).length < 6) CLS.exemples.push(JSON.stringify(m).slice(0, 600));
+  const P = m.payload || m.data || {}, top = String(m.topic || m.channel || "").replace(/^prices\./, "price."), typ = m.type || m.event || "update";
+  if (typ === "subscribe" || m.snapshot) return;
+  const sym = String(P.symbol || m.symbol || (m.filter && m.filter.symbol) || "btcusd").toLowerCase(); if (sym !== "btcusd") return;
+  if (P.source || m.source) CLS.source = P.source || m.source;
+  const v = +(P.full_accuracy_value || P.value || P.price), obs = tsMs(P.timestamp || P.ts || m.timestamp);
+  if (top === "price.crypto") chainlink("pb", v, obs);
+  else if (top === "price.crypto.twap") {
     const t = nowMs(); CLS.twap.push(t - obs); if (CLS.twap.length > 2000) CLS.twap.shift();
     try { recDe(Math.floor(t / 300000) * 300).tw.push([+t.toFixed(1), obs, v]); } catch (_) {}
     const st = Math.round(obs / 1000); if (st % 300 === 0 && M[st] && !M[st].strikeTwap) M[st].strikeTwap = v;      // moyenne officielle à l'instant du début (à comparer à notre prix à battre)
@@ -544,7 +548,7 @@ async function envoyer() {
   const enCours = {}; for (const O of OFFRES) { const e = (enCours[O.variante] = enCours[O.variante] || { posees: 0, remplies: 0 }); if (O.etat === "posee") e.posees++; if (O.remplR > 0) e.remplies++; }
   const corps = { version: VERSION, t: now(), signaux: FINIS.splice(0, FINIS.length).map(({ id, fini, envoye, ...s }) => s), maker: regles, makerEnCours: { offres: enCours, compteurs: MSTAT },
     chainlink: { rtds_ms: qd(CLS.delai.rtds), polybolt_ms: qd(CLS.delai.pb), twap_ms: qd(CLS.twap), premier: CLS.premier, avanceDuPremier_ms: { rtds: med(CLS.avance.filter((x) => x[0] === "rtds").map((x) => x[1])), polybolt: med(CLS.avance.filter((x) => x[0] === "pb").map((x) => x[1])) },
-      messages: CLS.n, polyboltConnecte: CLS.pbAuth, polyboltErreur: CLS.pbErreur, source: CLS.source, identifiants: !!PB },
+      messages: CLS.n, exemples: CLS.exemples || [], abonnements: CLS.pbAbos || [], polyboltConnecte: CLS.pbAuth, polyboltErreur: CLS.pbErreur, source: CLS.source, identifiants: !!PB },
     latence: { rttClob_ms: { med: med(STAT.rttClob), p10: qtl(STAT.rttClob, 0.1), p90: qtl(STAT.rttClob, 0.9), n: STAT.rttClob.length },
       polyVersNous_ms: { med: med(STAT.retardPoly), p10: qtl(STAT.retardPoly, 0.1), p90: qtl(STAT.retardPoly, 0.9) },
       calcul_us: { med: med(STAT.decisionUs), p90: qtl(STAT.decisionUs, 0.9) }, evaluations: STAT.evaluations },
