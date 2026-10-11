@@ -28,7 +28,7 @@ def get(url, tries=5):
 
 def executions(cid, taker):
     out = []
-    for off in range(0, 4000, 500):
+    for off in range(0, 10000, 500):                                   # l'API Data accepte un décalage jusqu'à 10 000 (diagnostic du 11.10)
         try: lot = get(f"{D}/trades?market={cid}&limit=500&offset={off}&takerOnly={'true' if taker else 'false'}")
         except Exception: break
         out += lot
@@ -45,7 +45,7 @@ def collecter(nb):
     n = 0
     for k in range(nb):
         st = fin - 300 * k
-        if str(st) in base["marches"]: continue
+        if str(st) in base["marches"] and not base["marches"][str(st)].get("tronque") and base["marches"][str(st)].get("n", 0) < 4000: continue
         try:
             ev = get(f"{G}/events?slug=btc-updown-5m-{st}"); m = ev[0]["markets"][0]
             outs = json.loads(m["outcomes"]); px = [float(x) for x in json.loads(m["outcomePrices"])]; toks = json.loads(m["clobTokenIds"])
@@ -58,7 +58,7 @@ def collecter(nb):
             c = cle(t); role = "P" if kp[c] > 0 else "M"
             if role == "P": kp[c] -= 1
             lignes.append([t.get("proxyWallet"), role, t.get("outcome"), t.get("side"), float(t["size"]), float(t["price"]), int(t["timestamp"])])
-        base["marches"][str(st)] = {"gagnant": gagnant, "up": toks[outs.index("Up")] if "Up" in outs else None, "n": len(lignes), "tronque": len(tout) >= 4000, "ex": lignes}
+        base["marches"][str(st)] = {"gagnant": gagnant, "up": toks[outs.index("Up")] if "Up" in outs else None, "n": len(lignes), "tronque": len(tout) >= 10000, "ex": lignes}
         n += 1
         if n % 20 == 0: print("marchés lus", n, flush=True); json.dump(base, open(BASE, "w"))
     # on garde 14 jours
@@ -141,8 +141,44 @@ def rapport(base, W):
     open(SORTIE, "w").write("\n".join(o)); print("\n".join(o)[:6000])
 
 
+def activites(base, wallets, depuis):
+    """activité complète (TRADE, MERGE, SPLIT, REDEEM, REWARD, CONVERSION…) des portefeuilles étudiés, depuis le premier marché lu"""
+    A = base.setdefault("activites", {})
+    for w in wallets:
+        ev = []
+        for off in range(0, 10000, 500):
+            try: lot = get(f"{D}/activity?user={w}&limit=500&offset={off}&sortBy=TIMESTAMP&sortDirection=DESC")
+            except Exception: break
+            if not lot: break
+            ev += [{k: e.get(k) for k in ("timestamp", "type", "slug", "outcome", "side", "size", "usdcSize", "price", "transactionHash")} for e in lot]
+            if len(lot) < 500 or int(lot[-1]["timestamp"]) < depuis: break
+        A[w] = [e for e in ev if int(e["timestamp"] or 0) >= depuis - 600]
+        print("activité", w[:10], len(A[w]), collections.Counter(e["type"] for e in A[w]).most_common(), flush=True)
+
+
+def a_etudier(base):
+    """25 plus gros makers, 20 makers les plus rentables (≥ 20 marchés), 3 preneurs demandés par Pitch"""
+    vol = collections.Counter(); pnl = collections.Counter(); nm = collections.defaultdict(set)
+    for st, mk in base["marches"].items():
+        g = mk["gagnant"]
+        for w, role, out, side, sz, p, ts in mk["ex"]:
+            if role != "M": continue
+            win = 1.0 if out == g else 0.0
+            vol[w] += sz * p; pnl[w] += sz * (win - p) if side == "BUY" else sz * (p - win); nm[w].add(st)
+    ok = [w for w in vol if len(nm[w]) >= 20]
+    gros = sorted(ok, key=lambda w: -vol[w])[:25]; rent = sorted(ok, key=lambda w: -pnl[w])[:20]
+    preneurs = set()
+    for st, mk in base["marches"].items():
+        for x in mk["ex"]:
+            if x[1] == "P" and any(x[0].startswith(pfx) for pfx in ("0x11aade7b", "0xc4e21390", "0x41e2e1cc")): preneurs.add(x[0])
+    return list(dict.fromkeys(gros + rent + sorted(preneurs)))
+
+
 if __name__ == "__main__":
     nb = int(sys.argv[1]) if len(sys.argv) > 1 else 288
     base = collecter(nb)
+    if "--activites" in sys.argv:
+        W = a_etudier(base); print("portefeuilles étudiés", len(W)); depuis = min(int(k) for k in base["marches"])
+        activites(base, W, depuis); base["etudies"] = W; json.dump(base, open(BASE, "w"))
     MID = milieux_dublin(sys.argv[2] if len(sys.argv) > 2 else None)
     rapport(base, analyser(base, MID))

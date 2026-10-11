@@ -12,7 +12,7 @@ concurrency: { group: suivi-makers, cancel-in-progress: false }
 jobs:
   s:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
       - name: Donnees precedentes et cycles Dublin
@@ -24,7 +24,7 @@ jobs:
       - name: Collecte et analyse
         run: |
           set +e
-          python3 etude/bot5min/makers_suivi.py 300 /tmp/cyc > /tmp/m.log 2>&1; echo "code $?" >> /tmp/m.log; tail -40 /tmp/m.log
+          python3 etude/bot5min/makers_suivi.py 600 /tmp/cyc --activites > /tmp/m.log 2>&1; echo "code $?" >> /tmp/m.log; tail -40 /tmp/m.log
           cp /tmp/m.log etude/bot5min/journal_makers_suivi.txt
       - name: Enregistrer
         run: |
