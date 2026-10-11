@@ -9,13 +9,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          curl -sS -m 60 https://bot95.pitch67.workers.dev/api/rapide/version > /tmp/v.json
           curl -sS -m 120 https://bot95.pitch67.workers.dev/api/rapide > /tmp/r.json
           python3 - <<'P' > bot95/diag_r4.json
           import json
-          v=json.load(open('/tmp/v.json')); r=json.load(open('/tmp/r.json'))
+          r=json.load(open('/tmp/r.json'))
           S=[s for s in r.get('signaux',[]) if 'r4' in s]
-          print(json.dumps({'version_worker':v,'etat':{k:r.get('etat',{}).get(k) for k in ('recu','version')},'n_signaux':len(r.get('signaux',[])),'n_avec_r4':len(S),'derniers_r4':S[-3:]},indent=1)[:20000])
+          print(json.dumps({'etat':{k:r.get('etat',{}).get(k) for k in ('recu','version')},'n_signaux':len(r.get('signaux',[])),'n_avec_r4':len(S),'derniers_r4':S[-3:]},indent=1)[:20000])
           P
           git config user.name bot95 && git config user.email bot95@users.noreply.github.com
           git add bot95/diag_r4.json && git commit -qm "diag R4 [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
