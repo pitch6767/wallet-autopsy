@@ -328,7 +328,7 @@ export class Bot {
       for (const [k, v] of M) { if (k === "rap:etat") etat = v; else J.push(...v); }
       J.sort((x, y) => x.start - y.start); return json({ etat, signaux: J });
     }
-    if (u.pathname === "/api/vitesse") { const M = await this.state.storage.list({ prefix: "vit:" }); const J = []; for (const v of M.values()) J.push(...v); J.sort((x, y) => x.start - y.start); return json({ signaux: J, latPoly: { med: this.latPoly.length ? qtl(this.latPoly, 0.5) : null, p90: this.latPoly.length ? qtl(this.latPoly, 0.9) : null }, latDec: { med: this.latDec.length ? qtl(this.latDec, 0.5) : null, p90: this.latDec.length ? qtl(this.latDec, 0.9) : null } }); }
+    if (u.pathname === "/api/vitesse") { const M = await this.state.storage.list({ prefix: "vit:" }); const J = []; for (const v of M.values()) J.push(...v); J.sort((x, y) => x.start - y.start); return json({ rttClob_ms: { med: qtl(this.rttClob || [], 0.5), p10: qtl(this.rttClob || [], 0.1), p90: qtl(this.rttClob || [], 0.9), n: (this.rttClob || []).length }, signaux: J, latPoly: { med: this.latPoly.length ? qtl(this.latPoly, 0.5) : null, p90: this.latPoly.length ? qtl(this.latPoly, 0.9) : null }, latDec: { med: this.latDec.length ? qtl(this.latDec, 0.5) : null, p90: this.latDec.length ? qtl(this.latDec, 0.9) : null } }); }
     if (u.pathname === "/api/v2f_variantes") { const M = await this.state.storage.list({ prefix: "v2fx:" }); const J = []; for (const v of M.values()) J.push(...v); J.sort((x, y) => x.start - y.start); return json({ signaux: J }); }
     if (u.pathname === "/api/twap_carnets") { const J = (this._twj || {}).twcarnet || (await this.state.storage.get("twcarnet")) || []; return json({ signaux: J }); }
     if (u.pathname === "/api/twap_confirme") { const J = this.TWC || (await this.state.storage.get("twc")) || []; return json({ signaux: J }); }
@@ -810,6 +810,8 @@ export class Bot {
   // ------------------------------------------------------------------ boucle
   async tick() {
     const t = now(), start = Math.floor(t / 300) * 300, tleft = start + 300 - t;
+    // 11.10.2026 : aller-retour Cloudflare → serveur Polymarket, toutes les 15 s, pour le comparer au VPS de Dublin (mesure seulement)
+    if (t - (this._rttT || 0) > 15) { this._rttT = t; const t0 = Date.now(); fetch(C + "/time").then((r) => r.text()).then(() => { (this.rttClob = this.rttClob || []).push(Date.now() - t0); if (this.rttClob.length > 500) this.rttClob.shift(); }).catch(() => {}); }
     await Promise.all(LISTE.map(async (a) => {
       let mk = this.mk[a];
       if (!mk || mk.start !== start) {
