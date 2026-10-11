@@ -84,7 +84,7 @@ function proba(mk, sdRel) {
 // signaux des cohortes A et B ; journal des décisions. Écrit sur le disque du VPS et envoyé au bot Cloudflare.
 const zlib = require("zlib");
 const REC = {};
-const recDe = (start) => (REC[start] = REC[start] || { start, version: VERSION, ev: [], ex: [], snap: [], sig: [], dec: [], cl2: [], tw: [], nEv: 0, coupe: false });
+const recDe = (start) => (REC[start] = REC[start] || { start, version: VERSION, ev: [], ex: [], snap: [], sig: [], dec: [], cl2: [], tw: [], mk: [], nEv: 0, coupe: false });
 const tokIdx = (id) => { for (const s of Object.keys(M)) { const m = M[s]; if (m.up === id) return [+s, 0]; if (m.down === id) return [+s, 1]; } return [null, null]; };
 // Volume mesuré le 11.10 : ~700 messages/s. Les carnets Up et Down sont miroirs (vérifié sur 100 % des lignes) : on garde le carnet Up seulement,
 // les changements de niveau à 3 c ou moins du meilleur prix, un carnet complet toutes les 10 s, et TOUTES les transactions des deux jetons.
@@ -108,7 +108,8 @@ function recEv(id, row) {
 // flux agressifs par source (12.10.2026, H527-H530) : volume acheteur / vendeur (côté preneur) et nombre de transactions par tranche de 50 ms ;
 // liquidations Bybit. Coinbase : canal market_trades (côté preneur fourni). Aucune donnée inventée : une source sans côté n'est pas comptée.
 const FLOW = {};
-function flux50(src, cote, q, p) { const F = (FLOW[src] = FLOW[src] || { a: 0, v: 0, n: 0 }); if (cote === "a") F.a += q * p; else F.v += q * p; F.n++; }
+function flux50(src, cote, q, p) { const F = (FLOW[src] = FLOW[src] || { a: 0, v: 0, n: 0 }); if (cote === "a") F.a += q * p; else F.v += q * p; F.n++;
+  if (src !== "liq_bybit" && typeof FLOW2 !== "undefined") FLOW2.net += (cote === "a" ? 1 : -1) * q * p; }
 let exDernier = "";
 setInterval(() => {                                   // prix des sources toutes les 50 ms (seulement si un prix a changé)
   const t = nowMs(), start = Math.floor(t / 300000) * 300;
@@ -313,26 +314,32 @@ function suivreSurvie(id) {                    // au message près : quand l'off
 // améliore le meilleur acheteur). Les carnets Up et Down sont miroirs : une vente de Up à p ou un achat de Down à 1 − p consomment le même niveau.
 //   remplissage PRUDENT : seules les transactions nous font avancer ; la file devant nous ne dépasse jamais la taille affichée.
 //   remplissage PROPORTIONNEL : en plus, les retraits sans transaction (300 ms autour) libèrent la file au prorata de notre place.
-// Aucun frais pour les offres posées ; la ristourne maker n'est pas comptée. Résultat au règlement, comme les autres fantômes.
+// Aucun remplissage n'est certain : ce sont deux estimations, toutes deux rapportées. Aucun frais pour les offres posées ; la ristourne maker
+// n'est pas comptée. Sélection adverse : milieu du carnet et modèle à +1, +3, +5, +10 s après chaque remplissage. Résultat au règlement.
+// Tous les paramètres ci-dessous sont FIXÉS AVANT la mesure (aucun ajustement sur les résultats).
 const OFFRES = [], MAKER_FINIS = [], MSTAT = {}, TRX = []; let oidN = 0;
 const LAT = () => Math.max(5, Math.round((med(STAT.rttClob) || 30) / 2));
 const r2 = (x) => Math.round(x * 100) / 100;
+const DP = {};                                                              // dernière probabilité du modèle par cycle (pour les mesures)
 function meilleurAcheteur(id) { const L = livres[id]; let b = 0; if (L) for (const [p, z] of L.bids) if (z > 0 && p > b) b = p; return b; }
+function milieu(id) { const b = meilleurAcheteur(id), a = asksTries(id)[0]; return b > 0 && a ? (b + a[0]) / 2 : null; }
 function autreJeton(id) { const [st, k] = tokIdx(id); if (st == null) return null; return k === 0 ? M[st].down : M[st].up; }
-function mstat(v) { return (MSTAT[v] = MSTAT[v] || { posees: 0, rejetees: 0, annulees: 0, remplies: 0 }); }
+function mstat(v) { return (MSTAT[v] = MSTAT[v] || { posees: 0, rejetees: 0, annulees: 0, remplies: 0, retraitsToxiques: 0 }); }
+function fairDe(O) { const d = DP[O.start]; return d && d.pu != null ? +(O.cote === "Up" ? d.pu : 1 - d.pu).toFixed(4) : null; }
 function poser(variante, mk, up, prix, budget, info) {
-  const id = up ? mk.up : mk.down, t = nowMs();
+  const id = up ? mk.up : mk.down, t = nowMs(), bb = meilleurAcheteur(id), as0 = asksTries(id)[0];
   const O = { oid: `${mk.start}:${++oidN}`, variante, start: mk.start, cote: up ? "Up" : "Down", id, prix, parts: +(budget / prix).toFixed(2), tPose: +t.toFixed(1), lat_ms: LAT(),
-    etat: "envoi", qDevant: null, qp: null, qr: null, remplP: 0, remplR: 0, premierRempl_ms: null, rempl: [], ...info };
+    restantPose_s: +(mk.end - t / 1000).toFixed(2), acheteurPose: bb, vendeurPose: as0 ? as0[0] : null, niveauPose: livres[id] ? +(livres[id].bids.get(prix) || 0).toFixed(2) : 0,
+    etat: "envoi", qDevant: null, qp: null, qr: null, remplP: 0, remplR: 0, premierRempl_ms: null, rempl: [], mo: { p: {}, r: {} }, moModele: { p: {}, r: {} }, ...info };
   OFFRES.push(O); mstat(variante).posees++;
   setTimeout(() => {
     if (O.etat !== "envoi") return;
     const as = asksTries(id)[0];
     if (as && as[0] <= prix + 1e-9) { O.etat = "rejetee"; O.raison = "croiserait le vendeur (post only)"; mstat(variante).rejetees++; return; }
-    const bb = meilleurAcheteur(id), q = prix > bb + 1e-9 || !livres[id] ? 0 : (livres[id].bids.get(prix) || 0);
+    const b = meilleurAcheteur(id), q = prix > b + 1e-9 || !livres[id] ? 0 : (livres[id].bids.get(prix) || 0);
     O.qDevant = +q.toFixed(2); O.qp = q; O.qr = q; O.etat = "posee"; O.tArrivee = +nowMs().toFixed(1);
   }, O.lat_ms);
-  try { if (variante.startsWith("M1")) recDe(mk.start).dec.push([+t.toFixed(1), variante, "offre posee", O.cote, prix]); } catch (_) {}
+  try { if (variante.startsWith("M1") || variante.startsWith("M0")) recDe(mk.start).dec.push([+t.toFixed(1), variante, "offre posee", O.cote, prix]); } catch (_) {}
   return O;
 }
 function annuler(O, raison) {
@@ -343,13 +350,18 @@ function annuler(O, raison) {
 function remplir(O, k, n) {
   const cle = k === "p" ? "remplP" : "remplR", reste = O.parts - O[cle]; if (reste <= 1e-9 || n <= 0) return;
   const x = Math.min(reste, n); O[cle] = +(O[cle] + x).toFixed(4);
-  if (O.premierRempl_ms == null) { O.premierRempl_ms = +(nowMs() - O.tPose).toFixed(1); mstat(O.variante).remplies++; }
+  if (O.premierRempl_ms == null) { O.premierRempl_ms = +(nowMs() - O.tPose).toFixed(1); O.qDevantAuRempl = { p: O.qp, r: O.qr }; O.fairAuRempl = fairDe(O); mstat(O.variante).remplies++; }
   if (O.rempl.length < 40) O.rempl.push([+(nowMs() - O.tPose).toFixed(1), k, +x.toFixed(2)]);
+  for (const h of [1, 3, 5, 10]) setTimeout(() => {                         // sélection adverse : où en est le carnet (et le modèle) h secondes plus tard ?
+    const m = milieu(O.id), f = fairDe(O);
+    if (m != null) { const a = (O.mo[k][h] = O.mo[k][h] || [0, 0]); a[0] += x * (m - O.prix); a[1] += x; }
+    if (f != null) { const a = (O.moModele[k][h] = O.moModele[k][h] || [0, 0]); a[0] += x * (f - O.prix); a[1] += x; }
+  }, h * 1000);
 }
 function makerTransaction(tok, side, q, v) {               // vente sur ce jeton à q → acheteurs de ce jeton à q ; achat → acheteurs de l'autre jeton à 1 − q
   const bidTok = side === "SELL" ? tok : autreJeton(tok); if (!bidTok) return;
   const pb = side === "SELL" ? q : Math.round((1 - q) * 1000) / 1000, t = nowMs();
-  TRX.push({ tok: bidTok, p: pb, v, t, u: 0 }); while (TRX.length && t - TRX[0].t > 3000) TRX.shift();
+  TRX.push({ tok: bidTok, p: pb, v, t, u: 0 }); while (TRX.length && t - TRX[0].t > 30000) TRX.shift();
   for (const O of OFFRES) {
     if (O.etat !== "posee" || O.id !== bidTok) continue;
     if (pb < O.prix - 1e-9) { remplir(O, "p", Infinity); remplir(O, "r", Infinity); continue; }   // niveau traversé : tout notre prix est parti
@@ -371,46 +383,131 @@ function makerNiveau(tok, p, avant, apres) {
     }, 300);
   }
 }
+// ---- mouvements et flux agressifs des bourses (pour M4), toutes les 50 ms ; aucune donnée n'est réutilisée par les règles existantes
+const MOV = [], FLOW2 = { net: 0 };
+setInterval(() => {
+  const t = now(), px = ["perp", "okx", "bn", "cb"].filter((k) => f[k] && t - f[k].t < 2).map((k) => f[k].p);
+  MOV.push([t, px.length ? med(px) : null, FLOW2.net]); FLOW2.net = 0; while (MOV.length > 200) MOV.shift();
+}, 50);
+function mouvement(ms) { const t = now(); let p0 = null, fl = 0; const p1 = MOV.length ? MOV[MOV.length - 1][1] : null;
+  for (let i = MOV.length - 1; i >= 0; i--) { if (t - MOV[i][0] > ms / 1000) { p0 = MOV[i][1]; break; } fl += MOV[i][2]; }
+  return { dp: p0 != null && p1 != null ? p1 - p0 : 0, flux: fl }; }
+// ---- probabilité avec un prix BTC imposé (copie de proba(), pour M3 : « ce que dirait le marché s'il ne regardait que le dernier Chainlink »)
+function probaAvecS(mk, sdRel, S) {
+  if (!mk || !mk.strike || !f.cl || !sgc) return null;
+  const sg = sgc.v, t = now(), ts = Math.floor(t), deb = mk.end - 60; let E, v;
+  if (ts >= deb) { const connus = []; for (let s2 = deb; s2 <= Math.min(ts, mk.end - 1); s2++) { const x = prixA("cl", s2); if (x) connus.push(x); }
+    const nr = Math.max(1, mk.end - 1 - ts); E = (connus.reduce((x, y) => x + y, 0) + nr * S) / (connus.length + nr); v = (sg * S) ** 2 * nr ** 3 / 3 / 3600; }
+  else { E = S; v = (sg * S) ** 2 * ((deb - ts) + 20); }
+  return phi((E - mk.strike) / Math.sqrt(v + (sdRel * S) ** 2));
+}
 const MODELE_REGLE = (nom) => (nom.includes("0,01 %") ? "pu01" : nom.startsWith("cohorte B") ? "pu015" : "pu");
 // M1 : sur chaque signal des règles de Dublin, au lieu d'acheter le vendeur, on pose une offre d'achat 1 c au-dessus du meilleur acheteur
 // (ou au meilleur acheteur si l'écart vendeur-acheteur est de 1 c). 50 $. Annulée si le modèle de la règle ne dépasse plus notre prix de 5 c,
 // après 30 s, ou à 5 s de la fin.
+function prixAmeliore(id, a0) { const bb = meilleurAcheteur(id); if (!bb) return null; let p = r2(bb + 0.01); if (p >= a0 - 1e-9) p = r2(bb); return p < 0.04 || p > 0.96 ? null : p; }
 function makerSurSignal(S, mk, up, nom) {
-  const id = up ? mk.up : mk.down, bb = meilleurAcheteur(id); if (!bb) return;
-  let p = r2(bb + 0.01); if (p >= S.a0 - 1e-9) p = r2(bb); if (p < 0.04 || p > 0.96) return;
-  poser("M1 " + nom, mk, up, p, 50, { modeleCle: MODELE_REGLE(nom), modele: S.modele, a0: S.a0 });
+  const p = prixAmeliore(up ? mk.up : mk.down, S.a0); if (p == null) return;
+  poser("M1 " + nom, mk, up, p, 50, { modeleCle: MODELE_REGLE(nom), modele: S.modele, a0: S.a0, annulModele: 0.05 });
 }
+// M0 TÉMOIN SANS SIGNAL : deux offres par cycle, à des instants et sur un côté tirés au hasard (entre 270 et 30 s de la fin), même prix et mêmes
+// annulations que M1 (30 s, 5 s de la fin), sans condition de modèle. Sert de comparaison à M1 et à toutes les variantes.
 // M2 : cotation permanente des deux côtés au prix du modèle moins une marge (5 c ou 10 c), arrondi au cent inférieur, toujours sous le vendeur.
 // Re-cotée dès que le prix voulu change (annulation + nouvelle offre en fin de file). 50 $ au plus par côté et par cycle. De 290 à 10 s de la fin.
+// M3 ANTICIPATION CHAINLINK : quand la probabilité calculée avec le prix des bourses (Chainlink prévu) dépasse d'au moins 3 c celle calculée avec le
+// dernier Chainlink publié, on pose une offre sur le côté favorisé 1 c au-dessus du meilleur acheteur (au plus modèle − 2 c), avant la publication.
+// Annulée 1 s après la publication d'un Chainlink plus récent, après 10 s, si l'écart passe sous 1 c, ou à 5 s de la fin. 50 $ par côté et par cycle.
+// M4 RETRAIT TOXIQUE : exactement M2 marge 5 c, mais l'offre est retirée et le côté mis en pause 2 s dès qu'un signal toxique apparaît :
+//   (a) prix médian des bourses −10 $ (ou +10 $ pour Down) en 300 ms ; (b) flux agressif net contre nous ≥ 250 000 $ en 250 ms (Bybit, OKX, Binance,
+//   Coinbase) ; (c) au moins 100 parts vendues sur les acheteurs de notre jeton en 500 ms.
+// M5 REMPLISSAGE ATTENDU (modèle de file a priori, sans apprentissage) : pour chaque prix possible (du meilleur acheteur jusqu'à modèle − 3 c, sous le
+// vendeur), parts remplies attendues en 10 s = min(notre taille, max(0, ventes sur les acheteurs de ce jeton au rythme des 30 dernières secondes × 10 s
+// − file devant nous)) ; espérance = parts attendues × (modèle − prix − 2 c de sélection adverse). On cote le prix qui maximise l'espérance,
+// seulement si elle dépasse 0,50 $. Re-coté quand le meilleur prix change. 50 $ par côté et par cycle.
 const M2 = [["M2 cotation marge 5 c", 0.05], ["M2 cotation marge 10 c", 0.10]];
 const QS = {};
+function coter(Q, v, mk, up, px, ok, info, t) {                          // gestion commune d'une offre permanente (M2, M3, M4, M5)
+  const k = v + (up ? "U" : "D"), S2 = (Q[k] = Q[k] || { depense: 0, O: null, t: 0 });
+  const cur = S2.O && (S2.O.etat === "posee" || S2.O.etat === "envoi") && !S2.O.tAnnulDemande ? S2.O : null;
+  if (S2.O && S2.O !== cur) { S2.depense += S2.O.remplR * S2.O.prix; S2.O = cur; }
+  const budget = 50 - S2.depense - (cur ? cur.remplR * cur.prix : 0);
+  ok = ok && budget >= 1 && px != null && px >= 0.04 && px <= 0.96;
+  if (cur && (!ok || Math.abs(cur.prix - px) > 1e-9)) { if (t - S2.t < 50 && ok) return S2; annuler(cur, ok ? "re-cotation" : (info && info.raisonHors) || "hors zone"); S2.depense += cur.remplR * cur.prix; S2.O = null; }
+  if (!S2.O && ok && t - S2.t >= 50) { S2.O = poser(v, mk, up, px, budget, info); S2.t = t; }
+  return S2;
+}
 function makerEvaluer(mk, tleft, ua, da, P) {
-  const t = nowMs();
-  for (const O of OFFRES) {                                               // annulations M1
-    if (O.start !== mk.start || !(O.etat === "posee" || O.etat === "envoi") || O.tAnnulDemande || !O.variante.startsWith("M1")) continue;
-    const pk = P[O.modeleCle]; const fair = pk == null ? null : (O.cote === "Up" ? pk : 1 - pk);
-    if (tleft < 5) annuler(O, "5 s de la fin"); else if (t - O.tPose > 30000) annuler(O, "30 s"); else if (fair != null && fair - O.prix < 0.05) annuler(O, "modele a moins de 5 c");
-    else if (O.remplR >= O.parts - 1e-6 && O.remplP >= O.parts - 1e-6) { O.etat = "remplie"; }
+  const t = nowMs(), ts = t / 1000;
+  DP[mk.start] = { pu: P.pu, t: ts }; for (const s of Object.keys(DP)) if (+s < mk.start - 600) delete DP[s];
+  for (const O of OFFRES) {                                               // annulations M0 / M1 / M3
+    if (O.start !== mk.start || !(O.etat === "posee" || O.etat === "envoi") || O.tAnnulDemande) continue;
+    const v = O.variante;
+    if (v.startsWith("M1") || v.startsWith("M0")) {
+      const pk = O.modeleCle ? P[O.modeleCle] : null, fair = pk == null ? null : (O.cote === "Up" ? pk : 1 - pk);
+      if (tleft < 5) annuler(O, "5 s de la fin"); else if (t - O.tPose > 30000) annuler(O, "30 s");
+      else if (O.annulModele && fair != null && fair - O.prix < O.annulModele) annuler(O, "modele a moins de 5 c");
+    }
   }
   const Q = (QS[mk.start] = QS[mk.start] || {});
-  for (const [v, marge] of M2) for (const up of [true, false]) {
-    const k = v + (up ? "U" : "D"), S2 = (Q[k] = Q[k] || { depense: 0, O: null, t: 0 });
-    const cur = S2.O && (S2.O.etat === "posee" || S2.O.etat === "envoi") && !S2.O.tAnnulDemande ? S2.O : null;
-    if (S2.O && S2.O !== cur) { S2.depense += S2.O.remplR * S2.O.prix; S2.O = cur; }
+  // M0 témoin
+  if (!Q.m0) Q.m0 = [0, 1].map(() => ({ t: mk.start + 30 + Math.random() * 240, up: Math.random() < 0.5, fait: false }));
+  for (const x of Q.m0) if (!x.fait && ts >= x.t) { x.fait = true; const id = x.up ? mk.up : mk.down, a = (x.up ? ua : da)[0], p = prixAmeliore(id, a);
+    if (p != null) poser("M0 temoin aleatoire", mk, x.up, p, 50, { a0: a }); }
+  const sides = [true, false];
+  // M2
+  for (const [v, marge] of M2) for (const up of sides) {
     const fair = up ? P.pu : 1 - P.pu, ask = (up ? ua : da)[0];
-    let px = Math.floor((fair - marge) * 100 + 1e-9) / 100; px = Math.min(px, r2(ask - 0.01));
-    const budget = 50 - S2.depense - (cur ? cur.remplR * cur.prix : 0);
-    const ok = tleft > 10 && tleft < 290 && px >= 0.04 && px <= 0.96 && budget >= 1;
-    if (cur && (!ok || Math.abs(cur.prix - px) > 1e-9)) { if (t - S2.t < 50 && ok) continue; annuler(cur, ok ? "re-cotation" : "hors zone"); S2.depense += cur.remplR * cur.prix; S2.O = null; }
-    if (!S2.O && ok && t - S2.t >= 50) { S2.O = poser(v, mk, up, px, budget, { modele: +fair.toFixed(4), a0: ask }); S2.t = t; }
+    const px = Math.min(Math.floor((fair - marge) * 100 + 1e-9) / 100, r2(ask - 0.01));
+    coter(Q, v, mk, up, px, tleft > 10 && tleft < 290, { modele: +fair.toFixed(4), a0: ask }, t);
+  }
+  // M3
+  const pcl = f.cl ? probaAvecS(mk, 8e-4, f.cl.p) : null;
+  if (pcl != null) for (const up of sides) {
+    const fair = up ? P.pu : 1 - P.pu, stale = up ? pcl : 1 - pcl, ecart = fair - stale, id = up ? mk.up : mk.down, ask = (up ? ua : da)[0];
+    const k = "M3" + (up ? "U" : "D"), st = (Q[k + "etat"] = Q[k + "etat"] || { actif: false, obs: null, tDeb: 0 });
+    if (!st.actif && ecart >= 0.03 && tleft > 10) { st.actif = true; st.obs = f.cl.tsSrc; st.tDeb = t; st.tPub = null; }
+    if (st.actif) {
+      if (st.tPub == null && f.cl.tsSrc > st.obs) st.tPub = t;
+      const fin = tleft < 5 || t - st.tDeb > 10000 || ecart < 0.01 || (st.tPub != null && t - st.tPub > 1000);
+      if (fin) st.actif = false;
+      const p = prixAmeliore(id, ask), px = p == null ? null : Math.min(p, Math.floor((fair - 0.02) * 100 + 1e-9) / 100);
+      coter(Q, "M3 anticipation Chainlink", mk, up, px, !fin, { modele: +fair.toFixed(4), modeleChainlinkSeul: +stale.toFixed(4), a0: ask, raisonHors: "Chainlink publie / fin" }, t);
+    }
+  }
+  // M4
+  const m300 = mouvement(300), m250 = mouvement(250);
+  for (const up of sides) {
+    const k = "M4" + (up ? "U" : "D"), id = up ? mk.up : mk.down, sens = up ? 1 : -1;
+    let tox = null;
+    if (sens * m300.dp <= -10) tox = "bourses -10 $ en 300 ms";
+    else if (sens * m250.flux <= -250000) tox = "flux agressif contre nous";
+    else { let vv = 0; for (let i = TRX.length - 1; i >= 0 && t - TRX[i].t <= 500; i--) if (TRX[i].tok === id) vv += TRX[i].v; if (vv >= 100) tox = "100 parts vendues en 500 ms"; }
+    const S4 = Q[k + "pause"] || 0;
+    if (tox && t >= S4) { Q[k + "pause"] = t + 2000; Q[k + "derniere"] = tox; const cur = Q["M4 retrait toxique" + (up ? "U" : "D")]; if (cur && cur.O && cur.O.etat === "posee") mstat("M4 retrait toxique").retraitsToxiques++; }
+    const fair = up ? P.pu : 1 - P.pu, ask = (up ? ua : da)[0];
+    const px = Math.min(Math.floor((fair - 0.05) * 100 + 1e-9) / 100, r2(ask - 0.01));
+    coter(Q, "M4 retrait toxique", mk, up, px, tleft > 10 && tleft < 290 && t >= (Q[k + "pause"] || 0), { modele: +fair.toFixed(4), a0: ask, raisonHors: "toxique : " + (Q[k + "derniere"] || "") }, t);
+  }
+  // M5
+  for (const up of sides) {
+    const id = up ? mk.up : mk.down, fair = up ? P.pu : 1 - P.pu, ask = (up ? ua : da)[0], bb = meilleurAcheteur(id);
+    let vol = 0; for (let i = TRX.length - 1; i >= 0 && t - TRX[i].t <= 30000; i--) if (TRX[i].tok === id) vol += TRX[i].v;
+    const rythme10 = vol / 30 * 10; let best = null;
+    if (bb > 0) for (let p = bb; p <= Math.min(ask - 0.01, fair - 0.03) + 1e-9; p = r2(p + 0.01)) {
+      const q = p > bb + 1e-9 ? 0 : (livres[id].bids.get(p) || 0), taille = 50 / p, att = Math.min(taille, Math.max(0, rythme10 - q));
+      const ev = att * (fair - p - 0.02); if (!best || ev > best.ev) best = { p: r2(p), ev, att, q };
+    }
+    const ok = tleft > 10 && tleft < 290 && best && best.ev >= 0.5;
+    coter(Q, "M5 remplissage attendu", mk, up, ok ? best.p : null, ok, ok ? { modele: +fair.toFixed(4), a0: ask, evAttendue: +best.ev.toFixed(2), partsAttendues: +best.att.toFixed(1), rythme10s: +rythme10.toFixed(1) } : { raisonHors: "esperance < 0,50 $" }, t);
   }
 }
-function makerMenage(t) {                                                 // fin de cycle : offres encore posées → « jusqu'à la fin » ; les offres jamais remplies sont oubliées
+function makerMenage(t) {                                                 // fin de vie des offres : enregistrement compact de TOUTES les offres dans le fichier du cycle
   for (let i = OFFRES.length - 1; i >= 0; i--) {
     const O = OFFRES[i];
     if (t > O.start + 300 && (O.etat === "posee" || O.etat === "envoi")) { O.etat = "fin du cycle"; }
     const fini = !(O.etat === "posee" || O.etat === "envoi");
-    if (fini && O.remplR <= 0 && O.remplP <= 0 && !O.variante.startsWith("M1")) { OFFRES.splice(i, 1); continue; }
+    if (fini && !O.rec) { O.rec = true; try { if (REC[O.start]) REC[O.start].mk.push([O.variante, O.cote, O.prix, O.tPose, O.lat_ms, O.etat, O.qDevant, O.remplP, O.remplR, O.premierRempl_ms, O.restantPose_s, O.modele ?? null, O.acheteurPose, O.vendeurPose, O.niveauPose, O.tAnnulDemande || null, O.raison || null, O.evAttendue ?? null]); } catch (_) {} }
+    if (fini && O.remplR <= 0 && O.remplP <= 0 && !(O.variante.startsWith("M1") || O.variante.startsWith("M0"))) { OFFRES.splice(i, 1); continue; }
     if (fini && t > O.start + 300) { OFFRES.splice(i, 1); MAKER_FINIS.push(O); }
   }
   for (const s of Object.keys(QS)) if (+s < t - 900) delete QS[s];
@@ -424,12 +521,35 @@ async function makerReglements() {
     O.resultat = { prudent: +(O.remplP * ((O.gagne ? 1 : 0) - O.prix)).toFixed(2), proportionnel: +(O.remplR * ((O.gagne ? 1 : 0) - O.prix)).toFixed(2) };
   }
 }
+setInterval(() => { try { makerMenage(now()); } catch (_) {} }, 2000);
 const RESUMES = [];
 setInterval(() => {                                                       // résumé par variante (compteurs), envoyé avec les offres réglées
   const t = now(); if (!Object.keys(MSTAT).length) return;
   RESUMES.push({ oid: "resume:" + Math.floor(t), start: Math.floor(t / 300) * 300, type: "resume", tPose: Math.floor(t * 1000), compteurs: JSON.parse(JSON.stringify(MSTAT)) });
   for (const k of Object.keys(MSTAT)) delete MSTAT[k];
 }, 3600000);
+
+// ---------------------------------------------------------------- CARNETS DES BOURSES (11.10.2026, H563-H586) — enregistrement seulement
+// Binance spot (20 niveaux toutes les 100 ms) et Bybit perp (carnet 50 niveaux, mises à jour) : toutes les 100 ms, meilleur acheteur/vendeur, tailles,
+// quantités cumulées à 5, 10, 20 et 50 $ du milieu, et (Bybit) baisses / ajouts de quantité à 20 $ du milieu depuis la dernière photo.
+const OB = { bn: { b: new Map(), a: new Map(), dec: [0, 0], add: [0, 0], t: 0 }, by: { b: new Map(), a: new Map(), dec: [0, 0], add: [0, 0], t: 0 } };
+function obAppliquer(o, cote, p, q, delta) {
+  const m = cote === 0 ? o.b : o.a, avant = m.get(p) || 0;
+  if (delta) { const d = q - avant; if (d < 0) o.dec[cote] -= d; else o.add[cote] += d; }
+  if (q > 0) m.set(p, q); else m.delete(p);
+}
+function obPhoto(o) {
+  let bb = 0, ba = Infinity; for (const p of o.b.keys()) if (p > bb) bb = p; for (const p of o.a.keys()) if (p < ba) ba = p;
+  if (!bb || ba === Infinity) return null; const mid = (bb + ba) / 2, c = [5, 10, 20, 50], B = [0, 0, 0, 0], A = [0, 0, 0, 0];
+  for (const [p, q] of o.b) for (let i = 0; i < 4; i++) if (mid - p <= c[i]) B[i] += q;
+  for (const [p, q] of o.a) for (let i = 0; i < 4; i++) if (p - mid <= c[i]) A[i] += q;
+  const r = (x) => +x.toFixed(4);
+  return [bb, ba, r(o.b.get(bb)), r(o.a.get(ba)), ...B.map(r), ...A.map(r), r(o.dec[0]), r(o.dec[1]), r(o.add[0]), r(o.add[1])];
+}
+setInterval(() => {
+  const t = nowMs(), start = Math.floor(t / 300000) * 300; const R = recDe(start); R.ob = R.ob || { format: "[reception_ms, age_ms, acheteur, vendeur, taille1 acheteur, taille1 vendeur, cumul acheteur 5/10/20/50 $, cumul vendeur 5/10/20/50 $, baisses acheteur, baisses vendeur, ajouts acheteur, ajouts vendeur] en BTC", bn: [], by: [] };
+  for (const k of ["bn", "by"]) { const o = OB[k]; if (!o.t || t - o.t > 3000) continue; const ph = obPhoto(o); if (ph) R.ob[k].push([+t.toFixed(1), +(t - o.t).toFixed(1), ...ph]); o.dec = [0, 0]; o.add = [0, 0]; }
+}, 100);
 
 // ---------------------------------------------------------------- flux WebSocket (reconnexion si muet 20 s)
 const WS = {};
@@ -461,6 +581,12 @@ function flux() {
       if (m.channel !== "ticker") return; for (const ev of m.events || []) for (const x of ev.tickers || []) if (x.product_id === "BTC-USD" && x.price) noter("cb", +x.price, Date.parse(m.timestamp)); });
   if (muet("cl")) connecter("cl", "wss://ws-live-data.polymarket.com", [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })],
     (m) => { if (m.topic !== "crypto_prices_chainlink") return; const p = m.payload || {}; if ((p.symbol || "").toUpperCase().startsWith("BTC") && +p.value > 0) chainlink("rtds", +p.value, +p.timestamp); }, "PING", 5000);
+  if (muet("bnd")) connecter("bnd", "wss://stream.binance.com:9443/ws/btcusdt@depth20@100ms", [], (m) => { if (!m.bids) return; const o = OB.bn;
+      o.b = new Map(m.bids.map((x) => [+x[0], +x[1]])); o.a = new Map(m.asks.map((x) => [+x[0], +x[1]])); o.t = nowMs(); });
+  if (muet("byob")) connecter("byob", "wss://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args: ["orderbook.50.BTCUSDT"] })], (m) => {
+      if (!(m.topic || "").startsWith("orderbook")) return; const o = OB.by, d = m.data || {};
+      if (m.type === "snapshot") { o.b = new Map(); o.a = new Map(); }
+      for (const x of d.b || []) obAppliquer(o, 0, +x[0], +x[1], m.type === "delta"); for (const x of d.a || []) obAppliquer(o, 1, +x[0], +x[1], m.type === "delta"); o.t = nowMs(); }, JSON.stringify({ op: "ping" }), 15000);
   if (PB && muet("pb")) { CLS.pbAuth = false; connecter("pb", "wss://ws-live-v2.polymarket.com/ws", [JSON.stringify({ op: "auth", rid: "a1", auth: PB })], surPB, JSON.stringify({ op: "ping" }), 20000); }
 }
 // ---------------------------------------------------------------- PolyBolt (wss://ws-live-v2.polymarket.com/ws) : Chainlink BTC/USD et moyenne 60 s officielle
@@ -554,7 +680,7 @@ async function envoyer() {
       calcul_us: { med: med(STAT.decisionUs), p90: qtl(STAT.decisionUs, 0.9) }, evaluations: STAT.evaluations },
     systeme: (() => { const m = process.memoryUsage(); let disque = null; try { const d = fs.statfsSync(DIR); disque = { libre_Mo: Math.round(d.bavail * d.bsize / 1e6), total_Mo: Math.round(d.blocks * d.bsize / 1e6) }; } catch (_) {}
       return { rss_Mo: Math.round(m.rss / 1e6), tas_Mo: Math.round(m.heapUsed / 1e6), disque, dernierCycle: STAT.dernierCycle || null }; })(),
-    flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "pb", "poly"].map((k) => [k, WS[k] ? { muet_s: +(now() - WS[k].msg).toFixed(1), reconnexions: WS[k].n } : null])) };
+    flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "pb", "bnd", "byob", "poly"].map((k) => [k, WS[k] ? { muet_s: +(now() - WS[k].msg).toFixed(1), reconnexions: WS[k].n } : null])) };
   try {
     const r = await fetch(`${U}/api/rapide/donnees`, { method: "POST", headers: { "content-type": "application/json", "x-rapide": TOKEN }, body: JSON.stringify(corps) });
     if (!r.ok) { log("envoi HTTP", r.status); FINIS.unshift(...corps.signaux); MAKER_FINIS.push(...corps.maker.filter((x) => x.type !== "resume")); }
