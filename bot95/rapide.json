@@ -21096,49 +21096,49 @@
 }
 ],
 "etat": {
-"recu": 1791720106.678,
+"recu": 1791720706.73,
 "version": "2dfe8263fa7c",
 "latence": {
 "rttClob_ms": {
-"med": 32.03,
-"p10": 27.51,
-"p90": 41.83,
-"n": 7
+"med": 32.75,
+"p10": 28.35,
+"p90": 42.1,
+"n": 47
 },
 "polyVersNous_ms": {
-"med": 10.658447265625,
-"p10": 9.429443359375,
-"p90": 17.062744140625
+"med": 8.687744140625,
+"p10": 7.729248046875,
+"p90": 14.119140625
 },
 "calcul_us": {
-"med": null,
-"p90": null
+"med": 237.296,
+"p90": 818.312
 },
-"evaluations": 0
+"evaluations": 157944
 },
 "flux": {
 "perp": {
-"muet_s": 1.5,
+"muet_s": 0.3,
 "reconnexions": 1
 },
 "okx": {
-"muet_s": 0,
+"muet_s": 0.1,
 "reconnexions": 1
 },
 "bn": {
-"muet_s": 0.6,
+"muet_s": 1.1,
 "reconnexions": 1
 },
 "cb": {
-"muet_s": 0.5,
+"muet_s": 0.2,
 "reconnexions": 1
 },
 "cl": {
-"muet_s": 1.4,
-"reconnexions": 1
+"muet_s": 0.4,
+"reconnexions": 2
 },
 "pb": {
-"muet_s": 0,
+"muet_s": 0.7,
 "reconnexions": 1
 },
 "bnd": {
@@ -21151,74 +21151,74 @@
 },
 "poly": {
 "muet_s": 0,
-"reconnexions": 2
+"reconnexions": 6
 }
 },
 "systeme": {
-"rss_Mo": 91,
-"tas_Mo": 18,
+"rss_Mo": 132,
+"tas_Mo": 21,
 "disque": {
-"libre_Mo": 51824,
+"libre_Mo": 51823,
 "total_Mo": 61225
 },
 "dernierCycle": {
-"start": 1791719700,
-"ev": 2016,
-"ex": 40,
-"octets": 9491,
+"start": 1791720300,
+"ev": 238530,
+"ex": 1156,
+"octets": 487235,
 "coupe": false
 }
 },
 "chainlink": {
 "decomposition_rtds_ms": {
 "publication": {
-"med": 1152,
-"p10": 815,
-"p90": 1536,
-"n": 118
+"med": 1153,
+"p10": 824,
+"p90": 1547,
+"n": 690
 },
 "transport": {
-"med": 291.57666015625,
-"p10": 174.990478515625,
-"p90": 405.957275390625,
-"n": 118
+"med": 281.073486328125,
+"p10": 176.25830078125,
+"p90": 397.232177734375,
+"n": 690
 },
 "traitement_boucle": {
-"med": 0.178955078125,
+"med": 0.254150390625,
 "p10": 0,
-"p90": 0.8466796875,
-"n": 1197
+"p90": 0.95703125,
+"n": 2000
 }
 },
 "rtds_ms": {
-"med": 1449.865966796875,
-"p10": 1121.13720703125,
-"p90": 1850.51904296875,
-"n": 118
+"med": 1442.22021484375,
+"p10": 1118.2890625,
+"p90": 1817.46484375,
+"n": 690
 },
 "polybolt_ms": {
-"med": 1234.365478515625,
-"p10": 916.295654296875,
-"p90": 1634.803955078125,
-"n": 118
+"med": 1185.21240234375,
+"p10": 866.202880859375,
+"p90": 1571.443359375,
+"n": 709
 },
 "twap_ms": {
-"med": 1297.44873046875,
-"p10": 967.804443359375,
-"p90": 1694.509033203125,
-"n": 117
+"med": 1253.92626953125,
+"p10": 932.215576171875,
+"p90": 1635.544921875,
+"n": 709
 },
 "premier": {
-"rtds": 0,
-"pb": 117
+"rtds": 2,
+"pb": 686
 },
 "avanceDuPremier_ms": {
-"rtds": null,
-"polybolt": 209.8
+"rtds": 617.3,
+"polybolt": 251.2
 },
 "messages": {
-"rtds": 118,
-"pb": 118
+"rtds": 690,
+"pb": 709
 },
 "exemples": [
 "{\"v\":1,\"channel\":\"price.crypto\",\"seq\":1,\"ts\":1791719987000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83082.871772825\",\"timestamp\":1791719868000,\"value\":83082.871772825},{\"full_accuracy_value\":\"83082.859907525\",\"timestamp\":1791719869000,\"value\":83082.859907525},{\"full_accuracy_value\":\"83082.859938515\",\"timestamp\":1791719870000,\"value\":83082.859938515},{\"full_accuracy_value\":\"83082.85527979\",\"timestamp\":1791719871000,\"value\":83082.85527978999},{\"full_accuracy_value\":\"83082.69480430595\",\"timestamp\":1791719872000,\"value\":83082.69480430594},{\"full_accuracy_value\":\"83082.69330430595",
@@ -21238,8 +21238,122 @@
 "identifiants": true
 },
 "makerEnCours": {
-"offres": {},
-"compteurs": {}
+"offres": {
+"M5 remplissage attendu": {
+"posees": 0,
+"remplies": 6
+},
+"M2 cotation marge 5 c": {
+"posees": 0,
+"remplies": 2
+},
+"M2 cotation marge 10 c": {
+"posees": 0,
+"remplies": 2
+},
+"M4 retrait toxique": {
+"posees": 1,
+"remplies": 8
+},
+"M1 V2-F incertitude 0,01 %": {
+"posees": 0,
+"remplies": 0
+},
+"M1 cohorte B : V2-F corrige 0,015 %": {
+"posees": 0,
+"remplies": 0
+},
+"M1 V2-F ecart qui grandit": {
+"posees": 1,
+"remplies": 1
+}
+},
+"compteurs": {
+"M2 cotation marge 5 c": {
+"posees": 277,
+"rejetees": 0,
+"annulees": 277,
+"remplies": 9,
+"retraitsToxiques": 0
+},
+"M2 cotation marge 10 c": {
+"posees": 303,
+"rejetees": 4,
+"annulees": 299,
+"remplies": 18,
+"retraitsToxiques": 0
+},
+"M4 retrait toxique": {
+"posees": 325,
+"rejetees": 5,
+"annulees": 319,
+"remplies": 39,
+"retraitsToxiques": 40
+},
+"M5 remplissage attendu": {
+"posees": 69,
+"rejetees": 1,
+"annulees": 68,
+"remplies": 19,
+"retraitsToxiques": 0
+},
+"M3 anticipation Chainlink": {
+"posees": 73,
+"rejetees": 0,
+"annulees": 73,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M1 V2-F ecart qui grandit": {
+"posees": 2,
+"rejetees": 0,
+"annulees": 1,
+"remplies": 2,
+"retraitsToxiques": 0
+},
+"M0 temoin aleatoire": {
+"posees": 2,
+"rejetees": 0,
+"annulees": 1,
+"remplies": 2,
+"retraitsToxiques": 0
+},
+"M1 desaccord 20 60-180 s": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 1,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M1 desaccord 30": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 1,
+"remplies": 0,
+"retraitsToxiques": 0
+},
+"M1 V2-F incertitude 0,01 %": {
+"posees": 2,
+"rejetees": 0,
+"annulees": 2,
+"remplies": 0,
+"retraitsToxiques": 0
+},
+"M1 cohorte B : V2-F corrige 0,015 %": {
+"posees": 2,
+"rejetees": 0,
+"annulees": 2,
+"remplies": 0,
+"retraitsToxiques": 0
+},
+"M1 cohorte A : zone + modele monte": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 1,
+"remplies": 0,
+"retraitsToxiques": 0
+}
+}
 }
 }
 }
