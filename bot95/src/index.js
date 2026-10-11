@@ -324,7 +324,7 @@ export class Bot {
       }
       if (u.pathname === "/api/rapide/donnees" && req.method === "POST") {
         const d = await req.json();
-        await this.state.storage.put("rap:etat", { recu: now(), version: d.version, latence: d.latence, flux: d.flux });
+        await this.state.storage.put("rap:etat", { recu: now(), version: d.version, latence: d.latence, flux: d.flux, systeme: d.systeme || null });
         for (const S of d.signaux || []) {
           const cle = "rap:" + Math.floor(S.start / 3600), J = (await this.state.storage.get(cle)) || [];
           if (!J.some((x) => x.start === S.start && x.nom === S.nom)) { J.push(S); await this.state.storage.put(cle, J); }

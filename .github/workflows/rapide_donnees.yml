@@ -19,7 +19,10 @@ jobs:
       - name: Branche donnees-rapide
         run: |
           git config user.name rapide; git config user.email bot@users.noreply.github.com
-          if git ls-remote --exit-code --heads origin donnees-rapide >/dev/null; then git checkout donnees-rapide; else git checkout --orphan donnees-rapide; git rm -rq . ; echo "Enregistrements du bot rapide (VPS Dublin), un fichier gzip par cycle BTC 5 min." > README.md; git add README.md; git commit -qm "debut"; fi
+          set -x
+          if git ls-remote --exit-code --heads origin donnees-rapide; then git fetch -q origin donnees-rapide; git switch donnees-rapide
+          else git switch --orphan donnees-rapide; echo "Enregistrements du bot rapide (VPS Dublin), un fichier gzip par cycle BTC 5 min." > README.md; git add README.md; git commit -qm "debut"; fi
+          ls
       - name: Telecharger les nouveaux cycles
         run: |
           python3 - <<'P'
