@@ -1,4 +1,4 @@
-import { Reel } from "./reel.js";
+import { Reel, identifiantsLecture } from "./reel.js";
 import { RAPIDE_VERSION, RAPIDE_CODE, RAPIDE_LAUNCHER } from "./rapide_code.js";
 import { QTWAP } from "./quantiles_twap.js";
 // bot95 v2 — option A sur les 7 cryptos 5 min de Polymarket (BTC, ETH, SOL, XRP, DOGE, BNB, HYPE).
@@ -311,10 +311,10 @@ export class Bot {
       if (!ipOk && h !== "b0629aefe453fe1063c1dd8c27242736d59b30e6939e0cecc52c64de8898e03b") return new Response("non", { status: 403 });
       if (u.pathname === "/api/rapide/version") return json({ version: RAPIDE_VERSION });
       if (u.pathname === "/api/rapide/code") return json({ version: RAPIDE_VERSION, code: RAPIDE_CODE });
-      // flux Chainlink rapide (PolyBolt) : identifiants API Polymarket servis au seul VPS de Dublin (adresse IP), jamais la clé du portefeuille
+      // flux Chainlink rapide (PolyBolt) : identifiants API d'un portefeuille jetable et vide, servis au seul VPS de Dublin (adresse IP)
       if (u.pathname === "/api/rapide/polycreds") {
         if (!ipOk) return new Response("non", { status: 403 });
-        try { await this.reel.init(); const c = this.reel.creds || {}; return json({ apiKey: c.key, secret: c.secret, passphrase: c.passphrase }); }
+        try { if (!this.pbCreds) this.pbCreds = await identifiantsLecture(this.state.storage); const c = this.pbCreds; return json({ apiKey: c.apiKey, secret: c.secret, passphrase: c.passphrase }); }
         catch (e) { return json({ erreur: String((e && e.message) || e).slice(0, 200) }, 500); }
       }
       if (u.pathname === "/api/rapide/launcher") return new Response(RAPIDE_LAUNCHER, { headers: { "content-type": "text/plain; charset=utf-8" } });

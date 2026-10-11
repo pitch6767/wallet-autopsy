@@ -3,7 +3,7 @@
 import axios from "axios";
 import { ClobClient, Side, OrderType } from "@polymarket/clob-client-v2";
 import { createWalletClient, http } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
+import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
 import { polygon } from "viem/chains";
 
 axios.defaults.adapter = "fetch";   // Cloudflare Workers : pas de module http de Node
@@ -25,7 +25,6 @@ export class Reel {
     const base = new ClobClient({ host: HOTE, chain: 137, signer, signatureType: st, funderAddress: funder, throwOnError: true });
     const creds = await base.createOrDeriveApiKey();
     this.client = new ClobClient({ host: HOTE, chain: 137, signer, creds, signatureType: st, funderAddress: funder, throwOnError: true });
-    this.creds = creds;                                  // identifiants API (lecture/annulation) — jamais la clé du portefeuille
     this.typeSignature = st; this.signataire = account.address; this.portefeuille = funder;
     await this.client.getVersion();                     // mis en cache : pas de requête au moment de l'ordre
     return this.client;
@@ -83,4 +82,15 @@ export class Reel {
     this.client = null;
     return { ok: false, essais };
   }
+}
+
+// Identifiants API pour le flux PolyBolt (lecture des prix) : tirés d'un portefeuille JETABLE, vide, créé ici. Aucun lien avec le portefeuille de Pitch.
+export async function identifiantsLecture(storage) {
+  let k = await storage.get("pb:cleJetable");
+  if (!k) { k = generatePrivateKey(); await storage.put("pb:cleJetable", k); }
+  const account = privateKeyToAccount(k);
+  const signer = createWalletClient({ account, chain: polygon, transport: http("https://polygon-rpc.com") });
+  const c = new ClobClient({ host: HOTE, chain: 137, signer, signatureType: 0, funderAddress: account.address, throwOnError: true });
+  const cr = await c.createOrDeriveApiKey();
+  return { apiKey: cr.key, secret: cr.secret, passphrase: cr.passphrase, adresse: account.address };
 }
