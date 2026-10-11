@@ -20,8 +20,9 @@ const FEE = (p) => 0.072 * p * (1 - p);
 // ---------------------------------------------------------------- prix des bourses et Chainlink
 const f = {};                       // dernier prix : f[src] = { p, t, tsSrc }
 const sec = new Map();              // seconde -> { perp, okx, bn, cb, cl }
+const CHG = {};                     // dernier CHANGEMENT de prix par source (indicateur d'âge utilisé à l'apprentissage du moteur C)
 function noter(src, p, tsSrc) {
-  const t = now(); f[src] = { p, t, tsSrc: tsSrc || null };
+  const t = now(); if (!f[src] || f[src].p !== p) CHG[src] = t; f[src] = { p, t, tsSrc: tsSrc || null };
   const s = Math.floor(t); let o = sec.get(s);
   if (!o) { o = {}; sec.set(s, o); if (sec.size > 800) sec.delete(sec.keys().next().value); }
   o[src] = p;
@@ -176,7 +177,8 @@ function evaluer(source, tMsg) {
   const pu = proba(mk, 8e-4), pu01 = proba(mk, 1e-4), pu015 = proba(mk, 1.5e-4); if (pu == null) return;
   STAT.evaluations++;
   const h = (H[start] = H[start] || { r: [], fait: {} });
-  if (!h.r.length || t - h.r[h.r.length - 1].t >= 0.25) { h.r.push({ t, pu, pu01, pu015, ua: ua[0], da: da[0] }); while (h.r.length && t - h.r[0].t > 12) h.r.shift(); }
+  if (!h.r.length || t - h.r[h.r.length - 1].t >= 0.25) { const ub = (livres[mk.up] && [...livres[mk.up].bids].filter((x) => x[1] > 0).sort((x, y) => y[0] - x[0])[0]) || null, db = (livres[mk.down] && [...livres[mk.down].bids].filter((x) => x[1] > 0).sort((x, y) => y[0] - x[0])[0]) || null;
+    h.r.push({ t, pu, pu01, pu015, ua: ua[0], da: da[0], uz: ua[1], dz: da[1], ub: ub ? ub[0] : null, db: db ? db[0] : null, perp: f.perp ? f.perp.p : null }); while (h.r.length && t - h.r[0].t > 35) h.r.shift(); }
   const ilya = (s) => { for (let i = h.r.length - 1; i >= 0; i--) if (t - h.r[i].t >= s) return h.r[i]; return null; };
   const h3 = ilya(3);
   for (const up of [true, false]) {
@@ -208,6 +210,39 @@ function achetable(id, a0, budget = 50) {          // parts et coût au prix vu 
   for (const [p, sz] of asksTries(id)) { if (p > a0 + 1e-9) break; const k = Math.min(sz, budget / a0 - q); if (k <= 0) break; q += k; c += k * p + k * FEE(p); }
   return { q: +q.toFixed(2), c: +c.toFixed(2) };
 }
+// ---------------------------------------------------------------- MOTEUR C « alpha exécutable » (fantôme, 11.10.2026) — modèles FIGÉS appris hors ligne
+// sur l'apprentissage (etude/bot5min/moteurs_abc.py) : P(offre encore là à 0,3 s) et P(gain | offre encore là) ; on « envoie » si
+// P(survie)·[P(gain|survie) − prix − frais] > marge, ordre fictif limite au plafond, quantité ≤ affichée. Aucun ordre réel.
+const MC = {"cal":{"coef":[0.9244235812176818,0.27602482707792353,-0.021744561149625693],"b":-0.1762806018018177},"mu":[-0.36344294487808804,-1.0864788816204833,4.512328041445113,0.1400463476718737,-0.012983818770226536,-0.018456310679611655,-1.4343161425288484,0.08584867100316922,0.5417391585763599,3.0248077550672683,0.011553398058252356,0.5316181260019445,0.46663430207755574,0.5964724909526244,0.8381877022653722],"sd":[0.8219272073564333,0.7579978471798069,1.761848678124931,0.056882502084362394,0.0824317108766244,0.10067302197747924,2.1309662686017217,0.1139736290544038,0.2527161622233942,2.8372939385239824,0.0064452819891619,1.6649823769361907,1.4866226598280357,1.1816250345831294,0.3682785342278673],"ms":{"coef":[-0.10060373160731688,0.13560946304689556,1.1499631282121094,0.08630792400577919,-0.21652985374826889,0.3837073973660029,0.061850920954721465,-0.4032959193365681,-0.4295665123718461,-0.10484678229431471,-0.12228782756988432,0.7966583850931037,0.10230560323091692,-0.22883859401613924,0.025901940641459658],"b":-0.010643952749869066},"mw":{"coef":[0.4935246767575995,0.5523711015383109,-0.0491518168093895,0.17548678952728694,0.39306440423514516,-0.31804659219683823,0.10964877708352119,0.09437941565056567,-0.07961591872262912,0.1436164652142183,-0.2208102065097406,-0.04811377689801466,-0.11638393235033473,0.005134536887688822,-0.007303985908691757],"b":-0.5075233192556861},"marge":0.01,"variables":["logit proba calibr\u00e9e","logit prix","log taille affich\u00e9e","\u00e9cart calibr\u00e9 \u2212 prix","variation du prix 1 s","variation du prix 3 s","variation de taille 1 s","variation du mod\u00e8le 3 s","temps restant","volatilit\u00e9 Bybit 30 s","\u00e9cart vendeur-acheteur","\u00e2ge Bybit (ind.)","\u00e2ge OKX (ind.)","\u00e2ge Chainlink (ind.)","cohorte B"]};
+const lgt = (p) => { const q = Math.min(1 - 1e-4, Math.max(1e-4, p)); return Math.log(q / (1 - q)); };
+const sigm = (x) => 1 / (1 + Math.exp(-x));
+const lin = (m, v) => m.b + m.coef.reduce((a, c, i) => a + c * v[i], 0);
+function plafondC(p, m) { const r = p - m; if (r <= 0.01) return 0; const c = (1.072 - Math.sqrt(1.072 ** 2 - 4 * 0.072 * r)) / (2 * 0.072); return Math.floor(c * 100 + 1e-9) / 100; }
+function moteurC(nom, mk, up, k, fair) {
+  const t = now(), h = H[mk.start]; if (!h) return null;
+  const coh = nom.startsWith("cohorte B") ? "B" : "A";
+  const at = (s) => { for (let i = h.r.length - 1; i >= 0; i--) if (t - h.r[i].t >= s) return h.r[i]; return null; };
+  const r1 = at(1), r3 = at(3), a0 = k[0], z0 = k[1];
+  const B = livres[up ? mk.up : mk.down]; const b0 = B ? Math.max(0, ...[...B.bids].filter((x) => x[1] > 0).map((x) => x[0])) : 0;
+  const mid = b0 > 0 ? (a0 + b0) / 2 : a0;
+  const pc = sigm(MC.cal.b + MC.cal.coef[0] * lgt(fair) + MC.cal.coef[1] * lgt(mid) + MC.cal.coef[2] * (coh === "B" ? 1 : 0));
+  const askDe = (r) => (r ? (up ? r.ua : r.da) : null), zDe = (r) => (r ? (up ? r.uz : r.dz) : null);
+  const fairDe = (r) => { if (!r) return null; const p = coh === "B" ? r.pu015 : r.pu; return p == null ? null : (up ? p : 1 - p); };
+  const pts = h.r.filter((r) => t - r.t <= 30 && r.perp != null).map((r) => r.perp); let vol = 0;
+  if (pts.length > 5) { const d = []; for (let i = 1; i < pts.length; i++) d.push(pts[i] - pts[i - 1]); const m = d.reduce((a, b) => a + b, 0) / d.length; vol = Math.sqrt(d.reduce((a, b) => a + (b - m) ** 2, 0) / d.length); }
+  const ag = (src) => Math.min(10, CHG[src] ? t - CHG[src] : 10);
+  const a1 = askDe(r1), a3 = askDe(r3), z1 = zDe(r1), f3 = fairDe(r3);
+  const v = [lgt(pc), lgt(a0), Math.log1p(z0), pc - a0, a1 != null ? a0 - a1 : 0, a3 != null ? a0 - a3 : 0, z1 != null ? Math.log1p(z0) - Math.log1p(z1) : 0,
+    f3 != null ? fair - f3 : 0, (mk.end - t) / 300, vol, b0 > 0 ? a0 - b0 : 0.05, ag("perp"), ag("okx"), ag("cl"), coh === "B" ? 1 : 0];
+  const zn = v.map((x, i) => (x - MC.mu[i]) / MC.sd[i]);
+  const ps = sigm(lin(MC.ms, zn)), pw = sigm(lin(MC.mw, zn));
+  const ev = ps * (pw - a0 - FEE(a0)), envoie = ev > MC.marge, cap = envoie ? Math.max(a0, plafondC(pw, MC.marge)) : null;
+  return { coh, pc: +pc.toFixed(4), ps: +ps.toFixed(4), pw: +pw.toFixed(4), ev: +ev.toFixed(4), envoie, plafond: cap, variables: v.map((x) => +(+x).toFixed(4)) };
+}
+function achetableJusqua(id, cap, budget = 50) {          // ordre fictif limite au plafond : parts et coût sur toute la profondeur ≤ plafond
+  let q = 0, c = 0; for (const [p, sz] of asksTries(id)) { if (p > cap + 1e-9) break; const k = Math.min(sz, (budget - c) / (p + FEE(p))); if (k <= 0) break; q += k; c += k * p + k * FEE(p); }
+  return { q: +q.toFixed(2), c: +c.toFixed(2) };
+}
 function signal(nom, mk, up, k, fair, tleft, source, tMsg, t0) {
   const id = up ? mk.up : mk.down, B = livres[id] || {}, tD = nowMs();
   const decisionUs = Number(process.hrtime.bigint() - t0) / 1000;
@@ -218,6 +253,16 @@ function signal(nom, mk, up, k, fair, tleft, source, tMsg, t0) {
     carnetAge_ms: B.tRecu ? +(tD - B.tRecu).toFixed(3) : null, carnetPolyVersNous_ms: B.tRecu && B.tsPoly ? +(B.tRecu - B.tsPoly).toFixed(1) : null,
     agePerp: age(f.perp), ageOkx: age(f.okx), ageBn: age(f.bn), ageCb: age(f.cb), ageCl: age(f.cl),
     achetable0: achetable(id, k[0]), apres: {}, premiereBaisse_ms: null, disparu_ms: null };
+  if (nom.startsWith("cohorte")) {
+    try {
+      const C = moteurC(nom, mk, up, k, fair); S.moteurC = C;
+      if (C && C.envoie) {
+        const rtt = med(STAT.rttClob) || 30, lat = Math.round(rtt);   // ordre fictif « envoyé » maintenant, arrivé après l'aller-retour mesuré vers Polymarket
+        S.moteurC.remplissage = {};
+        for (const d of [lat, 100, 300]) setTimeout(() => { S.moteurC.remplissage[d === lat ? "latence_" + lat + "ms" : d + "ms"] = achetableJusqua(id, C.plafond); }, d);
+      }
+    } catch (e) { S.moteurC = { erreur: e.message }; }
+  }
   SIGNAUX.push(S);
   try { const R = recDe(mk.start); R.sig.push({ nom, cote: S.cote, tDecision: S.tDecision, a0: S.a0, q0: S.q0, modele: S.modele, ecart: S.ecart, restant_s: S.restant_s, declencheur: source });
     R.dec.push([S.tDecision, nom, "signal", S.cote, S.a0]); } catch (_) {}
@@ -296,6 +341,7 @@ async function reglements() {
     S.gagnant = RES[S.start]; S.gagne = S.gagnant === S.cote;
     const pn = (x) => (x && x.q >= 1 ? +((S.gagne ? x.q : 0) - x.c).toFixed(2) : 0);
     S.resultat = { 0: pn(S.achetable0), ...Object.fromEntries(DELAIS.map((d) => [d, pn(S.apres[d])])) };
+    if (S.moteurC && S.moteurC.remplissage) S.moteurC.resultat = Object.fromEntries(Object.entries(S.moteurC.remplissage).map(([k2, x]) => [k2, pn(x)]));
     FINIS.push(S); S.envoye = true;
   }
   for (let i = SIGNAUX.length - 1; i >= 0; i--) if (SIGNAUX[i].envoye || now() - SIGNAUX[i].tDecision / 1000 > 1800) SIGNAUX.splice(i, 1);

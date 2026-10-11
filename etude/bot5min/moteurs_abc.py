@@ -306,3 +306,8 @@ add("## 6. Faire tourner le moteur C comme fantôme en direct : ce qu'il faut à
     "sur les données de Dublin, puis une période de validation de taille comparable avant tout passage en réel.", "")
 open("etude/bot5min/resultat_moteurs_abc.md", "w").write("\n".join(out))
 log("écrit etude/bot5min/resultat_moteurs_abc.md", len(out), "lignes")
+
+# ---- export des modèles figés (appris sur l'apprentissage) pour le fantôme C en direct sur Dublin (11.10.2026)
+json.dump({"cal": {"coef": CAL.coef_[0].tolist(), "b": float(CAL.intercept_[0])}, "mu": MU.tolist(), "sd": SD.tolist(),
+           "ms": {"coef": MS.coef_[0].tolist(), "b": float(MS.intercept_[0])}, "mw": {"coef": MW.coef_[0].tolist(), "b": float(MW.intercept_[0])},
+           "marge": float(PRM["C alpha exécutable"]), "variables": FN}, open("bot95/rapide/modele_c.json", "w"), indent=1)
