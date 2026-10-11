@@ -1,0 +1,20 @@
+name: R1 garde latence (mesure pure)
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  r1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install numpy
+      - run: python3 etude/bot5min/r1_latence.py
+      - run: |
+          git config user.name "bot95" && git config user.email "bot95@users.noreply.github.com"
+          git add etude/bot5min/resultat_r1_latence.md
+          git diff --cached --quiet || git commit -q -m "R1 garde latence : mise à jour [skip ci]"
+          for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push -q && break; sleep 7; done
