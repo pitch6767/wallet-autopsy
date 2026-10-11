@@ -609,7 +609,7 @@ function flux() {
   if (muet("byob")) connecter("byob", "wss://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args: ["orderbook.50.BTCUSDT"] })], (m) => {
       if (!(m.topic || "").startsWith("orderbook")) return; const o = OB.by, d = m.data || {}, t = nowMs();
       if (m.type === "snapshot") { o.b = new Map(); o.a = new Map(); o.fiable = true; }
-      else if (o.seq != null && +d.u !== o.seq + 1) { obTrou("by", "sequence u", o.seq + " -> " + d.u); o.fiable = false; try { WS.byob.ws.close(); } catch (_) {} }   // trou : reconnexion → nouveau carnet complet
+      else if (o.seq != null && +d.u !== o.seq + 1) { obTrou("by", "sequence u", o.seq + " -> " + d.u); o.fiable = false; o.nTrous = (o.nTrous || 0) + 1; if (o.nTrous <= 3) { try { WS.byob.ws.close(); } catch (_) {} } }   // trou : carnet non fiable ; reconnexion (3 fois au plus) → carnet complet
       if (o.t && t - o.t > 1000) obTrou("by", "silence", Math.round(t - o.t) + " ms");
       o.seq = +d.u; o.seqSrc = +d.seq; o.ts = +m.ts;
       for (const x of d.b || []) obAppliquer(o, 0, +x[0], +x[1], m.type === "delta"); for (const x of d.a || []) obAppliquer(o, 1, +x[0], +x[1], m.type === "delta"); o.t = t; }, JSON.stringify({ op: "ping" }), 15000);
