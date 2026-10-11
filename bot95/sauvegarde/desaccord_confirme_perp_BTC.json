@@ -3192,17 +3192,74 @@
 ],
 "start": 1791737100,
 "slug": "btc-updown-5m-1791737100"
+},
+"2026-10-11T18:37:32.036Z|Down": {
+"heure": "2026-10-11T18:37:32.036Z",
+"cote": "Down",
+"prix": 0.3732,
+"parts": 125,
+"U": 0,
+"D": 125,
+"cash": 78.3551696,
+"net": 78.36,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.437,
+"restant_s": 148,
+"journal": [
+"152.0s désaccord repéré à 0.240 il y a 20 s, marché monté à 0.345 → achat Down 125.0 parts à 0.3732 (modèle 0.437)"
+],
+"start": 1791743700,
+"slug": "btc-updown-5m-1791743700"
+},
+"2026-10-11T18:27:56.801Z|Up": {
+"heure": "2026-10-11T18:27:56.801Z",
+"cote": "Up",
+"prix": 0.3868,
+"parts": 135.14,
+"U": 135.13513513513513,
+"D": 0,
+"cash": -52.268,
+"net": -52.27,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.448,
+"restant_s": 123,
+"journal": [
+"176.8s désaccord repéré à 0.225 il y a 20 s, marché monté à 0.365 → achat Up 135.1 parts à 0.3868 (modèle 0.448)"
+],
+"start": 1791743100,
+"slug": "btc-updown-5m-1791743100"
+},
+"2026-10-11T17:52:10.531Z|Down": {
+"heure": "2026-10-11T17:52:10.531Z",
+"cote": "Down",
+"prix": 0.322,
+"parts": 166.67,
+"U": 0,
+"D": 166.66666666666669,
+"cash": 112.99864400000001,
+"net": 113,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.447,
+"restant_s": 169,
+"journal": [
+"130.5s désaccord repéré à 0.235 il y a 20 s, marché monté à 0.295 → achat Down 166.7 parts à 0.322 (modèle 0.447)"
+],
+"start": 1791741000,
+"slug": "btc-updown-5m-1791741000"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 52,
-"gains": 19,
-"pertes": 33,
-"pnl": 254.34999999999994
+"n": 55,
+"gains": 21,
+"pertes": 34,
+"pnl": 393.43999999999994
 },
-"n_sauves": 168,
-"maj": "2026-10-11 17:04 UTC",
+"n_sauves": 171,
+"maj": "2026-10-11 19:01 UTC",
 "archive": [
 [
 "2026-10-09T05:32:14.182Z",
@@ -4175,6 +4232,33 @@
 "gagné",
 0.398,
 188
+],
+[
+"2026-10-11T17:52:10.531Z",
+"Down",
+0.322,
+113,
+"gagné",
+0.447,
+169
+],
+[
+"2026-10-11T18:27:56.801Z",
+"Up",
+0.3868,
+-52.27,
+"perdu",
+0.448,
+123
+],
+[
+"2026-10-11T18:37:32.036Z",
+"Down",
+0.3732,
+78.36,
+"gagné",
+0.437,
+148
 ]
 ]
 }
