@@ -605,6 +605,16 @@ function makerEvaluer(mk, tleft, ua, da, P) {
     const tox = t - Math.max(X.a, X.b, X.c) <= 2000;
     coter(Q, "M10 double maker meilleur prix", mk, up, bb > 0 && bb < ask - 1e-9 ? r2(bb) : null, tleft > 10 && tleft < 290 && !tox, { modele: +(up ? P.pu : 1 - P.pu).toFixed(4), a0: ask, raisonHors: tox ? "toxique" : "hors zone" }, t);
   }
+  // M11 ZONE MAKER (11.10.2026 15:53, idée de Claude validée par Pitch) : la seule famille positive sur les deux périodes de l'étude « tout combiné »
+  // (désaccord 30, zone 0,15–0,35) jouée en MAKER : si le vendeur du côté est entre 0,15 et 0,35 et que le modèle le dépasse d'au moins 30 c, plus de
+  // 60 s restantes, offre d'achat 1 c au-dessus du meilleur acheteur (ou au meilleur acheteur), toujours sous le vendeur ; retirée 2 s dès qu'une des
+  // trois conditions toxiques de M4 se déclenche contre ce côté, ou quand la zone / l'écart disparaît. 50 $ par côté et par cycle.
+  for (const up of sides) {
+    const id = up ? mk.up : mk.down, ask = (up ? ua : da)[0], fair = up ? P.pu : 1 - P.pu, X = TOX[id] || { a: 0, b: 0, c: 0 };
+    const tox = t - Math.max(X.a, X.b, X.c) <= 2000, zone = ask >= 0.15 && ask < 0.35 && fair - ask >= 0.30;
+    coter(Q, "M11 zone maker", mk, up, zone ? prixAmeliore(id, ask) : null, zone && !tox && tleft > 60 && tleft < 290,
+      { modele: +fair.toFixed(4), a0: ask, raisonHors: tox ? "toxique" : "hors zone" }, t);
+  }
   // M5
   for (const up of sides) {
     const id = up ? mk.up : mk.down, fair = up ? P.pu : 1 - P.pu, ask = (up ? ua : da)[0], bb = meilleurAcheteur(id);
