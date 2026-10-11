@@ -311,6 +311,12 @@ export class Bot {
       if (!ipOk && h !== "b0629aefe453fe1063c1dd8c27242736d59b30e6939e0cecc52c64de8898e03b") return new Response("non", { status: 403 });
       if (u.pathname === "/api/rapide/version") return json({ version: RAPIDE_VERSION });
       if (u.pathname === "/api/rapide/code") return json({ version: RAPIDE_VERSION, code: RAPIDE_CODE });
+      // flux Chainlink rapide (PolyBolt) : identifiants API Polymarket servis au seul VPS de Dublin (adresse IP), jamais la clé du portefeuille
+      if (u.pathname === "/api/rapide/polycreds") {
+        if (!ipOk) return new Response("non", { status: 403 });
+        try { await this.reel.init(); const c = this.reel.creds || {}; return json({ apiKey: c.key, secret: c.secret, passphrase: c.passphrase }); }
+        catch (e) { return json({ erreur: String((e && e.message) || e).slice(0, 200) }, 500); }
+      }
       if (u.pathname === "/api/rapide/launcher") return new Response(RAPIDE_LAUNCHER, { headers: { "content-type": "text/plain; charset=utf-8" } });
       // enregistrements complets d'un cycle (gzip) : découpés en morceaux de 100 Ko, gardés environ 3 jours (900 cycles)
       if (u.pathname === "/api/rapide/cycle" && req.method === "POST") {
@@ -324,7 +330,11 @@ export class Bot {
       }
       if (u.pathname === "/api/rapide/donnees" && req.method === "POST") {
         const d = await req.json();
-        await this.state.storage.put("rap:etat", { recu: now(), version: d.version, latence: d.latence, flux: d.flux, systeme: d.systeme || null });
+        await this.state.storage.put("rap:etat", { recu: now(), version: d.version, latence: d.latence, flux: d.flux, systeme: d.systeme || null, chainlink: d.chainlink || null, makerEnCours: d.makerEnCours || null });
+        for (const O of d.maker || []) {                 // fantômes MAKER (offres posées), réglés
+          const cle = "rapm:" + Math.floor(O.start / 3600), J = (await this.state.storage.get(cle)) || [];
+          if (!J.some((x) => x.oid === O.oid)) { J.push(O); await this.state.storage.put(cle, J); }
+        }
         for (const S of d.signaux || []) {
           const cle = "rap:" + Math.floor(S.start / 3600), J = (await this.state.storage.get(cle)) || [];
           if (!J.some((x) => x.start === S.start && x.nom === S.nom)) { J.push(S); await this.state.storage.put(cle, J); }
@@ -341,6 +351,7 @@ export class Bot {
       for (let i = 0; i < v.parts; i++) { const c = await this.state.storage.get(`rapc:${st}:${String(i).padStart(3, "0")}`); out.set(c, o); o += c.length; }
       return new Response(out, { headers: { "content-type": "application/gzip", "cache-control": "no-store" } });
     }
+    if (u.pathname === "/api/rapidemaker") { const M = await this.state.storage.list({ prefix: "rapm:" }); const J = []; for (const v of M.values()) J.push(...v); J.sort((x, y) => x.tPose - y.tPose); return json({ offres: J }); }
     if (u.pathname === "/api/rapide") {
       const M = await this.state.storage.list({ prefix: "rap:" }); const J = []; let etat = null;
       for (const [k, v] of M) { if (k === "rap:etat") etat = v; else J.push(...v); }

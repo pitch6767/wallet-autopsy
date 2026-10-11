@@ -1,4 +1,5 @@
 // BOT95 RAPIDE — VPS de Dublin (10.10.2026). FANTÔME UNIQUEMENT : aucun ordre, aucune clé de portefeuille.
+// 11.10.2026 : identifiants API Polymarket (lecture seule pour le flux PolyBolt ; ils ne permettent pas de signer un ordre) servis par le bot Cloudflare.
 // But : mesurer au millième de seconde si nous arrivons à temps sur les offres Polymarket que nos stratégies visent.
 // Le code est servi par https://bot95.pitch67.workers.dev (mise à jour automatique : si la version change, le programme s'arrête et systemd le relance).
 "use strict";
@@ -27,6 +28,18 @@ function noter(src, p, tsSrc) {
   if (!o) { o = {}; sec.set(s, o); if (sec.size > 800) sec.delete(sec.keys().next().value); }
   o[src] = p;
   if (src === "perp" || src === "okx") evaluer(src);
+}
+// Chainlink arrive par deux flux (11.10.2026) : RTDS (ancien, public) et PolyBolt (nouveau, identifiants API). On garde l'observation la plus récente.
+const CLS = { delai: { rtds: [], pb: [] }, premier: { rtds: 0, pb: 0 }, avance: [], vu: new Map(), dernObs: { rtds: null, pb: null }, n: { rtds: 0, pb: 0 }, pbAuth: false, pbErreur: null, source: null, twap: [] };
+function chainlink(feed, v, obsMs) {
+  if (!(v > 0) || !(obsMs > 0)) return;
+  const t = nowMs(); CLS.n[feed]++; CLS.dernObs[feed] = obsMs;
+  const D = CLS.delai[feed]; D.push(t - obsMs); if (D.length > 2000) D.shift();
+  const e = CLS.vu.get(obsMs);
+  if (!e) { CLS.vu.set(obsMs, { feed, t }); if (CLS.vu.size > 400) CLS.vu.delete(CLS.vu.keys().next().value); }
+  else if (!e.deux && e.feed !== feed) { e.deux = true; CLS.premier[e.feed]++; CLS.avance.push([e.feed, +(t - e.t).toFixed(1)]); if (CLS.avance.length > 2000) CLS.avance.shift(); }
+  try { recDe(Math.floor(t / 300000) * 300).cl2.push([+t.toFixed(1), feed === "pb" ? 1 : 0, obsMs, v]); } catch (_) {}
+  if (!f.cl || !f.cl.tsSrc || obsMs > f.cl.tsSrc) noter("cl", v, obsMs);
 }
 const prixA = (k, s) => { for (let i = 0; i < 6; i++) { const o = sec.get(s - i); if (o && o[k] != null) return o[k]; } return null; };
 function serie(k, n) { const t = Math.floor(now()), out = []; let last = null;
@@ -71,7 +84,7 @@ function proba(mk, sdRel) {
 // signaux des cohortes A et B ; journal des décisions. Écrit sur le disque du VPS et envoyé au bot Cloudflare.
 const zlib = require("zlib");
 const REC = {};
-const recDe = (start) => (REC[start] = REC[start] || { start, version: VERSION, ev: [], ex: [], snap: [], sig: [], dec: [], nEv: 0, coupe: false });
+const recDe = (start) => (REC[start] = REC[start] || { start, version: VERSION, ev: [], ex: [], snap: [], sig: [], dec: [], cl2: [], tw: [], nEv: 0, coupe: false });
 const tokIdx = (id) => { for (const s of Object.keys(M)) { const m = M[s]; if (m.up === id) return [+s, 0]; if (m.down === id) return [+s, 1]; } return [null, null]; };
 // Volume mesuré le 11.10 : ~700 messages/s. Les carnets Up et Down sont miroirs (vérifié sur 100 % des lignes) : on garde le carnet Up seulement,
 // les changements de niveau à 3 c ou moins du meilleur prix, un carnet complet toutes les 10 s, et TOUTES les transactions des deux jetons.
@@ -115,7 +128,8 @@ function recFinir() {                                 // cycles terminés depuis
   const t = now();
   for (const s of Object.keys(REC)) {
     const R = REC[s]; if (t < +s + 310) continue; delete REC[s];
-    const m = M[s] || {}; R.marche = { slug: m.slug || null, up: m.up || null, down: m.down || null, strike: m.strike || null };
+    const m = M[s] || {}; R.marche = { slug: m.slug || null, up: m.up || null, down: m.down || null, strike: m.strike || null, strikeTwap: m.strikeTwap || null };
+    R.formatCl2 = "cl2=[reception_ms, flux 0 RTDS/1 PolyBolt, observation_ms, prix] ; tw=[reception_ms, observation_ms, moyenne 60 s officielle PolyBolt]";
     // encodage compact : P = [écart en ms depuis le P précédent, retard Polymarket ms, côté 0 achat/1 vente, prix en cents, taille ×100]
     let prev = 0; const P = [], autres = [];
     for (const e of R.ev) {
@@ -158,13 +172,17 @@ function surPoly(m) {
   const tR = nowMs(), ts = +m.timestamp > 1e12 ? +m.timestamp : (+m.timestamp ? +m.timestamp * 1000 : null);
   const L = (id) => (livres[id] = livres[id] || { asks: new Map(), bids: new Map() });
   const touches = new Set();
-  if (m.event_type === "last_trade_price") { recEv(m.asset_id, ["T", +tR.toFixed(1), ts, m.side === "BUY" ? 1 : 0, +m.price, +m.size]); return; }
+  if (m.event_type === "last_trade_price") { recEv(m.asset_id, ["T", +tR.toFixed(1), ts, m.side === "BUY" ? 1 : 0, +m.price, +m.size]); try { makerTransaction(m.asset_id, m.side, +m.price, +m.size); } catch (_) {} return; }
   if (m.event_type === "book") {
     recEv(m.asset_id, ["B", +tR.toFixed(1), ts, (m.bids || []).map((x) => [+x.price, +x.size]), (m.asks || []).map((x) => [+x.price, +x.size])]);
-    const B = L(m.asset_id); B.bids = new Map((m.bids || []).map((x) => [+x.price, +x.size])); B.asks = new Map((m.asks || []).map((x) => [+x.price, +x.size]));
+    const B = L(m.asset_id);
+    try { for (const x of m.bids || []) makerNiveau(m.asset_id, +x.price, B.bids.get(+x.price) || 0, +x.size); } catch (_) {}
+    B.bids = new Map((m.bids || []).map((x) => [+x.price, +x.size])); B.asks = new Map((m.asks || []).map((x) => [+x.price, +x.size]));
     B.tRecu = tR; B.tsPoly = ts; touches.add(m.asset_id);
   } else if (m.event_type === "price_change") {
-    for (const c of m.price_changes || []) { recEv(c.asset_id, ["P", +tR.toFixed(1), ts, c.side === "BUY" ? 0 : 1, +c.price, +c.size]); const B = L(c.asset_id), cote = c.side === "BUY" ? B.bids : B.asks; +c.size ? cote.set(+c.price, +c.size) : cote.delete(+c.price); B.tRecu = tR; B.tsPoly = ts; touches.add(c.asset_id); }
+    for (const c of m.price_changes || []) { recEv(c.asset_id, ["P", +tR.toFixed(1), ts, c.side === "BUY" ? 0 : 1, +c.price, +c.size]); const B = L(c.asset_id), cote = c.side === "BUY" ? B.bids : B.asks;
+      const avant = cote.get(+c.price) || 0; +c.size ? cote.set(+c.price, +c.size) : cote.delete(+c.price); B.tRecu = tR; B.tsPoly = ts; touches.add(c.asset_id);
+      if (c.side === "BUY") { try { makerNiveau(c.asset_id, +c.price, avant, +c.size); } catch (_) {} } }
   } else return;
   if (ts) { STAT.retardPoly.push(tR - ts); if (STAT.retardPoly.length > 2000) STAT.retardPoly.shift(); }
   for (const id of touches) suivreSurvie(id);
@@ -188,6 +206,7 @@ function evaluer(source, tMsg) {
     h.r.push({ t, pu, pu01, pu015, ua: ua[0], da: da[0], uz: ua[1], dz: da[1], ub: ub ? ub[0] : null, db: db ? db[0] : null, perp: f.perp ? f.perp.p : null }); while (h.r.length && t - h.r[0].t > 35) h.r.shift(); }
   const ilya = (s) => { for (let i = h.r.length - 1; i >= 0; i--) if (t - h.r[i].t >= s) return h.r[i]; return null; };
   const h3 = ilya(3);
+  try { makerEvaluer(mk, tleft, ua, da, { pu, pu01, pu015 }); } catch (e) { log("maker", e.message); }
   for (const up of [true, false]) {
     const k = up ? ua : da, a = k[0];
     const regle = (nom, ok, fair) => { if (ok && !h.fait[nom]) { h.fait[nom] = true; signal(nom, mk, up, k, fair, tleft, source, tMsg, t0); } };
@@ -270,6 +289,7 @@ function signal(nom, mk, up, k, fair, tleft, source, tMsg, t0) {
       }
     } catch (e) { S.moteurC = { erreur: e.message }; }
   }
+  try { makerSurSignal(S, mk, up, nom); } catch (e) { log("maker", e.message); }
   SIGNAUX.push(S);
   try { const R = recDe(mk.start); R.sig.push({ nom, cote: S.cote, tDecision: S.tDecision, a0: S.a0, q0: S.q0, modele: S.modele, ecart: S.ecart, restant_s: S.restant_s, declencheur: source });
     R.dec.push([S.tDecision, nom, "signal", S.cote, S.a0]); } catch (_) {}
@@ -285,6 +305,131 @@ function suivreSurvie(id) {                    // au message près : quand l'off
     if (x.q < 1) S.disparu_ms = +(t - S.tDecision).toFixed(3);
   }
 }
+
+// ---------------------------------------------------------------- FANTÔMES MAKER (11.10.2026, demandés par Pitch) — AUCUN ORDRE
+// Une offre d'achat est « posée » dans le carnet (jamais exécutée tout de suite : rejetée si elle croiserait le meilleur vendeur, comme un ordre
+// « post only »). Elle arrive chez Polymarket après le trajet simple mesuré (moitié de l'aller-retour), une annulation aussi. Les ordres posés ne
+// subissent pas le retard de 150 ms des preneurs. Place dans la file : on se met derrière tout ce qui est affiché à ce prix (ou seul au prix si on
+// améliore le meilleur acheteur). Les carnets Up et Down sont miroirs : une vente de Up à p ou un achat de Down à 1 − p consomment le même niveau.
+//   remplissage PRUDENT : seules les transactions nous font avancer ; la file devant nous ne dépasse jamais la taille affichée.
+//   remplissage PROPORTIONNEL : en plus, les retraits sans transaction (300 ms autour) libèrent la file au prorata de notre place.
+// Aucun frais pour les offres posées ; la ristourne maker n'est pas comptée. Résultat au règlement, comme les autres fantômes.
+const OFFRES = [], MAKER_FINIS = [], MSTAT = {}, TRX = []; let oidN = 0;
+const LAT = () => Math.max(5, Math.round((med(STAT.rttClob) || 30) / 2));
+const r2 = (x) => Math.round(x * 100) / 100;
+function meilleurAcheteur(id) { const L = livres[id]; let b = 0; if (L) for (const [p, z] of L.bids) if (z > 0 && p > b) b = p; return b; }
+function autreJeton(id) { const [st, k] = tokIdx(id); if (st == null) return null; return k === 0 ? M[st].down : M[st].up; }
+function mstat(v) { return (MSTAT[v] = MSTAT[v] || { posees: 0, rejetees: 0, annulees: 0, remplies: 0 }); }
+function poser(variante, mk, up, prix, budget, info) {
+  const id = up ? mk.up : mk.down, t = nowMs();
+  const O = { oid: `${mk.start}:${++oidN}`, variante, start: mk.start, cote: up ? "Up" : "Down", id, prix, parts: +(budget / prix).toFixed(2), tPose: +t.toFixed(1), lat_ms: LAT(),
+    etat: "envoi", qDevant: null, qp: null, qr: null, remplP: 0, remplR: 0, premierRempl_ms: null, rempl: [], ...info };
+  OFFRES.push(O); mstat(variante).posees++;
+  setTimeout(() => {
+    if (O.etat !== "envoi") return;
+    const as = asksTries(id)[0];
+    if (as && as[0] <= prix + 1e-9) { O.etat = "rejetee"; O.raison = "croiserait le vendeur (post only)"; mstat(variante).rejetees++; return; }
+    const bb = meilleurAcheteur(id), q = prix > bb + 1e-9 || !livres[id] ? 0 : (livres[id].bids.get(prix) || 0);
+    O.qDevant = +q.toFixed(2); O.qp = q; O.qr = q; O.etat = "posee"; O.tArrivee = +nowMs().toFixed(1);
+  }, O.lat_ms);
+  try { if (variante.startsWith("M1")) recDe(mk.start).dec.push([+t.toFixed(1), variante, "offre posee", O.cote, prix]); } catch (_) {}
+  return O;
+}
+function annuler(O, raison) {
+  if (O.tAnnulDemande || !(O.etat === "envoi" || O.etat === "posee")) return;
+  O.tAnnulDemande = +nowMs().toFixed(1); O.raison = raison;
+  setTimeout(() => { if (O.etat === "posee" || O.etat === "envoi") { O.etat = "annulee"; O.tAnnulee = +nowMs().toFixed(1); mstat(O.variante).annulees++; } }, LAT());
+}
+function remplir(O, k, n) {
+  const cle = k === "p" ? "remplP" : "remplR", reste = O.parts - O[cle]; if (reste <= 1e-9 || n <= 0) return;
+  const x = Math.min(reste, n); O[cle] = +(O[cle] + x).toFixed(4);
+  if (O.premierRempl_ms == null) { O.premierRempl_ms = +(nowMs() - O.tPose).toFixed(1); mstat(O.variante).remplies++; }
+  if (O.rempl.length < 40) O.rempl.push([+(nowMs() - O.tPose).toFixed(1), k, +x.toFixed(2)]);
+}
+function makerTransaction(tok, side, q, v) {               // vente sur ce jeton à q → acheteurs de ce jeton à q ; achat → acheteurs de l'autre jeton à 1 − q
+  const bidTok = side === "SELL" ? tok : autreJeton(tok); if (!bidTok) return;
+  const pb = side === "SELL" ? q : Math.round((1 - q) * 1000) / 1000, t = nowMs();
+  TRX.push({ tok: bidTok, p: pb, v, t, u: 0 }); while (TRX.length && t - TRX[0].t > 3000) TRX.shift();
+  for (const O of OFFRES) {
+    if (O.etat !== "posee" || O.id !== bidTok) continue;
+    if (pb < O.prix - 1e-9) { remplir(O, "p", Infinity); remplir(O, "r", Infinity); continue; }   // niveau traversé : tout notre prix est parti
+    if (Math.abs(pb - O.prix) > 1e-9) continue;
+    O.qp -= v; O.qr -= v;
+    if (O.qp < 0) { remplir(O, "p", -O.qp); O.qp = 0; }
+    if (O.qr < 0) { remplir(O, "r", -O.qr); O.qr = 0; }
+  }
+}
+function makerNiveau(tok, p, avant, apres) {
+  for (const O of OFFRES) {
+    if (O.etat !== "posee" || O.id !== tok || Math.abs(p - O.prix) > 1e-9) continue;
+    O.qp = Math.min(O.qp, apres);                                         // prudent : la file devant nous ne dépasse jamais l'affiché
+    const d = avant - apres; if (d <= 1e-9 || avant <= 0) continue;
+    const frac = Math.min(1, O.qr / avant), t = nowMs();
+    setTimeout(() => {                                                    // proportionnel : retrait sans transaction → part devant nous
+      let reste = d; for (const x of TRX) { if (x.tok !== tok || Math.abs(x.p - p) > 1e-9 || Math.abs(x.t - t) > 300) continue; const u = Math.min(reste, x.v - x.u); x.u += u; reste -= u; if (reste <= 1e-9) break; }
+      if (reste > 1e-9 && O.etat === "posee") O.qr = Math.max(0, O.qr - reste * frac);
+    }, 300);
+  }
+}
+const MODELE_REGLE = (nom) => (nom.includes("0,01 %") ? "pu01" : nom.startsWith("cohorte B") ? "pu015" : "pu");
+// M1 : sur chaque signal des règles de Dublin, au lieu d'acheter le vendeur, on pose une offre d'achat 1 c au-dessus du meilleur acheteur
+// (ou au meilleur acheteur si l'écart vendeur-acheteur est de 1 c). 50 $. Annulée si le modèle de la règle ne dépasse plus notre prix de 5 c,
+// après 30 s, ou à 5 s de la fin.
+function makerSurSignal(S, mk, up, nom) {
+  const id = up ? mk.up : mk.down, bb = meilleurAcheteur(id); if (!bb) return;
+  let p = r2(bb + 0.01); if (p >= S.a0 - 1e-9) p = r2(bb); if (p < 0.04 || p > 0.96) return;
+  poser("M1 " + nom, mk, up, p, 50, { modeleCle: MODELE_REGLE(nom), modele: S.modele, a0: S.a0 });
+}
+// M2 : cotation permanente des deux côtés au prix du modèle moins une marge (5 c ou 10 c), arrondi au cent inférieur, toujours sous le vendeur.
+// Re-cotée dès que le prix voulu change (annulation + nouvelle offre en fin de file). 50 $ au plus par côté et par cycle. De 290 à 10 s de la fin.
+const M2 = [["M2 cotation marge 5 c", 0.05], ["M2 cotation marge 10 c", 0.10]];
+const QS = {};
+function makerEvaluer(mk, tleft, ua, da, P) {
+  const t = nowMs();
+  for (const O of OFFRES) {                                               // annulations M1
+    if (O.start !== mk.start || !(O.etat === "posee" || O.etat === "envoi") || O.tAnnulDemande || !O.variante.startsWith("M1")) continue;
+    const pk = P[O.modeleCle]; const fair = pk == null ? null : (O.cote === "Up" ? pk : 1 - pk);
+    if (tleft < 5) annuler(O, "5 s de la fin"); else if (t - O.tPose > 30000) annuler(O, "30 s"); else if (fair != null && fair - O.prix < 0.05) annuler(O, "modele a moins de 5 c");
+    else if (O.remplR >= O.parts - 1e-6 && O.remplP >= O.parts - 1e-6) { O.etat = "remplie"; }
+  }
+  const Q = (QS[mk.start] = QS[mk.start] || {});
+  for (const [v, marge] of M2) for (const up of [true, false]) {
+    const k = v + (up ? "U" : "D"), S2 = (Q[k] = Q[k] || { depense: 0, O: null, t: 0 });
+    const cur = S2.O && (S2.O.etat === "posee" || S2.O.etat === "envoi") && !S2.O.tAnnulDemande ? S2.O : null;
+    if (S2.O && S2.O !== cur) { S2.depense += S2.O.remplR * S2.O.prix; S2.O = cur; }
+    const fair = up ? P.pu : 1 - P.pu, ask = (up ? ua : da)[0];
+    let px = Math.floor((fair - marge) * 100 + 1e-9) / 100; px = Math.min(px, r2(ask - 0.01));
+    const budget = 50 - S2.depense - (cur ? cur.remplR * cur.prix : 0);
+    const ok = tleft > 10 && tleft < 290 && px >= 0.04 && px <= 0.96 && budget >= 1;
+    if (cur && (!ok || Math.abs(cur.prix - px) > 1e-9)) { if (t - S2.t < 50 && ok) continue; annuler(cur, ok ? "re-cotation" : "hors zone"); S2.depense += cur.remplR * cur.prix; S2.O = null; }
+    if (!S2.O && ok && t - S2.t >= 50) { S2.O = poser(v, mk, up, px, budget, { modele: +fair.toFixed(4), a0: ask }); S2.t = t; }
+  }
+}
+function makerMenage(t) {                                                 // fin de cycle : offres encore posées → « jusqu'à la fin » ; les offres jamais remplies sont oubliées
+  for (let i = OFFRES.length - 1; i >= 0; i--) {
+    const O = OFFRES[i];
+    if (t > O.start + 300 && (O.etat === "posee" || O.etat === "envoi")) { O.etat = "fin du cycle"; }
+    const fini = !(O.etat === "posee" || O.etat === "envoi");
+    if (fini && O.remplR <= 0 && O.remplP <= 0 && !O.variante.startsWith("M1")) { OFFRES.splice(i, 1); continue; }
+    if (fini && t > O.start + 300) { OFFRES.splice(i, 1); MAKER_FINIS.push(O); }
+  }
+  for (const s of Object.keys(QS)) if (+s < t - 900) delete QS[s];
+}
+async function makerReglements() {
+  const t = now(); makerMenage(t);
+  for (const O of MAKER_FINIS) {
+    if (O.resultat || t < O.start + 360) continue;
+    const g = await gagnantDe(O.start); if (g == null) continue;
+    O.gagnant = g; O.gagne = g === O.cote;
+    O.resultat = { prudent: +(O.remplP * ((O.gagne ? 1 : 0) - O.prix)).toFixed(2), proportionnel: +(O.remplR * ((O.gagne ? 1 : 0) - O.prix)).toFixed(2) };
+  }
+}
+const RESUMES = [];
+setInterval(() => {                                                       // résumé par variante (compteurs), envoyé avec les offres réglées
+  const t = now(); if (!Object.keys(MSTAT).length) return;
+  RESUMES.push({ oid: "resume:" + Math.floor(t), start: Math.floor(t / 300) * 300, type: "resume", tPose: Math.floor(t * 1000), compteurs: JSON.parse(JSON.stringify(MSTAT)) });
+  for (const k of Object.keys(MSTAT)) delete MSTAT[k];
+}, 3600000);
 
 // ---------------------------------------------------------------- flux WebSocket (reconnexion si muet 20 s)
 const WS = {};
@@ -315,7 +460,30 @@ function flux() {
     (m) => { if (m.channel === "market_trades") { for (const ev of m.events || []) for (const y of ev.trades || []) flux50("cb", y.side === "BUY" ? "a" : "v", +y.size, +y.price); return; }
       if (m.channel !== "ticker") return; for (const ev of m.events || []) for (const x of ev.tickers || []) if (x.product_id === "BTC-USD" && x.price) noter("cb", +x.price, Date.parse(m.timestamp)); });
   if (muet("cl")) connecter("cl", "wss://ws-live-data.polymarket.com", [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })],
-    (m) => { if (m.topic !== "crypto_prices_chainlink") return; const p = m.payload || {}; if ((p.symbol || "").toUpperCase().startsWith("BTC") && +p.value > 0) noter("cl", +p.value, +p.timestamp); }, "PING", 5000);
+    (m) => { if (m.topic !== "crypto_prices_chainlink") return; const p = m.payload || {}; if ((p.symbol || "").toUpperCase().startsWith("BTC") && +p.value > 0) chainlink("rtds", +p.value, +p.timestamp); }, "PING", 5000);
+  if (PB && muet("pb")) { CLS.pbAuth = false; connecter("pb", "wss://ws-live-v2.polymarket.com/ws", [JSON.stringify({ op: "auth", rid: "a1", auth: PB })], surPB, JSON.stringify({ op: "ping" }), 20000); }
+}
+// ---------------------------------------------------------------- PolyBolt (wss://ws-live-v2.polymarket.com/ws) : Chainlink BTC/USD et moyenne 60 s officielle
+let PB = null, pbDemande = 0;
+async function identifiantsPB() {
+  if (PB || now() - pbDemande < 60) return; pbDemande = now();
+  try { const d = await getJSON(`${U}/api/rapide/polycreds`, { headers: { "x-rapide": TOKEN } }); if (d && d.apiKey) { PB = d; log("PolyBolt : identifiants reçus"); } else CLS.pbErreur = "identifiants : " + JSON.stringify(d).slice(0, 200); }
+  catch (e) { CLS.pbErreur = "identifiants : " + e.message; }
+}
+const tsMs = (x) => (typeof x === "number" ? (x < 1e12 ? x * 1000 : x) : Date.parse(x));
+function surPB(m) {
+  if (m.op === "authed") { CLS.pbAuth = true; CLS.pbErreur = null;
+    WS.pb.ws.send(JSON.stringify({ op: "subscribe", rid: "s1", subscriptions: [{ channel: "price.crypto", filter: { symbol: "btcusd" } }, { channel: "price.crypto.twap", filter: { symbol: "btcusd", window_seconds: 60 } }] })); return; }
+  if (m.op && m.op !== "pong") { CLS.pbErreur = JSON.stringify(m).slice(0, 300); return; }
+  const P = m.payload || {}; if (m.type !== "update" || String(P.symbol || "").toLowerCase() !== "btcusd") return;
+  if (P.source) CLS.source = P.source;
+  const v = +(P.full_accuracy_value || P.value), obs = tsMs(P.timestamp);
+  if (m.topic === "prices.crypto") chainlink("pb", v, obs);
+  else if (m.topic === "prices.crypto.twap") {
+    const t = nowMs(); CLS.twap.push(t - obs); if (CLS.twap.length > 2000) CLS.twap.shift();
+    try { recDe(Math.floor(t / 300000) * 300).tw.push([+t.toFixed(1), obs, v]); } catch (_) {}
+    const st = Math.round(obs / 1000); if (st % 300 === 0 && M[st] && !M[st].strikeTwap) M[st].strikeTwap = v;      // moyenne officielle à l'instant du début (à comparer à notre prix à battre)
+  }
 }
 let polyCle = "";
 async function cycle() {
@@ -332,13 +500,21 @@ async function cycle() {
     polyCle = cle; for (const id of Object.keys(livres)) if (!jetons.includes(id)) delete livres[id];
     connecter("poly", "wss://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], surPoly, "PING", 10000);
   }
+  identifiantsPB().catch(() => {});
   for (const s of Object.keys(H)) if (+s < start - 600) delete H[s];
   for (const s of Object.keys(M)) if (+s < start - 900) delete M[s];
   flux();
 }
 // ---------------------------------------------------------------- résultat des cycles, latence vers Polymarket, envoi au bot Cloudflare
 const RES = {};
+async function gagnantDe(start) {
+  if (RES[start] !== undefined && RES[start] !== null) return RES[start];
+  try { const ev = await getJSON(`${G}/events?slug=btc-updown-5m-${start}`); const m = ev[0].markets[0];
+    const px = JSON.parse(m.outcomePrices || "[]").map(Number), outs = JSON.parse(m.outcomes || "[]");
+    const g = px.includes(1) ? outs[px.indexOf(1)] : null; if (g != null) RES[start] = g; return g; } catch (_) { return null; }
+}
 async function reglements() {
+  await makerReglements().catch((e) => log("maker reglements", e.message));
   const t = now();
   for (const S of SIGNAUX) {
     if (!S.fini || S.envoye || t < S.start + 300 + 60) continue;
@@ -362,17 +538,23 @@ async function sonde() {                       // aller-retour HTTP vers le serv
   try { const t0 = nowMs(); await fetch(`${CLOB}/time`).then((r) => r.text()); STAT.rttClob.push(+(nowMs() - t0).toFixed(2)); if (STAT.rttClob.length > 500) STAT.rttClob.shift(); } catch (_) {}
 }
 async function envoyer() {
-  const corps = { version: VERSION, t: now(), signaux: FINIS.splice(0, FINIS.length).map(({ id, fini, envoye, ...s }) => s),
+  const regles = []; for (let i = MAKER_FINIS.length - 1; i >= 0; i--) if (MAKER_FINIS[i].resultat) { const { id, ...o } = MAKER_FINIS[i]; regles.push(o); MAKER_FINIS.splice(i, 1); }
+  regles.push(...RESUMES.splice(0, RESUMES.length));
+  const qd = (L) => ({ med: med(L), p10: qtl(L, 0.1), p90: qtl(L, 0.9), n: L.length });
+  const enCours = {}; for (const O of OFFRES) { const e = (enCours[O.variante] = enCours[O.variante] || { posees: 0, remplies: 0 }); if (O.etat === "posee") e.posees++; if (O.remplR > 0) e.remplies++; }
+  const corps = { version: VERSION, t: now(), signaux: FINIS.splice(0, FINIS.length).map(({ id, fini, envoye, ...s }) => s), maker: regles, makerEnCours: { offres: enCours, compteurs: MSTAT },
+    chainlink: { rtds_ms: qd(CLS.delai.rtds), polybolt_ms: qd(CLS.delai.pb), twap_ms: qd(CLS.twap), premier: CLS.premier, avanceDuPremier_ms: { rtds: med(CLS.avance.filter((x) => x[0] === "rtds").map((x) => x[1])), polybolt: med(CLS.avance.filter((x) => x[0] === "pb").map((x) => x[1])) },
+      messages: CLS.n, polyboltConnecte: CLS.pbAuth, polyboltErreur: CLS.pbErreur, source: CLS.source, identifiants: !!PB },
     latence: { rttClob_ms: { med: med(STAT.rttClob), p10: qtl(STAT.rttClob, 0.1), p90: qtl(STAT.rttClob, 0.9), n: STAT.rttClob.length },
       polyVersNous_ms: { med: med(STAT.retardPoly), p10: qtl(STAT.retardPoly, 0.1), p90: qtl(STAT.retardPoly, 0.9) },
       calcul_us: { med: med(STAT.decisionUs), p90: qtl(STAT.decisionUs, 0.9) }, evaluations: STAT.evaluations },
     systeme: (() => { const m = process.memoryUsage(); let disque = null; try { const d = fs.statfsSync(DIR); disque = { libre_Mo: Math.round(d.bavail * d.bsize / 1e6), total_Mo: Math.round(d.blocks * d.bsize / 1e6) }; } catch (_) {}
       return { rss_Mo: Math.round(m.rss / 1e6), tas_Mo: Math.round(m.heapUsed / 1e6), disque, dernierCycle: STAT.dernierCycle || null }; })(),
-    flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly"].map((k) => [k, WS[k] ? { muet_s: +(now() - WS[k].msg).toFixed(1), reconnexions: WS[k].n } : null])) };
+    flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "pb", "poly"].map((k) => [k, WS[k] ? { muet_s: +(now() - WS[k].msg).toFixed(1), reconnexions: WS[k].n } : null])) };
   try {
     const r = await fetch(`${U}/api/rapide/donnees`, { method: "POST", headers: { "content-type": "application/json", "x-rapide": TOKEN }, body: JSON.stringify(corps) });
-    if (!r.ok) { log("envoi HTTP", r.status); FINIS.unshift(...corps.signaux); }
-  } catch (e) { log("envoi", e.message); FINIS.unshift(...corps.signaux); }
+    if (!r.ok) { log("envoi HTTP", r.status); FINIS.unshift(...corps.signaux); MAKER_FINIS.push(...corps.maker.filter((x) => x.type !== "resume")); }
+  } catch (e) { log("envoi", e.message); FINIS.unshift(...corps.signaux); MAKER_FINIS.push(...corps.maker.filter((x) => x.type !== "resume")); }
   try { fs.writeFileSync(DIR + "/dernier_envoi.json", JSON.stringify(corps)); } catch (_) {}
 }
 async function versionDistante() {

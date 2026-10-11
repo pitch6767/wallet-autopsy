@@ -25,6 +25,7 @@ export class Reel {
     const base = new ClobClient({ host: HOTE, chain: 137, signer, signatureType: st, funderAddress: funder, throwOnError: true });
     const creds = await base.createOrDeriveApiKey();
     this.client = new ClobClient({ host: HOTE, chain: 137, signer, creds, signatureType: st, funderAddress: funder, throwOnError: true });
+    this.creds = creds;                                  // identifiants API (lecture/annulation) — jamais la clé du portefeuille
     this.typeSignature = st; this.signataire = account.address; this.portefeuille = funder;
     await this.client.getVersion();                     // mis en cache : pas de requête au moment de l'ordre
     return this.client;
