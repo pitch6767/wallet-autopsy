@@ -22716,140 +22716,1763 @@
 "1000": 0,
 "2000": -49.18
 }
+},
+{
+"nom": "V2-F ecart qui grandit",
+"start": 1791721800,
+"cote": "Up",
+"a0": 0.24,
+"q0": 55,
+"modele": 0.441,
+"ecart": 0.201,
+"restant_s": 270.55,
+"declencheur": "poly",
+"tDecision": 1791721829450.958,
+"msgVersDecision_ms": 0.16,
+"calcul_us": 138.2,
+"carnetAge_ms": 0.16,
+"carnetPolyVersNous_ms": 33.8,
+"agePerp": 0.145,
+"ageOkx": 0.282,
+"ageBn": 0.266,
+"ageCb": 0.04,
+"ageCl": 1.429,
+"achetable0": {
+"q": 55,
+"c": 13.92
+},
+"apres": {
+"1": {
+"q": 55,
+"c": 13.92,
+"reel_ms": 1.61
+},
+"2": {
+"q": 0,
+"c": 0,
+"reel_ms": 5.25
+},
+"5": {
+"q": 0,
+"c": 0,
+"reel_ms": 5.28
+},
+"10": {
+"q": 24,
+"c": 6.08,
+"reel_ms": 10.86
+},
+"25": {
+"q": 24,
+"c": 6.08,
+"reel_ms": 25.28
+},
+"50": {
+"q": 132,
+"c": 33.41,
+"reel_ms": 50.17
+},
+"100": {
+"q": 208.33,
+"c": 51.52,
+"reel_ms": 101.73
+},
+"250": {
+"q": 208.33,
+"c": 50.57,
+"reel_ms": 250.44
+},
+"500": {
+"q": 208.33,
+"c": 50.57,
+"reel_ms": 500.29
+},
+"1000": {
+"q": 208.33,
+"c": 50.57,
+"reel_ms": 1000.01
+},
+"2000": {
+"q": 208.33,
+"c": 50.57,
+"reel_ms": 2000.41
+}
+},
+"premiereBaisse_ms": 4.998,
+"disparu_ms": 4.998,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 41.08,
+"1": 41.08,
+"2": 0,
+"5": 0,
+"10": 17.92,
+"25": 17.92,
+"50": 98.59,
+"100": 156.81,
+"250": 157.76,
+"500": 157.76,
+"1000": 157.76,
+"2000": 157.76
+}
+},
+{
+"nom": "V2-F incertitude 0,01 %",
+"start": 1791721800,
+"cote": "Up",
+"a0": 0.1,
+"q0": 912.64,
+"modele": 0.3037,
+"ecart": 0.2037,
+"restant_s": 154.6,
+"declencheur": "perp",
+"tDecision": 1791721945397.298,
+"msgVersDecision_ms": null,
+"calcul_us": 54,
+"carnetAge_ms": 5.108,
+"carnetPolyVersNous_ms": 12.2,
+"agePerp": 0,
+"ageOkx": 0,
+"ageBn": 0.327,
+"ageCb": 1.726,
+"ageCl": 0.565,
+"achetable0": {
+"q": 500,
+"c": 53.24
+},
+"apres": {
+"1": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 0.69
+},
+"2": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 1.55
+},
+"5": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 4.56
+},
+"10": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 10.09
+},
+"25": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 25.33
+},
+"50": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 49.51
+},
+"100": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 99.56
+},
+"250": {
+"q": 436.89,
+"c": 46.52,
+"reel_ms": 249.54
+},
+"500": {
+"q": 45.55,
+"c": 4.85,
+"reel_ms": 499.87
+},
+"1000": {
+"q": 0,
+"c": 0,
+"reel_ms": 1000.25
+},
+"2000": {
+"q": 0,
+"c": 0,
+"reel_ms": 2000.01
+}
+},
+"premiereBaisse_ms": 190.95,
+"disparu_ms": 580.148,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 446.76,
+"1": 446.76,
+"2": 446.76,
+"5": 446.76,
+"10": 446.76,
+"25": 446.76,
+"50": 446.76,
+"100": 446.76,
+"250": 390.37,
+"500": 40.7,
+"1000": 0,
+"2000": 0
+}
+},
+{
+"nom": "cohorte A : zone + modele monte",
+"start": 1791721800,
+"cote": "Up",
+"a0": 0.2,
+"q0": 50,
+"modele": 0.5102,
+"ecart": 0.3102,
+"restant_s": 154.01,
+"declencheur": "poly",
+"tDecision": 1791721945994.202,
+"msgVersDecision_ms": 0.081,
+"calcul_us": 62.3,
+"carnetAge_ms": 0.081,
+"carnetPolyVersNous_ms": 16.1,
+"agePerp": 0.358,
+"ageOkx": 0.359,
+"ageBn": 0.089,
+"ageCb": 0.062,
+"ageCl": 1.162,
+"achetable0": {
+"q": 50,
+"c": 10.58
+},
+"apres": {
+"1": {
+"q": 50,
+"c": 10.58,
+"reel_ms": 1.81
+},
+"2": {
+"q": 50,
+"c": 10.58,
+"reel_ms": 2.9
+},
+"5": {
+"q": 50,
+"c": 10.58,
+"reel_ms": 6.07
+},
+"10": {
+"q": 50,
+"c": 10.58,
+"reel_ms": 11.48
+},
+"25": {
+"q": 33.2,
+"c": 7.02,
+"reel_ms": 26.05
+},
+"50": {
+"q": 0,
+"c": 0,
+"reel_ms": 50.95
+},
+"100": {
+"q": 0,
+"c": 0,
+"reel_ms": 101.05
+},
+"250": {
+"q": 0,
+"c": 0,
+"reel_ms": 251.26
+},
+"500": {
+"q": 0,
+"c": 0,
+"reel_ms": 501.2
+},
+"1000": {
+"q": 0,
+"c": 0,
+"reel_ms": 1000.94
+},
+"2000": {
+"q": 0,
+"c": 0,
+"reel_ms": 2001.22
+}
+},
+"premiereBaisse_ms": 13.813,
+"disparu_ms": 43.453,
+"moteurC": {
+"coh": "A",
+"pc": 0.3663,
+"ps": 0.3146,
+"pw": 0.2118,
+"ev": 0.0001,
+"envoie": false,
+"plafond": null,
+"variables": [
+-0.548,
+-1.3863,
+3.9318,
+0.1663,
+0.1,
+0.1,
+-2.8635,
+0.1124,
+0.5134,
+1.423,
+0.03,
+0.5133,
+0.5041,
+1.1617,
+0
+]
+},
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 39.42,
+"1": 39.42,
+"2": 39.42,
+"5": 39.42,
+"10": 39.42,
+"25": 26.18,
+"50": 0,
+"100": 0,
+"250": 0,
+"500": 0,
+"1000": 0,
+"2000": 0
+}
+},
+{
+"nom": "cohorte B : V2-F corrige 0,015 %",
+"start": 1791721800,
+"cote": "Up",
+"a0": 0.1,
+"q0": 912.64,
+"modele": 0.3193,
+"ecart": 0.2193,
+"restant_s": 154.61,
+"declencheur": "perp",
+"tDecision": 1791721945393.154,
+"msgVersDecision_ms": null,
+"calcul_us": 74.1,
+"carnetAge_ms": 0.964,
+"carnetPolyVersNous_ms": 12.2,
+"agePerp": 0,
+"ageOkx": 0.001,
+"ageBn": 0.323,
+"ageCb": 1.722,
+"ageCl": 0.561,
+"achetable0": {
+"q": 500,
+"c": 53.24
+},
+"apres": {
+"1": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 1.77
+},
+"2": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 2.7
+},
+"5": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 5.68
+},
+"10": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 11.71
+},
+"25": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 25.71
+},
+"50": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 51.07
+},
+"100": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 100.66
+},
+"250": {
+"q": 436.89,
+"c": 46.52,
+"reel_ms": 250.69
+},
+"500": {
+"q": 55.55,
+"c": 5.91,
+"reel_ms": 500.79
+},
+"1000": {
+"q": 0,
+"c": 0,
+"reel_ms": 1001.06
+},
+"2000": {
+"q": 0,
+"c": 0,
+"reel_ms": 2000.83
+}
+},
+"premiereBaisse_ms": 195.094,
+"disparu_ms": 584.292,
+"moteurC": {
+"coh": "B",
+"pc": 0.1794,
+"ps": 0.7657,
+"pw": 0.095,
+"ev": -0.0088,
+"envoie": false,
+"plafond": null,
+"variables": [
+-1.5201,
+-2.1972,
+6.8174,
+0.0794,
+0,
+0,
+-0.0195,
+0.1491,
+0.5154,
+0.0553,
+0.01,
+0.0007,
+1.0136,
+0.5613,
+1
+]
+},
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 446.76,
+"1": 446.76,
+"2": 446.76,
+"5": 446.76,
+"10": 446.76,
+"25": 446.76,
+"50": 446.76,
+"100": 446.76,
+"250": 390.37,
+"500": 49.64,
+"1000": 0,
+"2000": 0
+}
+},
+{
+"nom": "desaccord 20 60-180 s",
+"start": 1791721800,
+"cote": "Up",
+"a0": 0.15,
+"q0": 589.21,
+"modele": 0.3891,
+"ecart": 0.2391,
+"restant_s": 179.99,
+"declencheur": "poly",
+"tDecision": 1791721920013.192,
+"msgVersDecision_ms": 0.228,
+"calcul_us": 136.8,
+"carnetAge_ms": 0.228,
+"carnetPolyVersNous_ms": 10,
+"agePerp": 0.678,
+"ageOkx": 1.465,
+"ageBn": 0.209,
+"ageCb": 0.074,
+"ageCl": 1.108,
+"achetable0": {
+"q": 333.33,
+"c": 53.06
+},
+"apres": {
+"1": {
+"q": 333.33,
+"c": 53.06,
+"reel_ms": 2.24
+},
+"2": {
+"q": 333.33,
+"c": 53.06,
+"reel_ms": 2.3
+},
+"5": {
+"q": 333.33,
+"c": 53.06,
+"reel_ms": 5.45
+},
+"10": {
+"q": 333.33,
+"c": 53.06,
+"reel_ms": 10.25
+},
+"25": {
+"q": 333.33,
+"c": 53.06,
+"reel_ms": 25.37
+},
+"50": {
+"q": 333.33,
+"c": 53.06,
+"reel_ms": 49.94
+},
+"100": {
+"q": 89.21,
+"c": 14.2,
+"reel_ms": 100.45
+},
+"250": {
+"q": 0,
+"c": 0,
+"reel_ms": 251.66
+},
+"500": {
+"q": 0,
+"c": 0,
+"reel_ms": 499.93
+},
+"1000": {
+"q": 0,
+"c": 0,
+"reel_ms": 1000.63
+},
+"2000": {
+"q": 0,
+"c": 0,
+"reel_ms": 1999.84
+}
+},
+"premiereBaisse_ms": 83.23,
+"disparu_ms": 216.755,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 280.27,
+"1": 280.27,
+"2": 280.27,
+"5": 280.27,
+"10": 280.27,
+"25": 280.27,
+"50": 280.27,
+"100": 75.01,
+"250": 0,
+"500": 0,
+"1000": 0,
+"2000": 0
+}
+},
+{
+"nom": "desaccord 30",
+"start": 1791721800,
+"cote": "Up",
+"a0": 0.1,
+"q0": 912.64,
+"modele": 0.4045,
+"ecart": 0.3045,
+"restant_s": 154.63,
+"declencheur": "perp",
+"tDecision": 1791721945374.191,
+"msgVersDecision_ms": null,
+"calcul_us": 80.6,
+"carnetAge_ms": 716.99,
+"carnetPolyVersNous_ms": 9.2,
+"agePerp": 0,
+"ageOkx": 0.202,
+"ageBn": 0.304,
+"ageCb": 1.703,
+"ageCl": 0.542,
+"achetable0": {
+"q": 500,
+"c": 53.24
+},
+"apres": {
+"1": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 0.83
+},
+"2": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 1.95
+},
+"5": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 4.72
+},
+"10": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 10.33
+},
+"25": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 24.63
+},
+"50": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 49.68
+},
+"100": {
+"q": 500,
+"c": 53.24,
+"reel_ms": 99.63
+},
+"250": {
+"q": 436.89,
+"c": 46.52,
+"reel_ms": 261.15
+},
+"500": {
+"q": 85.55,
+"c": 9.11,
+"reel_ms": 501.56
+},
+"1000": {
+"q": 0,
+"c": 0,
+"reel_ms": 999.72
+},
+"2000": {
+"q": 0,
+"c": 0,
+"reel_ms": 2000.7
+}
+},
+"premiereBaisse_ms": 214.057,
+"disparu_ms": 603.255,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 446.76,
+"1": 446.76,
+"2": 446.76,
+"5": 446.76,
+"10": 446.76,
+"25": 446.76,
+"50": 446.76,
+"100": 446.76,
+"250": 390.37,
+"500": 76.44,
+"1000": 0,
+"2000": 0
+}
+},
+{
+"nom": "V2-F ecart qui grandit",
+"start": 1791722100,
+"cote": "Up",
+"a0": 0.22,
+"q0": 12.82,
+"modele": 0.4271,
+"ecart": 0.2071,
+"restant_s": 232.78,
+"declencheur": "poly",
+"tDecision": 1791722167218.309,
+"msgVersDecision_ms": 0.071,
+"calcul_us": 50.9,
+"carnetAge_ms": 0.071,
+"carnetPolyVersNous_ms": 8.2,
+"agePerp": 0.274,
+"ageOkx": 1.772,
+"ageBn": 0.111,
+"ageCb": 0.035,
+"ageCl": 1.19,
+"achetable0": {
+"q": 12.82,
+"c": 2.98
+},
+"apres": {
+"1": {
+"q": 12.82,
+"c": 2.98,
+"reel_ms": 1.13
+},
+"2": {
+"q": 12.82,
+"c": 2.98,
+"reel_ms": 2.57
+},
+"5": {
+"q": 12.82,
+"c": 2.98,
+"reel_ms": 5.53
+},
+"10": {
+"q": 12.82,
+"c": 2.98,
+"reel_ms": 9.87
+},
+"25": {
+"q": 37.82,
+"c": 8.53,
+"reel_ms": 26.13
+},
+"50": {
+"q": 47.82,
+"c": 10.75,
+"reel_ms": 50.08
+},
+"100": {
+"q": 62.82,
+"c": 14.34,
+"reel_ms": 100.07
+},
+"250": {
+"q": 227.27,
+"c": 52,
+"reel_ms": 250.05
+},
+"500": {
+"q": 227.27,
+"c": 51.89,
+"reel_ms": 499.84
+},
+"1000": {
+"q": 66.17,
+"c": 15.06,
+"reel_ms": 1001.01
+},
+"2000": {
+"q": 85,
+"c": 19.75,
+"reel_ms": 2000.85
+}
+},
+"premiereBaisse_ms": null,
+"disparu_ms": null,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 9.84,
+"1": 9.84,
+"2": 9.84,
+"5": 9.84,
+"10": 9.84,
+"25": 29.29,
+"50": 37.07,
+"100": 48.48,
+"250": 175.27,
+"500": 175.38,
+"1000": 51.11,
+"2000": 65.25
+}
+},
+{
+"nom": "V2-F incertitude 0,01 %",
+"start": 1791722100,
+"cote": "Up",
+"a0": 0.26,
+"q0": 160.57,
+"modele": 0.489,
+"ecart": 0.229,
+"restant_s": 130.49,
+"declencheur": "perp",
+"tDecision": 1791722269506.171,
+"msgVersDecision_ms": null,
+"calcul_us": 155,
+"carnetAge_ms": 0.849,
+"carnetPolyVersNous_ms": 8.3,
+"agePerp": 0,
+"ageOkx": 0.04,
+"ageBn": 0.3,
+"ageCb": 0.014,
+"ageCl": 0.575,
+"achetable0": {
+"q": 160.57,
+"c": 43.97
+},
+"apres": {
+"1": {
+"q": 160.57,
+"c": 43.97,
+"reel_ms": 1.66
+},
+"2": {
+"q": 160.57,
+"c": 43.97,
+"reel_ms": 1.75
+},
+"5": {
+"q": 145.57,
+"c": 39.86,
+"reel_ms": 5.64
+},
+"10": {
+"q": 99.33,
+"c": 27.2,
+"reel_ms": 9.72
+},
+"25": {
+"q": 58.94,
+"c": 16.14,
+"reel_ms": 24.82
+},
+"50": {
+"q": 48.55,
+"c": 13.3,
+"reel_ms": 49.92
+},
+"100": {
+"q": 48.55,
+"c": 13.3,
+"reel_ms": 100.24
+},
+"250": {
+"q": 6.96,
+"c": 1.91,
+"reel_ms": 249.68
+},
+"500": {
+"q": 0,
+"c": 0,
+"reel_ms": 500.91
+},
+"1000": {
+"q": 192.31,
+"c": 48.68,
+"reel_ms": 999.82
+},
+"2000": {
+"q": 192.31,
+"c": 46.1,
+"reel_ms": 2002.81
+}
+},
+"premiereBaisse_ms": 2.955,
+"disparu_ms": 269.785,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 116.6,
+"1": 116.6,
+"2": 116.6,
+"5": 105.71,
+"10": 72.13,
+"25": 42.8,
+"50": 35.25,
+"100": 35.25,
+"250": 5.05,
+"500": 0,
+"1000": 143.63,
+"2000": 146.21
+}
+},
+{
+"nom": "cohorte A : zone + modele monte",
+"start": 1791722100,
+"cote": "Up",
+"a0": 0.16,
+"q0": 44.12,
+"modele": 0.4605,
+"ecart": 0.3005,
+"restant_s": 131.06,
+"declencheur": "okx",
+"tDecision": 1791722268937.12,
+"msgVersDecision_ms": null,
+"calcul_us": 57.1,
+"carnetAge_ms": 0.688,
+"carnetPolyVersNous_ms": 7.4,
+"agePerp": 0.003,
+"ageOkx": 0,
+"ageBn": 0.051,
+"ageCb": 0.024,
+"ageCl": 0.006,
+"achetable0": {
+"q": 44.12,
+"c": 7.49
+},
+"apres": {
+"1": {
+"q": 44.12,
+"c": 7.49,
+"reel_ms": 1.05
+},
+"2": {
+"q": 44.12,
+"c": 7.49,
+"reel_ms": 1.71
+},
+"5": {
+"q": 44.12,
+"c": 7.49,
+"reel_ms": 4.83
+},
+"10": {
+"q": 44.12,
+"c": 7.49,
+"reel_ms": 10.61
+},
+"25": {
+"q": 44.12,
+"c": 7.49,
+"reel_ms": 25.38
+},
+"50": {
+"q": 20,
+"c": 3.39,
+"reel_ms": 50.08
+},
+"100": {
+"q": 0,
+"c": 0,
+"reel_ms": 100.21
+},
+"250": {
+"q": 0,
+"c": 0,
+"reel_ms": 250.27
+},
+"500": {
+"q": 0,
+"c": 0,
+"reel_ms": 500.6
+},
+"1000": {
+"q": 0,
+"c": 0,
+"reel_ms": 1000.37
+},
+"2000": {
+"q": 0,
+"c": 0,
+"reel_ms": 1999.72
+}
+},
+"premiereBaisse_ms": 40.563,
+"disparu_ms": 59.955,
+"moteurC": {
+"coh": "A",
+"pc": 0.312,
+"ps": 0.461,
+"pw": 0.2092,
+"ev": 0.0182,
+"envoie": true,
+"plafond": 0.18,
+"variables": [
+-0.7909,
+-1.6582,
+3.8093,
+0.152,
+0,
+0.06,
+-2.4145,
+0.0714,
+0.4369,
+0.8689,
+0.01,
+0.0026,
+0.0001,
+0.0058,
+0
+],
+"remplissage": {
+"latence_33ms": {
+"q": 99.12,
+"c": 17.39
+},
+"100ms": {
+"q": 0,
+"c": 0
+},
+"300ms": {
+"q": 0,
+"c": 0
+}
+},
+"resultat": {
+"latence_33ms": 81.73,
+"100ms": 0,
+"300ms": 0
+}
+},
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 36.63,
+"1": 36.63,
+"2": 36.63,
+"5": 36.63,
+"10": 36.63,
+"25": 36.63,
+"50": 16.61,
+"100": 0,
+"250": 0,
+"500": 0,
+"1000": 0,
+"2000": 0
+}
+},
+{
+"nom": "cohorte B : V2-F corrige 0,015 %",
+"start": 1791722100,
+"cote": "Up",
+"a0": 0.16,
+"q0": 44.12,
+"modele": 0.3624,
+"ecart": 0.2024,
+"restant_s": 131.06,
+"declencheur": "okx",
+"tDecision": 1791722268938.596,
+"msgVersDecision_ms": null,
+"calcul_us": 64.7,
+"carnetAge_ms": 0.576,
+"carnetPolyVersNous_ms": 8,
+"agePerp": 0.004,
+"ageOkx": 0,
+"ageBn": 0.053,
+"ageCb": 0.026,
+"ageCl": 0.007,
+"achetable0": {
+"q": 44.12,
+"c": 7.49
+},
+"apres": {
+"1": {
+"q": 44.12,
+"c": 7.49,
+"reel_ms": 1.24
+},
+"2": {
+"q": 44.12,
+"c": 7.49,
+"reel_ms": 2.39
+},
+"5": {
+"q": 44.12,
+"c": 7.49,
+"reel_ms": 5.52
+},
+"10": {
+"q": 44.12,
+"c": 7.49,
+"reel_ms": 10.26
+},
+"25": {
+"q": 44.12,
+"c": 7.49,
+"reel_ms": 25.61
+},
+"50": {
+"q": 20,
+"c": 3.39,
+"reel_ms": 50.48
+},
+"100": {
+"q": 0,
+"c": 0,
+"reel_ms": 100.81
+},
+"250": {
+"q": 0,
+"c": 0,
+"reel_ms": 250.95
+},
+"500": {
+"q": 0,
+"c": 0,
+"reel_ms": 500.38
+},
+"1000": {
+"q": 0,
+"c": 0,
+"reel_ms": 1000.84
+},
+"2000": {
+"q": 0,
+"c": 0,
+"reel_ms": 2000.35
+}
+},
+"premiereBaisse_ms": 39.087,
+"disparu_ms": 58.479,
+"moteurC": {
+"coh": "B",
+"pc": 0.2336,
+"ps": 0.3257,
+"pw": 0.1549,
+"ev": -0.0048,
+"envoie": false,
+"plafond": null,
+"variables": [
+-1.1884,
+-1.6582,
+3.8093,
+0.0736,
+0,
+0.06,
+-2.4145,
+0.2331,
+0.4369,
+0.8689,
+0.01,
+0.0041,
+0.0001,
+0.0072,
+1
+]
+},
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 36.63,
+"1": 36.63,
+"2": 36.63,
+"5": 36.63,
+"10": 36.63,
+"25": 36.63,
+"50": 16.61,
+"100": 0,
+"250": 0,
+"500": 0,
+"1000": 0,
+"2000": 0
+}
+},
+{
+"nom": "desaccord 20 60-180 s",
+"start": 1791722100,
+"cote": "Up",
+"a0": 0.09,
+"q0": 790.89,
+"modele": 0.3423,
+"ecart": 0.2523,
+"restant_s": 180,
+"declencheur": "poly",
+"tDecision": 1791722220000.397,
+"msgVersDecision_ms": 0.138,
+"calcul_us": 87.8,
+"carnetAge_ms": 0.138,
+"carnetPolyVersNous_ms": 8.3,
+"agePerp": 0.747,
+"ageOkx": 0.141,
+"ageBn": 0.019,
+"ageCb": 0.051,
+"ageCl": 0.092,
+"achetable0": {
+"q": 555.56,
+"c": 53.28
+},
+"apres": {
+"1": {
+"q": 555.56,
+"c": 53.28,
+"reel_ms": 2.33
+},
+"2": {
+"q": 555.56,
+"c": 53.28,
+"reel_ms": 2.36
+},
+"5": {
+"q": 555.56,
+"c": 53.28,
+"reel_ms": 5.35
+},
+"10": {
+"q": 555.56,
+"c": 53.28,
+"reel_ms": 9.95
+},
+"25": {
+"q": 555.56,
+"c": 53.28,
+"reel_ms": 25.74
+},
+"50": {
+"q": 555.56,
+"c": 53.28,
+"reel_ms": 50.89
+},
+"100": {
+"q": 555.56,
+"c": 53.28,
+"reel_ms": 100.73
+},
+"250": {
+"q": 555.56,
+"c": 53.28,
+"reel_ms": 250.66
+},
+"500": {
+"q": 555.56,
+"c": 53.28,
+"reel_ms": 501.01
+},
+"1000": {
+"q": 555.56,
+"c": 47.39,
+"reel_ms": 1001.3
+},
+"2000": {
+"q": 555.56,
+"c": 41.49,
+"reel_ms": 2001.14
+}
+},
+"premiereBaisse_ms": null,
+"disparu_ms": null,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 502.28,
+"1": 502.28,
+"2": 502.28,
+"5": 502.28,
+"10": 502.28,
+"25": 502.28,
+"50": 502.28,
+"100": 502.28,
+"250": 502.28,
+"500": 502.28,
+"1000": 508.17,
+"2000": 514.07
+}
+},
+{
+"nom": "desaccord 30",
+"start": 1791722100,
+"cote": "Up",
+"a0": 0.08,
+"q0": 673.1,
+"modele": 0.3832,
+"ecart": 0.3032,
+"restant_s": 178.82,
+"declencheur": "perp",
+"tDecision": 1791722221180.114,
+"msgVersDecision_ms": null,
+"calcul_us": 273.4,
+"carnetAge_ms": 0.772,
+"carnetPolyVersNous_ms": 10.3,
+"agePerp": 0,
+"ageOkx": 0.271,
+"ageBn": 0,
+"ageCb": 0.247,
+"ageCl": 1.272,
+"achetable0": {
+"q": 625,
+"c": 53.31
+},
+"apres": {
+"1": {
+"q": 625,
+"c": 53.31,
+"reel_ms": 0.83
+},
+"2": {
+"q": 625,
+"c": 53.31,
+"reel_ms": 1.79
+},
+"5": {
+"q": 625,
+"c": 53.31,
+"reel_ms": 4.75
+},
+"10": {
+"q": 625,
+"c": 53.31,
+"reel_ms": 10.11
+},
+"25": {
+"q": 625,
+"c": 53.31,
+"reel_ms": 54.61
+},
+"50": {
+"q": 625,
+"c": 53.31,
+"reel_ms": 54.63
+},
+"100": {
+"q": 625,
+"c": 50.83,
+"reel_ms": 99.93
+},
+"250": {
+"q": 625,
+"c": 47.47,
+"reel_ms": 250.06
+},
+"500": {
+"q": 534.24,
+"c": 41.57,
+"reel_ms": 501.31
+},
+"1000": {
+"q": 625,
+"c": 47.44,
+"reel_ms": 999.77
+},
+"2000": {
+"q": 602.07,
+"c": 47.86,
+"reel_ms": 1999.85
+}
+},
+"premiereBaisse_ms": 152.061,
+"disparu_ms": null,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 571.69,
+"1": 571.69,
+"2": 571.69,
+"5": 571.69,
+"10": 571.69,
+"25": 571.69,
+"50": 571.69,
+"100": 574.17,
+"250": 577.53,
+"500": 492.67,
+"1000": 577.56,
+"2000": 554.21
+}
+},
+{
+"nom": "V2-F ecart qui grandit",
+"start": 1791722400,
+"cote": "Up",
+"a0": 0.1,
+"q0": 12,
+"modele": 0.3035,
+"ecart": 0.2035,
+"restant_s": 261.76,
+"declencheur": "poly",
+"tDecision": 1791722438240.606,
+"msgVersDecision_ms": 0.071,
+"calcul_us": 49.2,
+"carnetAge_ms": 0.071,
+"carnetPolyVersNous_ms": 7.5,
+"agePerp": 0.455,
+"ageOkx": 0.187,
+"ageBn": 0.17,
+"ageCb": 0.325,
+"ageCl": 0.338,
+"achetable0": {
+"q": 12,
+"c": 1.28
+},
+"apres": {
+"1": {
+"q": 12,
+"c": 1.28,
+"reel_ms": 0.24
+},
+"2": {
+"q": 24,
+"c": 2.56,
+"reel_ms": 2.38
+},
+"5": {
+"q": 24,
+"c": 2.56,
+"reel_ms": 5.5
+},
+"10": {
+"q": 0,
+"c": 0,
+"reel_ms": 10.66
+},
+"25": {
+"q": 36,
+"c": 3.83,
+"reel_ms": 25.46
+},
+"50": {
+"q": 52,
+"c": 5.54,
+"reel_ms": 50.28
+},
+"100": {
+"q": 40,
+"c": 4.26,
+"reel_ms": 101.23
+},
+"250": {
+"q": 0,
+"c": 0,
+"reel_ms": 251.08
+},
+"500": {
+"q": 0,
+"c": 0,
+"reel_ms": 500.69
+},
+"1000": {
+"q": 0,
+"c": 0,
+"reel_ms": 1000.8
+},
+"2000": {
+"q": 0,
+"c": 0,
+"reel_ms": 2001.01
+}
+},
+"premiereBaisse_ms": 6.597,
+"disparu_ms": 6.597,
+"gagnant": "Down",
+"gagne": false,
+"resultat": {
+"0": -1.28,
+"1": -1.28,
+"2": -2.56,
+"5": -2.56,
+"10": 0,
+"25": -3.83,
+"50": -5.54,
+"100": -4.26,
+"250": 0,
+"500": 0,
+"1000": 0,
+"2000": 0
+}
+},
+{
+"nom": "desaccord 20 60-180 s",
+"start": 1791722400,
+"cote": "Up",
+"a0": 0.08,
+"q0": 236.85,
+"modele": 0.3199,
+"ecart": 0.2399,
+"restant_s": 179.98,
+"declencheur": "poly",
+"tDecision": 1791722520023.244,
+"msgVersDecision_ms": 0.186,
+"calcul_us": 104.7,
+"carnetAge_ms": 0.186,
+"carnetPolyVersNous_ms": 8.1,
+"agePerp": 8.396,
+"ageOkx": 0.099,
+"ageBn": 0.449,
+"ageCb": 0.601,
+"ageCl": 0.021,
+"achetable0": {
+"q": 236.85,
+"c": 20.2
+},
+"apres": {
+"1": {
+"q": 236.85,
+"c": 20.2,
+"reel_ms": 0.74
+},
+"2": {
+"q": 236.85,
+"c": 20.2,
+"reel_ms": 2.63
+},
+"5": {
+"q": 236.85,
+"c": 20.2,
+"reel_ms": 4.75
+},
+"10": {
+"q": 236.85,
+"c": 20.2,
+"reel_ms": 10.23
+},
+"25": {
+"q": 236.85,
+"c": 20.2,
+"reel_ms": 25
+},
+"50": {
+"q": 236.85,
+"c": 20.2,
+"reel_ms": 50.53
+},
+"100": {
+"q": 236.85,
+"c": 20.2,
+"reel_ms": 99.59
+},
+"250": {
+"q": 256.85,
+"c": 21.91,
+"reel_ms": 250.31
+},
+"500": {
+"q": 254.2,
+"c": 21.68,
+"reel_ms": 499.83
+},
+"1000": {
+"q": 284.2,
+"c": 24.24,
+"reel_ms": 999.73
+},
+"2000": {
+"q": 251.7,
+"c": 21.47,
+"reel_ms": 2000.07
+}
+},
+"premiereBaisse_ms": 1753.38,
+"disparu_ms": null,
+"gagnant": "Down",
+"gagne": false,
+"resultat": {
+"0": -20.2,
+"1": -20.2,
+"2": -20.2,
+"5": -20.2,
+"10": -20.2,
+"25": -20.2,
+"50": -20.2,
+"100": -20.2,
+"250": -21.91,
+"500": -21.68,
+"1000": -24.24,
+"2000": -21.47
+}
+},
+{
+"nom": "desaccord 30",
+"start": 1791722400,
+"cote": "Up",
+"a0": 0.03,
+"q0": 7.12,
+"modele": 0.3501,
+"ecart": 0.3201,
+"restant_s": 54.67,
+"declencheur": "poly",
+"tDecision": 1791722645330.533,
+"msgVersDecision_ms": 5.458,
+"calcul_us": 5427.7,
+"carnetAge_ms": 5.458,
+"carnetPolyVersNous_ms": 12.1,
+"agePerp": 0.068,
+"ageOkx": 0.017,
+"ageBn": 0.039,
+"ageCb": 0.167,
+"ageCl": 0.219,
+"achetable0": {
+"q": 7.12,
+"c": 0.23
+},
+"apres": {
+"1": {
+"q": 7.12,
+"c": 0.23,
+"reel_ms": 1.18
+},
+"2": {
+"q": 7.12,
+"c": 0.23,
+"reel_ms": 2.4
+},
+"5": {
+"q": 7.12,
+"c": 0.23,
+"reel_ms": 4.59
+},
+"10": {
+"q": 7.12,
+"c": 0.23,
+"reel_ms": 9.29
+},
+"25": {
+"q": 0,
+"c": 0,
+"reel_ms": 24.45
+},
+"50": {
+"q": 43,
+"c": 1.38,
+"reel_ms": 50.16
+},
+"100": {
+"q": 0,
+"c": 0,
+"reel_ms": 99.44
+},
+"250": {
+"q": 0,
+"c": 0,
+"reel_ms": 249.11
+},
+"500": {
+"q": 0,
+"c": 0,
+"reel_ms": 499.6
+},
+"1000": {
+"q": 0,
+"c": 0,
+"reel_ms": 999.73
+},
+"2000": {
+"q": 0,
+"c": 0,
+"reel_ms": 1999.28
+}
+},
+"premiereBaisse_ms": 14.767,
+"disparu_ms": 14.767,
+"gagnant": "Down",
+"gagne": false,
+"resultat": {
+"0": -0.23,
+"1": -0.23,
+"2": -0.23,
+"5": -0.23,
+"10": -0.23,
+"25": 0,
+"50": -1.38,
+"100": 0,
+"250": 0,
+"500": 0,
+"1000": 0,
+"2000": 0
+}
 }
 ],
 "etat": {
-"recu": 1791722330.172,
-"version": "073d848bb5cd",
+"recu": 1791723353.674,
+"version": "1b7a7fdde32b",
 "latence": {
 "rttClob_ms": {
-"med": 32.63,
-"p10": 28.93,
-"p90": 36.91,
-"n": 63
+"med": 28.14,
+"p10": 26.08,
+"p90": 32.55,
+"n": 7
 },
 "polyVersNous_ms": {
-"med": 8.25732421875,
-"p10": 7.5810546875,
-"p90": 9.721435546875
+"med": 18.47802734375,
+"p10": 17.76171875,
+"p90": 20.0771484375
 },
 "calcul_us": {
-"med": 102.352,
-"p90": 373.709
+"med": null,
+"p90": null
 },
-"evaluations": 353761
+"evaluations": 13888
 },
 "flux": {
 "perp": {
-"muet_s": 0.2,
+"muet_s": 1.4,
 "reconnexions": 1
 },
 "okx": {
-"muet_s": 0.7,
+"muet_s": 0.9,
 "reconnexions": 1
 },
 "bn": {
-"muet_s": 0.7,
+"muet_s": 0.3,
 "reconnexions": 1
 },
 "cb": {
-"muet_s": 0.2,
+"muet_s": 0.5,
 "reconnexions": 1
 },
 "cl": {
-"muet_s": 0,
+"muet_s": 0.6,
 "reconnexions": 1
 },
 "pb": {
-"muet_s": 0.1,
+"muet_s": 0.8,
 "reconnexions": 1
 },
 "bnd": {
-"muet_s": 0,
+"muet_s": 0.1,
 "reconnexions": 1
 },
 "byob": {
-"muet_s": 0,
+"muet_s": 0.2,
 "reconnexions": 1
 },
 "poly": {
 "muet_s": 0,
-"reconnexions": 7
+"reconnexions": 3
 }
 },
 "systeme": {
-"rss_Mo": 155,
-"tas_Mo": 36,
+"rss_Mo": 100,
+"tas_Mo": 18,
 "disque": {
-"libre_Mo": 51821,
+"libre_Mo": 51819,
 "total_Mo": 61225
 },
 "dernierCycle": {
-"start": 1791721800,
-"ev": 228007,
-"ex": 902,
-"octets": 493969,
+"start": 1791723000,
+"ev": 14950,
+"ex": 186,
+"octets": 61694,
 "coupe": false
 }
 },
 "chainlink": {
 "decomposition_rtds_ms": {
 "publication": {
-"med": 1147,
-"p10": 840,
-"p90": 1547,
-"n": 949
+"med": 1130,
+"p10": 823,
+"p90": 1477,
+"n": 116
 },
 "transport": {
-"med": 292.82080078125,
-"p10": 171.28369140625,
-"p90": 399.666259765625,
-"n": 949
+"med": 329.66845703125,
+"p10": 184.10693359375,
+"p90": 412.73095703125,
+"n": 116
 },
 "traitement_boucle": {
-"med": 0.2216796875,
+"med": 0.12109375,
 "p10": 0,
-"p90": 0.91748046875,
-"n": 2000
+"p90": 0.81982421875,
+"n": 1197
 }
 },
 "rtds_ms": {
-"med": 1425.184814453125,
-"p10": 1096.2392578125,
-"p90": 1847.62255859375,
-"n": 949
+"med": 1408.62451171875,
+"p10": 1076.82861328125,
+"p90": 1783.000244140625,
+"n": 116
 },
 "polybolt_ms": {
-"med": 1151.83544921875,
-"p10": 842.896240234375,
-"p90": 1534.94091796875,
-"n": 949
+"med": 1259.318603515625,
+"p10": 972.700439453125,
+"p90": 1665.927490234375,
+"n": 115
 },
 "twap_ms": {
-"med": 1221.007568359375,
-"p10": 911.94384765625,
-"p90": 1601.82958984375,
-"n": 949
+"med": 1320.5654296875,
+"p10": 1041.450439453125,
+"p90": 1689.891845703125,
+"n": 115
 },
 "premier": {
-"rtds": 2,
-"pb": 946
+"rtds": 7,
+"pb": 108
 },
 "avanceDuPremier_ms": {
-"rtds": 42.9,
-"polybolt": 284.1
+"rtds": 10.6,
+"polybolt": 172.6
 },
 "messages": {
-"rtds": 949,
-"pb": 949
+"rtds": 116,
+"pb": 115
 },
 "exemples": [
-"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":1,\"ts\":1791721370000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83083.046370975\",\"timestamp\":1791721252000,\"value\":83083.046370975},{\"full_accuracy_value\":\"83083.04675675\",\"timestamp\":1791721253000,\"value\":83083.04675675},{\"full_accuracy_value\":\"83083.23145317\",\"timestamp\":1791721254000,\"value\":83083.23145317},{\"full_accuracy_value\":\"83083.070044425\",\"timestamp\":1791721255000,\"value\":83083.070044425},{\"full_accuracy_value\":\"83083.074097165\",\"timestamp\":1791721256000,\"value\":83083.074097165},{\"full_accuracy_value\":\"83083.07654993\",\"timestamp",
-"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":1,\"ts\":1791721370000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83083.315206904923291648\",\"timestamp\":1791721252000,\"value\":83083.31520690492},{\"full_accuracy_value\":\"83083.315206904923291648\",\"timestamp\":1791721253000,\"value\":83083.31520690492},{\"full_accuracy_value\":\"83083.308182244033560576\",\"timestamp\":1791721254000,\"value\":83083.30818224403},{\"full_accuracy_value\":\"83083.30285302586277888\",\"timestamp\":1791721255000,\"value\":83083.30285302586},{\"full_accuracy_value\":\"83083.29756448943767552\",\"timestamp\":1791721256000,\"value\":83083.2",
-"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":2,\"ts\":1791721371000,\"payload\":{\"full_accuracy_value\":\"83071.71668367017\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791721371000,\"value\":83071.71668367017}}",
-"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":2,\"ts\":1791721371000,\"payload\":{\"full_accuracy_value\":\"83076.488119909296898048\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791721371000,\"value\":83076.48811990929,\"window_seconds\":60}}",
-"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":3,\"ts\":1791721372000,\"payload\":{\"full_accuracy_value\":\"83071.286005150045\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791721372000,\"value\":83071.28600515005}}",
-"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":3,\"ts\":1791721372000,\"payload\":{\"full_accuracy_value\":\"83076.488119909296898048\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791721372000,\"value\":83076.48811990929,\"window_seconds\":60}}"
+"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":1,\"ts\":1791723234000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83040.614787275\",\"timestamp\":1791723116000,\"value\":83040.614787275},{\"full_accuracy_value\":\"83040.55721969\",\"timestamp\":1791723117000,\"value\":83040.55721969},{\"full_accuracy_value\":\"83040.548629915\",\"timestamp\":1791723118000,\"value\":83040.54862991499},{\"full_accuracy_value\":\"83040.42789078678\",\"timestamp\":1791723119000,\"value\":83040.42789078677},{\"full_accuracy_value\":\"83038.863837204695\",\"timestamp\":1791723120000,\"value\":83038.86383720468},{\"full_accuracy_value\":\"83037.1716941",
+"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":1,\"ts\":1791723234000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83046.187725961698476032\",\"timestamp\":1791723116000,\"value\":83046.1877259617},{\"full_accuracy_value\":\"83046.187725961698476032\",\"timestamp\":1791723117000,\"value\":83046.1877259617},{\"full_accuracy_value\":\"83046.056531045136728064\",\"timestamp\":1791723118000,\"value\":83046.05653104513},{\"full_accuracy_value\":\"83045.848924545028718592\",\"timestamp\":1791723119000,\"value\":83045.84892454503},{\"full_accuracy_value\":\"83045.744521262391099392\",\"timestamp\":1791723120000,\"value\":83045.7",
+"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":2,\"ts\":1791723235000,\"payload\":{\"full_accuracy_value\":\"83022.192296259573776384\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791723235000,\"value\":83022.19229625957,\"window_seconds\":60}}",
+"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":2,\"ts\":1791723235000,\"payload\":{\"full_accuracy_value\":\"83020.570876784485\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791723235000,\"value\":83020.57087678448}}",
+"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":3,\"ts\":1791723237000,\"payload\":{\"full_accuracy_value\":\"83020.58633640634\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791723237000,\"value\":83020.58633640633}}",
+"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":3,\"ts\":1791723237000,\"payload\":{\"full_accuracy_value\":\"83022.155911854076985344\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791723237000,\"value\":83022.15591185408,\"window_seconds\":60}}"
 ],
 "abonnements": [
 "{\"op\":\"subscribed\",\"channel\":\"price.crypto\",\"rid\":\"s1\",\"provider\":\"chainlink\"}",
@@ -22862,138 +24485,138 @@
 },
 "makerEnCours": {
 "offres": {
-"M5 remplissage attendu": {
-"posees": 0,
-"remplies": 5
-},
-"M2 cotation marge 5 c": {
-"posees": 0,
-"remplies": 4
-},
-"M2 cotation marge 10 c": {
-"posees": 0,
-"remplies": 11
-},
-"M4 retrait toxique": {
-"posees": 0,
-"remplies": 8
-},
-"M0 temoin aleatoire": {
-"posees": 0,
-"remplies": 2
-},
-"M1 V2-F ecart qui grandit": {
-"posees": 0,
-"remplies": 0
-},
-"M1 desaccord 20 60-180 s": {
-"posees": 0,
-"remplies": 1
-},
-"M1 desaccord 30": {
-"posees": 0,
-"remplies": 1
-},
 "M3 anticipation Chainlink": {
 "posees": 0,
+"remplies": 1
+},
+"M5 remplissage attendu": {
+"posees": 0,
+"remplies": 6
+},
+"M2 cotation marge 5 c": {
+"posees": 2,
 "remplies": 7
 },
-"M1 cohorte A : zone + modele monte": {
-"posees": 0,
-"remplies": 0
+"M4 retrait toxique": {
+"posees": 2,
+"remplies": 6
 },
-"M1 cohorte B : V2-F corrige 0,015 %": {
-"posees": 0,
-"remplies": 0
+"M4a seul bourses -10 $": {
+"posees": 2,
+"remplies": 7
 },
-"M1 V2-F incertitude 0,01 %": {
-"posees": 0,
+"M4b seul flux agressif": {
+"posees": 2,
+"remplies": 7
+},
+"M4c seul ventes Polymarket": {
+"posees": 2,
+"remplies": 6
+},
+"M6 duree de vie 1000 ms": {
+"posees": 2,
+"remplies": 5
+},
+"M6 duree de vie 500 ms": {
+"posees": 2,
 "remplies": 1
+},
+"M6 duree de vie 250 ms": {
+"posees": 1,
+"remplies": 2
+},
+"M6 duree de vie 100 ms": {
+"posees": 2,
+"remplies": 1
+},
+"M2 cotation marge 10 c": {
+"posees": 2,
+"remplies": 0
 }
 },
 "compteurs": {
 "M3 anticipation Chainlink": {
-"posees": 320,
-"rejetees": 3,
-"annulees": 317,
-"remplies": 15,
+"posees": 4,
+"rejetees": 0,
+"annulees": 4,
+"remplies": 1,
 "retraitsToxiques": 0
 },
 "M2 cotation marge 5 c": {
-"posees": 517,
-"rejetees": 1,
-"annulees": 516,
-"remplies": 11,
+"posees": 49,
+"rejetees": 0,
+"annulees": 47,
+"remplies": 9,
 "retraitsToxiques": 0
 },
 "M2 cotation marge 10 c": {
-"posees": 542,
-"rejetees": 5,
-"annulees": 537,
-"remplies": 19,
+"posees": 56,
+"rejetees": 0,
+"annulees": 54,
+"remplies": 0,
 "retraitsToxiques": 0
 },
 "M4 retrait toxique": {
-"posees": 508,
-"rejetees": 1,
-"annulees": 507,
-"remplies": 41,
-"retraitsToxiques": 98
+"posees": 52,
+"rejetees": 0,
+"annulees": 50,
+"remplies": 8,
+"retraitsToxiques": 6
+},
+"M4a seul bourses -10 $": {
+"posees": 50,
+"rejetees": 0,
+"annulees": 48,
+"remplies": 9,
+"retraitsToxiques": 0
+},
+"M4b seul flux agressif": {
+"posees": 49,
+"rejetees": 0,
+"annulees": 47,
+"remplies": 9,
+"retraitsToxiques": 0
+},
+"M4c seul ventes Polymarket": {
+"posees": 51,
+"rejetees": 0,
+"annulees": 49,
+"remplies": 8,
+"retraitsToxiques": 0
+},
+"M6 duree de vie 100 ms": {
+"posees": 602,
+"rejetees": 0,
+"annulees": 600,
+"remplies": 2,
+"retraitsToxiques": 0
+},
+"M6 duree de vie 250 ms": {
+"posees": 312,
+"rejetees": 0,
+"annulees": 311,
+"remplies": 3,
+"retraitsToxiques": 0
+},
+"M6 duree de vie 500 ms": {
+"posees": 179,
+"rejetees": 0,
+"annulees": 177,
+"remplies": 3,
+"retraitsToxiques": 0
+},
+"M6 duree de vie 1000 ms": {
+"posees": 111,
+"rejetees": 0,
+"annulees": 109,
+"remplies": 8,
+"retraitsToxiques": 0
 },
 "M5 remplissage attendu": {
-"posees": 105,
-"rejetees": 3,
-"annulees": 102,
-"remplies": 26,
-"retraitsToxiques": 0
-},
-"M1 V2-F ecart qui grandit": {
-"posees": 3,
-"rejetees": 2,
-"annulees": 1,
-"remplies": 1,
-"retraitsToxiques": 0
-},
-"M1 desaccord 20 60-180 s": {
-"posees": 3,
+"posees": 27,
 "rejetees": 0,
-"annulees": 3,
-"remplies": 2,
-"retraitsToxiques": 0
-},
-"M1 cohorte B : V2-F corrige 0,015 %": {
-"posees": 3,
-"rejetees": 0,
-"annulees": 3,
-"remplies": 1,
-"retraitsToxiques": 0
-},
-"M1 V2-F incertitude 0,01 %": {
-"posees": 3,
-"rejetees": 0,
-"annulees": 3,
-"remplies": 1,
-"retraitsToxiques": 0
-},
-"M1 desaccord 30": {
-"posees": 3,
-"rejetees": 1,
-"annulees": 2,
-"remplies": 2,
-"retraitsToxiques": 0
-},
-"M0 temoin aleatoire": {
-"posees": 6,
-"rejetees": 1,
-"annulees": 4,
-"remplies": 4,
-"retraitsToxiques": 0
-},
-"M1 cohorte A : zone + modele monte": {
-"posees": 2,
-"rejetees": 0,
-"annulees": 2,
-"remplies": 0,
+"annulees": 27,
+"remplies": 8,
 "retraitsToxiques": 0
 }
 }
