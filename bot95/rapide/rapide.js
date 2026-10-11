@@ -548,8 +548,23 @@ function obPhoto(o) {
 }
 setInterval(() => {
   const t = nowMs(), start = Math.floor(t / 300000) * 300; const R = recDe(start); R.ob = R.ob || { format: "[reception_ms, age_ms, acheteur, vendeur, taille1 acheteur, taille1 vendeur, cumul acheteur 5/10/20/50 $, cumul vendeur 5/10/20/50 $, baisses acheteur, baisses vendeur, ajouts acheteur, ajouts vendeur] en BTC", bn: [], by: [] };
-  for (const k of ["bn", "by"]) { const o = OB[k]; if (!o.t || t - o.t > 3000) continue; const ph = obPhoto(o); if (ph) R.ob[k].push([+t.toFixed(1), +(t - o.t).toFixed(1), ...ph]); o.dec = [0, 0]; o.add = [0, 0]; }
+  R.ob.format2 = "colonnes ajoutées en fin de ligne : sequence (Binance lastUpdateId / Bybit u), heure source ms (Bybit), fiable 1/0";
+  for (const k of ["bn", "by"]) { const o = OB[k]; if (!o.t || t - o.t > 3000) continue; const ph = obPhoto(o); if (ph) R.ob[k].push([+t.toFixed(1), +(t - o.t).toFixed(1), ...ph, o.seq ?? null, o.ts ?? null, o.fiable === false ? 0 : 1]); o.dec = [0, 0]; o.add = [0, 0]; }
 }, 100);
+setInterval(() => {                                                       // carnet complet 10 niveaux de chaque côté, chaque seconde
+  const t = nowMs(), R = recDe(Math.floor(t / 300000) * 300); R.obSnap = R.obSnap || { format: "[reception_ms, sequence, acheteurs [[prix, BTC]...10], vendeurs [[prix, BTC]...10]]", bn: [], by: [] };
+  for (const k of ["bn", "by"]) { const o = OB[k]; if (!o.t || t - o.t > 3000) continue;
+    const b = [...o.b].sort((x, y) => y[0] - x[0]).slice(0, 10), a = [...o.a].sort((x, y) => x[0] - y[0]).slice(0, 10);
+    R.obSnap[k].push([+t.toFixed(1), o.seq ?? null, b.map((x) => [x[0], +x[1].toFixed(4)]), a.map((x) => [x[0], +x[1].toFixed(4)])]); }
+}, 1000);
+function obTrou(k, raison, detail) { try { const t = nowMs(); const R = recDe(Math.floor(t / 300000) * 300); (R.obTrous = R.obTrous || []).push([+t.toFixed(1), k, raison, String(detail)]); } catch (_) {} }
+const TRADE_ID = {};
+function obTrade(k, tsSrc, achat, p, q, id) {                              // transactions brutes Binance spot et Bybit perp ; trou si l'identifiant Binance saute
+  try { const t = nowMs(), R = recDe(Math.floor(t / 300000) * 300); R.trx = R.trx || { format: "[reception_ms, heure source ms, 1 achat agressif / 0 vente, prix, quantite BTC]", bn: [], by: [] };
+    if (k === "bn" && TRADE_ID.bn && id !== TRADE_ID.bn + 1 && id > TRADE_ID.bn) obTrou("bn", "transactions manquantes", (id - TRADE_ID.bn - 1) + " id");
+    if (k === "bn") TRADE_ID.bn = id;
+    R.trx[k].push([+t.toFixed(1), tsSrc, achat, p, q]); } catch (_) {}
+}
 
 // ---------------------------------------------------------------- flux WebSocket (reconnexion si muet 20 s)
 const WS = {};
@@ -570,12 +585,12 @@ function flux() {
   if (muet("perp")) connecter("perp", "wss://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args: ["publicTrade.BTCUSDT", "allLiquidation.BTCUSDT"] })],
     (m) => { const tp = m.topic || "";
       if (tp.startsWith("allLiquidation")) { for (const y of m.data || []) flux50("liq_bybit", y.S === "Buy" ? "v" : "a", +y.v, +y.p); return; }   // Buy = position longue liquidée → vente forcée
-      if (!tp.startsWith("publicTrade")) return; for (const y of m.data || []) flux50("perp", y.S === "Buy" ? "a" : "v", +y.v, +y.p);
+      if (!tp.startsWith("publicTrade")) return; for (const y of m.data || []) { flux50("perp", y.S === "Buy" ? "a" : "v", +y.v, +y.p); obTrade("by", +y.T, y.S === "Buy" ? 1 : 0, +y.p, +y.v, y.i); }
       const x = (m.data || []).slice(-1)[0]; if (x) noter("perp", +x.p, +x.T); }, JSON.stringify({ op: "ping" }), 15000);
   if (muet("okx")) connecter("okx", "wss://ws.okx.com:8443/ws/v5/public", [JSON.stringify({ op: "subscribe", args: [{ channel: "trades", instId: "BTC-USDT-SWAP" }] })],
     (m) => { if (!(m.arg && m.arg.channel === "trades")) return; for (const y of m.data || []) flux50("okx", y.side === "buy" ? "a" : "v", +y.sz * 0.01, +y.px);
       const x = (m.data || []).slice(-1)[0]; if (x) noter("okx", +x.px, +x.ts); }, "ping", 20000);
-  if (muet("bn")) connecter("bn", "wss://stream.binance.com:9443/ws/btcusdt@trade", [], (m) => { if (+m.p > 0) { flux50("bn", m.m ? "v" : "a", +m.q, +m.p); noter("bn", +m.p, +m.T); } });
+  if (muet("bn")) connecter("bn", "wss://stream.binance.com:9443/ws/btcusdt@trade", [], (m) => { if (+m.p > 0) { flux50("bn", m.m ? "v" : "a", +m.q, +m.p); noter("bn", +m.p, +m.T); obTrade("bn", +m.T, m.m ? 0 : 1, +m.p, +m.q, +m.t); } });
   if (muet("cb")) connecter("cb", "wss://advanced-trade-ws.coinbase.com", [JSON.stringify({ type: "subscribe", product_ids: ["BTC-USD"], channel: "ticker" }), JSON.stringify({ type: "subscribe", product_ids: ["BTC-USD"], channel: "market_trades" })],
     (m) => { if (m.channel === "market_trades") { for (const ev of m.events || []) for (const y of ev.trades || []) flux50("cb", y.side === "BUY" ? "a" : "v", +y.size, +y.price); return; }
       if (m.channel !== "ticker") return; for (const ev of m.events || []) for (const x of ev.tickers || []) if (x.product_id === "BTC-USD" && x.price) noter("cb", +x.price, Date.parse(m.timestamp)); });
@@ -584,12 +599,20 @@ function flux() {
       const tR = nowMs(), pub = +m.timestamp;                             // RTDS : payload.timestamp = observation Chainlink ; timestamp = envoi par l'éditeur
       if (pub > 0) { CLS.publication.push(pub - +p.timestamp); CLS.transport.push(tR - pub); if (CLS.publication.length > 2000) { CLS.publication.shift(); CLS.transport.shift(); } }
       chainlink("rtds", +p.value, +p.timestamp); } }, "PING", 5000);
-  if (muet("bnd")) connecter("bnd", "wss://stream.binance.com:9443/ws/btcusdt@depth20@100ms", [], (m) => { if (!m.bids) return; const o = OB.bn;
-      o.b = new Map(m.bids.map((x) => [+x[0], +x[1]])); o.a = new Map(m.asks.map((x) => [+x[0], +x[1]])); o.t = nowMs(); });
+  if (muet("bnd")) connecter("bnd", "wss://stream.binance.com:9443/ws/btcusdt@depth20@100ms", [], (m) => { if (!m.bids) return; const o = OB.bn, t = nowMs();
+      if (o.seq && +m.lastUpdateId <= o.seq) obTrou("bn", "lastUpdateId en arriere", o.seq + " -> " + m.lastUpdateId);
+      if (o.t && t - o.t > 500) obTrou("bn", "silence", Math.round(t - o.t) + " ms");
+      const nb = new Map(m.bids.map((x) => [+x[0], +x[1]])), na = new Map(m.asks.map((x) => [+x[0], +x[1]]));
+      for (const [p, q] of o.b) { const q2 = nb.get(p) || 0; if (q2 < q) o.dec[0] += q - q2; } for (const [p, q] of nb) { const q0 = o.b.get(p) || 0; if (q > q0) o.add[0] += q - q0; }
+      for (const [p, q] of o.a) { const q2 = na.get(p) || 0; if (q2 < q) o.dec[1] += q - q2; } for (const [p, q] of na) { const q0 = o.a.get(p) || 0; if (q > q0) o.add[1] += q - q0; }
+      o.b = nb; o.a = na; o.seq = +m.lastUpdateId; o.ts = null; o.t = t; });
   if (muet("byob")) connecter("byob", "wss://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args: ["orderbook.50.BTCUSDT"] })], (m) => {
-      if (!(m.topic || "").startsWith("orderbook")) return; const o = OB.by, d = m.data || {};
-      if (m.type === "snapshot") { o.b = new Map(); o.a = new Map(); }
-      for (const x of d.b || []) obAppliquer(o, 0, +x[0], +x[1], m.type === "delta"); for (const x of d.a || []) obAppliquer(o, 1, +x[0], +x[1], m.type === "delta"); o.t = nowMs(); }, JSON.stringify({ op: "ping" }), 15000);
+      if (!(m.topic || "").startsWith("orderbook")) return; const o = OB.by, d = m.data || {}, t = nowMs();
+      if (m.type === "snapshot") { o.b = new Map(); o.a = new Map(); o.fiable = true; }
+      else if (o.seq != null && +d.u !== o.seq + 1) { obTrou("by", "sequence u", o.seq + " -> " + d.u); o.fiable = false; try { WS.byob.ws.close(); } catch (_) {} }   // trou : reconnexion → nouveau carnet complet
+      if (o.t && t - o.t > 1000) obTrou("by", "silence", Math.round(t - o.t) + " ms");
+      o.seq = +d.u; o.seqSrc = +d.seq; o.ts = +m.ts;
+      for (const x of d.b || []) obAppliquer(o, 0, +x[0], +x[1], m.type === "delta"); for (const x of d.a || []) obAppliquer(o, 1, +x[0], +x[1], m.type === "delta"); o.t = t; }, JSON.stringify({ op: "ping" }), 15000);
   if (PB && muet("pb")) { CLS.pbAuth = false; connecter("pb", "wss://ws-live-v2.polymarket.com/ws", [JSON.stringify({ op: "auth", rid: "a1", auth: PB })], surPB, JSON.stringify({ op: "ping" }), 20000); }
 }
 // ---------------------------------------------------------------- PolyBolt (wss://ws-live-v2.polymarket.com/ws) : Chainlink BTC/USD et moyenne 60 s officielle
