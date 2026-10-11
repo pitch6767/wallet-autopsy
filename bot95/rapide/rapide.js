@@ -330,14 +330,14 @@ function poser(variante, mk, up, prix, budget, info) {
   const id = up ? mk.up : mk.down, t = nowMs(), bb = meilleurAcheteur(id), as0 = asksTries(id)[0];
   const O = { oid: `${mk.start}:${++oidN}`, variante, start: mk.start, cote: up ? "Up" : "Down", id, prix, parts: +(budget / prix).toFixed(2), tPose: +t.toFixed(1), lat_ms: LAT(),
     restantPose_s: +(mk.end - t / 1000).toFixed(2), acheteurPose: bb, vendeurPose: as0 ? as0[0] : null, niveauPose: livres[id] ? +(livres[id].bids.get(prix) || 0).toFixed(2) : 0,
-    etat: "envoi", qDevant: null, qp: null, qr: null, remplP: 0, remplR: 0, premierRempl_ms: null, rempl: [], mo: { p: {}, r: {} }, moModele: { p: {}, r: {} }, ...info };
+    etat: "envoi", qDevant: null, qp: null, qr: null, qo: null, remplP: 0, remplR: 0, remplO: 0, annulP: 0, annulR: 0, premierRempl_ms: null, rempl: [], mo: { p: {}, r: {}, o: {} }, moModele: { p: {}, r: {}, o: {} }, toxRempl: [], ...info };
   OFFRES.push(O); mstat(variante).posees++;
   setTimeout(() => {
     if (O.etat !== "envoi") return;
     const as = asksTries(id)[0];
     if (as && as[0] <= prix + 1e-9) { O.etat = "rejetee"; O.raison = "croiserait le vendeur (post only)"; mstat(variante).rejetees++; return; }
     const b = meilleurAcheteur(id), q = prix > b + 1e-9 || !livres[id] ? 0 : (livres[id].bids.get(prix) || 0);
-    O.qDevant = +q.toFixed(2); O.qp = q; O.qr = q; O.etat = "posee"; O.tArrivee = +nowMs().toFixed(1);
+    O.qDevant = +q.toFixed(2); O.qp = q; O.qr = q; O.qo = q; O.etat = "posee"; O.tArrivee = +nowMs().toFixed(1);
   }, O.lat_ms);
   try { if (variante.startsWith("M1") || variante.startsWith("M0")) recDe(mk.start).dec.push([+t.toFixed(1), variante, "offre posee", O.cote, prix]); } catch (_) {}
   return O;
@@ -348,8 +348,10 @@ function annuler(O, raison) {
   setTimeout(() => { if (O.etat === "posee" || O.etat === "envoi") { O.etat = "annulee"; O.tAnnulee = +nowMs().toFixed(1); mstat(O.variante).annulees++; } }, LAT());
 }
 function remplir(O, k, n) {
-  const cle = k === "p" ? "remplP" : "remplR", reste = O.parts - O[cle]; if (reste <= 1e-9 || n <= 0) return;
+  const cle = k === "p" ? "remplP" : k === "r" ? "remplR" : "remplO", reste = O.parts - O[cle]; if (reste <= 1e-9 || n <= 0) return;
   const x = Math.min(reste, n); O[cle] = +(O[cle] + x).toFixed(4);
+  if (O.tAnnulDemande && k !== "o") { const c2 = k === "p" ? "annulP" : "annulR"; O[c2] = +(O[c2] + x).toFixed(4); }   // rempli APRÈS la demande d'annulation (pendant son trajet)
+  if (k === "p" && O.toxRempl.length < 40) O.toxRempl.push([+x.toFixed(2), toxActifs(O)]);
   if (O.premierRempl_ms == null) { O.premierRempl_ms = +(nowMs() - O.tPose).toFixed(1); O.qDevantAuRempl = { p: O.qp, r: O.qr }; O.fairAuRempl = fairDe(O); mstat(O.variante).remplies++; }
   if (O.rempl.length < 40) O.rempl.push([+(nowMs() - O.tPose).toFixed(1), k, +x.toFixed(2)]);
   for (const h of [1, 3, 5, 10]) setTimeout(() => {                         // sélection adverse : où en est le carnet (et le modèle) h secondes plus tard ?
@@ -364,24 +366,31 @@ function makerTransaction(tok, side, q, v) {               // vente sur ce jeton
   TRX.push({ tok: bidTok, p: pb, v, t, u: 0 }); while (TRX.length && t - TRX[0].t > 30000) TRX.shift();
   for (const O of OFFRES) {
     if (O.etat !== "posee" || O.id !== bidTok) continue;
-    if (pb < O.prix - 1e-9) { remplir(O, "p", Infinity); remplir(O, "r", Infinity); continue; }   // niveau traversé : tout notre prix est parti
+    if (pb < O.prix - 1e-9) { remplir(O, "p", Infinity); remplir(O, "r", Infinity); remplir(O, "o", Infinity); continue; }   // niveau traversé : tout notre prix est parti
     if (Math.abs(pb - O.prix) > 1e-9) continue;
-    O.qp -= v; O.qr -= v;
+    O.qp -= v; O.qr -= v; O.qo -= v;
     if (O.qp < 0) { remplir(O, "p", -O.qp); O.qp = 0; }
     if (O.qr < 0) { remplir(O, "r", -O.qr); O.qr = 0; }
+    if (O.qo < 0) { remplir(O, "o", -O.qo); O.qo = 0; }
   }
 }
+// File d'attente, trois bornes (aucune n'est certaine) :
+//   PRUDENTE : seules les transactions nous font avancer ; file devant ≤ quantité affichée.
+//   CENTRALE (proportionnelle) : un retrait sans transaction libère la file au prorata de notre place.
+//   OPTIMISTE : tout retrait sans transaction vient de devant nous.
 function makerNiveau(tok, p, avant, apres) {
+  const d = avant - apres, t = nowMs(), vis = [];
   for (const O of OFFRES) {
     if (O.etat !== "posee" || O.id !== tok || Math.abs(p - O.prix) > 1e-9) continue;
-    O.qp = Math.min(O.qp, apres);                                         // prudent : la file devant nous ne dépasse jamais l'affiché
-    const d = avant - apres; if (d <= 1e-9 || avant <= 0) continue;
-    const frac = Math.min(1, O.qr / avant), t = nowMs();
-    setTimeout(() => {                                                    // proportionnel : retrait sans transaction → part devant nous
-      let reste = d; for (const x of TRX) { if (x.tok !== tok || Math.abs(x.p - p) > 1e-9 || Math.abs(x.t - t) > 300) continue; const u = Math.min(reste, x.v - x.u); x.u += u; reste -= u; if (reste <= 1e-9) break; }
-      if (reste > 1e-9 && O.etat === "posee") O.qr = Math.max(0, O.qr - reste * frac);
-    }, 300);
+    O.qp = Math.min(O.qp, apres);
+    if (d > 1e-9 && avant > 0) vis.push([O, Math.min(1, O.qr / avant)]);
   }
+  if (!vis.length) return;
+  setTimeout(() => {                                                      // une seule attribution transaction / retrait par baisse (300 ms autour)
+    let reste = d; for (const x of TRX) { if (x.tok !== tok || Math.abs(x.p - p) > 1e-9 || Math.abs(x.t - t) > 300) continue; const u = Math.min(reste, x.v - x.u); x.u += u; reste -= u; if (reste <= 1e-9) break; }
+    if (reste <= 1e-9) return;
+    for (const [O, frac] of vis) if (O.etat === "posee") { O.qr = Math.max(0, O.qr - reste * frac); O.qo = Math.max(0, O.qo - reste); }
+  }, 300);
 }
 // ---- mouvements et flux agressifs des bourses (pour M4), toutes les 50 ms ; aucune donnée n'est réutilisée par les règles existantes
 const MOV = [], FLOW2 = { net: 0 };
@@ -392,6 +401,16 @@ setInterval(() => {
 function mouvement(ms) { const t = now(); let p0 = null, fl = 0; const p1 = MOV.length ? MOV[MOV.length - 1][1] : null;
   for (let i = MOV.length - 1; i >= 0; i--) { if (t - MOV[i][0] > ms / 1000) { p0 = MOV[i][1]; break; } fl += MOV[i][2]; }
   return { dp: p0 != null && p1 != null ? p1 - p0 : 0, flux: fl }; }
+// ---- conditions toxiques (M4) mesurées en continu pour chaque jeton : dernière heure où chacune s'est déclenchée
+const TOX = {};                                                           // id du jeton → { a, b, c } (ms)
+function toxMesurer(mk, up, t) {
+  const id = up ? mk.up : mk.down, sens = up ? 1 : -1, m300 = mouvement(300), m250 = mouvement(250), X = (TOX[id] = TOX[id] || { a: 0, b: 0, c: 0 });
+  if (sens * m300.dp <= -10) X.a = t;
+  if (sens * m250.flux <= -250000) X.b = t;
+  let vv = 0; for (let i = TRX.length - 1; i >= 0 && t - TRX[i].t <= 500; i--) if (TRX[i].tok === id) vv += TRX[i].v; if (vv >= 100) X.c = t;
+  return X;
+}
+function toxActifs(O) { const X = TOX[O.id]; if (!X) return ""; const t = nowMs(); return ["a", "b", "c"].filter((k) => t - X[k] <= 2000).join(""); }
 // ---- probabilité avec un prix BTC imposé (copie de proba(), pour M3 : « ce que dirait le marché s'il ne regardait que le dernier Chainlink »)
 function probaAvecS(mk, sdRel, S) {
   if (!mk || !mk.strike || !f.cl || !sgc) return null;
@@ -409,7 +428,34 @@ function prixAmeliore(id, a0) { const bb = meilleurAcheteur(id); if (!bb) return
 function makerSurSignal(S, mk, up, nom) {
   const p = prixAmeliore(up ? mk.up : mk.down, S.a0); if (p == null) return;
   poser("M1 " + nom, mk, up, p, 50, { modeleCle: MODELE_REGLE(nom), modele: S.modele, a0: S.a0, annulModele: 0.05 });
+  hybride(S, mk, up, nom);
 }
+// M8 HYBRIDE MAKER / PRENEUR (11.10.2026) : sur chaque signal, espérance preneur = parts disponibles au prix vu (50 $) × (modèle − prix − frais) ;
+// espérance maker = parts attendues en 10 s (modèle de file de M5) × (modèle − prix maker − 2 c). On prend la plus grande si elle est positive
+// (preneur : au moins 5 parts ; maker : au moins 0,50 $). Preneur exécuté après trajet simple + 150 ms (retard DOCUMENTÉ, non mesuré), au prix vu ou mieux.
+const FEE7 = (p) => 0.07 * p * (1 - p);
+function hybride(S, mk, up, nom) {
+  const id = up ? mk.up : mk.down, fair = S.modele, a0 = S.a0, t = nowMs();
+  let qT = 0, cT = 0; for (const [pp, z] of asksTries(id)) { if (pp > a0 + 1e-9) break; const x = Math.min(z, (50 - cT) / (pp + FEE7(pp))); if (x <= 0) break; qT += x; cT += x * (pp + FEE7(pp)); }
+  const evT = qT >= MIN_PARTS_H ? qT * fair - cT : -Infinity;
+  const pm = prixAmeliore(id, a0), bb = meilleurAcheteur(id); let evM = -Infinity, att = 0;
+  if (pm != null) { let vol = 0; for (let i = TRX.length - 1; i >= 0 && t - TRX[i].t <= 30000; i--) if (TRX[i].tok === id) vol += TRX[i].v;
+    const q = pm > bb + 1e-9 ? 0 : ((livres[id] && livres[id].bids.get(pm)) || 0); att = Math.min(50 / pm, Math.max(0, vol / 3 - q)); evM = att * (fair - pm - 0.02); }
+  const v = "M8 hybride " + nom;
+  if (evT > 0 && evT >= evM) {
+    const O = { oid: `${mk.start}:${++oidN}`, variante: v, mode: "preneur", start: mk.start, cote: up ? "Up" : "Down", id, prix: a0, parts: 0, tPose: +t.toFixed(1), lat_ms: LAT(), etat: "envoi",
+      remplP: 0, remplR: 0, remplO: 0, annulP: 0, annulR: 0, rempl: [], mo: { p: {}, r: {}, o: {} }, moModele: { p: {}, r: {}, o: {} }, toxRempl: [], evPreneur: +evT.toFixed(2), evMaker: isFinite(evM) ? +evM.toFixed(2) : null,
+      modele: fair, a0, restantPose_s: +(mk.end - t / 1000).toFixed(2), qDevant: 0 };
+    OFFRES.push(O); mstat(v).posees++;
+    setTimeout(() => {                                                      // exécution au prix vu ou mieux, quantité alors affichée
+      let q = 0, c = 0; for (const [pp, z] of asksTries(id)) { if (pp > a0 + 1e-9) break; const x = Math.min(z, (50 - c) / (pp + FEE7(pp))); if (x <= 0) break; q += x; c += x * (pp + FEE7(pp)); }
+      if (q < MIN_PARTS_H) { O.etat = "manquee"; O.raison = "offre partie avant execution"; return; }
+      O.parts = +q.toFixed(2); O.remplP = O.remplR = O.remplO = O.parts; O.cout = +c.toFixed(4); O.prix = +(c / q).toFixed(4); O.etat = "executee"; O.premierRempl_ms = +(nowMs() - O.tPose).toFixed(1); mstat(v).remplies++;
+      for (const h of [1, 3, 5, 10]) setTimeout(() => { const m = milieu(id); if (m != null) for (const k of ["p", "r", "o"]) O.mo[k][h] = [q * (m - O.prix), q]; }, h * 1000);
+    }, O.lat_ms + 150);
+  } else if (evM >= 0.5) poser(v, mk, up, pm, 50, { mode: "maker", modeleCle: MODELE_REGLE(nom), modele: S.modele, a0, annulModele: 0.05, evPreneur: isFinite(evT) ? +evT.toFixed(2) : null, evMaker: +evM.toFixed(2) });
+}
+const MIN_PARTS_H = 5;
 // M0 TÉMOIN SANS SIGNAL : deux offres par cycle, à des instants et sur un côté tirés au hasard (entre 270 et 30 s de la fin), même prix et mêmes
 // annulations que M1 (30 s, 5 s de la fin), sans condition de modèle. Sert de comparaison à M1 et à toutes les variantes.
 // M2 : cotation permanente des deux côtés au prix du modèle moins une marge (5 c ou 10 c), arrondi au cent inférieur, toujours sous le vendeur.
@@ -442,7 +488,7 @@ function makerEvaluer(mk, tleft, ua, da, P) {
   for (const O of OFFRES) {                                               // annulations M0 / M1 / M3
     if (O.start !== mk.start || !(O.etat === "posee" || O.etat === "envoi") || O.tAnnulDemande) continue;
     const v = O.variante;
-    if (v.startsWith("M1") || v.startsWith("M0")) {
+    if (v.startsWith("M1") || v.startsWith("M0") || v.startsWith("M8")) {
       const pk = O.modeleCle ? P[O.modeleCle] : null, fair = pk == null ? null : (O.cote === "Up" ? pk : 1 - pk);
       if (tleft < 5) annuler(O, "5 s de la fin"); else if (t - O.tPose > 30000) annuler(O, "30 s");
       else if (O.annulModele && fair != null && fair - O.prix < O.annulModele) annuler(O, "modele a moins de 5 c");
@@ -488,6 +534,21 @@ function makerEvaluer(mk, tleft, ua, da, P) {
     const px = Math.min(Math.floor((fair - 0.05) * 100 + 1e-9) / 100, r2(ask - 0.01));
     coter(Q, "M4 retrait toxique", mk, up, px, tleft > 10 && tleft < 290 && t >= (Q[k + "pause"] || 0), { modele: +fair.toFixed(4), a0: ask, raisonHors: "toxique : " + (Q[k + "derniere"] || "") }, t);
   }
+  // M4a / M4b / M4c : M4 avec UNE SEULE condition (décomposition, 11.10.2026)
+  for (const up of sides) {
+    const X = toxMesurer(mk, up, t), k = up ? "U" : "D", fair = up ? P.pu : 1 - P.pu, ask = (up ? ua : da)[0];
+    const px = Math.min(Math.floor((fair - 0.05) * 100 + 1e-9) / 100, r2(ask - 0.01));
+    for (const [c, nom] of [["a", "M4a seul bourses -10 $"], ["b", "M4b seul flux agressif"], ["c", "M4c seul ventes Polymarket"]])
+      coter(Q, nom, mk, up, px, tleft > 10 && tleft < 290 && t - X[c] > 2000, { modele: +fair.toFixed(4), a0: ask, raisonHors: "toxique " + c }, t);
+  }
+  // M6 durée de vie : M2 marge 5 c, mais chaque offre est annulée après L ms ; la nouvelle n'est posée qu'après CONFIRMATION de l'annulation
+  // (aller-retour mesuré) ; les remplissages pendant le trajet de l'annulation sont comptés.
+  for (const L of [100, 250, 500, 1000]) for (const up of sides) {
+    const v = "M6 duree de vie " + L + " ms", k2 = v + (up ? "U" : "D"), S6 = Q[k2], fair = up ? P.pu : 1 - P.pu, ask = (up ? ua : da)[0];
+    if (S6 && S6.O && S6.O.etat === "posee" && !S6.O.tAnnulDemande && t - S6.O.tPose >= L) { annuler(S6.O, "duree de vie"); S6.depense += S6.O.remplR * S6.O.prix; S6.O = null; S6.attente = t + 2 * LAT(); }
+    const px = Math.min(Math.floor((fair - 0.05) * 100 + 1e-9) / 100, r2(ask - 0.01));
+    coter(Q, v, mk, up, px, tleft > 10 && tleft < 290 && t >= ((S6 && S6.attente) || 0), { modele: +fair.toFixed(4), a0: ask }, t);
+  }
   // M5
   for (const up of sides) {
     const id = up ? mk.up : mk.down, fair = up ? P.pu : 1 - P.pu, ask = (up ? ua : da)[0], bb = meilleurAcheteur(id);
@@ -506,8 +567,8 @@ function makerMenage(t) {                                                 // fin
     const O = OFFRES[i];
     if (t > O.start + 300 && (O.etat === "posee" || O.etat === "envoi")) { O.etat = "fin du cycle"; }
     const fini = !(O.etat === "posee" || O.etat === "envoi");
-    if (fini && !O.rec) { O.rec = true; try { if (REC[O.start]) REC[O.start].mk.push([O.variante, O.cote, O.prix, O.tPose, O.lat_ms, O.etat, O.qDevant, O.remplP, O.remplR, O.premierRempl_ms, O.restantPose_s, O.modele ?? null, O.acheteurPose, O.vendeurPose, O.niveauPose, O.tAnnulDemande || null, O.raison || null, O.evAttendue ?? null]); } catch (_) {} }
-    if (fini && O.remplR <= 0 && O.remplP <= 0 && !(O.variante.startsWith("M1") || O.variante.startsWith("M0"))) { OFFRES.splice(i, 1); continue; }
+    if (fini && !O.rec) { O.rec = true; try { if (REC[O.start]) REC[O.start].mk.push([O.variante, O.cote, O.prix, O.tPose, O.lat_ms, O.etat, O.qDevant, O.remplP, O.remplR, O.premierRempl_ms, O.restantPose_s, O.modele ?? null, O.acheteurPose, O.vendeurPose, O.niveauPose, O.tAnnulDemande || null, O.raison || null, O.evAttendue ?? null, O.remplO, O.annulP, O.annulR, O.mode || null]); } catch (_) {} }
+    if (fini && O.remplR <= 0 && O.remplP <= 0 && O.remplO <= 0 && !(O.variante.startsWith("M1") || O.variante.startsWith("M0") || O.variante.startsWith("M8"))) { OFFRES.splice(i, 1); continue; }
     if (fini && t > O.start + 300) { OFFRES.splice(i, 1); MAKER_FINIS.push(O); }
   }
   for (const s of Object.keys(QS)) if (+s < t - 900) delete QS[s];
@@ -518,7 +579,9 @@ async function makerReglements() {
     if (O.resultat || t < O.start + 360) continue;
     const g = await gagnantDe(O.start); if (g == null) continue;
     O.gagnant = g; O.gagne = g === O.cote;
-    O.resultat = { prudent: +(O.remplP * ((O.gagne ? 1 : 0) - O.prix)).toFixed(2), proportionnel: +(O.remplR * ((O.gagne ? 1 : 0) - O.prix)).toFixed(2) };
+    const g1 = O.gagne ? 1 : 0;
+    O.resultat = O.mode === "preneur" ? { prudent: +(O.remplP * g1 - (O.cout || 0)).toFixed(2), proportionnel: +(O.remplP * g1 - (O.cout || 0)).toFixed(2), optimiste: +(O.remplP * g1 - (O.cout || 0)).toFixed(2) }
+      : { prudent: +(O.remplP * (g1 - O.prix)).toFixed(2), proportionnel: +(O.remplR * (g1 - O.prix)).toFixed(2), optimiste: +(O.remplO * (g1 - O.prix)).toFixed(2) };
   }
 }
 setInterval(() => { try { makerMenage(now()); } catch (_) {} }, 2000);
