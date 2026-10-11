@@ -92,10 +92,17 @@ function recEv(id, row) {
   if (R.ev.length >= 120000) { R.coupe = true; return; }
   row.splice(3, 0, k); R.ev.push(row);
 }
+// flux agressifs par source (12.10.2026, H527-H530) : volume acheteur / vendeur (côté preneur) et nombre de transactions par tranche de 50 ms ;
+// liquidations Bybit. Coinbase : canal market_trades (côté preneur fourni). Aucune donnée inventée : une source sans côté n'est pas comptée.
+const FLOW = {};
+function flux50(src, cote, q, p) { const F = (FLOW[src] = FLOW[src] || { a: 0, v: 0, n: 0 }); if (cote === "a") F.a += q * p; else F.v += q * p; F.n++; }
 let exDernier = "";
 setInterval(() => {                                   // prix des sources toutes les 50 ms (seulement si un prix a changé)
   const t = nowMs(), start = Math.floor(t / 300000) * 300;
   const v = ["perp", "okx", "bn", "cb", "cl"].map((k) => (f[k] ? [f[k].p, f[k].tsSrc || null, +f[k].t.toFixed(3)] : null));
+  const fl = Object.keys(FLOW).length ? Object.fromEntries(Object.entries(FLOW).map(([k, x]) => [k, [Math.round(x.a), Math.round(x.v), x.n]])) : null;
+  for (const k of Object.keys(FLOW)) delete FLOW[k];
+  if (fl) recDe(start).fx = (recDe(start).fx || []), recDe(start).fx.push([+t.toFixed(1), fl]);
   const cle = JSON.stringify(v.map((x) => x && x[0])); if (cle === exDernier) return; exDernier = cle;
   recDe(start).ex.push([+t.toFixed(1), ...v]);
 }, 50);
@@ -295,13 +302,18 @@ function connecter(nom, url, abos, surMsg, ping, periode) {
 }
 function flux() {
   const muet = (k) => !WS[k] || now() - WS[k].msg > 20 || WS[k].ws.readyState > 1;
-  if (muet("perp")) connecter("perp", "wss://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args: ["publicTrade.BTCUSDT"] })],
-    (m) => { const x = (m.data || []).slice(-1)[0]; if ((m.topic || "").startsWith("publicTrade") && x) noter("perp", +x.p, +x.T); }, JSON.stringify({ op: "ping" }), 15000);
+  if (muet("perp")) connecter("perp", "wss://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args: ["publicTrade.BTCUSDT", "allLiquidation.BTCUSDT"] })],
+    (m) => { const tp = m.topic || "";
+      if (tp.startsWith("allLiquidation")) { for (const y of m.data || []) flux50("liq_bybit", y.S === "Buy" ? "v" : "a", +y.v, +y.p); return; }   // Buy = position longue liquidée → vente forcée
+      if (!tp.startsWith("publicTrade")) return; for (const y of m.data || []) flux50("perp", y.S === "Buy" ? "a" : "v", +y.v, +y.p);
+      const x = (m.data || []).slice(-1)[0]; if (x) noter("perp", +x.p, +x.T); }, JSON.stringify({ op: "ping" }), 15000);
   if (muet("okx")) connecter("okx", "wss://ws.okx.com:8443/ws/v5/public", [JSON.stringify({ op: "subscribe", args: [{ channel: "trades", instId: "BTC-USDT-SWAP" }] })],
-    (m) => { const x = (m.data || []).slice(-1)[0]; if (m.arg && m.arg.channel === "trades" && x) noter("okx", +x.px, +x.ts); }, "ping", 20000);
-  if (muet("bn")) connecter("bn", "wss://stream.binance.com:9443/ws/btcusdt@trade", [], (m) => { if (+m.p > 0) noter("bn", +m.p, +m.T); });
-  if (muet("cb")) connecter("cb", "wss://advanced-trade-ws.coinbase.com", [JSON.stringify({ type: "subscribe", product_ids: ["BTC-USD"], channel: "ticker" })],
-    (m) => { if (m.channel !== "ticker") return; for (const ev of m.events || []) for (const x of ev.tickers || []) if (x.product_id === "BTC-USD" && x.price) noter("cb", +x.price, Date.parse(m.timestamp)); });
+    (m) => { if (!(m.arg && m.arg.channel === "trades")) return; for (const y of m.data || []) flux50("okx", y.side === "buy" ? "a" : "v", +y.sz * 0.01, +y.px);
+      const x = (m.data || []).slice(-1)[0]; if (x) noter("okx", +x.px, +x.ts); }, "ping", 20000);
+  if (muet("bn")) connecter("bn", "wss://stream.binance.com:9443/ws/btcusdt@trade", [], (m) => { if (+m.p > 0) { flux50("bn", m.m ? "v" : "a", +m.q, +m.p); noter("bn", +m.p, +m.T); } });
+  if (muet("cb")) connecter("cb", "wss://advanced-trade-ws.coinbase.com", [JSON.stringify({ type: "subscribe", product_ids: ["BTC-USD"], channel: "ticker" }), JSON.stringify({ type: "subscribe", product_ids: ["BTC-USD"], channel: "market_trades" })],
+    (m) => { if (m.channel === "market_trades") { for (const ev of m.events || []) for (const y of ev.trades || []) flux50("cb", y.side === "BUY" ? "a" : "v", +y.size, +y.price); return; }
+      if (m.channel !== "ticker") return; for (const ev of m.events || []) for (const x of ev.tickers || []) if (x.product_id === "BTC-USD" && x.price) noter("cb", +x.price, Date.parse(m.timestamp)); });
   if (muet("cl")) connecter("cl", "wss://ws-live-data.polymarket.com", [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })],
     (m) => { if (m.topic !== "crypto_prices_chainlink") return; const p = m.payload || {}; if ((p.symbol || "").toUpperCase().startsWith("BTC") && +p.value > 0) noter("cl", +p.value, +p.timestamp); }, "PING", 5000);
 }
