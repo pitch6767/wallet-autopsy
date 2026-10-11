@@ -2926,17 +2926,74 @@
 ],
 "start": 1791708600,
 "slug": "btc-updown-5m-1791708600"
+},
+"2026-10-11T10:44:05.626Z|Down": {
+"heure": "2026-10-11T10:44:05.626Z",
+"cote": "Down",
+"prix": 0.9441,
+"parts": 53.19,
+"U": 0,
+"D": 53.19148936170213,
+"cash": 2.975489361702131,
+"net": 2.98,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.513,
+"restant_s": 54,
+"journal": [
+"245.6s désaccord 20 vu à 0.31 (modèle 0.512) ; 10 s plus tard Polymarket a rejoint le modèle → achat à 0.9441, 54 s restantes"
+],
+"start": 1791715200,
+"slug": "btc-updown-5m-1791715200"
+},
+"2026-10-11T10:36:10.791Z|Down": {
+"heure": "2026-10-11T10:36:10.791Z",
+"cote": "Down",
+"prix": 0.3997,
+"parts": 131.58,
+"U": 0,
+"D": 131.57894736842104,
+"cash": 78.98892563705263,
+"net": 78.99,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.488,
+"restant_s": 229,
+"journal": [
+"70.8s désaccord 20 vu à 0.28 (modèle 0.483) ; 10 s plus tard Polymarket a rejoint le modèle → achat à 0.3997, 229 s restantes"
+],
+"start": 1791714900,
+"slug": "btc-updown-5m-1791714900"
+},
+"2026-10-11T10:16:08.347Z|Up": {
+"heure": "2026-10-11T10:16:08.347Z",
+"cote": "Up",
+"prix": 0.397,
+"parts": 131.58,
+"U": 131.57894736842104,
+"D": 0,
+"cash": -52.23199999999999,
+"net": -52.23,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.487,
+"restant_s": 232,
+"journal": [
+"68.3s désaccord 20 vu à 0.27 (modèle 0.487) ; 10 s plus tard Polymarket a rejoint le modèle → achat à 0.397, 232 s restantes"
+],
+"start": 1791713700,
+"slug": "btc-updown-5m-1791713700"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 30,
-"gains": 13,
-"pertes": 17,
-"pnl": -399.75
+"n": 33,
+"gains": 15,
+"pertes": 18,
+"pnl": -370.01
 },
-"n_sauves": 154,
-"maj": "2026-10-11 10:02 UTC",
+"n_sauves": 157,
+"maj": "2026-10-11 10:52 UTC",
 "archive": [
 [
 "2026-10-09T06:02:51.270Z",
@@ -3783,6 +3840,33 @@
 "perdu",
 0.455,
 288
+],
+[
+"2026-10-11T10:16:08.347Z",
+"Up",
+0.397,
+-52.23,
+"perdu",
+0.487,
+232
+],
+[
+"2026-10-11T10:36:10.791Z",
+"Down",
+0.3997,
+78.99,
+"gagné",
+0.488,
+229
+],
+[
+"2026-10-11T10:44:05.626Z",
+"Down",
+0.9441,
+2.98,
+"gagné",
+0.513,
+54
 ]
 ]
 }
