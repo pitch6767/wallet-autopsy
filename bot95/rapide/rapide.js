@@ -72,7 +72,25 @@ const zlib = require("zlib");
 const REC = {};
 const recDe = (start) => (REC[start] = REC[start] || { start, version: VERSION, ev: [], ex: [], snap: [], sig: [], dec: [], nEv: 0, coupe: false });
 const tokIdx = (id) => { for (const s of Object.keys(M)) { const m = M[s]; if (m.up === id) return [+s, 0]; if (m.down === id) return [+s, 1]; } return [null, null]; };
-function recEv(id, row) { const [st, k] = tokIdx(id); if (st == null) return; const R = recDe(st); R.nEv++; if (R.ev.length >= 150000) { R.coupe = true; return; } row.splice(3, 0, k); R.ev.push(row); }
+// Volume mesuré le 11.10 : ~700 messages/s. Les carnets Up et Down sont miroirs (vérifié sur 100 % des lignes) : on garde le carnet Up seulement,
+// les changements de niveau à 3 c ou moins du meilleur prix, un carnet complet toutes les 10 s, et TOUTES les transactions des deux jetons.
+const PRES = 0.03;
+function recEv(id, row) {
+  const [st, k] = tokIdx(id); if (st == null) return; const R = recDe(st); R.nEv++;
+  if (row[0] !== "T") {
+    if (k !== 0) return;
+    if (row[0] === "B") { if (R.dernierB && row[1] - R.dernierB < 10000) return; R.dernierB = row[1]; }
+    if (row[0] === "P") {
+      const L = livres[id]; if (L) {
+        const side = row[3], p = row[4];
+        const best = side === 0 ? Math.max(0, ...[...L.bids].filter((x) => x[1] > 0).map((x) => x[0])) : Math.min(1, ...[...L.asks].filter((x) => x[1] > 0).map((x) => x[0]));
+        if ((side === 0 ? best - p : p - best) > PRES + 1e-9) return;
+      }
+    }
+  }
+  if (R.ev.length >= 120000) { R.coupe = true; return; }
+  row.splice(3, 0, k); R.ev.push(row);
+}
 let exDernier = "";
 setInterval(() => {                                   // prix des sources toutes les 50 ms (seulement si un prix a changé)
   const t = nowMs(), start = Math.floor(t / 300000) * 300;
@@ -90,6 +108,13 @@ function recFinir() {                                 // cycles terminés depuis
   for (const s of Object.keys(REC)) {
     const R = REC[s]; if (t < +s + 310) continue; delete REC[s];
     const m = M[s] || {}; R.marche = { slug: m.slug || null, up: m.up || null, down: m.down || null, strike: m.strike || null };
+    // encodage compact : P = [écart en ms depuis le P précédent, retard Polymarket ms, côté 0 achat/1 vente, prix en cents, taille ×100]
+    let prev = 0; const P = [], autres = [];
+    for (const e of R.ev) {
+      if (e[0] === "P") { const t = Math.round(e[1]); P.push([t - prev, e[2] ? Math.round(e[1] - e[2]) : null, e[4], Math.round(e[5] * 100), Math.round(e[6] * 100)]); prev = t; }
+      else autres.push(e);
+    }
+    R.ev = autres; R.p = P; R.format = "p=[dt_ms,retard_ms,cote,cents,taille*100] (jeton Up, ±3 c du meilleur) ; ev = B (carnet complet Up /10 s) et T (transactions des 2 jetons)";
     let gz; try { gz = zlib.gzipSync(JSON.stringify(R)); } catch (e) { log("compression", e.message); continue; }
     STAT.dernierCycle = { start: +s, ev: R.nEv, ex: R.ex.length, octets: gz.length, coupe: R.coupe };
     try { const d = new Date(+s * 1000).toISOString().slice(0, 10), dir = DIR + "/cycles/" + d; fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(dir + "/" + s + ".json.gz", gz); } catch (e) { log("disque", e.message); }
