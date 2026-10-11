@@ -12,9 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pip install numpy
-      - run: python3 etude/bot5min/r1_latence.py
+      - run: python3 etude/bot5min/r1_latence.py && python3 etude/bot5min/validation_b0b1_vivant.py
       - run: |
           git config user.name "bot95" && git config user.email "bot95@users.noreply.github.com"
-          git add etude/bot5min/resultat_r1_latence.md
+          git add etude/bot5min/resultat_r1_latence.md etude/bot5min/resultat_validation_b0b1_vivant.md
           git diff --cached --quiet || git commit -q -m "R1 garde latence : mise à jour [skip ci]"
           for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push -q && break; sleep 7; done
