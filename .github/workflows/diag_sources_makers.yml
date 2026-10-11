@@ -1,0 +1,16 @@
+name: Diagnostic sources makers
+on:
+  push:
+    branches: [main]
+    paths: [bot95/diag_makers_go.txt]
+permissions:
+  contents: write
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 etude/bot5min/diag_sources_makers.py || true
+          git config user.name diag; git config user.email bot@users.noreply.github.com
+          git add bot95/diag_sources_makers.json; git commit -q -m "Diagnostic sources makers [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
