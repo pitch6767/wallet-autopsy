@@ -684,5 +684,1338 @@
 "prudent": -50,
 "proportionnel": -50
 }
+},
+{
+"oid": "1791716400:313",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716400,
+"cote": "Up",
+"prix": 0.36,
+"parts": 138.89,
+"tPose": 1791716410024.1,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 15,
+"qp": 0,
+"qr": 4.055,
+"remplP": 2.195,
+"remplR": 0,
+"premierRempl_ms": 898.1,
+"rempl": [
+[
+898.1,
+"p",
+2.2
+]
+],
+"modele": 0.4707,
+"a0": 0.37,
+"tArrivee": 1791716410039.5,
+"tAnnulDemande": 1791716411108.3,
+"raison": "re-cotation",
+"tAnnulee": 1791716411123.5,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"prudent": 1.4,
+"proportionnel": 0
+}
+},
+{
+"oid": "1791716400:315",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716400,
+"cote": "Up",
+"prix": 0.36,
+"parts": 138.89,
+"tPose": 1791716410024.3,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 15,
+"qp": 0,
+"qr": 0,
+"remplP": 2.195,
+"remplR": 3.125,
+"premierRempl_ms": 897.9,
+"rempl": [
+[
+897.9,
+"p",
+2.2
+],
+[
+897.9,
+"r",
+3.13
+]
+],
+"modele": 0.4707,
+"a0": 0.37,
+"tArrivee": 1791716410039.6,
+"tAnnulDemande": 1791716411108.4,
+"raison": "re-cotation",
+"tAnnulee": 1791716411123.5,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"prudent": 1.4,
+"proportionnel": 2
+}
+},
+{
+"oid": "1791716400:321",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716400,
+"cote": "Up",
+"prix": 0.33,
+"parts": 151.52,
+"tPose": 1791716411526.9,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 9.62,
+"qp": 0,
+"qr": 0,
+"remplP": 150.2973,
+"remplR": 140.6773,
+"premierRempl_ms": 31.5,
+"rempl": [
+[
+31.5,
+"p",
+150.3
+],
+[
+31.6,
+"r",
+140.68
+]
+],
+"modele": 0.47,
+"a0": 0.34,
+"tArrivee": 1791716411542.3,
+"tAnnulDemande": 1791716411578.3,
+"raison": "re-cotation",
+"tAnnulee": 1791716411593,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"prudent": 100.7,
+"proportionnel": 94.25
+}
+},
+{
+"oid": "1791716400:322",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716400,
+"cote": "Up",
+"prix": 0.33,
+"parts": 148.11,
+"tPose": 1791716411526.9,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 9.62,
+"qp": 0,
+"qr": 0,
+"remplP": 148.11,
+"remplR": 140.6773,
+"premierRempl_ms": 31.6,
+"rempl": [
+[
+31.6,
+"p",
+148.11
+],
+[
+31.6,
+"r",
+140.68
+]
+],
+"modele": 0.47,
+"a0": 0.34,
+"tArrivee": 1791716411542.3,
+"tAnnulDemande": 1791716411578.3,
+"raison": "re-cotation",
+"tAnnulee": 1791716411593,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"prudent": 99.23,
+"proportionnel": 94.25
+}
+},
+{
+"oid": "1791716400:337",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716400,
+"cote": "Up",
+"prix": 0.28,
+"parts": 12.77,
+"tPose": 1791716415705.6,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 341,
+"qp": 0,
+"qr": 0,
+"remplP": 12.77,
+"remplR": 11.3889,
+"premierRempl_ms": 278.4,
+"rempl": [
+[
+278.4,
+"p",
+12.77
+],
+[
+675.8,
+"r",
+1.39
+],
+[
+753.6,
+"r",
+5
+],
+[
+833.3,
+"r",
+5
+]
+],
+"modele": 0.47,
+"a0": 0.29,
+"tArrivee": 1791716415720.9,
+"tAnnulDemande": 1791716416542.1,
+"raison": "hors zone",
+"tAnnulee": 1791716416557.7,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"prudent": 9.19,
+"proportionnel": 8.2
+}
+},
+{
+"oid": "1791716400:338",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716400,
+"cote": "Up",
+"prix": 0.28,
+"parts": 8.76,
+"tPose": 1791716415705.7,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 341,
+"qp": 0,
+"qr": 0,
+"remplP": 8.76,
+"remplR": 6.3889,
+"premierRempl_ms": 278.3,
+"rempl": [
+[
+278.3,
+"p",
+8.76
+],
+[
+675.7,
+"r",
+1.39
+],
+[
+753.5,
+"r",
+5
+]
+],
+"modele": 0.47,
+"a0": 0.29,
+"tArrivee": 1791716415720.9,
+"tAnnulDemande": 1791716416460.1,
+"raison": "hors zone",
+"tAnnulee": 1791716416475.2,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"prudent": 6.31,
+"proportionnel": 4.6
+}
+},
+{
+"oid": "1791716400:349",
+"variante": "M1 V2-F incertitude 0,01 %",
+"start": 1791716400,
+"cote": "Up",
+"prix": 0.34,
+"parts": 147.06,
+"tPose": 1791716437920.5,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 824.51,
+"qp": 91,
+"qr": 0,
+"remplP": 0,
+"remplR": 0,
+"premierRempl_ms": null,
+"rempl": [],
+"modeleCle": "pu01",
+"modele": 0.5501,
+"a0": 0.35,
+"tArrivee": 1791716437934.8,
+"tAnnulDemande": 1791716467924.2,
+"raison": "30 s",
+"tAnnulee": 1791716467939,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"prudent": 0,
+"proportionnel": 0
+}
+},
+{
+"oid": "1791716400:352",
+"variante": "M1 cohorte B : V2-F corrige 0,015 %",
+"start": 1791716400,
+"cote": "Up",
+"prix": 0.34,
+"parts": 147.06,
+"tPose": 1791716437937.4,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 829.51,
+"qp": 91,
+"qr": 0,
+"remplP": 0,
+"remplR": 0,
+"premierRempl_ms": null,
+"rempl": [],
+"modeleCle": "pu015",
+"modele": 0.5628,
+"a0": 0.35,
+"tArrivee": 1791716437951.8,
+"tAnnulDemande": 1791716467942.3,
+"raison": "30 s",
+"tAnnulee": 1791716467957.3,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"prudent": 0,
+"proportionnel": 0
+}
+},
+{
+"oid": "1791716400:355",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716400,
+"cote": "Down",
+"prix": 0.43,
+"parts": 116.28,
+"tPose": 1791716438179.6,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 0,
+"qp": 0,
+"qr": 0,
+"remplP": 116.28,
+"remplR": 116.28,
+"premierRempl_ms": 86.6,
+"rempl": [
+[
+86.6,
+"p",
+116.28
+],
+[
+86.6,
+"r",
+116.28
+]
+],
+"modele": 0.4814,
+"a0": 0.62,
+"tArrivee": 1791716438194.3,
+"tAnnulDemande": 1791716438266.2,
+"raison": "hors zone",
+"tAnnulee": 1791716438280.9,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -50,
+"proportionnel": -50
+}
+},
+{
+"oid": "1791716400:356",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716400,
+"cote": "Down",
+"prix": 0.38,
+"parts": 131.58,
+"tPose": 1791716438179.6,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 0,
+"qp": 0,
+"qr": 0,
+"remplP": 43.5235,
+"remplR": 43.5235,
+"premierRempl_ms": 153.4,
+"rempl": [
+[
+153.4,
+"p",
+43.52
+],
+[
+153.4,
+"r",
+43.52
+]
+],
+"modele": 0.4814,
+"a0": 0.62,
+"tArrivee": 1791716438194.3,
+"tAnnulDemande": 1791716438750.1,
+"raison": "re-cotation",
+"tAnnulee": 1791716438764.8,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -16.54,
+"proportionnel": -16.54
+}
+},
+{
+"oid": "1791716400:380",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716400,
+"cote": "Down",
+"prix": 0.39,
+"parts": 85.8,
+"tPose": 1791716472932.1,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 75.96,
+"qp": 0,
+"qr": 13.220829156487566,
+"remplP": 10.2429,
+"remplR": 0,
+"premierRempl_ms": 373.3,
+"rempl": [
+[
+373.3,
+"p",
+3.19
+],
+[
+3051,
+"p",
+5.41
+],
+[
+3090.5,
+"p",
+1.64
+]
+],
+"modele": 0.4974,
+"a0": 0.4,
+"tArrivee": 1791716472947.1,
+"tAnnulDemande": 1791716477688.1,
+"raison": "re-cotation",
+"tAnnulee": 1791716477703.2,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -3.99,
+"proportionnel": 0
+}
+},
+{
+"oid": "1791716400:387",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716400,
+"cote": "Down",
+"prix": 0.39,
+"parts": 85.8,
+"tPose": 1791716482435.3,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 50,
+"qp": 22.687213999999997,
+"qr": 0,
+"remplP": 0,
+"remplR": 22.2237,
+"premierRempl_ms": 5324.5,
+"rempl": [
+[
+5324.6,
+"r",
+1.76
+],
+[
+7053.5,
+"r",
+16.39
+],
+[
+8406.5,
+"r",
+2.43
+],
+[
+9110.6,
+"r",
+1.64
+]
+],
+"modele": 0.5027,
+"a0": 0.4,
+"tArrivee": 1791716482450.1,
+"tAnnulDemande": 1791716493551.8,
+"raison": "re-cotation",
+"tAnnulee": 1791716493566.9,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": 0,
+"proportionnel": -8.67
+}
+},
+{
+"oid": "1791716400:396",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716400,
+"cote": "Down",
+"prix": 0.4,
+"parts": 61.98,
+"tPose": 1791716503142.9,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 108.33,
+"qp": 0,
+"qr": 0,
+"remplP": 61.98,
+"remplR": 61.98,
+"premierRempl_ms": 15654.7,
+"rempl": [
+[
+15654.7,
+"p",
+61.98
+],
+[
+15654.7,
+"r",
+61.98
+]
+],
+"modele": 0.5001,
+"a0": 0.44,
+"tArrivee": 1791716503158,
+"tAnnulDemande": 1791716518800.2,
+"raison": "hors zone",
+"tAnnulee": 1791716518816.7,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -24.79,
+"proportionnel": -24.79
+}
+},
+{
+"oid": "1791716400:397",
+"variante": "M1 V2-F ecart qui grandit",
+"start": 1791716400,
+"cote": "Down",
+"prix": 0.29,
+"parts": 172.41,
+"tPose": 1791716556227.1,
+"lat_ms": 15,
+"etat": "remplie",
+"qDevant": 50,
+"qp": 0,
+"qr": 0,
+"remplP": 172.41,
+"remplR": 172.41,
+"premierRempl_ms": 12865.2,
+"rempl": [
+[
+12865.2,
+"p",
+172.41
+],
+[
+12865.2,
+"r",
+172.41
+]
+],
+"modeleCle": "pu",
+"modele": 0.5049,
+"a0": 0.3,
+"tArrivee": 1791716556242.8,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -50,
+"proportionnel": -50
+}
+},
+{
+"oid": "1791716400:398",
+"variante": "M1 desaccord 20 60-180 s",
+"start": 1791716400,
+"cote": "Down",
+"prix": 0.29,
+"parts": 172.41,
+"tPose": 1791716556227.2,
+"lat_ms": 15,
+"etat": "remplie",
+"qDevant": 50,
+"qp": 0,
+"qr": 0,
+"remplP": 172.41,
+"remplR": 172.41,
+"premierRempl_ms": 12865.1,
+"rempl": [
+[
+12865.1,
+"p",
+172.41
+],
+[
+12865.1,
+"r",
+172.41
+]
+],
+"modeleCle": "pu",
+"modele": 0.5049,
+"a0": 0.3,
+"tArrivee": 1791716556242.8,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -50,
+"proportionnel": -50
+}
+},
+{
+"oid": "1791716400:399",
+"variante": "M1 desaccord 30",
+"start": 1791716400,
+"cote": "Down",
+"prix": 0.12,
+"parts": 416.67,
+"tPose": 1791716583883.1,
+"lat_ms": 15,
+"etat": "remplie",
+"qDevant": 5,
+"qp": 0,
+"qr": 0,
+"remplP": 416.67,
+"remplR": 416.67,
+"premierRempl_ms": 635.3,
+"rempl": [
+[
+635.3,
+"p",
+5
+],
+[
+635.3,
+"r",
+5
+],
+[
+732.3,
+"p",
+411.67
+],
+[
+732.3,
+"r",
+411.67
+]
+],
+"modeleCle": "pu",
+"modele": 0.4471,
+"a0": 0.13,
+"tArrivee": 1791716583898.4,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"prudent": -50,
+"proportionnel": -50
+}
+},
+{
+"oid": "1791716700:400",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716700,
+"cote": "Up",
+"prix": 0.4,
+"parts": 125,
+"tPose": 1791716710002.3,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 934.44,
+"qp": 0,
+"qr": 10.256993289016435,
+"remplP": 6,
+"remplR": 0,
+"premierRempl_ms": 1298.6,
+"rempl": [
+[
+1298.6,
+"p",
+1
+],
+[
+1511.3,
+"p",
+5
+]
+],
+"modele": 0.5001,
+"a0": 0.41,
+"tArrivee": 1791716710017.5,
+"tAnnulDemande": 1791716711540.9,
+"raison": "re-cotation",
+"tAnnulee": 1791716711555.9,
+"gagnant": "Down",
+"gagne": false,
+"resultat": {
+"prudent": -2.4,
+"proportionnel": 0
+}
+},
+{
+"oid": "1791716700:405",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716700,
+"cote": "Up",
+"prix": 0.39,
+"parts": 128.21,
+"tPose": 1791716711012.7,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 139,
+"qp": 0,
+"qr": 0,
+"remplP": 2.1639,
+"remplR": 12.1639,
+"premierRempl_ms": 2857.4,
+"rempl": [
+[
+2857.4,
+"r",
+5.16
+],
+[
+3240.7,
+"p",
+2.16
+],
+[
+3240.7,
+"r",
+7
+]
+],
+"modele": 0.5,
+"a0": 0.41,
+"tArrivee": 1791716711027.1,
+"tAnnulDemande": 1791716715803.4,
+"raison": "re-cotation",
+"tAnnulee": 1791716715817.4,
+"gagnant": "Down",
+"gagne": false,
+"resultat": {
+"prudent": -0.84,
+"proportionnel": -4.74
+}
+},
+{
+"oid": "1791716700:407",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716700,
+"cote": "Up",
+"prix": 0.39,
+"parts": 128.21,
+"tPose": 1791716711540.9,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 25,
+"qp": 0,
+"qr": 0,
+"remplP": 104.9932,
+"remplR": 110.074,
+"premierRempl_ms": 2329.2,
+"rempl": [
+[
+2329.2,
+"r",
+0.24
+],
+[
+2712.5,
+"p",
+2.16
+],
+[
+2712.5,
+"r",
+7
+],
+[
+4510.9,
+"p",
+5
+],
+[
+4510.9,
+"r",
+5
+],
+[
+7987.8,
+"p",
+1.64
+],
+[
+7987.8,
+"r",
+1.64
+],
+[
+8716.5,
+"p",
+96.19
+],
+[
+8716.5,
+"r",
+96.19
+]
+],
+"modele": 0.5,
+"a0": 0.4,
+"tArrivee": 1791716711555.9,
+"tAnnulDemande": 1791716720243.6,
+"raison": "re-cotation",
+"tAnnulee": 1791716720257.9,
+"gagnant": "Down",
+"gagne": false,
+"resultat": {
+"prudent": -40.95,
+"proportionnel": -42.93
+}
+},
+{
+"oid": "1791716700:426",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716700,
+"cote": "Up",
+"prix": 0.39,
+"parts": 116.04,
+"tPose": 1791716718923.9,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 52.83,
+"qp": 0,
+"qr": 0,
+"remplP": 96.19,
+"remplR": 46.6393,
+"premierRempl_ms": 1333.5,
+"rempl": [
+[
+1333.5,
+"p",
+96.19
+],
+[
+1333.5,
+"r",
+46.64
+]
+],
+"modele": 0.4995,
+"a0": 0.4,
+"tArrivee": 1791716718939,
+"tAnnulDemande": 1791716720243.7,
+"raison": "re-cotation",
+"tAnnulee": 1791716720258,
+"gagnant": "Down",
+"gagne": false,
+"resultat": {
+"prudent": -37.51,
+"proportionnel": -18.19
+}
+},
+{
+"oid": "1791716700:430",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716700,
+"cote": "Up",
+"prix": 0.37,
+"parts": 120.5,
+"tPose": 1791716720293.6,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 209.92,
+"qp": 0,
+"qr": 0,
+"remplP": 120.5,
+"remplR": 120.5,
+"premierRempl_ms": 1868.9,
+"rempl": [
+[
+1868.9,
+"p",
+120.5
+],
+[
+1869,
+"r",
+120.5
+]
+],
+"modele": 0.4994,
+"a0": 0.38,
+"tArrivee": 1791716720307.9,
+"tAnnulDemande": 1791716722163.7,
+"raison": "hors zone",
+"tAnnulee": 1791716722179.3,
+"gagnant": "Down",
+"gagne": false,
+"resultat": {
+"prudent": -44.59,
+"proportionnel": -44.59
+}
+},
+{
+"oid": "1791716700:431",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716700,
+"cote": "Up",
+"prix": 0.37,
+"parts": 122.31,
+"tPose": 1791716720293.7,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 209.92,
+"qp": 0,
+"qr": 0,
+"remplP": 122.31,
+"remplR": 122.31,
+"premierRempl_ms": 1868.9,
+"rempl": [
+[
+1868.9,
+"p",
+122.31
+],
+[
+1868.9,
+"r",
+122.31
+]
+],
+"modele": 0.4994,
+"a0": 0.38,
+"tArrivee": 1791716720308,
+"tAnnulDemande": 1791716722163.7,
+"raison": "hors zone",
+"tAnnulee": 1791716722179.3,
+"gagnant": "Down",
+"gagne": false,
+"resultat": {
+"prudent": -45.25,
+"proportionnel": -45.25
+}
+},
+{
+"oid": "1791716700:462",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716700,
+"cote": "Down",
+"prix": 0.41,
+"parts": 121.95,
+"tPose": 1791716761525.2,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 30,
+"qp": 0,
+"qr": 24.915254,
+"remplP": 5.0847,
+"remplR": 0,
+"premierRempl_ms": 232.9,
+"rempl": [
+[
+232.9,
+"p",
+5.08
+]
+],
+"modele": 0.5079,
+"a0": 0.42,
+"tArrivee": 1791716761540.2,
+"tAnnulDemande": 1791716761755.8,
+"raison": "re-cotation",
+"tAnnulee": 1791716761770.8,
+"gagnant": "Down",
+"gagne": true,
+"resultat": {
+"prudent": 3,
+"proportionnel": 0
+}
+},
+{
+"oid": "1791716700:467",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716700,
+"cote": "Down",
+"prix": 0.39,
+"parts": 128.21,
+"tPose": 1791716764328.1,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 36,
+"qp": 18.360657,
+"qr": 0,
+"remplP": 0,
+"remplR": 1.6393,
+"premierRempl_ms": 2161,
+"rempl": [
+[
+2161,
+"r",
+1.64
+]
+],
+"modele": 0.4817,
+"a0": 0.4,
+"tArrivee": 1791716764343.1,
+"tAnnulDemande": 1791716767695.2,
+"raison": "re-cotation",
+"tAnnulee": 1791716767709.6,
+"gagnant": "Down",
+"gagne": true,
+"resultat": {
+"prudent": 0,
+"proportionnel": 1
+}
+},
+{
+"oid": "1791716700:487",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716700,
+"cote": "Down",
+"prix": 0.4,
+"parts": 125,
+"tPose": 1791716769759.2,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 75,
+"qp": 0,
+"qr": 0,
+"remplP": 20,
+"remplR": 20,
+"premierRempl_ms": 3011.7,
+"rempl": [
+[
+3011.7,
+"p",
+20
+],
+[
+3011.7,
+"r",
+20
+]
+],
+"modele": 0.502,
+"a0": 0.45,
+"tArrivee": 1791716769774.6,
+"tAnnulDemande": 1791716772941.5,
+"raison": "re-cotation",
+"tAnnulee": 1791716772956.2,
+"gagnant": "Down",
+"gagne": true,
+"resultat": {
+"prudent": 12,
+"proportionnel": 12
+}
+},
+{
+"oid": "1791716700:490",
+"variante": "M2 cotation marge 5 c",
+"start": 1791716700,
+"cote": "Down",
+"prix": 0.41,
+"parts": 120.39,
+"tPose": 1791716772708.6,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 0,
+"qp": 0,
+"qr": 0,
+"remplP": 120.39,
+"remplR": 120.39,
+"premierRempl_ms": 62.3,
+"rempl": [
+[
+62.3,
+"p",
+120.39
+],
+[
+62.3,
+"r",
+120.39
+]
+],
+"modele": 0.503,
+"a0": 0.42,
+"tArrivee": 1791716772723.6,
+"tAnnulDemande": 1791716772871.1,
+"raison": "hors zone",
+"tAnnulee": 1791716772886,
+"gagnant": "Down",
+"gagne": true,
+"resultat": {
+"prudent": 71.03,
+"proportionnel": 71.03
+}
+},
+{
+"oid": "1791716700:497",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716700,
+"cote": "Down",
+"prix": 0.39,
+"parts": 107.69,
+"tPose": 1791716775327.4,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 10,
+"qp": 0,
+"qr": 0,
+"remplP": 0,
+"remplR": 2.5,
+"premierRempl_ms": 412.6,
+"rempl": [
+[
+412.6,
+"r",
+2.5
+]
+],
+"modele": 0.5025,
+"a0": 0.4,
+"tArrivee": 1791716775342.1,
+"tAnnulDemande": 1791716776350,
+"raison": "re-cotation",
+"tAnnulee": 1791716776364.9,
+"gagnant": "Down",
+"gagne": true,
+"resultat": {
+"prudent": 0,
+"proportionnel": 1.52
+}
+},
+{
+"oid": "1791716700:528",
+"variante": "M2 cotation marge 10 c",
+"start": 1791716700,
+"cote": "Down",
+"prix": 0.4,
+"parts": 102.56,
+"tPose": 1791716827743.2,
+"lat_ms": 15,
+"etat": "annulee",
+"qDevant": 30,
+"qp": 0,
+"qr": 0.008731936835979625,
+"remplP": 102.56,
+"remplR": 102.56,
+"premierRempl_ms": 8419.9,
+"rempl": [
+[
+8419.9,
+"p",
+102.56
+],
+[
+8419.9,
+"r",
+102.56
+]
+],
+"modele": 0.5009,
+"a0": 0.58,
+"tArrivee": 1791716827757.7,
+"tAnnulDemande": 1791716836163.2,
+"raison": "hors zone",
+"tAnnulee": 1791716836178.4,
+"gagnant": "Down",
+"gagne": true,
+"resultat": {
+"prudent": 61.54,
+"proportionnel": 61.54
+}
+},
+{
+"oid": "1791716700:529",
+"variante": "M1 V2-F ecart qui grandit",
+"start": 1791716700,
+"cote": "Down",
+"prix": 0.28,
+"parts": 178.57,
+"tPose": 1791716878554.8,
+"lat_ms": 15,
+"etat": "rejetee",
+"qDevant": null,
+"qp": null,
+"qr": null,
+"remplP": 0,
+"remplR": 0,
+"premierRempl_ms": null,
+"rempl": [],
+"modeleCle": "pu",
+"modele": 0.5017,
+"a0": 0.29,
+"raison": "croiserait le vendeur (post only)",
+"gagnant": "Down",
+"gagne": true,
+"resultat": {
+"prudent": 0,
+"proportionnel": 0
+}
+},
+{
+"oid": "1791716700:530",
+"variante": "M1 V2-F incertitude 0,01 %",
+"start": 1791716700,
+"cote": "Down",
+"prix": 0.28,
+"parts": 178.57,
+"tPose": 1791716878554.9,
+"lat_ms": 15,
+"etat": "rejetee",
+"qDevant": null,
+"qp": null,
+"qr": null,
+"remplP": 0,
+"remplR": 0,
+"premierRempl_ms": null,
+"rempl": [],
+"modeleCle": "pu01",
+"modele": 0.5095,
+"a0": 0.29,
+"raison": "croiserait le vendeur (post only)",
+"gagnant": "Down",
+"gagne": true,
+"resultat": {
+"prudent": 0,
+"proportionnel": 0
+}
+},
+{
+"oid": "1791716700:531",
+"variante": "M1 cohorte B : V2-F corrige 0,015 %",
+"start": 1791716700,
+"cote": "Down",
+"prix": 0.28,
+"parts": 178.57,
+"tPose": 1791716878555.7,
+"lat_ms": 15,
+"etat": "rejetee",
+"qDevant": null,
+"qp": null,
+"qr": null,
+"remplP": 0,
+"remplR": 0,
+"premierRempl_ms": null,
+"rempl": [],
+"modeleCle": "pu015",
+"modele": 0.5074,
+"a0": 0.29,
+"raison": "croiserait le vendeur (post only)",
+"gagnant": "Down",
+"gagne": true,
+"resultat": {
+"prudent": 0,
+"proportionnel": 0
+}
+},
+{
+"oid": "1791716700:532",
+"variante": "M1 desaccord 20 60-180 s",
+"start": 1791716700,
+"cote": "Down",
+"prix": 0.28,
+"parts": 178.57,
+"tPose": 1791716878555.8,
+"lat_ms": 15,
+"etat": "rejetee",
+"qDevant": null,
+"qp": null,
+"qr": null,
+"remplP": 0,
+"remplR": 0,
+"premierRempl_ms": null,
+"rempl": [],
+"modeleCle": "pu",
+"modele": 0.5017,
+"a0": 0.29,
+"raison": "croiserait le vendeur (post only)",
+"gagnant": "Down",
+"gagne": true,
+"resultat": {
+"prudent": 0,
+"proportionnel": 0
+}
+},
+{
+"oid": "1791716700:533",
+"variante": "M1 desaccord 30",
+"start": 1791716700,
+"cote": "Down",
+"prix": 0.19,
+"parts": 263.16,
+"tPose": 1791716885016.1,
+"lat_ms": 15,
+"etat": "remplie",
+"qDevant": 0,
+"qp": 0,
+"qr": 0,
+"remplP": 263.16,
+"remplR": 263.16,
+"premierRempl_ms": 36.5,
+"rempl": [
+[
+36.5,
+"p",
+263.16
+],
+[
+36.5,
+"r",
+263.16
+]
+],
+"modeleCle": "pu",
+"modele": 0.5031,
+"a0": 0.2,
+"tArrivee": 1791716885031.6,
+"gagnant": "Down",
+"gagne": true,
+"resultat": {
+"prudent": 213.16,
+"proportionnel": 213.16
+}
 }
 ]
