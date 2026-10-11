@@ -12559,17 +12559,74 @@
 ],
 "start": 1791717000,
 "slug": "btc-updown-5m-1791717000"
+},
+"2026-10-11T11:37:54.738Z|Up": {
+"heure": "2026-10-11T11:37:54.738Z",
+"cote": "Up",
+"prix": 0.1312,
+"parts": 222.49,
+"U": 222.49,
+"D": 0,
+"cash": -29.180935968,
+"net": -29.18,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.437,
+"restant_s": 125,
+"journal": [
+"174.7s écart 0.32, 125 s restantes → achat Up 222.5 parts à 0.1312 (modèle 0.437)"
+],
+"start": 1791718500,
+"slug": "btc-updown-5m-1791718500"
+},
+"2026-10-11T11:30:45.448Z|Down": {
+"heure": "2026-10-11T11:30:45.448Z",
+"cote": "Down",
+"prix": 0.2635,
+"parts": 200,
+"U": 0,
+"D": 200,
+"cash": 147.3,
+"net": 147.3,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.457,
+"restant_s": 255,
+"journal": [
+"45.4s écart 0.21, 255 s restantes → achat Down 200.0 parts à 0.2635 (modèle 0.457)"
+],
+"start": 1791718200,
+"slug": "btc-updown-5m-1791718200"
+},
+"2026-10-11T11:26:34.915Z|Down": {
+"heure": "2026-10-11T11:26:34.915Z",
+"cote": "Down",
+"prix": 0.3357,
+"parts": 156.25,
+"U": 0,
+"D": 156.25,
+"cash": -52.448,
+"net": -52.45,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.521,
+"restant_s": 205,
+"journal": [
+"94.9s écart 0.20, 205 s restantes → achat Down 156.3 parts à 0.3357 (modèle 0.521)"
+],
+"start": 1791717900,
+"slug": "btc-updown-5m-1791717900"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 283,
-"gains": 58,
-"pertes": 225,
-"pnl": -3572.609999999999
+"n": 286,
+"gains": 59,
+"pertes": 227,
+"pnl": -3506.9399999999987
 },
-"n_sauves": 661,
-"maj": "2026-10-11 11:34 UTC",
+"n_sauves": 664,
+"maj": "2026-10-11 11:43 UTC",
 "archive": [
 [
 "2026-10-09T05:31:54.174Z",
@@ -18015,6 +18072,33 @@
 "une seule jambe",
 0.476,
 231
+],
+[
+"2026-10-11T11:26:34.915Z",
+"Down",
+0.3357,
+-52.45,
+"une seule jambe",
+0.521,
+205
+],
+[
+"2026-10-11T11:30:45.448Z",
+"Down",
+0.2635,
+147.3,
+"une seule jambe",
+0.457,
+255
+],
+[
+"2026-10-11T11:37:54.738Z",
+"Up",
+0.1312,
+-29.18,
+"une seule jambe",
+0.437,
+125
 ]
 ]
 }

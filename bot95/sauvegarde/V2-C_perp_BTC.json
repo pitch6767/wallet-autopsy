@@ -12597,17 +12597,74 @@
 ],
 "start": 1791717000,
 "slug": "btc-updown-5m-1791717000"
+},
+"2026-10-11T11:38:02.076Z|Up": {
+"heure": "2026-10-11T11:38:02.076Z",
+"cote": "Up",
+"prix": 0.1665,
+"parts": 115,
+"U": 115,
+"D": 0,
+"cash": -19.145444,
+"net": -19.15,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.436,
+"restant_s": 118,
+"journal": [
+"182.1s écart 0.29, 118 s restantes → achat Up 115.0 parts à 0.1665 (modèle 0.436)"
+],
+"start": 1791718500,
+"slug": "btc-updown-5m-1791718500"
+},
+"2026-10-11T11:30:49.605Z|Down": {
+"heure": "2026-10-11T11:30:49.605Z",
+"cote": "Down",
+"prix": 0.2619,
+"parts": 95,
+"U": 0,
+"D": 95,
+"cash": 70.123008,
+"net": 70.12,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.458,
+"restant_s": 250,
+"journal": [
+"49.6s écart 0.22, 250 s restantes → achat Down 95.0 parts à 0.2619 (modèle 0.458)"
+],
+"start": 1791718200,
+"slug": "btc-updown-5m-1791718200"
+},
+"2026-10-11T11:27:24.013Z|Up": {
+"heure": "2026-10-11T11:27:24.013Z",
+"cote": "Up",
+"prix": 0.3145,
+"parts": 170,
+"U": 170,
+"D": 0,
+"cash": 116.532552,
+"net": 116.53,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.492,
+"restant_s": 156,
+"journal": [
+"144.0s écart 0.20, 156 s restantes → achat Up 170.0 parts à 0.3145 (modèle 0.492)"
+],
+"start": 1791717900,
+"slug": "btc-updown-5m-1791717900"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 283,
-"gains": 61,
-"pertes": 222,
-"pnl": -1760.360000000001
+"n": 286,
+"gains": 63,
+"pertes": 223,
+"pnl": -1592.860000000001
 },
-"n_sauves": 663,
-"maj": "2026-10-11 11:33 UTC",
+"n_sauves": 666,
+"maj": "2026-10-11 11:43 UTC",
 "archive": [
 [
 "2026-10-09T05:31:54.168Z",
@@ -18062,6 +18119,33 @@
 "une seule jambe",
 0.476,
 231
+],
+[
+"2026-10-11T11:27:24.013Z",
+"Up",
+0.3145,
+116.53,
+"une seule jambe",
+0.492,
+156
+],
+[
+"2026-10-11T11:30:49.605Z",
+"Down",
+0.2619,
+70.12,
+"une seule jambe",
+0.458,
+250
+],
+[
+"2026-10-11T11:38:02.076Z",
+"Up",
+0.1665,
+-19.15,
+"une seule jambe",
+0.436,
+118
 ]
 ]
 }
