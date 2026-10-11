@@ -16134,37 +16134,37 @@
 }
 ],
 "etat": {
-"recu": 1791715895.48,
-"version": "5b50e4b8c182",
+"recu": 1791716379.074,
+"version": "7489a969807a",
 "latence": {
 "rttClob_ms": {
-"med": 30.77,
-"p10": 26.79,
-"p90": 37.61,
-"n": 103
+"med": 30.48,
+"p10": 27.1,
+"p90": 38.68,
+"n": 27
 },
 "polyVersNous_ms": {
-"med": 9.794677734375,
-"p10": 8.9970703125,
-"p90": 12.124267578125
+"med": 9.32568359375,
+"p10": 8.694091796875,
+"p90": 10.90087890625
 },
 "calcul_us": {
-"med": 62.436,
-"p90": 240.718
+"med": 137.95,
+"p90": 905.849
 },
-"evaluations": 556450
+"evaluations": 77225
 },
 "flux": {
 "perp": {
-"muet_s": 8.3,
+"muet_s": 5.2,
 "reconnexions": 1
 },
 "okx": {
-"muet_s": 0.3,
+"muet_s": 1.2,
 "reconnexions": 1
 },
 "bn": {
-"muet_s": 0.4,
+"muet_s": 0.1,
 "reconnexions": 1
 },
 "cb": {
@@ -16172,27 +16172,150 @@
 "reconnexions": 1
 },
 "cl": {
-"muet_s": 0.1,
+"muet_s": 2,
 "reconnexions": 1
 },
+"pb": null,
 "poly": {
-"muet_s": 0.5,
-"reconnexions": 12
+"muet_s": 0,
+"reconnexions": 4
 }
 },
 "systeme": {
-"rss_Mo": 123,
-"tas_Mo": 17,
+"rss_Mo": 110,
+"tas_Mo": 29,
 "disque": {
 "libre_Mo": 51828,
 "total_Mo": 61225
 },
 "dernierCycle": {
-"start": 1791715500,
-"ev": 231138,
-"ex": 773,
-"octets": 320355,
+"start": 1791715800,
+"ev": 36002,
+"ex": 340,
+"octets": 53795,
 "coupe": false
+}
+},
+"chainlink": {
+"rtds_ms": {
+"med": 1422.0166015625,
+"p10": 1132.044189453125,
+"p90": 1879.037353515625,
+"n": 413
+},
+"polybolt_ms": {
+"med": null,
+"p10": null,
+"p90": null,
+"n": 0
+},
+"twap_ms": {
+"med": null,
+"p10": null,
+"p90": null,
+"n": 0
+},
+"premier": {
+"rtds": 0,
+"pb": 0
+},
+"avanceDuPremier_ms": {
+"rtds": null,
+"polybolt": null
+},
+"messages": {
+"rtds": 413,
+"pb": 0
+},
+"polyboltConnecte": false,
+"polyboltErreur": "identifiants : {\"erreur\":\"Cannot read properties of undefined (reading 'startsWith')\"}",
+"source": null,
+"identifiants": false
+},
+"makerEnCours": {
+"offres": {
+"M1 V2-F ecart qui grandit": {
+"posees": 0,
+"remplies": 1
+},
+"M2 cotation marge 5 c": {
+"posees": 1,
+"remplies": 4
+},
+"M2 cotation marge 10 c": {
+"posees": 1,
+"remplies": 3
+},
+"M1 desaccord 30": {
+"posees": 0,
+"remplies": 1
+},
+"M1 cohorte A : zone + modele monte": {
+"posees": 0,
+"remplies": 1
+},
+"M1 cohorte B : V2-F corrige 0,015 %": {
+"posees": 0,
+"remplies": 1
+},
+"M1 V2-F incertitude 0,01 %": {
+"posees": 0,
+"remplies": 1
+},
+"M1 desaccord 20 60-180 s": {
+"posees": 0,
+"remplies": 1
+}
+},
+"compteurs": {
+"M1 V2-F ecart qui grandit": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 0,
+"remplies": 1
+},
+"M2 cotation marge 5 c": {
+"posees": 153,
+"rejetees": 1,
+"annulees": 151,
+"remplies": 4
+},
+"M2 cotation marge 10 c": {
+"posees": 153,
+"rejetees": 1,
+"annulees": 151,
+"remplies": 3
+},
+"M1 desaccord 30": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 0,
+"remplies": 1
+},
+"M1 cohorte A : zone + modele monte": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 0,
+"remplies": 1
+},
+"M1 cohorte B : V2-F corrige 0,015 %": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 0,
+"remplies": 1
+},
+"M1 V2-F incertitude 0,01 %": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 0,
+"remplies": 1
+},
+"M1 desaccord 20 60-180 s": {
+"posees": 1,
+"rejetees": 0,
+"annulees": 0,
+"remplies": 1
+}
 }
 }
 }
