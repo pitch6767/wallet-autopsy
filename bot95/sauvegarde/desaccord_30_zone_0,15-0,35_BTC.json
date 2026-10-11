@@ -7367,16 +7367,73 @@
 ],
 "start": 1791715800,
 "slug": "btc-updown-5m-1791715800"
+},
+"2026-10-11T11:27:25.674Z|Up": {
+"heure": "2026-10-11T11:27:25.674Z",
+"cote": "Up",
+"prix": 0.1626,
+"parts": 106.4,
+"U": 106.4,
+"D": 0,
+"cash": 89.09586,
+"net": 89.1,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.457,
+"restant_s": 154,
+"journal": [
+"145.7s écart 0.31 (modèle 0.457, vendeur 0.15), 154 s restantes ; 3 s avant : Binance -0.8, perp -5.9 (+ = dans notre sens)"
+],
+"start": 1791717900,
+"slug": "btc-updown-5m-1791717900"
+},
+"2026-10-11T11:21:17.047Z|Down": {
+"heure": "2026-10-11T11:21:17.047Z",
+"cote": "Down",
+"prix": 0.1683,
+"parts": 333.33,
+"U": 0,
+"D": 333.33333333333337,
+"cash": -56.097074133333344,
+"net": -56.1,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.451,
+"restant_s": 223,
+"journal": [
+"77.0s écart 0.30 (modèle 0.451, vendeur 0.15), 223 s restantes ; 3 s avant : Binance -5.6, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1791717600,
+"slug": "btc-updown-5m-1791717600"
+},
+"2026-10-11T11:16:37.173Z|Down": {
+"heure": "2026-10-11T11:16:37.173Z",
+"cote": "Down",
+"prix": 0.1946,
+"parts": 277.78,
+"U": 0,
+"D": 277.77777777777777,
+"cash": -54.04908208977778,
+"net": -54.05,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.483,
+"restant_s": 203,
+"journal": [
+"97.2s écart 0.30 (modèle 0.483, vendeur 0.18), 203 s restantes ; 3 s avant : Binance -1.3, perp -6.3 (+ = dans notre sens)"
+],
+"start": 1791717300,
+"slug": "btc-updown-5m-1791717300"
 }
 },
-"n_sauves": 394,
-"maj": "2026-10-11 11:19 UTC",
+"n_sauves": 397,
+"maj": "2026-10-11 11:34 UTC",
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 171,
-"gains": 39,
-"pertes": 132,
-"pnl": 337.6499999999999
+"n": 174,
+"gains": 40,
+"pertes": 134,
+"pnl": 316.5999999999999
 },
 "archive": [
 [
@@ -10249,6 +10306,33 @@
 "perdu",
 0.464,
 277
+],
+[
+"2026-10-11T11:16:37.173Z",
+"Down",
+0.1946,
+-54.05,
+"perdu",
+0.483,
+203
+],
+[
+"2026-10-11T11:21:17.047Z",
+"Down",
+0.1683,
+-56.1,
+"perdu",
+0.451,
+223
+],
+[
+"2026-10-11T11:27:25.674Z",
+"Up",
+0.1626,
+89.1,
+"gagné",
+0.457,
+154
 ]
 ]
 }

@@ -12312,17 +12312,74 @@
 ],
 "start": 1791716400,
 "slug": "btc-updown-5m-1791716400"
+},
+"2026-10-11T11:21:10.148Z|Down": {
+"heure": "2026-10-11T11:21:10.148Z",
+"cote": "Down",
+"prix": 0.2635,
+"parts": 200,
+"U": 0,
+"D": 200,
+"cash": -52.7,
+"net": -52.7,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.476,
+"restant_s": 230,
+"journal": [
+"70.1s écart 0.23, 230 s restantes → achat Down 200.0 parts à 0.2635 (modèle 0.476)"
+],
+"start": 1791717600,
+"slug": "btc-updown-5m-1791717600"
+},
+"2026-10-11T11:16:38.368Z|Down": {
+"heure": "2026-10-11T11:16:38.368Z",
+"cote": "Down",
+"prix": 0.2016,
+"parts": 263.16,
+"U": 0,
+"D": 263.1578947368421,
+"cash": -53.05847310273683,
+"net": -53.06,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.483,
+"restant_s": 202,
+"journal": [
+"98.4s écart 0.29, 202 s restantes → achat Down 263.2 parts à 0.2016 (modèle 0.483)"
+],
+"start": 1791717300,
+"slug": "btc-updown-5m-1791717300"
+},
+"2026-10-11T11:11:50.145Z|Up": {
+"heure": "2026-10-11T11:11:50.145Z",
+"cote": "Up",
+"prix": 0.1746,
+"parts": 217.49,
+"U": 217.49,
+"D": 0,
+"cash": -37.972212032,
+"net": -37.97,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.426,
+"restant_s": 190,
+"journal": [
+"110.1s écart 0.27, 190 s restantes → achat Up 217.5 parts à 0.1746 (modèle 0.426)"
+],
+"start": 1791717000,
+"slug": "btc-updown-5m-1791717000"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 280,
+"n": 283,
 "gains": 52,
-"pertes": 228,
-"pnl": -3043.5599999999986
+"pertes": 231,
+"pnl": -3187.289999999998
 },
-"n_sauves": 648,
-"maj": "2026-10-11 11:19 UTC",
+"n_sauves": 651,
+"maj": "2026-10-11 11:33 UTC",
 "archive": [
 [
 "2026-10-09T05:33:33.723Z",
@@ -17678,6 +17735,33 @@
 "une seule jambe",
 0.506,
 130
+],
+[
+"2026-10-11T11:11:50.145Z",
+"Up",
+0.1746,
+-37.97,
+"une seule jambe",
+0.426,
+190
+],
+[
+"2026-10-11T11:16:38.368Z",
+"Down",
+0.2016,
+-53.06,
+"une seule jambe",
+0.483,
+202
+],
+[
+"2026-10-11T11:21:10.148Z",
+"Down",
+0.2635,
+-52.7,
+"une seule jambe",
+0.476,
+230
 ]
 ]
 }
