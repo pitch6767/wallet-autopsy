@@ -307,7 +307,8 @@ export class Bot {
     if (u.pathname.startsWith("/api/rapide/")) {
       const jeton = req.headers.get("x-rapide") || "";
       const h = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(jeton)))].map((x) => x.toString(16).padStart(2, "0")).join("");
-      if (h !== "b0629aefe453fe1063c1dd8c27242736d59b30e6939e0cecc52c64de8898e03b") return new Response("non", { status: 403 });
+      const ipOk = (req.headers.get("cf-connecting-ip") || "") === "107.174.203.201";   // VPS de Dublin (installé par Replit)
+      if (!ipOk && h !== "b0629aefe453fe1063c1dd8c27242736d59b30e6939e0cecc52c64de8898e03b") return new Response("non", { status: 403 });
       if (u.pathname === "/api/rapide/version") return json({ version: RAPIDE_VERSION });
       if (u.pathname === "/api/rapide/code") return json({ version: RAPIDE_VERSION, code: RAPIDE_CODE });
       if (u.pathname === "/api/rapide/launcher") return new Response(RAPIDE_LAUNCHER, { headers: { "content-type": "text/plain; charset=utf-8" } });
