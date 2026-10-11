@@ -11153,17 +11153,74 @@
 ],
 "start": 1791717900,
 "slug": "btc-updown-5m-1791717900"
+},
+"2026-10-11T11:51:00.670Z|Up": {
+"heure": "2026-10-11T11:51:00.670Z",
+"cote": "Up",
+"prix": 0.3467,
+"parts": 151.52,
+"U": 151.5151515151515,
+"D": 0,
+"cash": 98.98526399999999,
+"net": 98.99,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.543,
+"restant_s": 239,
+"journal": [
+"60.7s écart 0.21, 239 s restantes → achat Up 151.5 parts à 0.3467 (modèle 0.543)"
+],
+"start": 1791719400,
+"slug": "btc-updown-5m-1791719400"
+},
+"2026-10-11T11:47:37.148Z|Down": {
+"heure": "2026-10-11T11:47:37.148Z",
+"cote": "Down",
+"prix": 0.1946,
+"parts": 273.09,
+"U": 0,
+"D": 273.09000000000003,
+"cash": -53.138761607999996,
+"net": -53.14,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.461,
+"restant_s": 143,
+"journal": [
+"157.1s écart 0.28, 143 s restantes → achat Down 273.1 parts à 0.1946 (modèle 0.461)"
+],
+"start": 1791719100,
+"slug": "btc-updown-5m-1791719100"
+},
+"2026-10-11T11:40:31.125Z|Down": {
+"heure": "2026-10-11T11:40:31.125Z",
+"cote": "Down",
+"prix": 0.188,
+"parts": 230.69,
+"U": 0,
+"D": 230.69,
+"cash": -43.36142184799999,
+"net": -43.36,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.418,
+"restant_s": 269,
+"journal": [
+"31.1s écart 0.25, 269 s restantes → achat Down 230.7 parts à 0.188 (modèle 0.418)"
+],
+"start": 1791718800,
+"slug": "btc-updown-5m-1791718800"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 273,
-"gains": 59,
-"pertes": 214,
-"pnl": -1237.3200000000006
+"n": 276,
+"gains": 60,
+"pertes": 216,
+"pnl": -1234.8300000000006
 },
-"n_sauves": 587,
-"maj": "2026-10-11 11:43 UTC",
+"n_sauves": 590,
+"maj": "2026-10-11 12:02 UTC",
 "archive": [
 [
 "2026-10-09T05:31:54.168Z",
@@ -15970,6 +16027,33 @@
 "une seule jambe",
 0.458,
 250
+],
+[
+"2026-10-11T11:40:31.125Z",
+"Down",
+0.188,
+-43.36,
+"une seule jambe",
+0.418,
+269
+],
+[
+"2026-10-11T11:47:37.148Z",
+"Down",
+0.1946,
+-53.14,
+"une seule jambe",
+0.461,
+143
+],
+[
+"2026-10-11T11:51:00.670Z",
+"Up",
+0.3467,
+98.99,
+"une seule jambe",
+0.543,
+239
 ]
 ]
 }

@@ -5035,14 +5035,71 @@
 ],
 "start": 1791718200,
 "slug": "btc-updown-5m-1791718200"
+},
+"2026-10-11T11:51:18.619Z|Up": {
+"heure": "2026-10-11T11:51:18.619Z",
+"cote": "Up",
+"prix": 0.2428,
+"parts": 217.39,
+"U": 217.39130434782606,
+"D": 0,
+"cash": 164.61930434782607,
+"net": 164.62,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.545,
+"restant_s": 221,
+"journal": [
+"78.6s écart 0.32 (modèle 0.545, vendeur 0.23), 221 s restantes → achat Up 217.4 parts à 0.2428 (meilleur vendeur seul, 604 parts affichées)"
+],
+"start": 1791719400,
+"slug": "btc-updown-5m-1791719400"
+},
+"2026-10-11T11:47:41.883Z|Down": {
+"heure": "2026-10-11T11:47:41.883Z",
+"cote": "Down",
+"prix": 0.0959,
+"parts": 50.6,
+"U": 0,
+"D": 50.6,
+"cash": -4.85237808,
+"net": -4.85,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.414,
+"restant_s": 138,
+"journal": [
+"161.9s écart 0.32 (modèle 0.414, vendeur 0.09), 138 s restantes → achat Down 50.6 parts à 0.0959 (meilleur vendeur seul, 51 parts affichées)"
+],
+"start": 1791719100,
+"slug": "btc-updown-5m-1791719100"
+},
+"2026-10-11T11:40:49.721Z|Down": {
+"heure": "2026-10-11T11:40:49.721Z",
+"cote": "Down",
+"prix": 0.1697,
+"parts": 312.5,
+"U": 0,
+"D": 312.5,
+"cash": -53.024,
+"net": -53.02,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.473,
+"restant_s": 250,
+"journal": [
+"49.7s écart 0.31 (modèle 0.473, vendeur 0.16), 250 s restantes → achat Down 312.5 parts à 0.1697 (meilleur vendeur seul, 795 parts affichées)"
+],
+"start": 1791718800,
+"slug": "btc-updown-5m-1791718800"
 }
 },
 "resume_bot": {
 "depuis": 1791635209.841,
-"n": 269,
-"gains": 42,
-"pertes": 227,
-"pnl": -27.240000000000094
+"n": 272,
+"gains": 43,
+"pertes": 229,
+"pnl": 79.5099999999999
 },
 "archive": [
 [
@@ -7465,8 +7522,35 @@
 "perdu",
 0.438,
 129
+],
+[
+"2026-10-11T11:40:49.721Z",
+"Down",
+0.1697,
+-53.02,
+"perdu",
+0.473,
+250
+],
+[
+"2026-10-11T11:47:41.883Z",
+"Down",
+0.0959,
+-4.85,
+"perdu",
+0.414,
+138
+],
+[
+"2026-10-11T11:51:18.619Z",
+"Up",
+0.2428,
+164.62,
+"gagné",
+0.545,
+221
 ]
 ],
-"n_sauves": 265,
-"maj": "2026-10-11 11:44 UTC"
+"n_sauves": 268,
+"maj": "2026-10-11 12:02 UTC"
 }

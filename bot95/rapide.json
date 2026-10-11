@@ -20693,22 +20693,422 @@
 "1000": 0,
 "2000": 0
 }
+},
+{
+"nom": "V2-F ecart qui grandit",
+"start": 1791719100,
+"cote": "Down",
+"a0": 0.26,
+"q0": 60,
+"modele": 0.4692,
+"ecart": 0.2092,
+"restant_s": 149.58,
+"declencheur": "poly",
+"tDecision": 1791719250425.482,
+"msgVersDecision_ms": 0.827,
+"calcul_us": 827.6,
+"carnetAge_ms": 0.827,
+"carnetPolyVersNous_ms": 131.7,
+"agePerp": 0.293,
+"ageOkx": 0.277,
+"ageBn": 0.313,
+"ageCb": 0.253,
+"ageCl": 0.431,
+"achetable0": {
+"q": 60,
+"c": 16.43
+},
+"apres": {
+"1": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 2.05
+},
+"2": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 3.32
+},
+"5": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 5.48
+},
+"10": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 10.63
+},
+"25": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 26.82
+},
+"50": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 51.21
+},
+"100": {
+"q": 70,
+"c": 19.17,
+"reel_ms": 101.22
+},
+"250": {
+"q": 192.31,
+"c": 46.68,
+"reel_ms": 250.48
+},
+"500": {
+"q": 192.31,
+"c": 41.23,
+"reel_ms": 500.5
+},
+"1000": {
+"q": 192.31,
+"c": 43.12,
+"reel_ms": 1000.82
+},
+"2000": {
+"q": 192.31,
+"c": 42.47,
+"reel_ms": 2000.83
+}
+},
+"premiereBaisse_ms": null,
+"disparu_ms": null,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"0": -16.43,
+"1": -16.43,
+"2": -16.43,
+"5": -16.43,
+"10": -16.43,
+"25": -16.43,
+"50": -16.43,
+"100": -19.17,
+"250": -46.68,
+"500": -41.23,
+"1000": -43.12,
+"2000": -42.47
+}
+},
+{
+"nom": "V2-F incertitude 0,01 %",
+"start": 1791719100,
+"cote": "Up",
+"a0": 0.67,
+"q0": 100,
+"modele": 0.8895,
+"ecart": 0.2195,
+"restant_s": 130.16,
+"declencheur": "poly",
+"tDecision": 1791719269840.238,
+"msgVersDecision_ms": 0.103,
+"calcul_us": 98.5,
+"carnetAge_ms": 0.103,
+"carnetPolyVersNous_ms": 83.1,
+"agePerp": 0.21,
+"ageOkx": 0.192,
+"ageBn": 0.226,
+"ageCb": 0.167,
+"ageCl": 0.49,
+"achetable0": {
+"q": 74.63,
+"c": 51.19
+},
+"apres": {
+"1": {
+"q": 74.63,
+"c": 51.19,
+"reel_ms": 1.44
+},
+"2": {
+"q": 74.63,
+"c": 51.19,
+"reel_ms": 1.55
+},
+"5": {
+"q": 74.63,
+"c": 51.19,
+"reel_ms": 4.74
+},
+"10": {
+"q": 74.63,
+"c": 51.19,
+"reel_ms": 9.87
+},
+"25": {
+"q": 74.63,
+"c": 51.19,
+"reel_ms": 24.72
+},
+"50": {
+"q": 0,
+"c": 0,
+"reel_ms": 50.4
+},
+"100": {
+"q": 17.65,
+"c": 12.11,
+"reel_ms": 99.95
+},
+"250": {
+"q": 74.63,
+"c": 50.46,
+"reel_ms": 249.84
+},
+"500": {
+"q": 74.63,
+"c": 50.22,
+"reel_ms": 499.15
+},
+"1000": {
+"q": 0,
+"c": 0,
+"reel_ms": 999.63
+},
+"2000": {
+"q": 0,
+"c": 0,
+"reel_ms": 1999.95
+}
+},
+"premiereBaisse_ms": 33.904,
+"disparu_ms": 33.904,
+"gagnant": "Up",
+"gagne": true,
+"resultat": {
+"0": 23.44,
+"1": 23.44,
+"2": 23.44,
+"5": 23.44,
+"10": 23.44,
+"25": 23.44,
+"50": 0,
+"100": 5.54,
+"250": 24.17,
+"500": 24.41,
+"1000": 0,
+"2000": 0
+}
+},
+{
+"nom": "desaccord 20 60-180 s",
+"start": 1791719100,
+"cote": "Down",
+"a0": 0.26,
+"q0": 60,
+"modele": 0.4692,
+"ecart": 0.2092,
+"restant_s": 149.58,
+"declencheur": "poly",
+"tDecision": 1791719250426.187,
+"msgVersDecision_ms": 1.531,
+"calcul_us": 1522.9,
+"carnetAge_ms": 1.531,
+"carnetPolyVersNous_ms": 131.7,
+"agePerp": 0.293,
+"ageOkx": 0.278,
+"ageBn": 0.314,
+"ageCb": 0.253,
+"ageCl": 0.431,
+"achetable0": {
+"q": 60,
+"c": 16.43
+},
+"apres": {
+"1": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 1.37
+},
+"2": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 2.66
+},
+"5": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 4.79
+},
+"10": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 9.94
+},
+"25": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 26.15
+},
+"50": {
+"q": 60,
+"c": 16.43,
+"reel_ms": 50.52
+},
+"100": {
+"q": 70,
+"c": 19.17,
+"reel_ms": 100.54
+},
+"250": {
+"q": 192.31,
+"c": 46.68,
+"reel_ms": 249.82
+},
+"500": {
+"q": 192.31,
+"c": 41.23,
+"reel_ms": 499.86
+},
+"1000": {
+"q": 192.31,
+"c": 43.12,
+"reel_ms": 1000.13
+},
+"2000": {
+"q": 192.31,
+"c": 42.47,
+"reel_ms": 2000.16
+}
+},
+"premiereBaisse_ms": null,
+"disparu_ms": null,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"0": -16.43,
+"1": -16.43,
+"2": -16.43,
+"5": -16.43,
+"10": -16.43,
+"25": -16.43,
+"50": -16.43,
+"100": -19.17,
+"250": -46.68,
+"500": -41.23,
+"1000": -43.12,
+"2000": -42.47
+}
+},
+{
+"nom": "desaccord 30",
+"start": 1791719100,
+"cote": "Down",
+"a0": 0.09,
+"q0": 50.6,
+"modele": 0.4135,
+"ecart": 0.3235,
+"restant_s": 137.6,
+"declencheur": "poly",
+"tDecision": 1791719262395.365,
+"msgVersDecision_ms": 0.078,
+"calcul_us": 60.4,
+"carnetAge_ms": 0.078,
+"carnetPolyVersNous_ms": 277.3,
+"agePerp": 0.39,
+"ageOkx": 0.26,
+"ageBn": 0.419,
+"ageCb": 0.2,
+"ageCl": 0.539,
+"achetable0": {
+"q": 50.6,
+"c": 4.85
+},
+"apres": {
+"1": {
+"q": 50.6,
+"c": 4.85,
+"reel_ms": 0.95
+},
+"2": {
+"q": 50.6,
+"c": 4.85,
+"reel_ms": 1.49
+},
+"5": {
+"q": 50.6,
+"c": 4.85,
+"reel_ms": 4.77
+},
+"10": {
+"q": 50.6,
+"c": 4.85,
+"reel_ms": 10.23
+},
+"25": {
+"q": 50.6,
+"c": 4.85,
+"reel_ms": 24.7
+},
+"50": {
+"q": 50.6,
+"c": 4.85,
+"reel_ms": 50.35
+},
+"100": {
+"q": 34.86,
+"c": 3.34,
+"reel_ms": 99.78
+},
+"250": {
+"q": 34.86,
+"c": 3.34,
+"reel_ms": 249.95
+},
+"500": {
+"q": 12,
+"c": 1.15,
+"reel_ms": 500.12
+},
+"1000": {
+"q": 0,
+"c": 0,
+"reel_ms": 999.72
+},
+"2000": {
+"q": 0,
+"c": 0,
+"reel_ms": 2000.46
+}
+},
+"premiereBaisse_ms": 72.818,
+"disparu_ms": 505.501,
+"gagnant": "Up",
+"gagne": false,
+"resultat": {
+"0": -4.85,
+"1": -4.85,
+"2": -4.85,
+"5": -4.85,
+"10": -4.85,
+"25": -4.85,
+"50": -4.85,
+"100": -3.34,
+"250": -3.34,
+"500": -1.15,
+"1000": 0,
+"2000": 0
+}
 }
 ],
 "etat": {
-"recu": 1791719022.796,
-"version": "5b5912271c04",
+"recu": 1791720106.678,
+"version": "2dfe8263fa7c",
 "latence": {
 "rttClob_ms": {
-"med": 37.35,
-"p10": 28,
-"p90": 38.81,
-"n": 3
+"med": 32.03,
+"p10": 27.51,
+"p90": 41.83,
+"n": 7
 },
 "polyVersNous_ms": {
-"med": 9.8271484375,
-"p10": 9.04150390625,
-"p90": 13.130859375
+"med": 10.658447265625,
+"p10": 9.429443359375,
+"p90": 17.062744140625
 },
 "calcul_us": {
 "med": null,
@@ -20718,81 +21118,115 @@
 },
 "flux": {
 "perp": {
-"muet_s": 1.1,
+"muet_s": 1.5,
 "reconnexions": 1
 },
 "okx": {
-"muet_s": 0.9,
+"muet_s": 0,
 "reconnexions": 1
 },
 "bn": {
-"muet_s": 0.1,
+"muet_s": 0.6,
 "reconnexions": 1
 },
 "cb": {
-"muet_s": 0.2,
+"muet_s": 0.5,
 "reconnexions": 1
 },
 "cl": {
-"muet_s": 0.2,
+"muet_s": 1.4,
 "reconnexions": 1
 },
 "pb": {
-"muet_s": 0.4,
+"muet_s": 0,
+"reconnexions": 1
+},
+"bnd": {
+"muet_s": 0.1,
+"reconnexions": 1
+},
+"byob": {
+"muet_s": 0,
 "reconnexions": 1
 },
 "poly": {
-"muet_s": 0.2,
-"reconnexions": 1
+"muet_s": 0,
+"reconnexions": 2
 }
 },
 "systeme": {
-"rss_Mo": 86,
-"tas_Mo": 13,
+"rss_Mo": 91,
+"tas_Mo": 18,
 "disque": {
-"libre_Mo": 51825,
+"libre_Mo": 51824,
 "total_Mo": 61225
 },
-"dernierCycle": null
+"dernierCycle": {
+"start": 1791719700,
+"ev": 2016,
+"ex": 40,
+"octets": 9491,
+"coupe": false
+}
 },
 "chainlink": {
+"decomposition_rtds_ms": {
+"publication": {
+"med": 1152,
+"p10": 815,
+"p90": 1536,
+"n": 118
+},
+"transport": {
+"med": 291.57666015625,
+"p10": 174.990478515625,
+"p90": 405.957275390625,
+"n": 118
+},
+"traitement_boucle": {
+"med": 0.178955078125,
+"p10": 0,
+"p90": 0.8466796875,
+"n": 1197
+}
+},
 "rtds_ms": {
-"med": 1408.56396484375,
-"p10": 1082.949951171875,
-"p90": 1740.492431640625,
-"n": 59
+"med": 1449.865966796875,
+"p10": 1121.13720703125,
+"p90": 1850.51904296875,
+"n": 118
 },
 "polybolt_ms": {
-"med": 1188.836669921875,
-"p10": 878.223388671875,
-"p90": 1400.666015625,
-"n": 57
+"med": 1234.365478515625,
+"p10": 916.295654296875,
+"p90": 1634.803955078125,
+"n": 118
 },
 "twap_ms": {
-"med": 1238.285400390625,
-"p10": 945.59765625,
-"p90": 1485.505859375,
-"n": 58
+"med": 1297.44873046875,
+"p10": 967.804443359375,
+"p90": 1694.509033203125,
+"n": 117
 },
 "premier": {
 "rtds": 0,
-"pb": 57
+"pb": 117
 },
 "avanceDuPremier_ms": {
 "rtds": null,
-"polybolt": 235.5
+"polybolt": 209.8
 },
 "messages": {
-"rtds": 59,
-"pb": 57
+"rtds": 118,
+"pb": 118
 },
 "exemples": [
-"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":1,\"ts\":1791718963000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"82973.86322611731\",\"timestamp\":1791718845000,\"value\":82973.8632261173},{\"full_accuracy_value\":\"82973.87222611731\",\"timestamp\":1791718846000,\"value\":82973.87222611731},{\"full_accuracy_value\":\"82973.87472611731\",\"timestamp\":1791718847000,\"value\":82973.8747261173},{\"full_accuracy_value\":\"82973.87322611731\",\"timestamp\":1791718848000,\"value\":82973.87322611731},{\"full_accuracy_value\":\"82973.87122611731\",\"timestamp\":1791718849000,\"value\":82973.87122611732},{\"full_accuracy_value\":\"8297",
-"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":1,\"ts\":1791718962000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"82968.797427636566491136\",\"timestamp\":1791718845000,\"value\":82968.79742763657},{\"full_accuracy_value\":\"82969.373550469802098688\",\"timestamp\":1791718846000,\"value\":82969.3735504698},{\"full_accuracy_value\":\"82969.373550469802098688\",\"timestamp\":1791718847000,\"value\":82969.3735504698},{\"full_accuracy_value\":\"82969.947956967718780928\",\"timestamp\":1791718848000,\"value\":82969.94795696772},{\"full_accuracy_value\":\"82970.242032222022402048\",\"timestamp\":1791718849000,\"value\":82970.2",
-"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":2,\"ts\":1791718963000,\"payload\":{\"full_accuracy_value\":\"82961.307797807511371776\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791718963000,\"value\":82961.30779780752,\"window_seconds\":60}}",
-"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":2,\"ts\":1791718964000,\"payload\":{\"full_accuracy_value\":\"82961.69365360052\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791718964000,\"value\":82961.69365360052}}",
-"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":3,\"ts\":1791718964000,\"payload\":{\"full_accuracy_value\":\"82961.3046282942676992\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791718964000,\"value\":82961.30462829427,\"window_seconds\":60}}",
-"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":3,\"ts\":1791718965000,\"payload\":{\"full_accuracy_value\":\"82961.6931537853\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791718965000,\"value\":82961.6931537853}}"
+"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":1,\"ts\":1791719987000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83082.871772825\",\"timestamp\":1791719868000,\"value\":83082.871772825},{\"full_accuracy_value\":\"83082.859907525\",\"timestamp\":1791719869000,\"value\":83082.859907525},{\"full_accuracy_value\":\"83082.859938515\",\"timestamp\":1791719870000,\"value\":83082.859938515},{\"full_accuracy_value\":\"83082.85527979\",\"timestamp\":1791719871000,\"value\":83082.85527978999},{\"full_accuracy_value\":\"83082.69480430595\",\"timestamp\":1791719872000,\"value\":83082.69480430594},{\"full_accuracy_value\":\"83082.69330430595",
+"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":1,\"ts\":1791719987000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83082.276094761995599872\",\"timestamp\":1791719868000,\"value\":83082.276094762},{\"full_accuracy_value\":\"83082.458295164194521088\",\"timestamp\":1791719869000,\"value\":83082.4582951642},{\"full_accuracy_value\":\"83082.629182695751548928\",\"timestamp\":1791719870000,\"value\":83082.62918269575},{\"full_accuracy_value\":\"83082.629182695751548928\",\"timestamp\":1791719871000,\"value\":83082.62918269575},{\"full_accuracy_value\":\"83082.718241438908284928\",\"timestamp\":1791719872000,\"value\":83082.71",
+"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":2,\"ts\":1791719988000,\"payload\":{\"full_accuracy_value\":\"83079.72004471599\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791719988000,\"value\":83079.720044716}}",
+"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":2,\"ts\":1791719988000,\"payload\":{\"full_accuracy_value\":\"83079.979307263909167104\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791719988000,\"value\":83079.97930726391,\"window_seconds\":60}}",
+"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":3,\"ts\":1791719989000,\"payload\":{\"full_accuracy_value\":\"83079.70933171099\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791719989000,\"value\":83079.70933171098}}",
+"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":3,\"ts\":1791719989000,\"payload\":{\"full_accuracy_value\":\"83079.955988474052476928\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791719989000,\"value\":83079.95598847406,\"window_seconds\":60}}"
 ],
 "abonnements": [
 "{\"op\":\"subscribed\",\"channel\":\"price.crypto\",\"rid\":\"s1\",\"provider\":\"chainlink\"}",
