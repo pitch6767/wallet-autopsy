@@ -1,14 +1,14 @@
 # Bot95 — H766 à H775 : capturer l'avantage malgré la latence ? — PRÉLIMINAIRE
 
-Généré le 11.10.2026 15:17 UTC. Cycles enregistrés à Dublin avant le 13.10 : 51 ; signaux Bot95 réglés sur ces cycles : **157** sur **31 cycles**. IC 90 % par rééchantillonnage de cycles. Validation chronologique : 1re moitié = cycles < 10:55 UTC, 2e moitié après. Exécution preneur : décision + 14 ms de trajet + 150 ms de retard Polymarket = 164 ms. Budget 50 $ par signal (comme Dublin). Aucun ordre, aucun fantôme touché.
+Généré le 11.10.2026 19:12 UTC. Cycles enregistrés à Dublin avant le 13.10 : 83 ; signaux Bot95 réglés sur ces cycles : **278** sur **55 cycles**. IC 90 % par rééchantillonnage de cycles. Validation chronologique : 1re moitié = cycles < 12:30 UTC, 2e moitié après. Exécution preneur : décision + 14 ms de trajet + 150 ms de retard Polymarket = 164 ms. Budget 50 $ par signal (comme Dublin). Aucun ordre, aucun fantôme touché.
 
 ## 0. Contrôle de la reconstruction du carnet
 
-- 0 ms : quantité achetable reconstruite = quantité vue par Dublin (± 5 %) dans 100 % des 157 signaux.
-- 50 ms : quantité achetable reconstruite = quantité vue par Dublin (± 5 %) dans 89 % des 157 signaux.
-- 100 ms : quantité achetable reconstruite = quantité vue par Dublin (± 5 %) dans 89 % des 157 signaux.
-- 250 ms : quantité achetable reconstruite = quantité vue par Dublin (± 5 %) dans 95 % des 157 signaux.
-- 500 ms : quantité achetable reconstruite = quantité vue par Dublin (± 5 %) dans 96 % des 157 signaux.
+- 0 ms : quantité achetable reconstruite = quantité vue par Dublin (± 5 %) dans 100 % des 278 signaux.
+- 50 ms : quantité achetable reconstruite = quantité vue par Dublin (± 5 %) dans 89 % des 278 signaux.
+- 100 ms : quantité achetable reconstruite = quantité vue par Dublin (± 5 %) dans 90 % des 278 signaux.
+- 250 ms : quantité achetable reconstruite = quantité vue par Dublin (± 5 %) dans 95 % des 278 signaux.
+- 500 ms : quantité achetable reconstruite = quantité vue par Dublin (± 5 %) dans 97 % des 278 signaux.
 
 ## 1. H766 — P&L et quantité exécutable selon la latence (preneur, prix du signal, plafond +0) — livrables « courbe P&L/latence », « quantités capturables », « P&L par signal initial »
 
@@ -16,33 +16,33 @@ P&L par **signal initial** = résultat en $ de ce que l'on aurait réellement pu
 
 | Délai | Signaux exécutables | Parts / parts à 0 ms | P&L total ($) | P&L moyen par signal ($) | IC 90 % | par $ investi | 1re moitié / signal | 2e moitié / signal |
 |---|---|---|---|---|---|---|---|---|
-| 0 ms (mesure Dublin) | 157 / 157 | 100 % | +5635 | +35.89 | [+15.30 ; +59.57] | +182.0 % | +14.07 | +56.89 |
-| 25 ms | 144 / 157 | 124 % | +5688 | +36.23 | [+11.91 ; +61.62] | +144.6 % | +13.09 | +58.50 |
-| 50 ms | 143 / 157 | 134 % | +5655 | +36.02 | [+11.64 ; +61.80] | +132.3 % | +13.67 | +57.54 |
-| 100 ms | 135 / 157 | 139 % | +4928 | +31.39 | [+9.43 ; +57.47] | +111.5 % | +7.64 | +54.25 |
-| 150 ms | 131 / 157 | 142 % | +4723 | +30.08 | [+7.66 ; +54.09] | +104.6 % | +10.30 | +49.13 |
-| 164 ms (preneur réel) | 128 / 157 | 140 % | +4670 | +29.74 | [+5.95 ; +56.94] | +105.7 % | +9.34 | +49.38 |
-| 250 ms | 107 / 157 | 131 % | +4127 | +26.29 | [+4.81 ; +49.10] | +103.2 % | +9.38 | +42.56 |
-| 300 ms | 102 / 157 | 127 % | +3824 | +24.35 | [+4.30 ; +44.83] | +98.7 % | +8.77 | +39.35 |
-| 500 ms | 96 / 157 | 118 % | +3039 | +19.36 | [+2.82 ; +37.46] | +85.5 % | +7.80 | +30.48 |
+| 0 ms (mesure Dublin) | 278 / 278 | 100 % | +5641 | +20.29 | [+7.42 ; +35.57] | +116.0 % | +18.44 | +22.12 |
+| 25 ms | 262 / 278 | 135 % | +5335 | +19.19 | [+4.68 ; +34.87] | +77.8 % | +17.91 | +20.45 |
+| 50 ms | 259 / 278 | 146 % | +5323 | +19.15 | [+3.28 ; +37.77] | +72.3 % | +16.92 | +21.35 |
+| 100 ms | 246 / 278 | 153 % | +4357 | +15.67 | [+0.66 ; +32.68] | +56.9 % | +12.47 | +18.83 |
+| 150 ms | 234 / 278 | 150 % | +4236 | +15.24 | [+0.21 ; +31.36] | +56.9 % | +12.54 | +17.90 |
+| 164 ms (preneur réel) | 229 / 278 | 149 % | +4141 | +14.90 | [+0.39 ; +31.19] | +56.4 % | +12.05 | +17.71 |
+| 250 ms | 194 / 278 | 142 % | +3672 | +13.21 | [-0.94 ; +28.73] | +53.6 % | +10.44 | +15.93 |
+| 300 ms | 179 / 278 | 137 % | +3537 | +12.72 | [-0.72 ; +27.74] | +54.0 % | +9.52 | +15.88 |
+| 500 ms | 166 / 278 | 130 % | +2640 | +9.50 | [-2.33 ; +22.43] | +42.8 % | +9.73 | +9.27 |
 
 **Robustesse (preneur 164 ms, plafond +0)** — le résultat dépend-il de quelques gros gains ?
 
-- Médiane par signal : +0.00 $ ; part du P&L total venant des 5 meilleurs signaux : 52 % ; P&L sans les 5 meilleurs : +2225 $ ; sans les 10 meilleurs : +963 $.
-- **Décisions uniques** (un seul achat par cycle et par côté — le premier signal ; les variantes du même cycle achètent souvent le même billet) : 45 décisions, P&L +983 $, moyen +21.84 $ IC 90 % [+3.91 ; +39.60], médiane +0.00 $.
+- Médiane par signal : -3.55 $ ; part du P&L total venant des 5 meilleurs signaux : 59 % ; P&L sans les 5 meilleurs : +1696 $ ; sans les 10 meilleurs : +314 $.
+- **Décisions uniques** (un seul achat par cycle et par côté — le premier signal ; les variantes du même cycle achètent souvent le même billet) : 77 décisions, P&L +810 $, moyen +10.52 $ IC 90 % [-2.29 ; +23.81], médiane -12.65 $.
 
 | Prix du signal | Signaux | Taux de gain | P&L 0 ms ($) | P&L 164 ms ($) | P&L 500 ms ($) | perte due à la latence 0→164 ms |
 |---|---|---|---|---|---|---|
-| 0.00–0.10 | 13 | 31 % | +1426 | +1545 | +1476 | +119 |
-| 0.10–0.20 | 48 | 31 % | +1657 | +877 | -111 | -780 |
-| 0.20–0.35 | 80 | 48 % | +1968 | +2052 | +1635 | +83 |
-| 0.35–1.00 | 16 | 75 % | +583 | +196 | +39 | -387 |
+| 0.00–0.10 | 21 | 19 % | +1400 | +1474 | +1397 | +74 |
+| 0.10–0.20 | 74 | 24 % | +1485 | +1237 | +42 | -248 |
+| 0.20–0.35 | 153 | 36 % | +2199 | +1501 | +1358 | -698 |
+| 0.35–1.00 | 30 | 63 % | +556 | -72 | -157 | -628 |
 
 ## 2. H768 — Latence critique
 
 - Premier délai où l'espérance moyenne par signal devient ≤ 0 : **aucun jusqu’à 500 ms**.
 - Premier délai où l'IC 90 % est entièrement négatif : **aucun jusqu’à 500 ms**.
-- Premier délai où l'IC 90 % ne contient plus que du positif : 0 ms, 25 ms, 50 ms, 100 ms, 150 ms, 164 ms, 250 ms, 300 ms, 500 ms.
+- Premier délai où l'IC 90 % ne contient plus que du positif : 0 ms, 25 ms, 50 ms, 100 ms, 150 ms, 164 ms.
 
 ## 3. H767 — Pourquoi les offres disparaissent (livrable « analyse des offres disparues »)
 
@@ -50,10 +50,10 @@ Pour chaque signal : baisse des quantités vendues au prix du signal ou mieux en
 
 | Cause | Signaux | Parts consommées | Parts retirées | Taux de gain du signal |
 |---|---|---|---|---|
-| pas disparue (≥ 50 % encore là à 250 ms) | 93 | 1524 | 25791 | 33 % |
-| retirée (annulation) | 46 | 710 | 6401 | 63 % |
+| pas disparue (≥ 50 % encore là à 250 ms) | 169 | 2313 | 39688 | 28 % |
+| retirée (annulation) | 83 | 1310 | 11855 | 42 % |
 | indéterminé (carnet rechargé / flux coupé) | 14 | 212 | 798 | 50 % |
-| consommée par des transactions | 4 | 328 | 0 | 50 % |
+| consommée par des transactions | 12 | 1184 | 200 | 50 % |
 
 Lecture : « consommée » = un autre preneur a acheté avant nous (course de vitesse) ; « retirée » = le vendeur a annulé (il a vu le même mouvement).
 
@@ -61,18 +61,18 @@ Lecture : « consommée » = un autre preneur a acheté avant nous (course de vi
 
 | Délai | Plafond | Signaux exécutables | Parts | P&L total ($) | P&L moyen / signal | IC 90 % | Gain marginal vs +0 ($) | 2e moitié / signal |
 |---|---|---|---|---|---|---|---|---|
-| 164 ms | +0 c | 128 | 24003 | +4670 | +29.74 | [+5.70 ; +55.21] | +0 | +49.38 |
-| 164 ms | +1 c | 135 | 29720 | +4779 | +30.44 | [+2.28 ; +58.01] | +109 | +52.04 |
-| 164 ms | +2 c | 136 | 33267 | +5313 | +33.84 | [+5.09 ; +64.10] | +643 | +56.25 |
-| 164 ms | +3 c | 138 | 35642 | +5801 | +36.95 | [+7.51 ; +70.57] | +1131 | +60.54 |
-| 250 ms | +0 c | 107 | 22365 | +4127 | +26.29 | [+5.24 ; +49.50] | +0 | +42.56 |
-| 250 ms | +1 c | 117 | 28384 | +4460 | +28.41 | [+1.35 ; +56.51] | +333 | +49.76 |
-| 250 ms | +2 c | 122 | 31474 | +4645 | +29.58 | [+2.56 ; +58.48] | +518 | +51.30 |
-| 250 ms | +3 c | 124 | 33691 | +4940 | +31.47 | [+4.22 ; +59.95] | +813 | +54.44 |
-| 500 ms | +0 c | 96 | 20132 | +3039 | +19.36 | [+2.23 ; +38.81] | +0 | +30.48 |
-| 500 ms | +1 c | 110 | 27031 | +3380 | +21.53 | [-0.82 ; +44.09] | +341 | +39.12 |
-| 500 ms | +2 c | 112 | 30396 | +3518 | +22.40 | [-0.46 ; +45.29] | +479 | +40.61 |
-| 500 ms | +3 c | 116 | 32667 | +3828 | +24.38 | [-0.24 ; +49.87] | +789 | +41.77 |
+| 164 ms | +0 c | 229 | 36412 | +4141 | +14.90 | [-0.16 ; +31.73] | +0 | +17.71 |
+| 164 ms | +1 c | 243 | 45148 | +3967 | +14.27 | [-2.94 ; +32.01] | -175 | +17.44 |
+| 164 ms | +2 c | 246 | 52041 | +4122 | +14.83 | [-2.95 ; +35.38] | -19 | +15.19 |
+| 164 ms | +3 c | 251 | 57435 | +4352 | +15.65 | [-2.95 ; +36.99] | +211 | +14.75 |
+| 250 ms | +0 c | 194 | 34666 | +3672 | +13.21 | [-1.31 ; +29.52] | +0 | +15.93 |
+| 250 ms | +1 c | 216 | 43650 | +3568 | +12.83 | [-3.95 ; +30.86] | -104 | +16.34 |
+| 250 ms | +2 c | 224 | 49879 | +3297 | +11.86 | [-6.25 ; +31.67] | -375 | +13.60 |
+| 250 ms | +3 c | 227 | 54717 | +3373 | +12.13 | [-5.63 ; +31.48] | -299 | +12.84 |
+| 500 ms | +0 c | 166 | 31903 | +2640 | +9.50 | [-2.34 ; +22.13] | +0 | +9.27 |
+| 500 ms | +1 c | 190 | 42186 | +2533 | +9.11 | [-4.31 ; +24.47] | -108 | +9.88 |
+| 500 ms | +2 c | 201 | 49127 | +2314 | +8.32 | [-7.60 ; +24.29] | -326 | +7.82 |
+| 500 ms | +3 c | 207 | 53888 | +2238 | +8.05 | [-9.12 ; +26.57] | -402 | +5.86 |
 
 ## 5. H774 — Alpha sans poursuite (abandon / deuxième chance / attente)
 
@@ -80,10 +80,10 @@ Achat seulement tant que modèle (figé au signal) − prix − frais ≥ 0,05.
 
 | Politique | Signaux exécutés | Parts | P&L total ($) | moyen / signal | IC 90 % | 2e moitié / signal |
 |---|---|---|---|---|---|---|
-| abandon immédiat (164 ms, +0) | 128 | 24003 | +4670 | +29.74 | [+6.51 ; +57.72] | +49.38 |
-| deuxième chance (+164 ms puis 500 ms, plafond +2 c) | 134 | 25655 | +4890 | +31.15 | [+6.72 ; +57.14] | +54.19 |
-| attente : relances 5 s au prix du signal | 133 | 35700 | +5634 | +35.88 | [+6.26 ; +66.98] | +58.61 |
-| attente : relances 5 s, plafond +2 c | 138 | 39072 | +6013 | +38.30 | [+8.64 ; +70.47] | +63.23 |
+| abandon immédiat (164 ms, +0) | 229 | 36412 | +4141 | +14.90 | [-0.61 ; +31.40] | +17.71 |
+| deuxième chance (+164 ms puis 500 ms, plafond +2 c) | 244 | 39821 | +3939 | +14.17 | [-1.89 ; +31.09] | +15.87 |
+| attente : relances 5 s au prix du signal | 243 | 58658 | +4052 | +14.58 | [-3.40 ; +35.70] | +14.16 |
+| attente : relances 5 s, plafond +2 c | 250 | 64620 | +4067 | +14.63 | [-5.36 ; +35.32] | +12.20 |
 
 ## 6. H770 — Maker contre preneur sur les mêmes signaux
 
@@ -91,26 +91,26 @@ Maker simulé : offre d'achat posée à décision + 14 ms au meilleur acheteur (
 
 | Voie | Signaux remplis | Parts | P&L total ($) | moyen / signal | IC 90 % | Taux de gain des remplis | 2e moitié / signal |
 |---|---|---|---|---|---|---|---|
-| preneur 164 ms (Bot95 actuel) | 128 | 24003 | +4670 | +29.74 | [+6.21 ; +55.09] | 42 % | +49.38 |
-| maker 10 s, file prudente | 99 | 19702 | +2531 | +16.12 | [+0.46 ; +33.54] | 37 % | +37.04 |
-| maker 10 s, file centrale | 106 | 20580 | +2544 | +16.21 | [-0.45 ; +32.72] | 37 % | +36.89 |
-| maker 10 s, file optimiste | 129 | 38102 | +4902 | +31.22 | [+5.14 ; +59.09] | 40 % | +51.19 |
-| maker 60 s, file prudente | 121 | 36086 | +3201 | +20.39 | [-4.60 ; +46.88] | 32 % | +38.83 |
-| maker 60 s, file centrale | 122 | 36646 | +3293 | +20.98 | [-2.67 ; +46.88] | 32 % | +38.75 |
-| maker 60 s, file optimiste | 137 | 47887 | +5268 | +33.56 | [+5.10 ; +67.18] | 38 % | +52.50 |
+| preneur 164 ms (Bot95 actuel) | 229 | 36412 | +4141 | +14.90 | [-0.32 ; +31.78] | 34 % | +17.71 |
+| maker 10 s, file prudente | 178 | 37176 | +405 | +1.46 | [-9.27 ; +12.36] | 26 % | -4.26 |
+| maker 10 s, file centrale | 190 | 38992 | +417 | +1.50 | [-9.15 ; +12.48] | 26 % | -4.27 |
+| maker 10 s, file optimiste | 236 | 67832 | +3379 | +12.15 | [-5.94 ; +31.27] | 28 % | +8.21 |
+| maker 60 s, file prudente | 223 | 63447 | +333 | +1.20 | [-14.28 ; +18.25] | 23 % | -4.50 |
+| maker 60 s, file centrale | 225 | 64084 | +479 | +1.72 | [-14.86 ; +18.59] | 24 % | -4.12 |
+| maker 60 s, file optimiste | 248 | 78900 | +3869 | +13.92 | [-6.41 ; +36.61] | 28 % | +11.32 |
 
-**Fantôme vivant M1 (maker au signal, mesuré en direct) sur les mêmes signaux** : 78 signaux appariés. M1 prudent +2716 $, proportionnel +2681 $ ; preneur 164 ms sur ces signaux +3970 $ ; simulation maker 60 s centrale +3176 $. (M1 est mis à l'échelle de 50 $ au prix maker.)
+**Fantôme vivant M1 (maker au signal, mesuré en direct) sur les mêmes signaux** : 198 signaux appariés. M1 prudent +1167 $, proportionnel +1203 $ ; preneur 164 ms sur ces signaux +3443 $ ; simulation maker 60 s centrale +411 $. (M1 est mis à l'échelle de 50 $ au prix maker.)
 
 ## 7. Comparaison contre Bot95 actuel, M4 et M8 (mêmes cycles)
 
-Cycles communs avec les fantômes maker vivants : 16.
+Cycles communs avec les fantômes maker vivants : 40.
 
 | Moteur | Ordres / signaux | P&L prudent ($) | P&L proportionnel ($) | par cycle (prudent) |
 |---|---|---|---|---|
-| M4 (vivant) | 102 | +190 | +400 | +11.86 |
-| M8 (vivant) | 4 | +453 | +453 | +28.34 |
-| Bot95 preneur 164 ms (simulé) | 80 | +3950 | — | +246.90 |
-| Bot95 à 0 ms (borne idéale) | 80 | +4551 | — | +284.45 |
+| M4 (vivant) | 351 | -433 | -35 | -10.83 |
+| M8 (vivant) | 122 | -816 | -745 | -20.41 |
+| Bot95 preneur 164 ms (simulé) | 201 | +3422 | — | +85.54 |
+| Bot95 à 0 ms (borne idéale) | 201 | +4558 | — | +113.94 |
 
 M4 et M8 ne sont pas déclenchés par les signaux : comparaison par cycle, pas par signal.
 
@@ -118,14 +118,14 @@ M4 et M8 ne sont pas déclenchés par les signaux : comparaison par cycle, pas p
 
 Le modèle de Dublin est recalculé hors ligne (copie de proba()). Validation au moment des signaux : voir la note. Grille de 100 ms sur tout le cycle ; première fois qu'une règle se déclenche dans le cycle (comme le bot). **Base** = mêmes flux que le bot ; **rapide** = on ajoute au prix Bybit/OKX le mouvement de Binance depuis cette observation (information disponible plus tôt). Exécution : décision + 164 ms, plafond = prix vu à la décision.
 
-*Note de validation* : écart entre le modèle recalculé et le modèle enregistré au signal ≤ 0,005 pour 74 % des 157 signaux (médiane 0.0001) ; les écarts viennent surtout des signaux déclenchés par Bybit/OKX (l'enregistreur ne garde qu'une valeur par 50 ms).
+*Note de validation* : écart entre le modèle recalculé et le modèle enregistré au signal ≤ 0,005 pour 72 % des 278 signaux (médiane 0.0001) ; les écarts viennent surtout des signaux déclenchés par Bybit/OKX (l'enregistreur ne garde qu'une valeur par 50 ms).
 
-- Signaux de grille « base » : 155 ; signaux réels retrouvés par la grille (même règle, même côté, même cycle) : 152 / 157.
-- Signaux de grille « rapide » : 160. Appariés à un signal « base » (même règle et côté) : 154.
-- Avance de la décision rapide sur la base : médiane 0 ms ; décidés plus tôt dans 2 % des cas ; **au moins 164 ms plus tôt : 3** ; au moins 500 ms plus tôt : 3.
-- Sur les mêmes opportunités : base +3463 $ (+22.49 / signal), rapide +3408 $ (+22.13 / signal) ; différence moyenne -0.36 $ / signal, IC 90 % [-1.25 ; +0.20].
-- **Signaux supplémentaires** (rapide seulement) : 6 — gagnants 3, perdants 3, P&L exécuté +0 $.
-- **Signaux perdus** (base seulement) : 1 — gagnants 0, perdants 1, P&L qu'ils auraient donné -33 $.
+- Signaux de grille « base » : 274 ; signaux réels retrouvés par la grille (même règle, même côté, même cycle) : 269 / 278.
+- Signaux de grille « rapide » : 281. Appariés à un signal « base » (même règle et côté) : 271.
+- Avance de la décision rapide sur la base : médiane 0 ms ; décidés plus tôt dans 4 % des cas ; **au moins 164 ms plus tôt : 8** ; au moins 500 ms plus tôt : 8.
+- Sur les mêmes opportunités : base +3201 $ (+11.81 / signal), rapide +3145 $ (+11.61 / signal) ; différence moyenne -0.21 $ / signal, IC 90 % [-1.18 ; +0.70].
+- **Signaux supplémentaires** (rapide seulement) : 10 — gagnants 3, perdants 7, P&L exécuté -64 $.
+- **Signaux perdus** (base seulement) : 3 — gagnants 2, perdants 1, P&L qu'ils auraient donné +4 $.
 
 ## 9. H771–H773 — Offres d'achat prépositionnées avant les signaux (livrable « valeur de la priorité maker »)
 
@@ -133,17 +133,17 @@ Règle sans regard vers le futur (modèle « base » recalculé toutes les 100 m
 
 | File | Remplissages désirés : parts | P&L ($) | Remplissages non désirés : parts | P&L ($) | Total ($) | IC 90 % total par cycle |
 |---|---|---|---|---|---|---|
-| prudente | 3127 | +328 | 4551 | -106 | +222 | [-7.4 ; +22.0] / cycle |
-| centrale | 3018 | +351 | 4669 | -131 | +220 | [-7.6 ; +21.9] / cycle |
-| optimiste | 2267 | +308 | 5387 | -43 | +265 | [-7.0 ; +23.3] / cycle |
+| prudente | 5338 | +217 | 7617 | -216 | +1 | [-12.0 ; +12.3] / cycle |
+| centrale | 4937 | +325 | 8055 | -322 | +4 | [-11.9 ; +11.3] / cycle |
+| optimiste | 3648 | +222 | 9192 | -167 | +56 | [-10.9 ; +12.7] / cycle |
 
 **Valeur de la priorité** — signaux réels couverts par une offre prépositionnée : parts et P&L de l'offre prépositionnée contre l'offre posée au signal (60 s).
 
 | File | Signaux couverts | Prépositionnée : parts | P&L | Au signal : parts | P&L |
 |---|---|---|---|---|---|
-| prudente | 23 | 3127 | +328 | 5838 | +981 |
-| centrale | 23 | 3018 | +351 | 5861 | +992 |
-| optimiste | 17 | 2267 | +308 | 4600 | +814 |
+| prudente | 41 | 5338 | +217 | 9100 | +791 |
+| centrale | 38 | 4937 | +325 | 8759 | +956 |
+| optimiste | 27 | 3648 | +222 | 7376 | +1307 |
 
 ## Limites
 - Une seule journée, peu de cycles : tout est préliminaire ; aucune règle n'a été ajustée sur ces résultats.
