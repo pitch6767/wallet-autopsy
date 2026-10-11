@@ -2869,17 +2869,55 @@
 ],
 "start": 1791699300,
 "slug": "btc-updown-5m-1791699300"
+},
+"2026-10-11T08:25:34.154Z|Up": {
+"heure": "2026-10-11T08:25:34.154Z",
+"cote": "Up",
+"prix": 0.2219,
+"parts": 238.1,
+"U": 238.0952380952381,
+"D": 0,
+"cash": -52.844,
+"net": -52.84,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.338,
+"restant_s": 266,
+"journal": [
+"34.2s désaccord 20 vu à 0.12 (modèle 0.344) ; 10 s plus tard Polymarket a rejoint le modèle → achat à 0.2219, 266 s restantes"
+],
+"start": 1791707100,
+"slug": "btc-updown-5m-1791707100"
+},
+"2026-10-11T08:16:20.625Z|Up": {
+"heure": "2026-10-11T08:16:20.625Z",
+"cote": "Up",
+"prix": 0.3562,
+"parts": 147.06,
+"U": 147.05882352941177,
+"D": 0,
+"cash": -52.376000000000005,
+"net": -52.38,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.426,
+"restant_s": 219,
+"journal": [
+"80.6s désaccord 20 vu à 0.24 (modèle 0.455) ; 10 s plus tard Polymarket a rejoint le modèle → achat à 0.3562, 219 s restantes"
+],
+"start": 1791706500,
+"slug": "btc-updown-5m-1791706500"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 27,
+"n": 29,
 "gains": 13,
-"pertes": 14,
-"pnl": -242.01
+"pertes": 16,
+"pnl": -347.23
 },
-"n_sauves": 151,
-"maj": "2026-10-11 08:24 UTC",
+"n_sauves": 153,
+"maj": "2026-10-11 08:49 UTC",
 "archive": [
 [
 "2026-10-09T06:02:51.270Z",
@@ -3699,6 +3737,24 @@
 "perdu",
 0.499,
 221
+],
+[
+"2026-10-11T08:16:20.625Z",
+"Up",
+0.3562,
+-52.38,
+"perdu",
+0.426,
+219
+],
+[
+"2026-10-11T08:25:34.154Z",
+"Up",
+0.2219,
+-52.84,
+"perdu",
+0.338,
+266
 ]
 ]
 }
