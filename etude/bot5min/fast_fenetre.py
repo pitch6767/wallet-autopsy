@@ -148,6 +148,14 @@ def tournoi_signaux(C, sigs):
     return out
 
 
+def ic_blocs(par_cycle, n=2000, rng=None):
+    """intervalle de confiance à 90 % du total, rééchantillonnage par cycles (blocs de 5 min)"""
+    v = np.array(list(par_cycle.values()), dtype=float)
+    if len(v) < 3: return None
+    rng = rng or np.random.default_rng(3); b = [v[rng.integers(0, len(v), len(v))].sum() for _ in range(n)]
+    return np.percentile(b, [5, 95])
+
+
 def pct(x): return "—" if x is None else f"{100 * x:.0f} %"
 def q3(v, d=0):
     if not v: return "—"
@@ -169,6 +177,12 @@ def main():
     for fn in fichiers:
         C = normaliser(fn); ncy += 1; versions[C["version"]] += 1
         if C["coupe"]: trous["cycle coupé (limite d'événements)"] += 1
+        Rb = json.load(gzip.open(fn))
+        if "obSnap" in Rb:
+            trous["cycles avec carnets Binance/Bybit"] += 1
+            if Rb.get("obTrous"): trous["cycles avec trou de carnet ou de transactions (exclus des études de carnets)"] += 1
+            for k in ("bn", "by"):
+                if any(r[-1] == 0 for r in (Rb.get("ob") or {}).get(k, []) if len(r) > 21): trous[f"cycles avec carnet {k} marqué non fiable"] += 1
         if not C["flux"] or not any(e[2] == "B" for e in C["flux"]): trous["sans carnet complet"] += 1; continue
         Rj = Q.rejouer(C); Q.classer(C, Rj)
         for b in Rj["baisses"]:
@@ -258,6 +272,21 @@ def main():
                 a = sum((x.get("mo") or {}).get("p", {}).get(h, [0, 0])[0] for x in X); b = sum((x.get("mo") or {}).get("p", {}).get(h, [0, 0])[1] for x in X)
                 mo.append(f"{100 * a / b:+.1f}" if b else "—")
             w(f"| {v} | {len(X)} | {pp:.0f} / {pr:.0f} | {usd:.0f} $ | {rp:+.0f} $ | {rr:+.0f} $ | {(rp / usd if usd else float('nan')):+.2f} | {' / '.join(mo)} |")
+        w("\n**Par prix d'achat et temps restant (toutes variantes maker, prudent)**\n")
+        w("| Prix | Offres remplies | $ exécutés | Résultat | par $ |\n|---|---|---|---|---|")
+        for lo, hi in ((0, .2), (.2, .35), (.35, .5), (.5, .65), (.65, 1.01)):
+            X = [x for x in MKR if lo <= x["prix"] < hi]; usd = sum(x["remplP"] * x["prix"] for x in X); r = sum(x["resultat"]["prudent"] for x in X)
+            w(f"| {lo:.2f}–{min(hi, 1):.2f} | {len(X)} | {usd:.0f} $ | {r:+.0f} $ | {(r / usd if usd else float('nan')):+.2f} |")
+        w("\n| Temps restant à la pose | Offres remplies | $ exécutés | Résultat | par $ |\n|---|---|---|---|---|")
+        for lo, hi in ((0, 60), (60, 120), (120, 180), (180, 300)):
+            X = [x for x in MKR if x.get("restantPose_s") is not None and lo <= x["restantPose_s"] < hi]; usd = sum(x["remplP"] * x["prix"] for x in X); r = sum(x["resultat"]["prudent"] for x in X)
+            w(f"| {lo}–{hi} s | {len(X)} | {usd:.0f} $ | {r:+.0f} $ | {(r / usd if usd else float('nan')):+.2f} |")
+        w("(temps restant enregistré seulement depuis la version du 11.10 13:55)\n")
+        w("\n**Intervalle de confiance à 90 % du résultat prudent (rééchantillonnage par cycles)**\n")
+        for v in sorted(V):
+            pc = collections.defaultdict(float)
+            for x in V[v]: pc[x["start"]] += x["resultat"]["prudent"]
+            ic = ic_blocs(pc); w(f"- {v} : {sum(pc.values()):+.0f} $ sur {len(pc)} cycles, IC 90 % " + (f"[{ic[0]:+.0f} ; {ic[1]:+.0f}] $" if ic is not None else "— (trop peu de cycles)"))
         w("\nSélection adverse : milieu du carnet h secondes après chaque remplissage moins notre prix (négatif = le marché est parti contre nous). "
           "Les offres remplies avant la version du 11.10 13:55 n'ont pas cette mesure.\n")
     w("\n## 6. Tournoi H650 préliminaire sur nos signaux (mêmes cycles)\n")
@@ -269,7 +298,11 @@ def main():
     w("| Stratégie | Trades | $ engagés | Résultat | Résultat par $ |\n|---|---|---|---|---|")
     for k, nom in (("FAST", "FAST : preneur exécuté 164 ms après le signal"), ("SLOW", "SLOW : preneur exécuté 1,164 s après (offre persistante)"), ("HYBRID", "HYBRID : FAST sinon SLOW (règle fixée avant)")):
         X = [x[k] for x in T if x[k][0] > 0]; c = sum(x[1] for x in X); r = sum(x[2] for x in X)
-        w(f"| {nom} | {len(X)} | {c:.0f} $ | {r:+.0f} $ | {(r / c if c else float('nan')):+.2f} |")
+        pc = collections.defaultdict(float)
+        for x in T:
+            if x[k][0] > 0: pc[x["start"]] += x[k][2]
+        ic = ic_blocs(pc)
+        w(f"| {nom} | {len(X)} | {c:.0f} $ | {r:+.0f} $ {('[IC 90 % ' + f'{ic[0]:+.0f} ; {ic[1]:+.0f}]') if ic is not None else ''} | {(r / c if c else float('nan')):+.2f} |")
     sC = [S for st in cyc for S in SIGc.get(st, []) if S.get("moteurC") and S["moteurC"].get("resultat")]
     rC = 0.0; nC = 0
     for S in sC:
