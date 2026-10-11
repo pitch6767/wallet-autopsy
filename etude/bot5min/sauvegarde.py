@@ -60,7 +60,7 @@ try:                                                         # vitesse (10.10) :
     d = get(U + "/api/vitesse"); J = d.get("signaux", []); f = "bot95/vitesse.json"
     old = json.load(open(f)) if os.path.exists(f) else []
     vu = {(x["start"], x["nom"]) for x in old}; old += [x for x in J if (x["start"], x["nom"]) not in vu]
-    old.sort(key=lambda x: (x["start"], x["nom"])); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("vitesse", len(old), d.get("latPoly"), d.get("latDec"))
+    old.sort(key=lambda x: (x["start"], x["nom"])); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("vitesse", len(old), d.get("latPoly"), d.get("latDec")); json.dump({"rttClob_ms": d.get("rttClob_ms"), "latPoly": d.get("latPoly"), "latDec": d.get("latDec"), "lu": time.time()}, open("bot95/vitesse_cloudflare.json", "w"))
 except Exception as e: print("vitesse", e)
 try:                                                         # bot95 rapide (VPS de Dublin) : signaux mesures a la milliseconde
     d = get(U + "/api/rapide"); J = d.get("signaux", []); f = "bot95/rapide.json"
