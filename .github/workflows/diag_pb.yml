@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          sleep 240
-          curl -sS -m 60 https://bot95.pitch67.workers.dev/api/pbdiag > bot95/pbdiag.json; cat bot95/pbdiag.json
+          sleep 5
+          curl -sS -m 60 https://bot95.pitch67.workers.dev/api/pbdiag | head -c 1500 > bot95/pbdiag.json; echo >> bot95/pbdiag.json; curl -sS -m 30 https://bot95.pitch67.workers.dev/api/rapidemaker | head -c 300 >> bot95/pbdiag.json; cat bot95/pbdiag.json
           git config user.name diag; git config user.email bot@users.noreply.github.com
           git add bot95/pbdiag.json; git commit -q -m "Diagnostic PolyBolt [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
