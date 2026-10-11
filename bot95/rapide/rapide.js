@@ -270,6 +270,55 @@ function achetableJusqua(id, cap, budget = 50) {          // ordre fictif limite
   let q = 0, c = 0; for (const [p, sz] of asksTries(id)) { if (p > cap + 1e-9) break; const k = Math.min(sz, (budget - c) / (p + FEE(p))); if (k <= 0) break; q += k; c += k * p + k * FEE(p); }
   return { q: +q.toFixed(2), c: +c.toFixed(2) };
 }
+// ---------------------------------------------------------------- R4 « RETRY ENGINE » (accord de Pitch, 11.10.2026 17:25) — FANTÔME, AUCUN ORDRE
+// Sur chaque signal Bot95 (mêmes signaux, rien de changé dans leurs règles) : tentative « envoyée » à la décision, exécutée contre le carnet après
+// trajet simple + 150 ms (retard preneur Polymarket). Sans exécution complète : nouvelle tentative toutes les 500 ms pendant 5 s (envois à 0, 0,5 … 4,5 s).
+// Avant CHAQUE envoi : probabilité recalculée avec les données reçues à cet instant (même modèle que la règle) ; on n'achète que les niveaux où
+// probabilité − prix − frais ≥ 0,05, au plus au plafond. Budget 50 $ par signal, fills partiels cumulés, jamais au-delà du budget.
+// Variantes mesurées sur les MÊMES signaux (comparaisons demandées) : R4 (+2 c, recalcul), +1 c, prix initial, +2 c sans recalcul (modèle figé
+// au signal), preneur immédiat (une seule tentative, prix du signal, sans condition = Bot95 actuel). Paramètres fixés avant la mesure.
+// « doublon » : une variante du même cycle et du même côté a déjà exécuté → la position n'est pas comptée deux fois dans le résultat officiel.
+const R4_VAR = [["R4", 0.02, true, true], ["R4 +1 c", 0.01, true, true], ["R4 prix initial", 0, true, true], ["R4 +2 c sans recalcul", 0.02, false, true], ["preneur immediat", 0, false, false]];
+const R4_DEJA = {};                                                      // "start|cote|variante" → déjà exécuté
+const SD_REGLE = { pu: 8e-4, pu01: 1e-4, pu015: 1.5e-4 };
+function retrySurSignal(S, mk, up, nom) {
+  const id = up ? mk.up : mk.down, a0 = S.a0, sd = SD_REGLE[MODELE_REGLE(nom)] || 8e-4;
+  S.r4 = {};
+  for (const [v, plaf, recalc, relance] of R4_VAR) {
+    const cle = mk.start + "|" + S.cote + "|" + v, R = (S.r4[v] = { plafond: +(a0 + plaf).toFixed(3), q: 0, c: 0, tentatives: [], doublon: !!R4_DEJA[cle] });
+    let budget = 50;
+    const tenter = (k) => {
+      if (budget <= 0.01 || (k > 0 && !relance)) return;
+      const tEnvoi = nowMs();
+      let p = null; try { const pp = recalc ? proba(mk, sd) : null; p = pp == null ? null : (up ? pp : 1 - pp); } catch (_) {}
+      const prob = recalc ? p : S.modele;
+      let lim = a0 + plaf;
+      if (relance && prob != null) { while (lim > 0.005 && prob - lim - FEE(lim) < 0.05) lim = +(lim - 0.01).toFixed(2); }
+      if (relance && prob == null) lim = -1;                                  // pas de modèle : pas d'achat
+      const vu = asksTries(id)[0], lat = LAT();
+      setTimeout(() => { try {
+        const x = lim > 0 ? achetableJusqua(id, lim, budget) : { q: 0, c: 0 };
+        if (x.q > 0) { R.q = +(R.q + x.q).toFixed(2); R.c = +(R.c + x.c).toFixed(2); budget -= x.c; if (!R.premier_ms) R.premier_ms = +(nowMs() - S.tDecision).toFixed(1); R4_DEJA[cle] = true; }
+        R.tentatives.push([k, +(tEnvoi - S.tDecision).toFixed(1), prob == null ? null : +prob.toFixed(4), +lim.toFixed(3), vu ? vu[0] : null, vu ? +vu[1].toFixed(2) : null, x.q, x.c]);
+        if (k < 9 && budget > 0.01 && relance) setTimeout(() => { try { tenter(k + 1); } catch (e) { log("r4", e.message); } }, Math.max(0, 500 * (k + 1) - (nowMs() - S.tDecision)));
+      } catch (e) { log("r4", e.message); } }, lat + 150);
+    };
+    tenter(0);
+  }
+  // H776 : réapparition d'une offre ≤ prix du signal (et ≤ +2 c) après sa disparition, pendant 5 s
+  S.r4req = { disparu_ms: null, retour_ms: null, retourPrix: null, retourQ: null, retour2c_ms: null, retour2cPrix: null, retour2cQ: null, probRetour: null };
+  const t0 = S.tDecision, ech = () => { try {
+    const dt = nowMs() - t0; if (dt > 5000) return;
+    const a = achetable(id, a0), b = achetableJusqua(id, a0 + 0.02), Q = S.r4req;
+    if (Q.disparu_ms == null) { if (a.q < 1) Q.disparu_ms = +dt.toFixed(1); }
+    else {
+      if (Q.retour_ms == null && a.q >= 1) { Q.retour_ms = +dt.toFixed(1); Q.retourPrix = asksTries(id)[0] ? asksTries(id)[0][0] : null; Q.retourQ = a.q; try { const pp = proba(mk, sd); Q.probRetour = pp == null ? null : +(up ? pp : 1 - pp).toFixed(4); } catch (_) {} }
+      if (Q.retour2c_ms == null && b.q >= 1) { Q.retour2c_ms = +dt.toFixed(1); Q.retour2cPrix = asksTries(id)[0] ? asksTries(id)[0][0] : null; Q.retour2cQ = b.q; }
+    }
+    setTimeout(ech, 25);
+  } catch (e) { log("r4req", e.message); } };
+  setTimeout(ech, 1);
+}
 function signal(nom, mk, up, k, fair, tleft, source, tMsg, t0) {
   const id = up ? mk.up : mk.down, B = livres[id] || {}, tD = nowMs();
   const decisionUs = Number(process.hrtime.bigint() - t0) / 1000;
@@ -291,6 +340,7 @@ function signal(nom, mk, up, k, fair, tleft, source, tMsg, t0) {
     } catch (e) { S.moteurC = { erreur: e.message }; }
   }
   try { makerSurSignal(S, mk, up, nom); } catch (e) { log("maker", e.message); }
+  try { retrySurSignal(S, mk, up, nom); } catch (e) { log("r4", e.message); }
   SIGNAUX.push(S);
   try { const R = recDe(mk.start); R.sig.push({ nom, cote: S.cote, tDecision: S.tDecision, a0: S.a0, q0: S.q0, modele: S.modele, ecart: S.ecart, restant_s: S.restant_s, declencheur: source });
     R.dec.push([S.tDecision, nom, "signal", S.cote, S.a0]); } catch (_) {}
