@@ -260,7 +260,7 @@ def main():
       "n'entrent PAS dans la décision (seulement dans l'exécution simulée). MAKER : parts attendues en 10 s × (probabilité du modèle − prix − 2 c) ; ce n'est PAS « probabilité de "
       "remplissage × gain conditionnel au remplissage » : la sélection adverse est une constante (2 c) au lieu de la probabilité de victoire SACHANT le remplissage. "
       "Abstention : oui, si aucune voie n'a une espérance positive (preneur) ou ≥ 0,50 $ (maker). **Non conforme à la formule demandée** ; version conforme proposée après le verdict, M8 actuel inchangé.\n")
-    m8 = [x for v, X in V.items() if v.startswith("M8") for x in X if x["start"] in cyc]
+    m8 = [x for v, X in V.items() if v.startswith("M8 hybride") for x in X if x["start"] in cyc]
     nsig = sum(SIGcyc.values())
     w("| Décision | Nombre | Remplies | Parts | Résultat prudent | Jackpots (≤ 0,25 gagnés) | Creux |\n|---|---|---|---|---|---|---|")
     for mode in ("preneur", "maker"):
@@ -293,7 +293,8 @@ def main():
                 L, pc = lignes_moteur(f"{k} (délai {dl:.0f} ms)", pos); w(L); PCS[f"{k} {dl:.0f}"] = pc
     for nom, pre in (("M0 témoin", "M0"), ("M1 maker sur signal", "M1"), ("M2 marge 5 c", "M2 cotation marge 5 c"), ("M4", "M4 retrait toxique"), ("M4a", "M4a"), ("M4b", "M4b"),
                      ("M4c", "M4c"), ("M6 100 ms", "M6 duree de vie 100 ms"), ("M6 250 ms", "M6 duree de vie 250 ms"), ("M6 500 ms", "M6 duree de vie 500 ms"),
-                     ("M6 1000 ms", "M6 duree de vie 1000 ms"), ("M8 routeur", "M8")):
+                     ("M6 1000 ms", "M6 duree de vie 1000 ms"), ("M8 routeur", "M8 hybride"), ("M8b routeur corrigé", "M8b"), ("M9 fin de cycle", "M9"),
+                     ("M10 double maker", "M10"), ("M11 zone maker", "M11")):
         pos = []
         for v, X in V.items():
             if not v.startswith(pre): continue
