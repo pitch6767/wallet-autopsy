@@ -85,12 +85,22 @@ export class Reel {
 }
 
 // Identifiants API pour le flux PolyBolt (lecture des prix) : tirés d'un portefeuille JETABLE, vide, créé ici. Aucun lien avec le portefeuille de Pitch.
+// Authentification L1 de Polymarket faite à la main avec fetch (le client officiel passe par axios, qui échoue dans Cloudflare : « Unsupported cache mode »).
 export async function identifiantsLecture(storage) {
   let k = await storage.get("pb:cleJetable");
   if (!k) { k = generatePrivateKey(); await storage.put("pb:cleJetable", k); }
-  const account = privateKeyToAccount(k);
-  const signer = createWalletClient({ account, chain: polygon, transport: http("https://polygon-rpc.com") });
-  const c = new ClobClient({ host: HOTE, chain: 137, signer, signatureType: 0, funderAddress: account.address, throwOnError: true });
-  const cr = await c.createOrDeriveApiKey();
-  return { apiKey: cr.key, secret: cr.secret, passphrase: cr.passphrase, adresse: account.address };
+  const account = privateKeyToAccount(k), ts = String(Math.floor(Date.now() / 1000));
+  const sig = await account.signTypedData({
+    domain: { name: "ClobAuthDomain", version: "1", chainId: 137 },
+    types: { ClobAuth: [{ name: "address", type: "address" }, { name: "timestamp", type: "string" }, { name: "nonce", type: "uint256" }, { name: "message", type: "string" }] },
+    primaryType: "ClobAuth",
+    message: { address: account.address, timestamp: ts, nonce: 0n, message: "This message attests that I control the given wallet" } });
+  const headers = { POLY_ADDRESS: account.address, POLY_SIGNATURE: sig, POLY_TIMESTAMP: ts, POLY_NONCE: "0" };
+  const essais = [];
+  for (const [methode, chemin] of [["GET", "/auth/derive-api-key"], ["POST", "/auth/api-key"]]) {
+    const r = await fetch(HOTE + chemin, { method: methode, headers }); const txt = await r.text(); essais.push(methode + " " + r.status + " " + txt.slice(0, 120));
+    let d = null; try { d = JSON.parse(txt); } catch (_) {}
+    if (r.ok && d && (d.apiKey || d.key)) return { apiKey: d.apiKey || d.key, secret: d.secret, passphrase: d.passphrase, adresse: account.address };
+  }
+  throw new Error(essais.join(" | "));
 }
