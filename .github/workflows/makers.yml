@@ -18,7 +18,7 @@ jobs:
       - name: Donnees precedentes et cycles Dublin
         run: |
           set +e
-          git fetch -q origin donnees-makers && git show origin/donnees-makers:makers_suivi.json > bot95/makers_suivi.json
+          git fetch -q origin donnees-makers && (git show origin/donnees-makers:makers_suivi.json.gz | gunzip > bot95/makers_suivi.json || git show origin/donnees-makers:makers_suivi.json > bot95/makers_suivi.json)
           mkdir -p /tmp/cyc && git fetch -q origin donnees-rapide && git archive origin/donnees-rapide cycles | tar x -C /tmp/cyc
           pip install -q numpy 2>/dev/null; ls -la bot95/makers_suivi.json; ls /tmp/cyc/cycles | head
       - name: Collecte et analyse
@@ -32,7 +32,7 @@ jobs:
           cp bot95/makers_suivi.json /tmp/base.json
           git add etude/bot5min/resultat_makers_suivi.md etude/bot5min/journal_makers_suivi.txt; git commit -q -m "Suivi makers [skip ci]"
           for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
-          cd /tmp && rm -rf dm && mkdir dm && cd dm && git init -q && git checkout -q -b donnees-makers && cp /tmp/base.json makers_suivi.json
+          cd /tmp && rm -rf dm && mkdir dm && cd dm && git init -q && git checkout -q -b donnees-makers && gzip -9 -c /tmp/base.json > makers_suivi.json.gz; ls -la makers_suivi.json.gz
           git config user.name makers; git config user.email bot@users.noreply.github.com
-          git add makers_suivi.json && git commit -q -m "makers (un seul commit, 14 jours)"
+          git add makers_suivi.json.gz && git commit -q -m "makers (un seul commit, 14 jours, gzip : GitHub refuse les fichiers > 100 Mo)"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" donnees-makers
