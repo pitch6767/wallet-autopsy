@@ -44,6 +44,8 @@ jobs:
               open(f"cycles/{d}/{st}.json.gz", "wb").write(get(f"{U}/api/rapidecycle?start={st}", True)); n += 1
           print("nouveaux cycles", n, "dans le bot", len(L))
           P
+          # cycles de plus de 21 jours retirés ; la branche garde UN seul commit (sinon l'historique grossit d'environ 300 Mo par jour)
+          LIM=$(date -u -d "21 days ago" +%Y-%m-%d); for d in cycles/*/; do b=$(basename $d); if [[ "$b" < "$LIM" ]]; then git rm -rq "$d"; fi; done
           git add cycles README.md 2>/dev/null || true
-          git commit -qm "cycles bot rapide" || echo "rien de neuf"
-          for k in 1 2 3; do git push -q origin donnees-rapide && break; sleep 5; done
+          R=$(git rev-list --max-parents=0 HEAD | tail -1); git reset -q --soft "$R"; git commit -q --amend -m "cycles bot rapide (un seul commit, 21 jours)" || echo "rien de neuf"
+          for k in 1 2 3; do git push -q -f origin donnees-rapide && break; sleep 5; done

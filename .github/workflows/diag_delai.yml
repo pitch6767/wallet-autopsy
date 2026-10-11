@@ -1,0 +1,31 @@
+name: Diagnostic delai preneur
+on:
+  push:
+    branches: [main]
+    paths: [bot95/delai_go.txt]
+permissions:
+  contents: write
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 - <<'P'
+          import json, time, urllib.request
+          def get(u):
+              with urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "diag"}), timeout=60) as r: return json.loads(r.read())
+          st = int(time.time()) // 300 * 300
+          ev = get(f"https://gamma-api.polymarket.com/events?slug=btc-updown-5m-{st}")[0]; m = ev["markets"][0]
+          out = {"evenement": {k: v for k, v in ev.items() if k != "markets"}, "marche_gamma": m}
+          try: out["marche_clob"] = get("https://clob.polymarket.com/markets/" + m["conditionId"])
+          except Exception as e: out["marche_clob"] = str(e)
+          tok = json.loads(m["clobTokenIds"])[0]
+          for nom, u in [("clob_market_info", "https://clob.polymarket.com/clob-markets/" + m["conditionId"]), ("fee", "https://clob.polymarket.com/fee-rate?token_id=" + tok), ("tick", "https://clob.polymarket.com/tick-size?token_id=" + tok)]:
+              try: out[nom] = get(u)
+              except Exception as e: out[nom] = str(e)
+          json.dump(out, open("bot95/delai_marche.json", "w"), indent=1, ensure_ascii=False)
+          P
+          grep -i -n "delay\|delai\|taker\|speed\|bump" bot95/delai_marche.json | head -40
+          git config user.name diag; git config user.email bot@users.noreply.github.com
+          git add bot95/delai_marche.json; git commit -q -m "Diagnostic delai [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
