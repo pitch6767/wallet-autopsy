@@ -1,0 +1,118 @@
+# Bot95 — la série de pertes de V2-F « écart qui grandit »
+
+Analyse du 09.10.2026 · BTC · les trades d'origine ayant été effacés, la règle exacte de V2-F a été rejouée sur les vrais carnets enregistrés du 07.10 09:30 au 09.10 10:00 (heure suisse, 4 mesures/s). Les cycles et leurs résultats sont fiables ; les prix d'achat peuvent différer de quelques cents du direct. Le rejeu trouve une série de **25** pertes (27 en direct) du **07.10 22:32 au 08.10 00:36**.
+
+## En bref
+
+- **La série est surtout faite de faux désaccords créés par Polymarket :** 13 des 25 entrées viennent de « Polymarket baisse alors que le modèle ne bouge pas », 7 de « les deux baissent, Polymarket plus fort ». Seulement 5 viennent du modèle qui monte. Sur l'ensemble des trades, c'est l'inverse : le modèle qui monte est la première source.
+- **Le marché était calme** pendant la série (volatilité 2,0 $/s contre 4,5 $/s en moyenne) et le BTC allait plutôt contre nous sur 15 min.
+- **Statistiquement :** avec 24 % de gagnants, une série d'au moins 25 pertes arrive dans environ 10 % des cas sur 430 trades — c'est rare mais possible. **Mais notre modèle**, lui, promettait en moyenne 10 victoires sur ces 25 trades : selon lui la probabilité de tout perdre était d'environ 1 sur 700 000. Selon le prix Polymarket, 1 sur 220. **Conclusion : pendant cette période, le modèle avait perdu son avantage — Polymarket avait raison.**
+- **Le test décisif :** un seul filtre améliore le résultat global en gardant les 10 plus gros gagnants : **écarter « les deux baissent, Polymarket plus fort »** (7 pertes de la série évitées, résultat rejoué +7 653 $ au lieu de +6 171 $). Ce groupe gagne seulement 16 % du temps sur tout l'historique. Ajouter « volatilité ≥ 2 $/s » évite 18 pertes de la série sur 25, mais coûte un peu de gain au total (+6 468 $) et un des 10 gros gagnants.
+- **Pas d'arrêt automatique après 5 pertes**, comme tu le dis : ça ne traite pas la cause. La cause ici, c'est un marché calme où les baisses de prix Polymarket étaient informées.
+> Attention : V2-F n'a pas le même comportement que la zone. Ici, « Polymarket baisse seul » reste rentable sur l'ensemble (+2 793 $) même s'il domine la série ; l'écarter coûterait trop. Le vrai groupe toxique de V2-F est « les deux baissent, Polymarket plus fort ».
+---PAGE---
+
+## 1. La série comparée aux autres trades
+
+| Groupe | Trades | Gagnés | Modèle | Prix | Écart | Reste | Volat. $/s | Distance* | Up/Down | Tend. 15 min $ | Origine** |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 16 trades avant | 16 | 5 | 0.40 | 0.17 | 0.24 | 180 s | 3.2 | -0.66 | 6/10 | -27 | 9 / 3 / 1 / 2 / 1 |
+| **la série (25)** | 25 | 0 | 0.41 | 0.19 | 0.22 | 188 s | 2.0 | -0.53 | 14/11 | -40 | 5 / 13 / 0 / 7 / 0 |
+| 14 trades après | 14 | 2 | 0.42 | 0.20 | 0.22 | 242 s | 1.9 | -0.61 | 10/4 | -55 | 2 / 10 / 1 / 1 / 0 |
+| tous les trades | 444 | 106 | 0.42 | 0.19 | 0.23 | 169 s | 4.5 | -0.45 | 225/219 | -33 | 124 / 144 / 34 / 88 / 54 |
+
+* Distance Chainlink au seuil, médiane, en écarts-types (+ = notre côté gagne déjà). ** Origine : modèle monte / Poly baisse / les deux / les deux baissent / autre.
+
+## 2. Qui a créé l'ecart qui grandit — sur tous les trades
+
+| Origine | Trades | Gagnés | % gagnés | Résultat rejoué |
+|---|---|---|---|---|
+| le modèle monte, Poly stable | 124 | 26 | 21 % | +3796 $ |
+| Poly baisse, modèle stable | 144 | 42 | 29 % | +2793 $ |
+| modèle monte ET Poly baisse | 34 | 9 | 26 % | +737 $ |
+| les deux baissent, Poly plus | 88 | 14 | 16 % | -1482 $ |
+| autre | 54 | 15 | 28 % | +328 $ |
+
+## 3. Une série de 25 est-elle normale ?
+
+- Avec 23.9 % de gagnants et 430 trades (V2-F en direct), une série d'au moins 25 pertes arrive dans **10.4 %** des simulations (20000 tirages).
+- Selon **notre modèle**, ces 25 trades devaient gagner 10.3 fois en moyenne ; probabilité de tous les perdre = 1.43e-06.
+- Selon **le prix Polymarket**, ils devaient gagner 4.8 fois ; probabilité de tous les perdre = 4.48e-03.
+
+## 4. Test décisif : un signal connu avant l'achat aurait-il évité une partie de la série ?
+
+| Signal (on achete seulement si…) | Pertes de la série évitées | Trades gardés (tous) | Gagnés gardés | Des 10 plus gros gagnants, gardés | Résultat rejoué (tous) |
+|---|---|---|---|---|---|
+| (aucun filtre) | 0 / 25 | 444 | 106 | 10 / 10 | +6171 $ |
+| pas « Poly baisse, modèle stable » | 13 / 25 | 300 | 64 | 8 / 10 | +3378 $ |
+| seulement « le modèle monte » | 20 / 25 | 158 | 35 | 7 / 10 | +4532 $ |
+| distance Chainlink < 0 (on perd encore) | 2 / 25 | 369 | 77 | 10 / 10 | +5810 $ |
+| distance Chainlink < -0,3 | 9 / 25 | 269 | 50 | 10 / 10 | +5248 $ |
+| tendance 15 min >= 0 | 18 / 25 | 214 | 51 | 6 / 10 | +3008 $ |
+| prix >= 0,10 | 3 / 25 | 363 | 99 | 3 / 10 | +3850 $ |
+| pas « les deux baissent, Poly plus » | 7 / 25 | 356 | 92 | 10 / 10 | +7653 $ |
+| volatilité >= 2 $/s | 14 / 25 | 353 | 84 | 9 / 10 | +5114 $ |
+| volatilité >= 3 $/s | 18 / 25 | 279 | 70 | 9 / 10 | +5663 $ |
+| pas « les deux baissent » ET volatilité >= 2 | 18 / 25 | 288 | 74 | 9 / 10 | +6468 $ |
+| reste >= 60 s | 1 / 25 | 429 | 105 | 10 / 10 | +6731 $ |
+| modèle <= 0,60 | 0 / 25 | 423 | 93 | 10 / 10 | +5620 $ |
+
+## Annexe — les trades (16 avant, série, 14 après)
+
+| # | Heure | Côté | Prix | Modèle | Écart | dModèle 3 s | dPoly 3 s | Origine | Reste | Distance | Gagne |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 avant | 07.10 20:58 | Up | 0.20 | 0.54 | 0.34 | -0.01 | -0.19 | Poly baisse, modèle stable | 112 s | +1.52 | non |
+| 2 avant | 07.10 21:02 | Down | 0.03 | 0.27 | 0.24 | +0.09 | +0.00 | le modèle monte, Poly stable | 154 s | -1.42 | oui |
+| 3 avant | 07.10 21:08 | Up | 0.06 | 0.26 | 0.20 | +0.03 | +0.00 | le modèle monte, Poly stable | 117 s | -1.42 | oui |
+| 4 avant | 07.10 21:11 | Up | 0.20 | 0.41 | 0.21 | +0.05 | +0.01 | le modèle monte, Poly stable | 233 s | -0.61 | non |
+| 5 avant | 07.10 21:22 | Up | 0.13 | 0.34 | 0.21 | +0.00 | -0.05 | Poly baisse, modèle stable | 174 s | -0.45 | oui |
+| 6 avant | 07.10 21:26 | Down | 0.20 | 0.41 | 0.21 | -0.02 | -0.06 | les deux baissent, Poly plus | 233 s | -0.82 | oui |
+| 7 avant | 07.10 21:32 | Down | 0.24 | 0.50 | 0.26 | +0.12 | -0.04 | modèle monte ET Poly baisse | 178 s | -0.36 | non |
+| 8 avant | 07.10 21:43 | Down | 0.07 | 0.28 | 0.21 | -0.07 | -0.11 | les deux baissent, Poly plus | 87 s | -2.10 | non |
+| 9 avant | 07.10 21:51 | Down | 0.25 | 0.46 | 0.21 | +0.12 | -0.01 | le modèle monte, Poly stable | 219 s | -0.55 | non |
+| 10 avant | 07.10 21:55 | Down | 0.13 | 0.44 | 0.31 | +0.18 | +0.00 | le modèle monte, Poly stable | 242 s | -0.56 | non |
+| 11 avant | 07.10 22:02 | Down | 0.12 | 0.33 | 0.21 | +0.06 | +0.03 | autre | 175 s | -1.33 | non |
+| 12 avant | 07.10 22:06 | Down | 0.14 | 0.37 | 0.23 | +0.14 | +0.00 | le modèle monte, Poly stable | 216 s | -0.71 | non |
+| 13 avant | 07.10 22:10 | Down | 0.32 | 0.53 | 0.21 | -0.01 | -0.04 | Poly baisse, modèle stable | 279 s | +0.00 | non |
+| 14 avant | 07.10 22:18 | Down | 0.04 | 0.34 | 0.29 | +0.13 | +0.00 | le modèle monte, Poly stable | 112 s | -2.32 | non |
+| 15 avant | 07.10 22:23 | Up | 0.20 | 0.40 | 0.20 | +0.03 | -0.02 | le modèle monte, Poly stable | 101 s | -1.11 | non |
+| 16 avant | 07.10 22:25 | Up | 0.35 | 0.57 | 0.23 | +0.03 | -0.01 | le modèle monte, Poly stable | 240 s | +0.45 | oui |
+| 17 SERIE | 07.10 22:32 | Up | 0.14 | 0.35 | 0.21 | -0.00 | -0.05 | Poly baisse, modèle stable | 143 s | -0.99 | non |
+| 18 SERIE | 07.10 22:35 | Up | 0.13 | 0.33 | 0.20 | +0.01 | -0.03 | Poly baisse, modèle stable | 267 s | -1.70 | non |
+| 19 SERIE | 07.10 22:42 | Down | 0.22 | 0.43 | 0.21 | +0.00 | -0.03 | Poly baisse, modèle stable | 163 s | -1.89 | non |
+| 20 SERIE | 07.10 22:47 | Up | 0.20 | 0.44 | 0.24 | -0.00 | -0.08 | Poly baisse, modèle stable | 139 s | -0.29 | non |
+| 21 SERIE | 07.10 22:51 | Down | 0.18 | 0.40 | 0.22 | +0.07 | +0.01 | le modèle monte, Poly stable | 201 s | -0.53 | non |
+| 22 SERIE | 07.10 22:56 | Down | 0.21 | 0.41 | 0.20 | -0.04 | -0.18 | les deux baissent, Poly plus | 203 s | -0.18 | non |
+| 23 SERIE | 07.10 23:09 | Up | 0.25 | 0.46 | 0.20 | +0.00 | -0.09 | Poly baisse, modèle stable | 59 s | -1.05 | non |
+| 24 SERIE | 07.10 23:12 | Up | 0.15 | 0.35 | 0.20 | +0.02 | -0.01 | le modèle monte, Poly stable | 178 s | -0.90 | non |
+| 25 SERIE | 07.10 23:17 | Down | 0.23 | 0.45 | 0.22 | +0.00 | -0.03 | Poly baisse, modèle stable | 177 s | -1.00 | non |
+| 26 SERIE | 07.10 23:21 | Down | 0.28 | 0.50 | 0.22 | +0.00 | -0.08 | Poly baisse, modèle stable | 185 s | -0.18 | non |
+| 27 SERIE | 07.10 23:25 | Up | 0.11 | 0.34 | 0.23 | -0.07 | -0.11 | les deux baissent, Poly plus | 251 s | -0.34 | non |
+| 28 SERIE | 07.10 23:31 | Up | 0.20 | 0.42 | 0.22 | -0.00 | -0.04 | Poly baisse, modèle stable | 236 s | -0.50 | non |
+| 29 SERIE | 07.10 23:37 | Up | 0.12 | 0.35 | 0.23 | -0.14 | -0.43 | les deux baissent, Poly plus | 137 s | +0.06 | non |
+| 30 SERIE | 07.10 23:42 | Up | 0.16 | 0.40 | 0.24 | -0.05 | -0.12 | les deux baissent, Poly plus | 129 s | -0.53 | non |
+| 31 SERIE | 07.10 23:47 | Up | 0.27 | 0.48 | 0.21 | +0.00 | -0.24 | Poly baisse, modèle stable | 180 s | -0.08 | non |
+| 32 SERIE | 07.10 23:53 | Up | 0.22 | 0.43 | 0.21 | -0.02 | -0.11 | les deux baissent, Poly plus | 105 s | -1.19 | non |
+| 33 SERIE | 07.10 23:56 | Down | 0.09 | 0.30 | 0.21 | -0.07 | -0.11 | les deux baissent, Poly plus | 189 s | -1.43 | non |
+| 34 SERIE | 08.10 00:02 | Down | 0.04 | 0.26 | 0.22 | +0.08 | +0.01 | le modèle monte, Poly stable | 138 s | -1.12 | non |
+| 35 SERIE | 08.10 00:06 | Down | 0.21 | 0.45 | 0.23 | -0.03 | -0.07 | les deux baissent, Poly plus | 223 s | -0.15 | non |
+| 36 SERIE | 08.10 00:10 | Down | 0.29 | 0.49 | 0.20 | +0.02 | -0.01 | le modèle monte, Poly stable | 269 s | -0.14 | non |
+| 37 SERIE | 08.10 00:16 | Up | 0.17 | 0.38 | 0.21 | -0.00 | -0.08 | Poly baisse, modèle stable | 197 s | -0.91 | non |
+| 38 SERIE | 08.10 00:21 | Down | 0.09 | 0.41 | 0.32 | -0.00 | -0.04 | Poly baisse, modèle stable | 211 s | -2.76 | non |
+| 39 SERIE | 08.10 00:26 | Down | 0.29 | 0.52 | 0.23 | +0.00 | -0.04 | Poly baisse, modèle stable | 238 s | +0.38 | non |
+| 40 SERIE | 08.10 00:30 | Up | 0.24 | 0.45 | 0.21 | +0.00 | -0.03 | Poly baisse, modèle stable | 262 s | -1.00 | non |
+| 41 SERIE | 08.10 00:36 | Up | 0.30 | 0.53 | 0.23 | +0.10 | +0.02 | le modèle monte, Poly stable | 228 s | -0.24 | non |
+| 42 après | 08.10 00:40 | Up | 0.21 | 0.46 | 0.25 | +0.01 | -0.05 | Poly baisse, modèle stable | 264 s | -0.80 | oui |
+| 43 après | 08.10 00:45 | Up | 0.18 | 0.39 | 0.21 | +0.02 | -0.03 | Poly baisse, modèle stable | 267 s | -0.42 | non |
+| 44 après | 08.10 00:51 | Up | 0.21 | 0.47 | 0.26 | -0.02 | -0.16 | Poly baisse, modèle stable | 188 s | -0.03 | non |
+| 45 après | 08.10 00:56 | Down | 0.12 | 0.32 | 0.20 | +0.01 | -0.04 | Poly baisse, modèle stable | 213 s | -1.14 | non |
+| 46 après | 08.10 01:00 | Up | 0.31 | 0.52 | 0.21 | +0.03 | +0.00 | le modèle monte, Poly stable | 279 s | -0.23 | non |
+| 47 après | 08.10 01:06 | Up | 0.19 | 0.45 | 0.26 | -0.00 | -0.05 | Poly baisse, modèle stable | 233 s | -1.02 | non |
+| 48 après | 08.10 01:10 | Up | 0.22 | 0.44 | 0.22 | +0.00 | -0.07 | Poly baisse, modèle stable | 281 s | -0.06 | oui |
+| 49 après | 08.10 01:20 | Down | 0.27 | 0.47 | 0.20 | -0.03 | -0.17 | les deux baissent, Poly plus | 257 s | +0.02 | non |
+| 50 après | 08.10 01:26 | Down | 0.13 | 0.34 | 0.21 | -0.01 | -0.05 | Poly baisse, modèle stable | 224 s | -1.21 | non |
+| 51 après | 08.10 01:30 | Down | 0.20 | 0.46 | 0.26 | +0.02 | -0.02 | le modèle monte, Poly stable | 276 s | -0.34 | non |
+| 52 après | 08.10 01:37 | Up | 0.24 | 0.46 | 0.22 | +0.01 | -0.07 | Poly baisse, modèle stable | 167 s | -1.64 | non |
+| 53 après | 08.10 01:40 | Up | 0.21 | 0.42 | 0.21 | +0.00 | -0.03 | Poly baisse, modèle stable | 278 s | -0.10 | non |
+| 54 après | 08.10 01:46 | Up | 0.16 | 0.36 | 0.20 | +0.00 | -0.04 | Poly baisse, modèle stable | 226 s | -0.99 | non |
+| 55 après | 08.10 01:51 | Up | 0.11 | 0.32 | 0.21 | +0.03 | -0.04 | modèle monte ET Poly baisse | 237 s | -1.01 | non |

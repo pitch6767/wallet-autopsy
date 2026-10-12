@@ -1,0 +1,155 @@
+# Bot95 — index de toutes les études (143 fichiers de résultats)
+
+Une ligne par fichier de etude/bot5min/ : date de création, sujet, conclusion chiffrée telle qu'écrite dans le fichier. Les résumés ont été produits le 12.10.2026 en relisant chaque fichier. En cas de doute, le fichier lui-même fait foi.
+
+Lecture des verdicts :
+- **démontré** : l'intervalle de confiance exclut zéro, ou c'est une mesure directe.
+- **non démontré** : l'intervalle contient zéro, ou le résultat ne tient pas hors échantillon.
+- **à suivre** : résultat préliminaire.
+- **pas de verdict** : description seulement.
+
+| Fichier | Date | Sujet | Conclusion |
+|---|---|---|---|
+| [RESUME_POUR_CHATGPT.md](RESUME_POUR_CHATGPT.md) | 05.10 | Résumé du projet pour demander des idées | V1 simulée à environ +1 500 $/jour sur BTC. 32 variantes anti-pertes sans gain, seule la mise 0,5×/1,5× retenue (+14 %). Non démontré. |
+| [RESUME_PROBLEME_IA.md](RESUME_PROBLEME_IA.md) | 06.10 | Résumé du problème : marché en avance sur le modèle | Fin de cycle : 0 trade en 5 h (simulation ~18). V1 : 2 trades en 3 h au lieu de ~15. Teneur de marché : environ −3 $/cycle. Non démontré. |
+| [resultat.md](resultat.md) | 04.10 | Achat du favori en fin de cycle, 14 jours | 30 s, 0,95–0,99 : 3131 trades, 25 pertes, 99,20 % de réussite, +1067 $ (exécution simulée). Non démontré (voir achats réels). |
+| [resultat_achats_reels.md](resultat_achats_reels.md) | 04.10 | Achat du favori, achats réellement vus | 30 s, 0,95–0,99 : 855 trades, 23 pertes, 97,31 %, +34 $. 60 s, 0,95–0,99 : −203 $. Non démontré. |
+| [resultat_alpha_executable.md](resultat_alpha_executable.md) | 11.10 | Avantage au signal face au délai réel | Test inédit : cascade A théorique +2 282 $ mais règle actuelle −411 $ ; cascade B −1 583 $. L'avantage ne survit pas à 0,3 s. Non démontré. |
+| [resultat_amelio.md](resultat_amelio.md) | 08.10 | Améliorer zone + Binance/perp + sortie −10 | Référence +4 508 $ (99 trades) contre +4 406 $ sans revente. Meilleur filtre « pas Polymarket qui baisse » : +4 635 $. Écarts faibles, non démontré. |
+| [resultat_annulation_h811.md](resultat_annulation_h811.md) | 11.10 | Vitesse d'annulation des makers (préliminaire) | 82 cycles. Annuler à 50 ms évite 85 % des fills toxiques mais perd 83 % des bons. Garder : −75,2 c/cotation. À suivre. |
+| [resultat_apres_fin.md](resultat_apres_fin.md) | 07.10 | Achats après la fin d'un marché | BTC : 0–10 s avant la fin −2,4 % (−380 $) ; après la fin 0 % gagné, −100 %. ETH 0–10 s : −2,6 %. Non démontré. |
+| [resultat_arb15_bnb.md](resultat_arb15_bnb.md) | 05.10 | Arbitrage 15 min/5 min, BNB | 23 cycles sans risque sur 465 (4,9 %). Gain +5,8 $ sur 7 jours (+0,8 $/jour), 5 parts médianes. Non démontré. |
+| [resultat_arb15_btc.md](resultat_arb15_btc.md) | 05.10 | Arbitrage 15 min/5 min, BTC | 61 cycles sans risque sur 671 (9,1 %). Gain +22,6 $ sur 7 jours (+3,2 $/jour), 5 parts médianes. Non démontré. |
+| [resultat_arb15_doge.md](resultat_arb15_doge.md) | 05.10 | Arbitrage 15 min/5 min, DOGE | 26 cycles sans risque sur 487 (5,3 %). Gain +5,5 $ sur 7 jours (+0,8 $/jour), 5 parts médianes. Non démontré. |
+| [resultat_arb15_eth.md](resultat_arb15_eth.md) | 05.10 | Arbitrage 15 min/5 min, ETH | 37 cycles sans risque sur 661 (5,6 %). Gain +15,2 $ sur 7 jours (+2,2 $/jour), 7 parts médianes. Non démontré. |
+| [resultat_arb15_hype.md](resultat_arb15_hype.md) | 05.10 | Arbitrage 15 min/5 min, HYPE | 10 cycles sans risque sur 254 (3,9 %). Gain +1,2 $ sur 7 jours (+0,2 $/jour), 5 parts médianes. Non démontré. |
+| [resultat_arb15_sol.md](resultat_arb15_sol.md) | 05.10 | Arbitrage 15 min/5 min, SOL | 37 cycles sans risque sur 652 (5,7 %). Gain +10,3 $ sur 7 jours (+1,5 $/jour), 5 parts médianes. Non démontré. |
+| [resultat_arb15_xrp.md](resultat_arb15_xrp.md) | 05.10 | Arbitrage 15 min/5 min, XRP | 38 cycles sans risque sur 619 (6,1 %). Gain +8,9 $ sur 7 jours (+1,3 $/jour), 5 parts médianes. Non démontré. |
+| [resultat_attribution_001.md](resultat_attribution_001.md) | 10.10 | Attribution des signaux V2-F à 0,01 % | 928 cycles. X1 à 0 s : +3 798 $, mais à 0,5 s : −413 $. H1 (fantôme réel) : +109 $ à 0,5 s. Non démontré. |
+| [resultat_audit_b0b1_h801.md](resultat_audit_b0b1_h801.md) | 11.10 | Dépendance aux gros gains, B0/B1 (préliminaire) | Test hors ligne : B0 +4 467 $, B1 +4 173 $. Validation future : 8 décisions, IC contient 0. À suivre. |
+| [resultat_audit_corrige.md](resultat_audit_corrige.md) | 09.10 | Audit du modèle corrigé, règle de fin | Modèle corrigé évite 192 cycles (13 gagnants, ancien −4 490 $). Mais surcoût de confirmation +5 à +10 c : +374 $ contre +1 923 $. À suivre. |
+| [resultat_audit_maker.md](resultat_audit_maker.md) | 11.10 | Audit maker M4/M6/M8 (diagnostic) | 1 cycle enregistré, 0 remplissage sur 83 offres posées : insuffisant. Pas de verdict. |
+| [resultat_audit_modele.md](resultat_audit_modele.md) | 09.10 | Audit de la formule du modèle | Brier : marché 0,1566 contre bot 0,1836. Zone 25–50 % : bot annonce 0,40, réalisé 0,30. Modèle pire que le marché. |
+| [resultat_audit_nuit.md](resultat_audit_nuit.md) | 10.10 | Audit de la nuit du 9 au 10 octobre | TWAP fin : 23 achats, 6 gagnés (7,6 attendus selon le prix), −183 $. 12 signaux abandonnés, 6 gagnants. Non démontré. |
+| [resultat_audit_temporel.md](resultat_audit_temporel.md) | 11.10 | Grand audit temporel, fraîcheur des sources | Politique de fraîcheur F8 : validation −790 $, test −437 $ face à GARDER. Part des faux désaccords temporels ≈ 0 %. Non démontré. |
+| [resultat_audit_vol.md](resultat_audit_vol.md) | 10.10 | Volatilité perp Bybit contre bruit Chainlink | TWAP fin : 07–09.10 +2 166 $ (143 achats, 45 %) ; nuit 10.10 −241 $ (28 achats). Moteur vol. max identique. Non démontré. |
+| [resultat_audit_zone.md](resultat_audit_zone.md) | 10.10 | Famille « désaccord 30 zone », mêmes cycles | Depuis 08.10 : zone simple +1 718 $ (152 trades), + modèle monte +2 563 $ (88 trades, écarte 9 gagnants/55 perdants). À suivre. |
+| [resultat_autopsie_wallets.md](resultat_autopsie_wallets.md) | 11.10 | Autopsie des makers et preneurs rentables | 600 marchés. Gros makers surtout négatifs (−3 292 $, −6 465 $, −8 088 $ ; meilleur +3 595 $). Achats maker ≥ 0,99 : 99,73 %, +4 187 $. À suivre. |
+| [resultat_avantage_makers.md](resultat_avantage_makers.md) | 11.10 | D'où vient l'avantage des makers gagnants | 2e moitié : gagnants −11 097 $ (−0,8 %), perdants +556 $ (0,0 %). Aucun avantage persistant visible. Non démontré. |
+| [resultat_bilan3j.md](resultat_bilan3j.md) | 10.10 | Bilan 3 jours des stratégies fantômes figées | V2-F −1 848 $, V2-E −3 357 $, V2-D +673 $ (−577 $ sans les 3 meilleurs), V2-G +160 $. IC contiennent 0 sauf V2-E. Non démontré. |
+| [resultat_blink.md](resultat_blink.md) | 07.10 | Qui converge vers qui, désaccords ≥ 0,20 | BTC, 293 désaccords : « Poly rejoint » +6 404 $ à 10 s, « modèle retombe » −3 439 $. AUC de prévision à l'entrée 0,50–0,60. Non démontré. |
+| [resultat_calib.md](resultat_calib.md) | 06.10 | Audit de la formule du modèle | Identique à resultat_audit_modele.md : Brier marché 0,1566 contre bot 0,1836. Non démontré. |
+| [resultat_calibration_bot95.md](resultat_calibration_bot95.md) | 11.10 | Calibration de Bot95 (contrôle du code, pré-enregistré) | 71 décisions. Brier Bot95 brut 0,2078 contre marché 0,1766. Aucun calibrage ne bat le marché. Verdict sur la période réservée le 14.10. |
+| [resultat_chainlink.md](resultat_chainlink.md) | 11.10 | Moyenne Chainlink officielle et prévision | Moyenne officielle reçue 1 239 ms après calcul. Prévision à 0,21 $ d'erreur médiane contre 0,20 $ pour le témoin. Non démontré. |
+| [resultat_chemin.md](resultat_chemin.md) | 08.10 | Temps utile, forme du chemin, passage de cycle | Référence +4 111 $ (93 trades). Aucun filtre ne bat clairement la référence. À suivre. |
+| [resultat_chercher_encore.md](resultat_chercher_encore.md) | 11.10 | Qui vend nos billets, preneurs en miroir | 341 signaux sur 353 servis par des makers ; gagnés 34 % contre 33 % non servis. Pas de verdict. |
+| [resultat_combinaison_D.md](resultat_combinaison_D.md) | 10.10 | Combinaison D : une hypothèse, un test | Apprentissage D +735 $ contre A +1 264 $ ; validation D +762 $ contre +935 $. Période inédite : 1 opportunité. Non démontré. |
+| [resultat_combinaisons.md](resultat_combinaisons.md) | 06.10 | Combinaisons de désaccords modèle/marché, 12 jours | 25 meilleures : +0,234 $/part (j1–8) puis +0,215 $/part (j9–12), 23/25 restent positives. Exécution simulée. À suivre. |
+| [resultat_combinaisons_tout.md](resultat_combinaisons_tout.md) | 11.10 | Tout combiné avec tout | 892 combinaisons : 100/300 meilleures restent positives contre 157/300 au hasard. Surtout du hasard. Non démontré. |
+| [resultat_completion_h799.md](resultat_completion_h799.md) | 11.10 | Compléter après un fill partiel | B1≥25 $ − D : +3,37 $/signal, IC corrigé [+0,18 ; +7,19]. B0 et B2 non démontrés. Une journée ; la validation en direct (B0/B1) a ensuite échoué. |
+| [resultat_contrefactuel.md](resultat_contrefactuel.md) | 10.10 | Fiabilité de l'avantage, urgence, TWAP contrefactuel | Avantage ≥ 0,20 : +947 $ en apprentissage, −519 $ en validation. Non démontré. |
+| [resultat_contreparties_h724.md](resultat_contreparties_h724.md) | 11.10 | Contreparties et trois wallets makers | Placebo : 67 % des tirages aussi négatifs. Veto 3 wallets : −14,57 parts [−30,51 ; −0,83]. Abandonné. |
+| [resultat_couverture.md](resultat_couverture.md) | 08.10 | Couvrir avec le côté inverse plutôt que revendre | Aucune couverture déclenchée : +4 453 $ (revendre) contre +4 406 $ (garder). Non démontré. |
+| [resultat_danger.md](resultat_danger.md) | 05.10 | Moteur de danger et assurances pour V1 | Stop prévisible : AUC 0,87 à 3 s. Mise 0,5x/1,5x : +1 851 $/jour (+322 $) sur jours 9-12. À suivre. |
+| [resultat_danger_regle.md](resultat_danger_regle.md) | 06.10 | Règle simple de danger sans stop | Règle 7/10/13 sans stop : +27 $/jour ; mise 1,5x : +312 $/jour. Non démontré. |
+| [resultat_desaccord_profond.md](resultat_desaccord_profond.md) | 07.10 | Entrée et gestion des désaccords, BTC et ETH | Référence BTC 2e moitié : −0,047 $/part ; 8 des 20 meilleures règles restent positives. Pas de verdict. |
+| [resultat_diversite.md](resultat_diversite.md) | 10.10 | Stratégies éliminées et variations de paramètres | V2-F 0,01 % : +1 444 $ à 0 s mais −153 $ à 0,5 s. Pas de verdict. |
+| [resultat_edge_truth.md](resultat_edge_truth.md) | 09.10 | V2-F « écart qui grandit » : probabilités corrigées | 328 trades : V2-F +1 606 $ ; le modèle annonce 41,6 % pour 22,0 % réels. Non démontré. |
+| [resultat_evt.md](resultat_evt.md) | 06.10 | Enregistreur au message près | 0 événement enregistré. Pas de verdict. |
+| [resultat_execution.md](resultat_execution.md) | 09.10 | Politiques d'exécution du modèle corrigé | Achat immédiat +2 403 $ ; attendre 1 s −502 $. Immédiat reste le meilleur. |
+| [resultat_execution_h818.md](resultat_execution_h818.md) | 11.10 | Sélection adverse et qualité des exécutions | 94 % exécutés, pas de remplissage toxique. Filtre H818 +1,36 $/signal [−6,51 ; +10,23]. Non démontré. Les pertes viennent du choix des billets. |
+| [resultat_experiences.md](resultat_experiences.md) | 08.10 | Sorties intelligentes de la zone | Revente à −10 : +4 453 $ contre garder +4 406 $. Non démontré. |
+| [resultat_experiences_ABC.md](resultat_experiences_ABC.md) | 11.10 | Double passif, survie du capital, qualité des entrées | Double passif : −933 $ à −1 390 $. Survie à 25 $ : ruine le 10.10. Aucun résultat maker fiable. |
+| [resultat_failles.md](resultat_failles.md) | 07.10 | Failles Polymarket : remboursements, échelles | Remboursement maker ≈ 0,19 c/part. Aucune faille exploitable. |
+| [resultat_fast_fenetre.md](resultat_fast_fenetre.md) | 11.10 | FAST : fenêtre d'exécution preneur | M4 retrait toxique +206 $ à +376 $. Préliminaire ; verdict prévu le 15.10. |
+| [resultat_hedge_lab.md](resultat_hedge_lab.md) | 11.10 | Hedge Lab : 24 couvertures contre garder | Couvrir « au marché » = vendre déguisé. Non démontré. |
+| [resultat_hedge_lab_oscillations.md](resultat_hedge_lab_oscillations.md) | 11.10 | Oscillations des tickets bon marché (H27-H30) | Aucune règle ne bat GARDER. Non démontré. |
+| [resultat_hedge_lab_paires.md](resultat_hedge_lab_paires.md) | 11.10 | Paires rentables, H25/H26, ménage des fantômes | H25 B : −988 $ en validation, +698 $ en test. H25 et H26 gardés, 11 fantômes abandonnés. |
+| [resultat_hedge_predictor.md](resultat_hedge_predictor.md) | 11.10 | Prédire le prix du côté opposé | AUC 0,59 ; couverture −1 792 $ [−4 782 ; +601]. Non démontré. |
+| [resultat_heures.md](resultat_heures.md) | 07.10 | Désaccords selon l'heure suisse | Toutes les tranches positives, sans test statistique. Pas de verdict. |
+| [resultat_idees.md](resultat_idees.md) | 05.10 | Idées anti-pertes pour V1 | Les idées testées dégradent V1. Non démontré. |
+| [resultat_idees_claude.md](resultat_idees_claude.md) | 11.10 | Trois idées de Claude : gros preneurs, makers | Suivre les gros preneurs ≥ 500 $ : −11,29 c/part. Pas de verdict. |
+| [resultat_idees_v2f.md](resultat_idees_v2f.md) | 09.10 | 5 tests sur V2-F « écart qui grandit » | 448 trades, +6 096 $ ; avec pause : +7 459 $. Dans l'échantillon, non démontré. |
+| [resultat_idees_zone.md](resultat_idees_zone.md) | 08.10 | 7 idées testées sur la zone | Zone +3 002 $ sur 99 trades ; aucun filtre ne fait mieux. |
+| [resultat_kronos.md](resultat_kronos.md) | 05.10 | Kronos (prévision de bougies), 520 cycles | Kronos 54,7 % contre 57,3 % pour notre modèle. Non démontré. |
+| [resultat_kronos_complet.md](resultat_kronos_complet.md) | 06.10 | Kronos sur 3168 cycles BTC | Kronos 51,7 % contre 57,9 %. Pas d'apport. Abandonné. |
+| [resultat_kronos_essai.md](resultat_kronos_essai.md) | 05.10 | Kronos, essai sur 30 cycles | Essai trop petit. Pas de verdict. |
+| [resultat_latence_h766.md](resultat_latence_h766.md) | 11.10 | Capturer l'avantage malgré la latence | À 164 ms : +14,90 $/signal [+0,39 ; +31,19] ; 59 % du P&L vient des 5 meilleurs ; décisions uniques [−2,29 ; +23,81]. Fragile. |
+| [resultat_lead.md](resultat_lead.md) | 10.10 | Qui a bougé en premier avant le désaccord | Polymarket premier dans 64 % des cas (−938 $) ; Coinbase 14 % (+1 737 $). Pas de verdict. |
+| [resultat_limitless.md](resultat_limitless.md) | 04.10 | 95 c Polymarket + couverture Limitless | Couverture : +12 $ contre +327 $ sans. Couverture abandonnée. |
+| [resultat_maker_h559.md](resultat_maker_h559.md) | 11.10 | Makers H559-H564 : retrait toxique, file | M4 prudent +120 $ [−224 ; +440]. Trop peu de données. |
+| [resultat_makers_h804.md](resultat_makers_h804.md) | 11.10 | M21 contre M1/M4, achats maker 0,95-0,99 | M1 −2 396 $, M21 −90 $, M4 −489 $, M6 +200 $. Non démontré. Piste maker abandonnée. |
+| [resultat_makers_suivi.md](resultat_makers_suivi.md) | 11.10 | Suivi des makers et preneurs BTC | Description : plus gros maker −6 012 $ ; meilleur preneur +13 296 $. |
+| [resultat_mecanismes_h807.md](resultat_mecanismes_h807.md) | 11.10 | Profondeur, meilleur prix, petits flux, calme | +82,56 c [−141,81 ; +312,62]. Corrélation seulement. Non démontré. |
+| [resultat_meta.md](resultat_meta.md) | 07.10 | Méta-modèle, gain attendu | j9-12 : +13,55 $/trade (exécution simulée). À suivre. |
+| [resultat_meta_router.md](resultat_meta_router.md) | 10.10 | Routeurs dynamiques de stratégies | R1 +326 $, R2 +117 $ contre +1 352 $ pour la stratégie fixe. Non démontré. |
+| [resultat_mm2.md](resultat_mm2.md) | 06.10 | Teneur de marché : protections | « Actuel » +1 238 $/jour ; les protections gagnent moins. Pas de verdict. |
+| [resultat_morts_arrivee.md](resultat_morts_arrivee.md) | 10.10 | Signaux morts à l'arrivée | À 1 s, 41 % des signaux sont morts ; les autres font −1 490 $. Démontré. |
+| [resultat_moteurs_abc.md](resultat_moteurs_abc.md) | 11.10 | Trois moteurs fantômes A, B, C | C contre A : validation +533 $ [−686 ; +1 804]. Non démontré. |
+| [resultat_mouvement.md](resultat_mouvement.md) | 07.10 | Modèle de mouvement et mort à l'arrivée | 27 % morts à l'arrivée ; tout garder −618 $. Non démontré. |
+| [resultat_oracle.md](resultat_oracle.md) | 09.10 | Erreur du prix à battre affiché | Gagnant faux avec les chiffres affichés : 11,2 % des cycles. Démontré. |
+| [resultat_oracle_fiabilite.md](resultat_oracle_fiabilite.md) | 10.10 | Fiabilité du moteur TWAP fin | E +1 642 $ contre A +978 $ en validation. À suivre. |
+| [resultat_oracle_tournoi.md](resultat_oracle_tournoi.md) | 10.10 | Tournoi des prévisions Chainlink | Chainlink rattrape le consensus : 24 % en 1 s, 80 % en 5 s, 95 % en 10 s. Démontré. |
+| [resultat_paires.md](resultat_paires.md) | 05.10 | Paires BTC 5 min, 7 jours | Les 11 stratégies sont perdantes (meilleure −4 320 $). Abandonné. |
+| [resultat_paires2.md](resultat_paires2.md) | 05.10 | Paires « à valeur » selon le retard | +4 536 $/jour sans retard, −6 815 $/jour à 5 s. Non démontré. |
+| [resultat_paires2_sans_retard.md](resultat_paires2_sans_retard.md) | 05.10 | Paires « à valeur » sans retard | +4 554 $/jour, retard ignoré. Non démontré. |
+| [resultat_paires3.md](resultat_paires3.md) | 05.10 | Réduire les pertes de V1 | Élan Binance +994 $/jour contre +778 $. À suivre. |
+| [resultat_pertes.md](resultat_pertes.md) | 05.10 | Autopsie des pertes de V1 | 1516 trades, net +18 090 $ (simulé). Non démontré. |
+| [resultat_pistes2.md](resultat_pistes2.md) | 04.10 | Pistes A et B réalistes, B corrigé | Gains minimes (+76 $ en 7 jours). Non démontré. |
+| [resultat_pistes2_A.md](resultat_pistes2_A.md) | 04.10 | Pistes A et B réalistes, complet | Gains minimes. Non démontré. |
+| [resultat_places_lentes.md](resultat_places_lentes.md) | 07.10 | Places lentes : Limitless et Kalshi | Échantillon trop petit. Pas de verdict. |
+| [resultat_portefeuilles.md](resultat_portefeuilles.md) | 07.10 | Autopsie de portefeuilles Up/Down | stingo43 : +25 405 $ sur 622 marchés 5 min. À suivre. |
+| [resultat_portefeuilles_detail.md](resultat_portefeuilles_detail.md) | 07.10 | Moment et prix des achats de stingo43 | Achats après la fin : +14 388 $ et +32 398 $. À suivre. |
+| [resultat_pression_reglement.md](resultat_pression_reglement.md) | 10.10 | Grecques de règlement et signal E | Validation +638 $, nuit −402 $. Non démontré. |
+| [resultat_proche.md](resultat_proche.md) | 07.10 | Se rapprocher de l'achat à l'entrée | Tout acheter +1 553 $ mais −1 509 $ sans les 3 meilleurs. Non démontré. |
+| [resultat_queue_race_phase12.md](resultat_queue_race_phase12.md) | 11.10 | Queue Race Engine, phases 0 à 2 | 77,4 % des disparitions sont des retraits. 1,25 h de données. À suivre. |
+| [resultat_r1_latence.md](resultat_r1_latence.md) | 11.10 | R1 garde latence, mesure pure | Les offres parties gagnent 20 points de plus que les restées à 250 ms [+12 ; +28]. Démontré. |
+| [resultat_rec.md](resultat_rec.md) | 06.10 | Enregistreur en direct contre carnet | Pas assez de données. |
+| [resultat_refuses_BCD.md](resultat_refuses_BCD.md) | 10.10 | Trades refusés par B, C, D | B +310 $ de mieux, C −272 $, D −390 $. À suivre. |
+| [resultat_retry_h776.md](resultat_retry_h776.md) | 11.10 | R4 « retry engine » H776-H778 | +761 $, IC par signal [−3,46 ; +12,93]. Non démontré ; le fantôme R4 en direct ne fait pas mieux que l'achat immédiat. |
+| [resultat_robuste.md](resultat_robuste.md) | 08.10 | Recherche d'une zone robuste, 48 h | 78 combinaisons robustes sur 1261 ; meilleure +3 171 $. À suivre. |
+| [resultat_robustesse_E.md](resultat_robustesse_E.md) | 10.10 | Robustesse du modèle E contre A | +135 $, IC [−678 ; +927]. Non démontré. |
+| [resultat_robustesse_bot95.md](resultat_robustesse_bot95.md) | 11.10 | Test de robustesse H816 (protocole figé) | 64 décisions, +283 $ (+28 % par $), IC [−8,8 ; +67,2]. Verdict sur la période réservée le 14.10. |
+| [resultat_rv.md](resultat_rv.md) | 05.10 | Valeur relative entre cryptos | Positif seulement avec le modèle. À suivre. |
+| [resultat_sauvetage.md](resultat_sauvetage.md) | 07.10 | Sauvetage des désaccords | 0 combinaison sur 1053 positive en 2e moitié. Non démontré. |
+| [resultat_sauvetage_h817.md](resultat_sauvetage_h817.md) | 11.10 | H817 : sauvetage prédictif et progressif | Rien ne bat HOLD ; couvrir = vendre. Non démontré. |
+| [resultat_selection_h819.md](resultat_selection_h819.md) | 11.10 | H819-H821 : calibration et jackpots | Bot95 moins bien calibré que le marché. Règle H821 : test +139 $, à confirmer sur la période réservée. |
+| [resultat_sensibilite.md](resultat_sensibilite.md) | 09.10 | Sensibilité de la marge d'incertitude V2-F | Marge 0,015 % +2 350 $ contre 0,08 % +1 497 $. À suivre. |
+| [resultat_serie.md](resultat_serie.md) | 09.10 | La série de 25 pertes de V2-F | Une série ≥ 25 pertes arrive dans 10,3 % des simulations : normal. Démontré. |
+| [resultat_solutions.md](resultat_solutions.md) | 04.10 | Pistes pour plus de trades | BTC 60 s 0,99 : +468 $ en 7 jours. Non démontré. |
+| [resultat_sorties.md](resultat_sorties.md) | 05.10 | Variantes de sortie de V1 | Stop −15 pts +18 033 $ contre +14 817 $ sans stop (simulé). Pas de verdict. |
+| [resultat_strats.md](resultat_strats.md) | 05.10 | Fin de cycle et teneur de marché | Fin de cycle +231 $/jour (j9-12) ; teneur de marché −317 $. Pas de verdict. |
+| [resultat_structure_gain.md](resultat_structure_gain.md) | 11.10 | Moyenne > 0, médiane < 0 | 5 meilleurs signaux : +2 326 $ sur +3 915 $. Décisions uniques 0,20–0,50 : +9,2 pts [+4,1 ; +14,3]. |
+| [resultat_suite_r4_h796.md](resultat_suite_r4_h796.md) | 11.10 | Relances R4 et prédicteur de non-retour | B contre D : +7,05 $/signal [+0,69 ; +13,89]. Une journée, à suivre. |
+| [resultat_surface.md](resultat_surface.md) | 06.10 | Carte de fiabilité du marché | 0 % reste positif. Non démontré. |
+| [resultat_tilt_makers.md](resultat_tilt_makers.md) | 11.10 | Penchant d'inventaire des makers | Pas d'avance sur le marché. Non démontré. |
+| [resultat_toxicite_makers.md](resultat_toxicite_makers.md) | 11.10 | Sélection adverse : makers contre fantômes | Makers rentables +0,3 c/part, fantômes −2,6 à −7,3 c. Pas de verdict. |
+| [resultat_twap.md](resultat_twap.md) | 04.10 | Re-test règle TWAP 60 s | 1 067 trades, 8 pertes, +1 181 $ en mise fixe. Pas de verdict. |
+| [resultat_twap_complement.md](resultat_twap_complement.md) | 10.10 | TWAP fin : fiabilité, spread, contrat opposé | Signaux 90-60 s : +1 882 $ (validation +970 $). Pas de verdict. |
+| [resultat_twap_convergence.md](resultat_twap_convergence.md) | 10.10 | Pourquoi l'avantage TWAP fond si vite | À 1 s, l'avantage perd 0,129, à 99 % par le prix du marché. |
+| [resultat_twap_etudes.md](resultat_twap_etudes.md) | 10.10 | TWAP fin : études A à E | +2 323 $ à 0 s, +731 $ à 1 s. Pas de verdict. |
+| [resultat_twap_fin.md](resultat_twap_fin.md) | 09.10 | Inertie de la moyenne de clôture TWAP | 84 achats, +1 900 $. Brier moteur 0,1107 contre 0,1129. Pas de verdict. |
+| [resultat_twap_jackpots.md](resultat_twap_jackpots.md) | 10.10 | TWAP fin : jackpots | 18 jackpots font +1 892 $ sur +2 323 $. |
+| [resultat_twap_recherche.md](resultat_twap_recherche.md) | 10.10 | TWAP fin : variantes de probabilité | Moteur +438 $, nowcast 4 bourses +632 $. Brier identiques. Pas de verdict. |
+| [resultat_v1_bnb.md](resultat_v1_bnb.md) | 05.10 | V1 sur BNB, 7 jours | +68 $/jour simulé. Pas de verdict. |
+| [resultat_v1_btc.md](resultat_v1_btc.md) | 05.10 | V1 sur BTC, 7 jours | +1 486 $/jour simulé à 1 s ; +972 $/jour à 2 s. Pas de verdict. |
+| [resultat_v1_doge.md](resultat_v1_doge.md) | 05.10 | V1 sur DOGE, 7 jours | +58 $/jour simulé. Pas de verdict. |
+| [resultat_v1_eth.md](resultat_v1_eth.md) | 05.10 | V1 sur ETH, 7 jours | +491 $/jour simulé. Pas de verdict. |
+| [resultat_v1_hype.md](resultat_v1_hype.md) | 05.10 | V1 sur HYPE, 7 jours | +2 $/jour simulé. Pas de verdict. |
+| [resultat_v1_sol.md](resultat_v1_sol.md) | 05.10 | V1 sur SOL, 7 jours | +300 $/jour simulé. Pas de verdict. |
+| [resultat_v1_xrp.md](resultat_v1_xrp.md) | 05.10 | V1 sur XRP, 7 jours | +187 $/jour simulé. Pas de verdict. |
+| [resultat_v2_carnets.md](resultat_v2_carnets.md) | 07.10 | Variantes V2/V5/V6 sur vrais carnets | BTC H veto +1 464 $ ; ETH −744 $. Pas de verdict. |
+| [resultat_v3_audit.md](resultat_v3_audit.md) | 10.10 | Audit des données V3 | Rejeu ≠ fantôme réel (V2-D : +358 $ réel contre −1 405 $ rejeu). |
+| [resultat_v3_exp001.md](resultat_v3_exp001.md) | 10.10 | Qui bouge en premier : Coinbase ? | Validation −1 029 $ [−1 811 ; −190]. Rejeté. |
+| [resultat_v3_exp002.md](resultat_v3_exp002.md) | 10.10 | Micro-âge du désaccord | +3 868 $ à 0 s, +672 $ à 0,5 s. À suivre. |
+| [resultat_v3_exp003.md](resultat_v3_exp003.md) | 10.10 | Filtre logistique pré-enregistré | Espérance pire. Brier prix 0,152, modèle 0,201. Non démontré. |
+| [resultat_v3_exp004.md](resultat_v3_exp004.md) | 10.10 | Survie de l'offre après 0 à 1 s | +3 794 $ à 0 s, +109 $ à 0,5 s. Le gain dépend de la latence. |
+| [resultat_v3_exp005.md](resultat_v3_exp005.md) | 10.10 | Matrice des régimes de marché | Aucun régime stable. Non démontré. |
+| [resultat_v3_exp006.md](resultat_v3_exp006.md) | 10.10 | Routeur : règle simple pré-enregistrée | −2 648 $ [−5 801 ; +73]. Non démontré. |
+| [resultat_v3_synthese.md](resultat_v3_synthese.md) | 10.10 | Synthèse des expériences V3 001-006 | Aucune piste V3 ne survit en exécution réaliste. Prix Polymarket mieux calibré que le modèle. |
+| [resultat_validation_b0b1_vivant.md](resultat_validation_b0b1_vivant.md) | 11.10 | Validation future B0/B1 contre D | B0 −239 $, B1 −75 $ par rapport à D. Aucune amélioration retenue. |
+| [resultat_validation_h821.md](resultat_validation_h821.md) | 11.10 | Filtre H821 sur H816 (contrôle du code, pré-enregistré) | Données déjà utilisées : aucun verdict. Verdict sur la période réservée le 14.10. |
+| [resultat_verifications_h559.md](resultat_verifications_h559.md) | 11.10 | Vérifications H559-H564 | Un seul cycle : insuffisant. M8 surestime le gain maker. |
+| [resultat_veto.md](resultat_veto.md) | 07.10 | Moteur fantôme V2 sur 12 jours | G jury +14,98 $/trade (simulé). Pas de verdict. |
+| [resultat_vitesse_places.md](resultat_vitesse_places.md) | 07.10 | Vitesse de réaction Polymarket, Kalshi, Limitless | Pas de verdict. |
+| [resultat_zone.md](resultat_zone.md) | 08.10 | Zone désaccord 30, gestion des pertes | Garder +2 922 $ ; sortie −10 pts +3 060 $. Pas de verdict. |
