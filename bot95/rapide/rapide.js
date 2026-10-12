@@ -769,6 +769,16 @@ async function sondeOI() {                                               // open
   } catch (_) {}
 }
 setInterval(sondeOI, 60000);
+const DERIV = {};
+function deriv(k, row) {                                                  // dérivés BTC (12.10.2026, enregistrement seulement)
+  try { const t = nowMs(), R = recDe(Math.floor(t / 300000) * 300);
+    R.deriv = R.deriv || { format: "by_ticker = [reception_ms, heure source ms, dernier, mark, index, open interest (BTC), funding, meilleur acheteur, meilleur vendeur, instantane 1/0] (Bybit BTCUSDT, etat complet a chaque message) ; bn_mark = [reception_ms, heure source ms, mark, index, funding] (Binance perp, 1 s) ; bn_liq = [reception_ms, heure ms, cote de l'ordre force, quantite, prix, prix moyen, statut, quantite executee] (Binance forceOrder : au plus une par seconde, echantillonne) ; bn_perp_tx = [reception_ms, heure ms, 1 achat agressif / 0 vente, prix, quantite] ; bn_oi = [reception_ms, heure ms, open interest BTC] (REST toutes les 5 s)" };
+    (R.deriv[k] = R.deriv[k] || []).push([+t.toFixed(1), ...row]); } catch (_) {}
+}
+async function sondeOIbn() {
+  try { const r = await fetch("https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT").then((x) => x.json()); if (r && r.openInterest) deriv("bn_oi", [+r.time, +r.openInterest]); } catch (_) {}
+}
+setInterval(sondeOIbn, 5000);
 const TRADE_ID = {};
 function obTrade(k, tsSrc, achat, p, q, id) {                              // transactions brutes Binance spot et Bybit perp ; trou si l'identifiant Binance saute
   try { const t = nowMs(), R = recDe(Math.floor(t / 300000) * 300); R.trx = R.trx || { format: "[reception_ms, heure source ms, 1 achat agressif / 0 vente, prix, quantite BTC]", bn: [], by: [] };
@@ -827,7 +837,6 @@ function flux() {
   // ---- 12.10.2026 (accord de Pitch) : Coinbase level2, ETH / SOL (Binance spot carnet + transactions, Bybit perp transactions) — lecture seule
   if (muet("cbob")) connecter("cbob", "wss://advanced-trade-ws.coinbase.com", [JSON.stringify({ type: "subscribe", product_ids: ["BTC-USD"], channel: "level2" }), JSON.stringify({ type: "subscribe", product_ids: ["BTC-USD"], channel: "heartbeats" })],
     (m) => { if (m.channel !== "l2_data") return; const o = OB.cb, t = nowMs();
-      if (o.seq != null && m.sequence_num != null && +m.sequence_num !== o.seq + 1) obTrou("cb", "sequence", o.seq + " -> " + m.sequence_num);
       if (m.sequence_num != null) o.seq = +m.sequence_num;
       for (const ev of m.events || []) { if (ev.type === "snapshot") { o.b = new Map(); o.a = new Map(); }
         for (const u of ev.updates || []) obAppliquer(o, u.side === "bid" ? 0 : 1, +u.price_level, +u.new_quantity, ev.type === "update"); }
@@ -843,6 +852,17 @@ function flux() {
   if (muet("xby")) connecter("xby", "wss://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args: ["publicTrade.ETHUSDT", "publicTrade.SOLUSDT"] })],
     (m) => { const tp = m.topic || ""; if (!tp.startsWith("publicTrade")) return; const k = tp.includes("ETH") ? "eth_by" : "sol_by";
       for (const y of m.data || []) trade2(k, +y.T, y.S === "Buy" ? 1 : 0, +y.p, +y.v); }, JSON.stringify({ op: "ping" }), 15000);
+  // ---- 12.10.2026 16:21 (GO de Pitch, H994-H1002) : Bybit ticker BTCUSDT (mark, index, OI, funding) ; Binance perp BTCUSDT (mark/index 1 s, liquidations, transactions)
+  if (muet("byt")) connecter("byt", "wss://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args: ["tickers.BTCUSDT"] })], (m) => {
+      if (!(m.topic || "").startsWith("tickers")) return; const d = m.data || {}, S = (DERIV.by = DERIV.by || {});
+      for (const k of ["lastPrice", "markPrice", "indexPrice", "openInterest", "fundingRate", "bid1Price", "ask1Price"]) if (d[k] != null && d[k] !== "") S[k] = +d[k];
+      deriv("by_ticker", [+m.ts || null, S.lastPrice ?? null, S.markPrice ?? null, S.indexPrice ?? null, S.openInterest ?? null, S.fundingRate ?? null, S.bid1Price ?? null, S.ask1Price ?? null, m.type === "snapshot" ? 1 : 0]); },
+    JSON.stringify({ op: "ping" }), 15000);
+  if (muet("bnf")) connecter("bnf", "wss://fstream.binance.com/stream?streams=btcusdt@markPrice@1s/btcusdt@forceOrder/btcusdt@aggTrade", [], (m) => {
+      const d = m.data || {}, e = d.e;
+      if (e === "markPriceUpdate") deriv("bn_mark", [+d.E, +d.p, +d.i, +d.r]);
+      else if (e === "forceOrder") { const x = d.o || {}; deriv("bn_liq", [+x.T || +d.E, x.S, +x.q, +x.p, +x.ap, x.X, +x.l || null]); }
+      else if (e === "aggTrade") deriv("bn_perp_tx", [+d.T, d.m ? 0 : 1, +d.p, +d.q]); });
   if (muet("drb")) connecter("drb", "wss://www.deribit.com/ws/api/v2",              // Deribit (lecture seule, accord de Pitch 12.10) : indice, perpétuel, DVOL
     [JSON.stringify({ jsonrpc: "2.0", id: 1, method: "public/subscribe", params: { channels: ["deribit_price_index.btc_usd", "ticker.BTC-PERPETUAL.100ms", "deribit_volatility_index.btc_usd", "trades.option.BTC.100ms"] } })],
     (m) => { if (m.method !== "subscription" || !m.params) return; const ch = m.params.channel || "", x = m.params.data || {}, t = nowMs();
@@ -947,7 +967,7 @@ async function envoyer() {
       calcul_us: { med: med(STAT.decisionUs), p90: qtl(STAT.decisionUs, 0.9) }, evaluations: STAT.evaluations },
     systeme: (() => { const m = process.memoryUsage(); let disque = null; try { const d = fs.statfsSync(DIR); disque = { libre_Mo: Math.round(d.bavail * d.bsize / 1e6), total_Mo: Math.round(d.blocks * d.bsize / 1e6) }; } catch (_) {}
       return { rss_Mo: Math.round(m.rss / 1e6), tas_Mo: Math.round(m.heapUsed / 1e6), disque, dernierCycle: STAT.dernierCycle || null }; })(),
-    flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "pb", "bnd", "byob", "poly", "drb", "cbob", "xbn", "xby"].map((k) => [k, WS[k] ? { muet_s: +(now() - WS[k].msg).toFixed(1), reconnexions: WS[k].n } : null])) };
+    flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "pb", "bnd", "byob", "poly", "drb", "cbob", "xbn", "xby", "byt", "bnf"].map((k) => [k, WS[k] ? { muet_s: +(now() - WS[k].msg).toFixed(1), reconnexions: WS[k].n } : null])) };
   try {
     const r = await fetch(`${U}/api/rapide/donnees`, { method: "POST", headers: { "content-type": "application/json", "x-rapide": TOKEN }, body: JSON.stringify(corps) });
     if (!r.ok) { log("envoi HTTP", r.status); FINIS.unshift(...corps.signaux); MAKER_FINIS.push(...corps.maker.filter((x) => x.type !== "resume")); }
