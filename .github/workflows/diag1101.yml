@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths: [bot95/diag_go.txt]
   workflow_dispatch:
+    inputs:
+      duree: { description: "secondes d'ecoute", default: "75" }
 permissions:
   contents: write
 jobs:
@@ -19,11 +21,11 @@ jobs:
       - run: |
           set +e
           cd bot95
-          (timeout 75 npx -y wrangler@4 tail bot95 --format json > /tmp/tail.json 2>/tmp/tail.err &)
+          (timeout ${{ inputs.duree || 75 }} npx -y wrangler@4 tail bot95 --format json > /tmp/tail.json 2>/tmp/tail.err &)
           sleep 20
           U=https://bot95.pitch67.workers.dev
           for p in / /api/etat /nouveaux /api/nouveaux /api/reveil; do for k in 1 2; do curl -sS -m 25 -o /tmp/b -w "$p %{http_code} %{time_total}s\n" "$U$p" >> /tmp/c.log; head -c 300 /tmp/b | tr '\n' ' ' >> /tmp/c.log; echo >> /tmp/c.log; sleep 3; done; done
-          sleep 30
+          sleep $(( ${{ inputs.duree || 75 }} - 40 ))
           { cat /tmp/c.log; echo "=== tail err"; tail -20 /tmp/tail.err; echo "=== tail"; python3 - <<'P'
           import json
           raw=open('/tmp/tail.json').read()
@@ -35,7 +37,7 @@ jobs:
               except Exception: break
               i=j; n+=1
               ev=o.get('event') or {}; req=(ev.get('request') or {}).get('url') or ev.get('cron') or ''
-              print('---', o.get('outcome'), o.get('scriptName'), o.get('entrypoint'), req)
+              print('---', o.get('outcome'), o.get('scriptName'), o.get('entrypoint'), (ev.get('request') or {}).get('method'), req, (ev.get('response') or {}).get('status'))
               for e in o.get('exceptions',[]): print('EXC', e.get('name'), e.get('message'), (e.get('stack') or '')[:800])
               for l in o.get('logs',[])[-8:]: print('LOG', l.get('level'), str(l.get('message'))[:400])
           print('events', n)
