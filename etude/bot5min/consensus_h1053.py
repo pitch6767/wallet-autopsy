@@ -29,6 +29,9 @@ ADDENDUM 2 (12.10.2026 ~19:50, avant toute donnée du 13.10) : K8 = K5 ET pause 
   Évaluation honnête de la recherche elle-même (choix de la règle sur les jours précédents seulement, appliquée au jour suivant, 1 720 règles) :
   10.10 −2 210 $ contre −4 438 $ ; 11.10 −1 364 $ contre −2 687 $ ; 12.10 matin +2 234 $ contre +2 351 $ ; 12.10 après-midi −167 $ contre +598 $ ;
   la famille « consensus » est choisie à chaque fois ; les perdants baissent toujours fortement, le P&L pas toujours. IC corrigé : 8 comparaisons.
+ADDENDUM 3 (12.10.2026 ~21:50, avant toute donnée du 13.10) : K9 = K5 ET consensus ≥ 15. Exploration : 144 trades, +832 $, 46 % de perdants
+  (K5 : 68 %), positif chaque jour (09.10 +330, 10.10 +244, 11.10 +204, 12.10 après-midi +53) ; signal rare (~6 cycles par jour). Pistes écartées
+  ce soir : copier les portefeuilles Polymarket les plus habiles avec 2–30 s de retard (−3 300 à −7 600 $ par jour) ; argent malin comme filtre.
 TEST : cycles ≥ 13.10.2026 00:00 UTC (jamais vus), jusqu'à l'export du jour du calcul.
 CRITÈRE : K2 est confirmée si, sur le test, l'écart de P&L avec la base (somme des 10 stratégies, 10 $ par trade) a un IC 90 % par cycles
   entièrement > 0, que le nombre de trades perdants baisse, et que l'écart est positif pour au moins 6 stratégies sur 10. Les autres règles sont
@@ -46,7 +49,8 @@ REGLES = {"K2 consensus ≥ 8 et ≥ 120 s": lambda d: d["same"] >= 8 and d["res
           "K5 K2 et délai ≤ 3 s": lambda d: d["same"] >= 8 and d["rest"] >= 120 and d["age"] <= 3,
           "K6 K2 et aucun opposé": lambda d: d["same"] >= 8 and d["rest"] >= 120 and d["opp"] == 0,
           "K7 K2 et délai ≤ 1 s": lambda d: d["same"] >= 8 and d["rest"] >= 120 and d["age"] <= 1,
-          "K8 K5 et pause si 12 h ≤ 0": lambda d: d["same"] >= 8 and d["rest"] >= 120 and d["age"] <= 3 and d["r12"] > 0}
+          "K8 K5 et pause si 12 h ≤ 0": lambda d: d["same"] >= 8 and d["rest"] >= 120 and d["age"] <= 3 and d["r12"] > 0,
+          "K9 K5 et consensus ≥ 15": lambda d: d["same"] >= 15 and d["rest"] >= 120 and d["age"] <= 3}
 
 
 def charger():
@@ -87,10 +91,10 @@ def main():
     for lab, S in (("Exploration (avant le 13.10, déjà vue)", [d for d in D if d["st"] < TEST]), ("TEST (≥ 13.10, jamais vu)", [d for d in D if d["st"] >= TEST])):
         w(f"## {lab} — {len(S)} trades, base {sum(d['pnl'] for d in S):+.0f} $, {sum(d['los'] for d in S)} perdants\n")
         if not S: continue
-        w("| Règle | Trades gardés | P&L gardé ($) | Perdants gardés | Taux de perdants | Écart avec la base ($) | IC 90 % | IC corrigé (8) | Stratégies améliorées |\n|---|---|---|---|---|---|---|---|---|")
+        w("| Règle | Trades gardés | P&L gardé ($) | Perdants gardés | Taux de perdants | Écart avec la base ($) | IC 90 % | IC corrigé (9) | Stratégies améliorées |\n|---|---|---|---|---|---|---|---|---|")
         g = [d["st"] for d in S]
         for k, f in REGLES.items():
-            K = [d for d in S if f(d)]; dv = [0.0 if f(d) else -d["pnl"] for d in S]; c1 = ic(g, dv); c2 = ic(g, dv, 0.10 / 8)
+            K = [d for d in S if f(d)]; dv = [0.0 if f(d) else -d["pnl"] for d in S]; c1 = ic(g, dv); c2 = ic(g, dv, 0.10 / 9)
             amel = sum(1 for n in TOP if sum((0.0 if f(d) else -d["pnl"]) for d in S if d["nom"] == n) > 0)
             w(f"| {k} | {len(K)} / {len(S)} | {sum(d['pnl'] for d in K):+.0f} | {sum(d['los'] for d in K)} / {sum(d['los'] for d in S)} | "
               f"{100 * np.mean([d['los'] for d in K]) if K else 0:.0f} % (base {100 * np.mean([d['los'] for d in S]):.0f} %) | {sum(dv):+.0f} | [{c1[0]:+.0f} ; {c1[1]:+.0f}] | "

@@ -1,31 +1,32 @@
 # Bot95 — H1053 : filtre de consensus sur les gagnantes du 12.10
 
-Généré le 12.10.2026 17:21 UTC. Mise ramenée à 10 $ par trade. Aucun ordre.
+Généré le 12.10.2026 19:33 UTC. Mise ramenée à 10 $ par trade. Aucun ordre.
 
-## Exploration (avant le 13.10, déjà vue) — 7482 trades, base -1266 $, 5795 perdants
+## Exploration (avant le 13.10, déjà vue) — 7687 trades, base -1539 $, 5981 perdants
 
-| Règle | Trades gardés | P&L gardé ($) | Perdants gardés | Taux de perdants | Écart avec la base ($) | IC 90 % | IC corrigé (8) | Stratégies améliorées |
+| Règle | Trades gardés | P&L gardé ($) | Perdants gardés | Taux de perdants | Écart avec la base ($) | IC 90 % | IC corrigé (9) | Stratégies améliorées |
 |---|---|---|---|---|---|---|---|---|
-| K2 consensus ≥ 8 et ≥ 120 s | 3434 / 7482 | +5406 | 2558 / 5795 | 74 % (base 77 %) | +6671 | [+2222 ; +10896] | [-293 ; +13235] | 9 / 10 |
-| K1 consensus ≥ 8 | 3976 / 7482 | +3782 | 3012 / 5795 | 76 % (base 77 %) | +5048 | [+1016 ; +9086] | [-1140 ; +10889] | 9 / 10 |
-| K3 consensus ≥ 6 et ≥ 120 s | 4667 / 7482 | +4464 | 3520 / 5795 | 75 % (base 77 %) | +5730 | [+2372 ; +8978] | [+496 ; +10734] | 9 / 10 |
-| K4 consensus ≥ 10 et ≥ 120 s | 2180 / 7482 | +5153 | 1597 / 5795 | 73 % (base 77 %) | +6419 | [+813 ; +12105] | [-2855 ; +14684] | 8 / 10 |
-| K5 K2 et délai ≤ 3 s | 1514 / 7482 | +6826 | 1035 / 5795 | 68 % (base 77 %) | +8091 | [+1696 ; +14482] | [-1175 ; +17796] | 9 / 10 |
-| K6 K2 et aucun opposé | 3210 / 7482 | +4929 | 2380 / 5795 | 74 % (base 77 %) | +6194 | [+1092 ; +11133] | [-1831 ; +12846] | 9 / 10 |
-| K7 K2 et délai ≤ 1 s | 1362 / 7482 | +7156 | 914 / 5795 | 67 % (base 77 %) | +8421 | [+1941 ; +14652] | [-1924 ; +18341] | 9 / 10 |
-| K8 K5 et pause si 12 h ≤ 0 | 486 / 7482 | +5267 | 281 / 5795 | 58 % (base 77 %) | +6533 | [-1521 ; +14210] | [-5539 ; +17766] | 9 / 10 |
+| K2 consensus ≥ 8 et ≥ 120 s | 3565 / 7687 | +5164 | 2683 / 5981 | 75 % (base 78 %) | +6703 | [+2024 ; +11236] | [-579 ; +13484] | 9 / 10 |
+| K1 consensus ≥ 8 | 4126 / 7687 | +3395 | 3155 / 5981 | 76 % (base 78 %) | +4935 | [+892 ; +9047] | [-1673 ; +11014] | 9 / 10 |
+| K3 consensus ≥ 6 et ≥ 120 s | 4809 / 7687 | +4279 | 3653 / 5981 | 76 % (base 78 %) | +5818 | [+2331 ; +9295] | [+236 ; +10847] | 9 / 10 |
+| K4 consensus ≥ 10 et ≥ 120 s | 2301 / 7687 | +5011 | 1712 / 5981 | 74 % (base 78 %) | +6551 | [+670 ; +12245] | [-2239 ; +15699] | 8 / 10 |
+| K5 K2 et délai ≤ 3 s | 1590 / 7687 | +6066 | 1111 / 5981 | 70 % (base 78 %) | +7605 | [+894 ; +14048] | [-2990 ; +17417] | 9 / 10 |
+| K6 K2 et aucun opposé | 3329 / 7687 | +4807 | 2493 / 5981 | 75 % (base 78 %) | +6346 | [+1155 ; +11154] | [-2129 ; +14129] | 10 / 10 |
+| K7 K2 et délai ≤ 1 s | 1438 / 7687 | +6396 | 990 / 5981 | 69 % (base 78 %) | +7935 | [+1102 ; +14698] | [-3246 ; +18266] | 9 / 10 |
+| K8 K5 et pause si 12 h ≤ 0 | 562 / 7687 | +4507 | 357 / 5981 | 64 % (base 78 %) | +6046 | [-2153 ; +13914] | [-7017 ; +18345] | 9 / 10 |
+| K9 K5 et consensus ≥ 15 | 160 / 7687 | +672 | 82 / 5981 | 51 % (base 78 %) | +2211 | [-6366 ; +11084] | [-11395 ; +15298] | 8 / 10 |
 
 | Stratégie | Base ($) | K2 ($) | Écart | Perdants base → K2 |
 |---|---|---|---|---|
-| V2-F + pas les deux baissent BTC | -483 | +393 | +876 | 635 → 273 |
-| V2-D perp 120-269 s BTC | +394 | +442 | +48 | 580 → 395 |
-| V2-F + plus de 120 s BTC | -127 | +643 | +770 | 539 → 241 |
-| V2-C perp BTC | -185 | +471 | +656 | 690 → 359 |
-| V2-G jury des bourses BTC | -203 | +451 | +654 | 671 → 449 |
-| V2-F ecart qui grandit BTC | -470 | +704 | +1174 | 683 → 250 |
-| V2-B hors 60-89 s BTC | -290 | +786 | +1075 | 682 → 161 |
-| V2-H veto complet BTC | -396 | +260 | +656 | 686 → 270 |
-| desaccord 20 Binance ou perp avec nous BTC | +706 | +671 | -35 | 140 → 41 |
-| desaccord 20 sans nuit BTC | -211 | +585 | +797 | 489 → 119 |
+| V2-F + pas les deux baissent BTC | -414 | +504 | +919 | 656 → 286 |
+| V2-D perp 120-269 s BTC | +486 | +554 | +68 | 597 → 410 |
+| V2-F + plus de 120 s BTC | -184 | +523 | +706 | 554 → 253 |
+| V2-C perp BTC | -143 | +583 | +726 | 712 → 374 |
+| V2-G jury des bourses BTC | -54 | +603 | +658 | 687 → 458 |
+| V2-F ecart qui grandit BTC | -586 | +584 | +1170 | 704 → 262 |
+| V2-B hors 60-89 s BTC | -426 | +646 | +1072 | 705 → 175 |
+| V2-H veto complet BTC | -516 | +100 | +616 | 708 → 286 |
+| desaccord 20 Binance ou perp avec nous BTC | +626 | +601 | -25 | 148 → 48 |
+| desaccord 20 sans nuit BTC | -327 | +466 | +793 | 510 → 131 |
 
 ## TEST (≥ 13.10, jamais vu) — 0 trades, base +0 $, 0 perdants
