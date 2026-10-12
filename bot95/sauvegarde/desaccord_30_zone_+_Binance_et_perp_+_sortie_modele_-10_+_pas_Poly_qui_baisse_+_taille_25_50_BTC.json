@@ -6393,17 +6393,59 @@
 ],
 "start": 1791762900,
 "slug": "btc-updown-5m-1791762900"
+},
+"2026-10-12T02:58:48.908Z|Up": {
+"heure": "2026-10-12T02:58:48.908Z",
+"cote": "Up",
+"prix": 0.1599,
+"parts": 259.16,
+"U": 0,
+"D": 0,
+"cash": -26.775790960000002,
+"net": -26.78,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.515,
+"restant_s": 71,
+"journal": [
+"228.9s écart 0.37 (modèle 0.515, vendeur 0.15), 71 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)",
+"241.2s le modèle est passé de 0.515 à 0.408 → revente de 124.9 parts pour 7.04 $ (59 s restantes)",
+"241.2s le modèle est passé de 0.515 à 0.408 → revente de 124.9 parts pour 7.04 $ (59 s restantes)",
+"241.2s le modèle est passé de 0.515 à 0.408 → revente de 9.3 parts pour 0.58 $ (59 s restantes)"
+],
+"start": 1791773700,
+"slug": "btc-updown-5m-1791773700"
+},
+"2026-10-12T02:38:04.450Z|Down": {
+"heure": "2026-10-12T02:38:04.450Z",
+"cote": "Down",
+"prix": 0.231,
+"parts": 238.1,
+"U": 0,
+"D": 0,
+"cash": -37.22444990476191,
+"net": -37.22,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.517,
+"restant_s": 116,
+"journal": [
+"184.5s écart 0.31 (modèle 0.517, vendeur 0.21), 116 s restantes ; 3 s avant : Binance 4.4, perp 12.5 (+ = dans notre sens)",
+"184.7s le modèle est passé de 0.517 à 0.345 → revente de 238.1 parts pour 17.79 $ (115 s restantes)"
+],
+"start": 1791772500,
+"slug": "btc-updown-5m-1791772500"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 180,
+"n": 182,
 "gains": 46,
-"pertes": 134,
-"pnl": 628.3900000000003
+"pertes": 136,
+"pnl": 564.3900000000003
 },
-"n_sauves": 331,
-"maj": "2026-10-12 02:03 UTC",
+"n_sauves": 333,
+"maj": "2026-10-12 06:01 UTC",
 "archive": [
 [
 "2026-10-09T05:38:25.744Z",
@@ -9059,6 +9101,24 @@
 "perdu",
 0.461,
 77
+],
+[
+"2026-10-12T02:38:04.450Z",
+"Down",
+0.231,
+-37.22,
+"perdu",
+0.517,
+116
+],
+[
+"2026-10-12T02:58:48.908Z",
+"Up",
+0.1599,
+-26.78,
+"perdu",
+0.515,
+71
 ]
 ]
 }
