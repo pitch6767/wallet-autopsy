@@ -1,0 +1,31 @@
+name: Historique open interest BTC (Binance futures, lecture seule)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  h:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 1 }
+      - run: |
+          set +e
+          mkdir -p /tmp/h && cd /tmp/h
+          python3 - <<'P'
+          import datetime, urllib.request, zipfile, io
+          d=datetime.date(2026,9,12); out=open("oi_btcusdt.csv","w"); n=0
+          while d<datetime.date(2026,10,13):
+              try:
+                  z=zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(f"https://data.binance.vision/data/futures/um/daily/metrics/BTCUSDT/BTCUSDT-metrics-{d}.zip",timeout=120).read()))
+                  L=z.open(z.namelist()[0]).read().decode().splitlines()
+                  if n==0: out.write(L[0]+"\n")
+                  for l in L[1:]: out.write(l+"\n"); n+=1
+                  print(d, len(L))
+              except Exception as e: print(d,"ERREUR",e)
+              d+=datetime.timedelta(days=1)
+          P
+          cd $GITHUB_WORKSPACE
+          git config user.name histo; git config user.email bot@users.noreply.github.com
+          git fetch -q origin donnees-btc && git checkout -q -B donnees-btc origin/donnees-btc
+          mkdir -p oi && cp /tmp/h/oi_btcusdt.csv oi/ && git add oi && git commit -qm "Open interest BTCUSDT 5 min" && for k in 1 2 3; do git push -q origin donnees-btc && break; sleep 5; done
