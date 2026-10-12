@@ -4,6 +4,7 @@ on:
     inputs:
       debut: { description: "premier jour AAAA-MM-JJ", default: "2026-09-12" }
       fin: { description: "dernier jour AAAA-MM-JJ (avant le 13.10)", default: "2026-10-12" }
+      symbole: { description: "paire Binance spot", default: "BTCUSDT" }
 permissions:
   contents: write
 jobs:
@@ -21,11 +22,11 @@ jobs:
           assert d1 < datetime.date(2026,10,13), "periode reservee interdite"
           d=d0
           while d<=d1:
-              for marche,url in (("spot",f"https://data.binance.vision/data/spot/daily/klines/BTCUSDT/1s/BTCUSDT-1s-{d}.zip"),):
+              for marche,url in (("spot",f"https://data.binance.vision/data/spot/daily/klines/${{ inputs.symbole }}/1s/${{ inputs.symbole }}-1s-{d}.zip"),):
                   try:
                       z=zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(url,timeout=120).read()))
                       rows=list(csv.reader(io.TextIOWrapper(z.open(z.namelist()[0]))))
-                      with gzip.open(f"btc1s_{d}.csv.gz","wt") as f:
+                      with gzip.open(f"${{ inputs.symbole }}_1s_{d}.csv.gz" if "${{ inputs.symbole }}"!="BTCUSDT" else f"btc1s_{d}.csv.gz","wt") as f:
                           f.write("t,o,h,l,c,v,vb\n")
                           for r in rows:
                               t=int(r[0]); t=t//1000 if t>1e14 else t   # µs -> ms
@@ -37,6 +38,6 @@ jobs:
           ls -la | head -40
           cd $GITHUB_WORKSPACE
           git config user.name histo; git config user.email bot@users.noreply.github.com
-          git fetch -q origin donnees-btc && git checkout -q donnees-btc || git checkout -q --orphan donnees-btc
-          git rm -rfq . 2>/dev/null; mkdir -p btc1s; cp /tmp/h/*.csv.gz btc1s/ 2>/dev/null
-          git add btc1s && git commit -qm "BTCUSDT 1 s Binance ${{ inputs.debut }} -> ${{ inputs.fin }}" && for k in 1 2 3; do git push -q origin donnees-btc && break; sleep 5; done
+          git fetch -q origin donnees-btc && git checkout -q -B donnees-btc origin/donnees-btc
+          D=btc1s; [ "${{ inputs.symbole }}" != BTCUSDT ] && D=autres/${{ inputs.symbole }}; mkdir -p $D; cp /tmp/h/*.csv.gz $D/ 2>/dev/null
+          git add $D && git commit -qm "${{ inputs.symbole }} 1 s Binance ${{ inputs.debut }} -> ${{ inputs.fin }}" && for k in 1 2 3; do git push -q origin donnees-btc && break; sleep 5; done
