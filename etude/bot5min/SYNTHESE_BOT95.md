@@ -87,6 +87,8 @@ Le 11.10, Pitch a décidé de garder Cloudflare comme bot existant et Dublin com
 - **Les longues séries de pertes sont normales** : une série de 25 pertes arrive dans 10 % des simulations quand on gagne 24 % des trades.
 - **Couvrir avec la jambe inverse revient exactement à vendre** (carnets miroirs).
 
+- **Le carnet L2 et le flux agressif annoncent les 10 à 30 secondes suivantes** (H833–H834, 12.10) : continuation après un flux suivi par le prix, AUC +0,085 à 10 s avec la liquidité. Les perpétuels Bybit et OKX mènent Binance spot de 100 ms à 1 s. Aucun apport démontré, en revanche, sur la probabilité du règlement.
+
 **Le meilleur résultat, mais pas démontré**
 - **H816** : une décision par cycle et par côté, prix de 0,20 à 0,50, 20 $ par décision, exécution à 164 ms. Avant le 13.10 : 64 décisions, +283 $ (+28 % par $ engagé), IC [−9 % ; +67 %]. Sans ses 5 meilleurs trades, le test est négatif.
 - **H821** (H816 sans les signaux où Chainlink est déjà du bon côté) : +139 $ sur le test et 0 jackpot perdu. La règle a été choisie parmi 38.
