@@ -1,0 +1,42 @@
+name: Historique BTC 1 s (Binance, lecture seule)
+on:
+  workflow_dispatch:
+    inputs:
+      debut: { description: "premier jour AAAA-MM-JJ", default: "2026-09-12" }
+      fin: { description: "dernier jour AAAA-MM-JJ (avant le 13.10)", default: "2026-10-12" }
+permissions:
+  contents: write
+jobs:
+  h:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 1 }
+      - run: |
+          set +e
+          mkdir -p /tmp/h && cd /tmp/h
+          python3 - <<'P'
+          import datetime, urllib.request, zipfile, io, csv, gzip, os, sys
+          d0=datetime.date.fromisoformat("${{ inputs.debut }}"); d1=datetime.date.fromisoformat("${{ inputs.fin }}")
+          assert d1 < datetime.date(2026,10,13), "periode reservee interdite"
+          d=d0
+          while d<=d1:
+              for marche,url in (("spot",f"https://data.binance.vision/data/spot/daily/klines/BTCUSDT/1s/BTCUSDT-1s-{d}.zip"),):
+                  try:
+                      z=zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(url,timeout=120).read()))
+                      rows=list(csv.reader(io.TextIOWrapper(z.open(z.namelist()[0]))))
+                      with gzip.open(f"btc1s_{d}.csv.gz","wt") as f:
+                          f.write("t,o,h,l,c,v,vb\n")
+                          for r in rows:
+                              t=int(r[0]); t=t//1000 if t>1e14 else t   # µs -> ms
+                              f.write(f"{t//1000},{r[1]},{r[2]},{r[3]},{r[4]},{r[5]},{r[9]}\n")
+                      print(d, marche, len(rows))
+                  except Exception as e: print(d, "ERREUR", e)
+              d+=datetime.timedelta(days=1)
+          P
+          ls -la | head -40
+          cd $GITHUB_WORKSPACE
+          git config user.name histo; git config user.email bot@users.noreply.github.com
+          git fetch -q origin donnees-btc && git checkout -q donnees-btc || git checkout -q --orphan donnees-btc
+          git rm -rfq . 2>/dev/null; mkdir -p btc1s; cp /tmp/h/*.csv.gz btc1s/ 2>/dev/null
+          git add btc1s && git commit -qm "BTCUSDT 1 s Binance ${{ inputs.debut }} -> ${{ inputs.fin }}" && for k in 1 2 3; do git push -q origin donnees-btc && break; sleep 5; done
