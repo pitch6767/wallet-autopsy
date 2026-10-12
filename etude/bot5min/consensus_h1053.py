@@ -16,6 +16,14 @@ EXPLORATION (faite le 12.10, documentée dans le rapport) : sur 08.10 → 12.10 
 RÈGLES FIGÉES (aucun changement après ce commit) :
   K2 (principale) : garder si consensus ≥ 8 ET temps restant ≥ 120 s.
   K1 : consensus ≥ 8.   K3 : consensus ≥ 6 ET temps restant ≥ 120 s.   K4 : consensus ≥ 10 ET temps restant ≥ 120 s.
+ADDENDUM (12.10.2026 ~19:35 heure suisse, avant toute donnée du 13.10 ; mêmes données d'exploration, nouvelles variables) :
+  « délai » = secondes entre le premier achat du même côté par une AUTRE stratégie dans le cycle et la décision. Exploration : garder seulement
+  les trades K2 dont le délai ≤ 3 s fait +5 053 $ contre +3 642 $ pour K2 (08.10 → 12.10 12:00), avec 1 000 perdants contre 2 493, et améliore
+  K2 chaque jour (10.10 : −851 $ contre −1 921 $ ; 11.10 : −208 $ contre −1 319 $). Hypothèse : une « rafale » de stratégies qui se déclenchent
+  ensemble signale un écart frais ; celles qui arrivent après coup paient un prix déjà corrigé. La diversité des familles n'aide pas.
+  K5 : K2 ET délai ≤ 3 s.   K6 : K2 ET aucune autre stratégie sur le côté opposé.   K7 : K2 ET délai ≤ 1 s.
+  Même test (≥ 13.10) ; K5 jugée avec le même critère que K2 (IC 90 % par cycles de l'écart avec la base > 0, perdants en baisse, ≥ 6 stratégies
+  sur 10 améliorées) ; IC corrigé pour 7 comparaisons.
 TEST : cycles ≥ 13.10.2026 00:00 UTC (jamais vus), jusqu'à l'export du jour du calcul.
 CRITÈRE : K2 est confirmée si, sur le test, l'écart de P&L avec la base (somme des 10 stratégies, 10 $ par trade) a un IC 90 % par cycles
   entièrement > 0, que le nombre de trades perdants baisse, et que l'écart est positif pour au moins 6 stratégies sur 10. Les autres règles sont
@@ -29,7 +37,10 @@ TEST = 1791849600; RNG = np.random.default_rng(1053)
 TOP = ["V2-F + pas les deux baissent BTC", "V2-D perp 120-269 s BTC", "V2-F + plus de 120 s BTC", "V2-C perp BTC", "V2-G jury des bourses BTC",
        "V2-F ecart qui grandit BTC", "V2-B hors 60-89 s BTC", "V2-H veto complet BTC", "desaccord 20 Binance ou perp avec nous BTC", "desaccord 20 sans nuit BTC"]
 REGLES = {"K2 consensus ≥ 8 et ≥ 120 s": lambda d: d["same"] >= 8 and d["rest"] >= 120, "K1 consensus ≥ 8": lambda d: d["same"] >= 8,
-          "K3 consensus ≥ 6 et ≥ 120 s": lambda d: d["same"] >= 6 and d["rest"] >= 120, "K4 consensus ≥ 10 et ≥ 120 s": lambda d: d["same"] >= 10 and d["rest"] >= 120}
+          "K3 consensus ≥ 6 et ≥ 120 s": lambda d: d["same"] >= 6 and d["rest"] >= 120, "K4 consensus ≥ 10 et ≥ 120 s": lambda d: d["same"] >= 10 and d["rest"] >= 120,
+          "K5 K2 et délai ≤ 3 s": lambda d: d["same"] >= 8 and d["rest"] >= 120 and d["age"] <= 3,
+          "K6 K2 et aucun opposé": lambda d: d["same"] >= 8 and d["rest"] >= 120 and d["opp"] == 0,
+          "K7 K2 et délai ≤ 1 s": lambda d: d["same"] >= 8 and d["rest"] >= 120 and d["age"] <= 1}
 
 
 def charger():
@@ -47,8 +58,10 @@ def charger():
         if r["nom"] not in TOP: continue
         cost = r["parts"] * r["prix"]
         if cost <= 0: continue
-        same = len({x["nom"] for x in byc[r["st"]] if x["cote"] == r["cote"] and x["ts"] <= r["ts"] and x["nom"] != r["nom"]})
-        D.append(dict(nom=r["nom"], st=r["st"], pnl=10 * r["net"] / cost, los=r["net"] < 0, rest=r["rest"], same=same))
+        prev = [x for x in byc[r["st"]] if x["ts"] <= r["ts"] and x["nom"] != r["nom"]]
+        same = len({x["nom"] for x in prev if x["cote"] == r["cote"]}); opp = len({x["nom"] for x in prev if x["cote"] != r["cote"]})
+        t1 = min([x["ts"] for x in prev if x["cote"] == r["cote"]], default=r["ts"])
+        D.append(dict(nom=r["nom"], st=r["st"], pnl=10 * r["net"] / cost, los=r["net"] < 0, rest=r["rest"], same=same, opp=opp, age=r["ts"] - t1))
     return D
 
 
@@ -65,10 +78,10 @@ def main():
     for lab, S in (("Exploration (avant le 13.10, déjà vue)", [d for d in D if d["st"] < TEST]), ("TEST (≥ 13.10, jamais vu)", [d for d in D if d["st"] >= TEST])):
         w(f"## {lab} — {len(S)} trades, base {sum(d['pnl'] for d in S):+.0f} $, {sum(d['los'] for d in S)} perdants\n")
         if not S: continue
-        w("| Règle | Trades gardés | P&L gardé ($) | Perdants gardés | Taux de perdants | Écart avec la base ($) | IC 90 % | IC corrigé (4) | Stratégies améliorées |\n|---|---|---|---|---|---|---|---|---|")
+        w("| Règle | Trades gardés | P&L gardé ($) | Perdants gardés | Taux de perdants | Écart avec la base ($) | IC 90 % | IC corrigé (7) | Stratégies améliorées |\n|---|---|---|---|---|---|---|---|---|")
         g = [d["st"] for d in S]
         for k, f in REGLES.items():
-            K = [d for d in S if f(d)]; dv = [0.0 if f(d) else -d["pnl"] for d in S]; c1 = ic(g, dv); c2 = ic(g, dv, 0.10 / 4)
+            K = [d for d in S if f(d)]; dv = [0.0 if f(d) else -d["pnl"] for d in S]; c1 = ic(g, dv); c2 = ic(g, dv, 0.10 / 7)
             amel = sum(1 for n in TOP if sum((0.0 if f(d) else -d["pnl"]) for d in S if d["nom"] == n) > 0)
             w(f"| {k} | {len(K)} / {len(S)} | {sum(d['pnl'] for d in K):+.0f} | {sum(d['los'] for d in K)} / {sum(d['los'] for d in S)} | "
               f"{100 * np.mean([d['los'] for d in K]) if K else 0:.0f} % (base {100 * np.mean([d['los'] for d in S]):.0f} %) | {sum(dv):+.0f} | [{c1[0]:+.0f} ; {c1[1]:+.0f}] | "
@@ -80,9 +93,11 @@ def main():
             w(f"| {n} | {sum(d['pnl'] for d in Sn):+.0f} | {sum(d['pnl'] for d in Kn):+.0f} | {sum(d['pnl'] for d in Kn) - sum(d['pnl'] for d in Sn):+.0f} | "
               f"{sum(d['los'] for d in Sn)} → {sum(d['los'] for d in Kn)} |")
         if lab.startswith("TEST"):
+          for nomk in ("K2 consensus ≥ 8 et ≥ 120 s", "K5 K2 et délai ≤ 3 s"):
+            f = REGLES[nomk]
             dv = [0.0 if f(d) else -d["pnl"] for d in S]; c1 = ic(g, dv); Kc = sum(1 for n in TOP if sum((0.0 if f(d) else -d["pnl"]) for d in S if d["nom"] == n) > 0)
             ok = c1[0] > 0 and sum(d["los"] for d in S if f(d)) < sum(d["los"] for d in S) and Kc >= 6
-            w(f"\n**Verdict K2 : {'CONFIRMÉE' if ok else 'non confirmée'}** (IC [{c1[0]:+.0f} ; {c1[1]:+.0f}], {Kc} stratégies sur 10 améliorées).\n")
+            w(f"\n**Verdict {nomk.split()[0]} : {'CONFIRMÉE' if ok else 'non confirmée'}** (IC [{c1[0]:+.0f} ; {c1[1]:+.0f}], {Kc} stratégies sur 10 améliorées).\n")
         w("")
     p = os.path.join(ICI, "resultat_consensus_h1053.md"); open(p, "w").write("\n".join(o)); print("\n".join(o))
 

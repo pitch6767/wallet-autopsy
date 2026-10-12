@@ -1,15 +1,18 @@
 # Bot95 — H1053 : filtre de consensus sur les gagnantes du 12.10
 
-Généré le 12.10.2026 17:00 UTC. Mise ramenée à 10 $ par trade. Aucun ordre.
+Généré le 12.10.2026 17:16 UTC. Mise ramenée à 10 $ par trade. Aucun ordre.
 
 ## Exploration (avant le 13.10, déjà vue) — 7482 trades, base -1266 $, 5795 perdants
 
-| Règle | Trades gardés | P&L gardé ($) | Perdants gardés | Taux de perdants | Écart avec la base ($) | IC 90 % | IC corrigé (4) | Stratégies améliorées |
+| Règle | Trades gardés | P&L gardé ($) | Perdants gardés | Taux de perdants | Écart avec la base ($) | IC 90 % | IC corrigé (7) | Stratégies améliorées |
 |---|---|---|---|---|---|---|---|---|
-| K2 consensus ≥ 8 et ≥ 120 s | 3434 / 7482 | +5406 | 2558 / 5795 | 74 % (base 77 %) | +6671 | [+2222 ; +10896] | [+527 ; +12468] | 9 / 10 |
-| K1 consensus ≥ 8 | 3976 / 7482 | +3782 | 3012 / 5795 | 76 % (base 77 %) | +5048 | [+1016 ; +9086] | [-370 ; +10280] | 9 / 10 |
-| K3 consensus ≥ 6 et ≥ 120 s | 4667 / 7482 | +4464 | 3520 / 5795 | 75 % (base 77 %) | +5730 | [+2372 ; +8978] | [+1059 ; +10168] | 9 / 10 |
-| K4 consensus ≥ 10 et ≥ 120 s | 2180 / 7482 | +5153 | 1597 / 5795 | 73 % (base 77 %) | +6419 | [+813 ; +12105] | [-1522 ; +14054] | 8 / 10 |
+| K2 consensus ≥ 8 et ≥ 120 s | 3434 / 7482 | +5406 | 2558 / 5795 | 74 % (base 77 %) | +6671 | [+2222 ; +10896] | [-216 ; +13050] | 9 / 10 |
+| K1 consensus ≥ 8 | 3976 / 7482 | +3782 | 3012 / 5795 | 76 % (base 77 %) | +5048 | [+1016 ; +9086] | [-920 ; +10819] | 9 / 10 |
+| K3 consensus ≥ 6 et ≥ 120 s | 4667 / 7482 | +4464 | 3520 / 5795 | 75 % (base 77 %) | +5730 | [+2372 ; +8978] | [+584 ; +10636] | 9 / 10 |
+| K4 consensus ≥ 10 et ≥ 120 s | 2180 / 7482 | +5153 | 1597 / 5795 | 73 % (base 77 %) | +6419 | [+813 ; +12105] | [-2615 ; +14602] | 8 / 10 |
+| K5 K2 et délai ≤ 3 s | 1514 / 7482 | +6826 | 1035 / 5795 | 68 % (base 77 %) | +8091 | [+1696 ; +14482] | [-1052 ; +17524] | 9 / 10 |
+| K6 K2 et aucun opposé | 3210 / 7482 | +4929 | 2380 / 5795 | 74 % (base 77 %) | +6194 | [+1092 ; +11133] | [-1759 ; +12822] | 9 / 10 |
+| K7 K2 et délai ≤ 1 s | 1362 / 7482 | +7156 | 914 / 5795 | 67 % (base 77 %) | +8421 | [+1941 ; +14652] | [-1805 ; +18187] | 9 / 10 |
 
 | Stratégie | Base ($) | K2 ($) | Écart | Perdants base → K2 |
 |---|---|---|---|---|
