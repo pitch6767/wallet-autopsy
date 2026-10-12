@@ -97,6 +97,7 @@ Le 11.10, Pitch a décidé de garder Cloudflare comme bot existant et Dublin com
 - Relances R4 : en direct, elles ne font pas mieux que l'achat immédiat (§7).
 - Sauvetage, stop, ventes par paliers, couverture : rien ne bat le fait de garder jusqu'au règlement.
 - Routeurs, méta-modèles, Kronos, arbitrage 15/5 min, paires, filtres d'exécution H818.
+- Supports, résistances et figures de liquidité (H822–H832, 12.10) : les anciens sommets et creux rejettent même moins que des niveaux fictifs, les figures n'ajoutent rien au modèle de règlement, et le meilleur veto n'est pas démontré. Marge de sécurité utile : environ 1,9 σ pour 90 % de victoires et 2,6 σ pour 95 %.
 
 **Où se perd l'argent.** Ce n'est pas l'exécution : 94 % des ordres passent, sans remplissage toxique, et la profondeur suffit jusqu'à 100 $. C'est **le choix des billets** : le gain moyen repose sur quelques jackpots, et la médiane est négative.
 

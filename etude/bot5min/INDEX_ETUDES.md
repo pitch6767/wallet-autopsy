@@ -1,4 +1,4 @@
-# Bot95 — index de toutes les études (143 fichiers de résultats)
+# Bot95 — index de toutes les études
 
 Une ligne par fichier de etude/bot5min/ : date de création, sujet, conclusion chiffrée telle qu'écrite dans le fichier. Les résumés ont été produits le 12.10.2026 en relisant chaque fichier. En cas de doute, le fichier lui-même fait foi.
 
@@ -153,3 +153,4 @@ Lecture des verdicts :
 | [resultat_veto.md](resultat_veto.md) | 07.10 | Moteur fantôme V2 sur 12 jours | G jury +14,98 $/trade (simulé). Pas de verdict. |
 | [resultat_vitesse_places.md](resultat_vitesse_places.md) | 07.10 | Vitesse de réaction Polymarket, Kalshi, Limitless | Pas de verdict. |
 | [resultat_zone.md](resultat_zone.md) | 08.10 | Zone désaccord 30, gestion des pertes | Garder +2 922 $ ; sortie −10 pts +3 060 $. Pas de verdict. |
+| [resultat_barrieres_h822.md](resultat_barrieres_h822.md) | 12.10 | H822–H832 : barrières, figures de liquidité, marge de règlement | Anciens sommets/creux rejettent MOINS que des niveaux fictifs (−8,7 pts [−12,7 ; −4,8]) ; modèle avec barrières/figures = modèle seul ; meilleur veto +350 $ / +124 $, IC corrigés contiennent 0. Non démontré. |
