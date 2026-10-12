@@ -102,7 +102,7 @@ function recEv(id, row) {
       }
     }
   }
-  if (R.ev.length >= 120000) { R.coupe = true; return; }
+  if (R.ev.length >= 1000000) { R.coupe = true; return; }   // 12.10 : plafond 120 000 → 1 000 000 (10 cycles sur 362 tronqués ; Pitch : aucun cycle tronqué)
   row.splice(3, 0, k); R.ev.push(row);
 }
 // flux agressifs par source (12.10.2026, H527-H530) : volume acheteur / vendeur (côté preneur) et nombre de transactions par tranche de 50 ms ;
