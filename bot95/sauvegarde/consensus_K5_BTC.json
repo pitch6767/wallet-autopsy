@@ -1,0 +1,128 @@
+{
+"nom": "consensus K5 BTC",
+"trades": {
+"2026-10-12T18:46:02.015Z|Up": {
+"heure": "2026-10-12T18:46:02.015Z",
+"cote": "Up",
+"prix": 0.1581,
+"parts": 194.17,
+"U": 194.17,
+"D": 0,
+"cash": -30.6977566,
+"net": -30.7,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.341,
+"restant_s": 238,
+"journal": [
+"62.0s V2-F + plus de 120 s achète Up avec 8 autres stratégies du même côté (première il y a 0.0 s), 238 s restantes → achat 194.2 parts à 0.1581"
+],
+"start": 1791830700,
+"slug": "btc-updown-5m-1791830700"
+},
+"2026-10-12T18:42:05.281Z|Down": {
+"heure": "2026-10-12T18:42:05.281Z",
+"cote": "Down",
+"prix": 0.2635,
+"parts": 5,
+"U": 0,
+"D": 5,
+"cash": -1.3175,
+"net": -1.32,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.479,
+"restant_s": 175,
+"journal": [
+"125.3s V2-F + pas les deux baissent achète Down avec 8 autres stratégies du même côté (première il y a 0.0 s), 175 s restantes → achat 5.0 parts à 0.2635"
+],
+"start": 1791830400,
+"slug": "btc-updown-5m-1791830400"
+},
+"2026-10-12T18:25:51.124Z|Up": {
+"heure": "2026-10-12T18:25:51.124Z",
+"cote": "Up",
+"prix": 0.2324,
+"parts": 13,
+"U": 13,
+"D": 0,
+"cash": -3.0206176,
+"net": -3.02,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.439,
+"restant_s": 249,
+"journal": [
+"51.1s desaccord 20 sans nuit achète Up avec 8 autres stratégies du même côté (première il y a 0.0 s), 249 s restantes → achat 13.0 parts à 0.2324"
+],
+"start": 1791829500,
+"slug": "btc-updown-5m-1791829500"
+},
+"2026-10-12T18:11:21.319Z|Down": {
+"heure": "2026-10-12T18:11:21.319Z",
+"cote": "Down",
+"prix": 0.2428,
+"parts": 5,
+"U": 0,
+"D": 5,
+"cash": -1.213756,
+"net": -1.21,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.432,
+"restant_s": 219,
+"journal": [
+"81.3s V2-G jury des bourses achète Down avec 9 autres stratégies du même côté (première il y a 0.1 s), 219 s restantes → achat 5.0 parts à 0.2428"
+],
+"start": 1791828600,
+"slug": "btc-updown-5m-1791828600"
+}
+},
+"resume_bot": {
+"depuis": 1791829295.124,
+"n": 4,
+"gains": 0,
+"pertes": 4,
+"pnl": -36.25
+},
+"archive": [
+[
+"2026-10-12T18:11:21.319Z",
+"Down",
+0.2428,
+-1.21,
+"une seule jambe",
+0.432,
+219
+],
+[
+"2026-10-12T18:25:51.124Z",
+"Up",
+0.2324,
+-3.02,
+"une seule jambe",
+0.439,
+249
+],
+[
+"2026-10-12T18:42:05.281Z",
+"Down",
+0.2635,
+-1.32,
+"une seule jambe",
+0.479,
+175
+],
+[
+"2026-10-12T18:46:02.015Z",
+"Up",
+0.1581,
+-30.7,
+"une seule jambe",
+0.341,
+238
+]
+],
+"n_sauves": 4,
+"maj": "2026-10-12 18:59 UTC"
+}
