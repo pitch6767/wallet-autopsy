@@ -1,0 +1,29 @@
+name: Diag laboratoire Dublin (lecture seule)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set +e
+          curl -sS -m 180 https://bot95.pitch67.workers.dev/api/rapide -o /tmp/r.json; echo "code $?"; ls -la /tmp/r.json
+          curl -sS -m 60 "https://bot95.pitch67.workers.dev/api/rapidecycles?apres=0" -o /tmp/c.json
+          python3 - <<'P' > bot95/diag_rapide.txt 2>&1
+          import json, time
+          try:
+              r = json.load(open('/tmp/r.json')); e = r.get('etat', {})
+              print('etat', {k: e.get(k) for k in list(e)[:30]})
+              print('recu', time.strftime('%d.%m %H:%M:%S', time.gmtime(e.get('recu', 0))), 'UTC')
+          except Exception as x: print('rapide', x, open('/tmp/r.json').read()[:500])
+          try:
+              c = json.load(open('/tmp/c.json'))['cycles']; print('cycles', len(c), 'dernier', c[-1])
+          except Exception as x: print('cycles', x)
+          print('maintenant', time.strftime('%d.%m %H:%M:%S', time.gmtime()), 'UTC')
+          P
+          cat bot95/diag_rapide.txt
+          git config user.name diag; git config user.email bot@users.noreply.github.com
+          git add bot95/diag_rapide.txt && git commit -qm "diag rapide [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
