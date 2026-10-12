@@ -75,6 +75,15 @@ MESURES (section 41) : P&L net, par cycle, par $ de capital maximal, cycles gagn
 CRITÈRE (section 43) : une politique est « intéressante » seulement si, sur le TEST, l'IC corrigé de l'écart avec T0-50 est > 0, la fréquence des
   pertes > 6 $ ne monte pas, ≥ 50 % du P&L des jackpots est conservé, l'écart reste > 0 à 500 ms et sans les 5 meilleurs cycles, et si la
   validation va dans le même sens. Sinon : simplifier ou abandonner. Une mise réduite ou un meilleur taux de victoire ne sont pas une preuve.
+AMENDEMENT (12.10.2026, après le passage de contrôle sur apprentissage + validation, AVANT tout calcul du test ; commit séparé) :
+  Le contrôle a montré que (1) le cerveau B appris est presque identique au milieu du marché (coefficient de M0 ≈ 0) et (2) les seuls « avantages »
+  venaient de secondes où le carnet Polymarket n'avait qu'un côté : le repli « M0 recalibré seul » donnait alors 0,10–0,20 à des jetons vendus
+  0,01 (billets de loterie : 20 cycles actifs sur 197 en apprentissage, dont un seul gain de +3 300 $). Corrections, sans aucun réglage de seuil :
+  A1 — pas de probabilité ni de décision sans carnet à deux côtés (le repli M0 seul est supprimé).
+  A2 — seconde famille d'entrée, indépendante du cerveau, pour étudier la GESTION de position sur un nombre suffisant de cycles : « favori » =
+       première seconde entre 60 et 180 s écoulées où le côté favori (milieu ≥ 0,5) a un vendeur entre 0,60 et 0,85 ; même mise (50 $ pour T0-50,
+       10 $ sinon). Les renforts, couvertures, ventes et sauvetages restent décidés par les règles ci-dessus. Les deux familles sont rapportées
+       séparément, avec les mêmes corrections de tests multiples dans chaque famille. Le seuil e reste choisi sur T0-50 de la famille « avantage ».
 Usage : python3 etude/bot5min/reversal_h1003.py dossier_cycles_dublin [--controle | --confirmation]
   --controle = apprentissage et validation seulement (vérification du code) ; --confirmation = cycles ≥ 13.10 00:00 UTC en guise de test."""
 import os, sys, json, gzip, math, time, collections, csv
@@ -93,7 +102,7 @@ autre = lambda X: "Down" if X == "Up" else "Up"
 POL = ["T0-50", "T0-10", "T1", "T1v", "T2", "T2p", "T3", "T4", "LAD", "T5", "T6", "T7", "T7s"]
 STRICT = {"T6", "T7s"}; NCOMP = 13
 RPOL = ["R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R1-10", "R1-20", "R1-30", "R3-10", "R3-20", "R3-30", "Rv", "Ra", "Rm"]; NCOMP_R = 7
-REC_MODEL = None
+REC_MODEL = None; ENTREE = "avantage"; FAMS = ("avantage", "favori")
 vend, ach, meilleur = DP.vend, DP.ach, DP.meilleur
 
 
@@ -176,9 +185,14 @@ def simuler(pol, C, e, journal=None):
         sell = lambda X, q, tag: M.vendre(inv, t, X, q, bid[X], mid[X], tag, J)
         X0 = mem.get("X")
         if X0 is None:
-            if rest < 20: continue
-            Xb = max(edge, key=edge.get)
-            if edge[Xb] < e: continue
+            if ENTREE == "favori":
+                if not (120 <= rest <= 240) or mid["Up"] is None: continue
+                Xb = "Up" if mid["Up"] >= 0.5 else "Down"
+                if not (ask[Xb] and 600 <= ask[Xb] <= 850): continue
+            else:
+                if rest < 20: continue
+                Xb = max(edge, key=edge.get)
+                if edge[Xb] < e: continue
             X0 = Xb; mem.update(X=X0, p0=pX[X0], last=t, n=1, plast=pX[X0], alast=ask[X0], pent={X0: pX[X0]}, lastside={X0: t})
             buy(X0, BUDGET if pol == "T0-50" else TR_, "entrée"); mem["x"] = X0
             continue
@@ -340,7 +354,7 @@ def rec_x(C, k, X):
 
 
 def main():
-    global EXEC, FEE_K, STRESS, REC_MODEL
+    global EXEC, FEE_K, STRESS, REC_MODEL, ENTREE
     t_go = time.time(); o = []; w = o.append
     G, cyc = L.grille(sys.argv[1]); P = L.preparer(G); L.P_sd1 = P["sd1"]; Y = L.resultats_officiels(cyc); V = PR.grandeurs(G, P)
     n = G["n"]; t0 = G["t0"]; bn = G["bn"]; sd1 = P["sd1"]
@@ -365,7 +379,7 @@ def main():
     win = lambda C, i, k: C[i + 1] - C[max(i + 1 - k, 0)]
     LQ60 = np.array([win(CL, i, 60) for i in range(n)])
     # ------------------------------------------------ cerveau A
-    def fam(i):
+    def familles(i):
         s = sd1[i] if np.isfinite(sd1[i]) and sd1[i] > 0 else 1.0
         Bf, Cf, Df = L.feats(G, P, i)
         mom = [(bn[i] - bn[i - 1]) / s, (bn[i] - bn[i - 5]) / (s * 2.24), (bn[i] - bn[i - 30]) / (s * 5.48), (bn[i] - bn[i - 60]) / (s * 7.75), s]
@@ -378,7 +392,7 @@ def main():
     for s_ in TE: part[s_] = nomT
     I = [i for st in TR + VA + TE for i in range(st - t0 + 10, st - t0 + 291, 3) if 620 <= i < n - 61 and G["ok"][i] and np.isfinite(bn[i]) and np.isfinite(bn[i + 60]) and np.isfinite(sd1[i])]
     I = np.array(I); gI = np.array([(t0 + i) - (t0 + i) % 300 for i in I]); pI = np.array([part[g] for g in gI]); trm = pI == "apprentissage"
-    FX = {f: np.nan_to_num(np.array([fam(i)[f] for i in I], float)) for f in FAM}
+    FX = {f: np.nan_to_num(np.array([familles(i)[f] for i in I], float)) for f in FAM}
     XF = lambda fs: np.column_stack([FX[f] for f in fs])
     def fit(X, y):
         mu, sd = X[trm].mean(0), X[trm].std(0) + 1e-9; b = L.ajuster((X[trm] - mu) / sd, y[trm], 2.0); return lambda Z: L.predire(b, (Z - mu) / sd)
@@ -423,7 +437,7 @@ def main():
     # a30 à chaque seconde des cycles
     def a30_at(i):
         if not (620 <= i < n) or not np.isfinite(bn[i]) or not np.isfinite(sd1[i]): return None
-        return float(a30fun(np.nan_to_num(np.array([sum((fam(i)[f] for f in FAM), [])], float)))[0])
+        return float(a30fun(np.nan_to_num(np.array([sum((familles(i)[f] for f in FAM), [])], float)))[0])
     # ------------------------------------------------ cerveau B
     def tstates(st, T):
         try: return {k: DP.compact(v) for k, v in LH.Cycle(cyc[st]["f"]).etats(T).items()}
@@ -448,7 +462,7 @@ def main():
         if not m: return None, None, None
         mu = midU(Lo)
         if mu: return float(L.predire(bB, np.array([[L.lg(m[0]), L.lg(min(max(mu, 0.005), 0.995))]]))[0]), m, mu
-        return float(L.predire(bM, np.array([[L.lg(m[0])]]))[0]), m, None
+        return None, m, None                                                   # amendement A1 : pas de carnet à deux côtés → pas de décision
     # ------------------------------------------------ rejeu : préparation d'un cycle
     def preparer_cycle(st):
         T = [st * 1000 + s * 1000 for s in range(10, 291)]
@@ -460,7 +474,8 @@ def main():
         ofi = [float(V["ofi5"][i]) if 0 <= i < n and np.isfinite(V["ofi5"][i]) else 0.0 for i in ii]; lq = [float(win(CLs, i, 60)) if 0 <= i < n else 0.0 for i in ii]
         return dict(st=st, E=E, T=T, p=p, a30=a30, m0=m0r, mid=mids, y=Y[st], ofi=ofi, liq=lq)
     # ------------------------------------------------ simulations
-    RECD = []; RES = collections.defaultdict(dict); CAL = collections.defaultdict(list); REG = {}; ENT = {}; JOURNAL = []; SW = []
+    RECD = []; CAL = collections.defaultdict(list)
+    RESF = {f_: collections.defaultdict(dict) for f_ in FAMS}; REGF = {f_: {} for f_ in FAMS}; ENTF = {f_: {} for f_ in FAMS}; JF = {f_: [] for f_ in FAMS}; SWF = {f_: [] for f_ in FAMS}
     variantes = [("164", 164, 1.0, {})] + [(f"{l}", l, 1.0, {}) for l in LATS[1:]] + [("frais×0,5", 164, 0.5, {}), ("frais×1,5", 164, 1.5, {})]
     STR = [("acheteurs disparus", {"bids": 1}), ("couverture + 2 c", {"couv": 1}), ("fills ÷ 2", {"fill": 0.5}), ("vente de protection impossible", {"vprot": 1})]
     POLS_STR = ["T0-50", "T1", "T3", "T4", "LAD", "T5", "T7", "T7s"]
@@ -471,235 +486,251 @@ def main():
         for k in range(0, len(C["T"]), 10):
             if C["p"][k] is not None and C["mid"][k] is not None and C["m0"][k] is not None:
                 CAL[pt].append((st, C["p"][k], C["mid"][k], C["m0"][k], C["a30"][k], C["y"]))
-        if pt == "apprentissage":
-            vus = set()
-            for e in (0.05, 0.10, 0.15):
-                for pol in POL + RPOL:
+        for fam in FAMS:
+            ENTREE = fam; RES_ = RESF[fam]; REG_ = REGF[fam]; ENT_ = ENTF[fam]; JOUR_ = JF[fam]; SW_ = SWF[fam]
+            if pt == "apprentissage":
+                vus = set()
+                for e in (0.05, 0.10, 0.15):
+                    for pol in POL + RPOL:
+                        EXEC, FEE_K, STRESS = 164, 1.0, {}
+                        inv, pnl = simuler(pol, C, e); RES_[("app", e, pol)][st] = resume(inv, pnl, C["y"], C)
+                    sg = signal(C, e) if ENTREE == "avantage" else None
+                    if sg:
+                        k0, X, p0, _a = sg; dans = False
+                        for k in range(k0 + 1, len(C["T"])):
+                            if C["p"][k] is None: continue
+                            pX = C["p"][k] if X == "Up" else 1 - C["p"][k]
+                            if pX <= p0 - 0.15: dans = True
+                            if dans and (k - k0) % 5 == 0 and 300 - (C["T"][k] // 1000 - st) >= 10 and (k, X) not in vus:
+                                vus.add((k, X)); RECD.append((st, rec_x(C, k, X), C["y"] if X == "Up" else 1 - C["y"]))
+            else:
+                if e_choisi is None:
+                    sc = {e: sum(RESF["avantage"][("app", e, "T0-50")][s]["pnl"] for s in TR) for e in (0.05, 0.10, 0.15)}; e_choisi = max(sc, key=sc.get); SC_E = sc
+                    Xr = np.array([r[1] for r in RECD], float); yr_ = np.array([r[2] for r in RECD], float); mu_r, sd_r = Xr.mean(0), Xr.std(0) + 1e-9
+                    bR = L.ajuster((Xr - mu_r) / sd_r, yr_, 2.0); REC_MODEL = lambda C_, k_, X_: float(L.predire(bR, (np.array([rec_x(C_, k_, X_)]) - mu_r) / sd_r)[0])
+                e = e_choisi
+                for nom, lat, fk, _ in variantes:
+                    if nom != "164" and pt == "validation" and nom not in ("500",): continue
+                    EXEC, FEE_K, STRESS = lat, fk, {}
+                    for pol in POL + RPOL:
+                        jj = [] if (nom == "164" and pol == "T7" and pt == nomT) else None
+                        inv, pnl = simuler(pol, C, e, jj); RES_[(pt, nom, pol)][st] = resume(inv, pnl, C["y"], C)
+                        if jj: JOUR_ += [(st,) + r for r in jj]
+                        if nom == "164" and inv.switch:
+                            for (ts, Sb) in inv.switch: SW_.append((pt, pol, st, ts, Sb))
+                if pt == nomT:
+                    for snom, sdict in STR:
+                        EXEC, FEE_K, STRESS = 164, 1.0, sdict
+                        for pol in POLS_STR:
+                            inv, pnl = simuler(pol, C, e); RES_[(pt, snom, pol)][st] = resume(inv, pnl, C["y"], C)
                     EXEC, FEE_K, STRESS = 164, 1.0, {}
-                    inv, pnl = simuler(pol, C, e); RES[("app", e, pol)][st] = resume(inv, pnl, C["y"], C)
-                sg = signal(C, e)
-                if sg:
-                    k0, X, p0, _a = sg; dans = False
-                    for k in range(k0 + 1, len(C["T"])):
-                        if C["p"][k] is None: continue
-                        pX = C["p"][k] if X == "Up" else 1 - C["p"][k]
-                        if pX <= p0 - 0.15: dans = True
-                        if dans and (k - k0) % 5 == 0 and 300 - (C["T"][k] // 1000 - st) >= 10 and (k, X) not in vus:
-                            vus.add((k, X)); RECD.append((st, rec_x(C, k, X), C["y"] if X == "Up" else 1 - C["y"]))
-        else:
-            if e_choisi is None:
-                sc = {e: sum(RES[("app", e, "T0-50")][s]["pnl"] for s in TR) for e in (0.05, 0.10, 0.15)}; e_choisi = max(sc, key=sc.get); SC_E = sc
-                Xr = np.array([r[1] for r in RECD], float); yr_ = np.array([r[2] for r in RECD], float); mu_r, sd_r = Xr.mean(0), Xr.std(0) + 1e-9
-                bR = L.ajuster((Xr - mu_r) / sd_r, yr_, 2.0); REC_MODEL = lambda C_, k_, X_: float(L.predire(bR, (np.array([rec_x(C_, k_, X_)]) - mu_r) / sd_r)[0])
-            e = e_choisi
-            for nom, lat, fk, _ in variantes:
-                if nom != "164" and pt == "validation" and nom not in ("500",): continue
-                EXEC, FEE_K, STRESS = lat, fk, {}
-                for pol in POL + RPOL:
-                    jj = [] if (nom == "164" and pol == "T7" and pt == nomT) else None
-                    inv, pnl = simuler(pol, C, e, jj); RES[(pt, nom, pol)][st] = resume(inv, pnl, C["y"], C)
-                    if jj: JOURNAL += [(st,) + r for r in jj]
-                    if nom == "164" and inv.switch:
-                        for (ts, Sb) in inv.switch: SW.append((pt, pol, st, ts, Sb))
-            if pt == nomT:
-                for snom, sdict in STR:
-                    EXEC, FEE_K, STRESS = 164, 1.0, sdict
-                    for pol in POLS_STR:
-                        inv, pnl = simuler(pol, C, e); RES[(pt, snom, pol)][st] = resume(inv, pnl, C["y"], C)
-                EXEC, FEE_K, STRESS = 164, 1.0, {}
-            # coût de changement de camp au moment de chaque inversion (H1020), sur le carnet observé
-        # régime au signal commun (même e pour T0-50)
-        ee = e_choisi if e_choisi is not None else 0.10
-        for k, t in enumerate(C["T"]):
-            Lo = C["E"].get(t); pU = C["p"][k]
-            if Lo is None or pU is None or 300 - (t // 1000 - st) < 20: continue
-            ed = []
-            for X, pX in (("Up", pU), ("Down", 1 - pU)):
-                a = meilleur(Lo, X, "a")
-                if a: ed.append((pX - a / 1000 - 0.07 * (a / 1000) * (1 - a / 1000), X, a))
-            if ed and max(ed)[0] >= ee:
-                REG[st] = regime(G, P, LQ60, t // 1000 - t0); ENT[st] = (max(ed)[1], max(ed)[2] / 1000, t); break
-        if st not in REG: REG[st] = "aucun signal"
+                # coût de changement de camp au moment de chaque inversion (H1020), sur le carnet observé
+            # régime au signal commun (même e pour T0-50)
+            ee = e_choisi if e_choisi is not None else 0.10
+            for k, t in enumerate(C["T"]):
+                Lo = C["E"].get(t); pU = C["p"][k]
+                if Lo is None or pU is None or 300 - (t // 1000 - st) < 20: continue
+                ed = []
+                for X, pX in (("Up", pU), ("Down", 1 - pU)):
+                    a = meilleur(Lo, X, "a")
+                    if a: ed.append((pX - a / 1000 - 0.07 * (a / 1000) * (1 - a / 1000), X, a))
+                if ENTREE == "favori":
+                    if not (120 <= 300 - (t // 1000 - st) <= 240): continue
+                    a_u, b_u = meilleur(Lo, "Up", "a"), meilleur(Lo, "Up", "b")
+                    if not (a_u and b_u): continue
+                    Xf = "Up" if (a_u + b_u) / 2000 >= 0.5 else "Down"; af = meilleur(Lo, Xf, "a")
+                    if af and 600 <= af <= 850:
+                        REG_[st] = regime(G, P, LQ60, t // 1000 - t0); ENT_[st] = (Xf, af / 1000, t); break
+                    continue
+                if ed and max(ed)[0] >= ee:
+                    REG_[st] = regime(G, P, LQ60, t // 1000 - t0); ENT_[st] = (max(ed)[1], max(ed)[2] / 1000, t); break
+            if st not in REG_: REG_[st] = "aucun signal"
         C = None
     if e_choisi is None and TR:
-        sc = {e: sum(RES[("app", e, "T0-50")][s]["pnl"] for s in TR) for e in (0.05, 0.10, 0.15)}; e_choisi = max(sc, key=sc.get); SC_E = sc
+        sc = {e: sum(RESF["avantage"][("app", e, "T0-50")][s]["pnl"] for s in TR) for e in (0.05, 0.10, 0.15)}; e_choisi = max(sc, key=sc.get); SC_E = sc
     e = e_choisi
-    # RS : attribution sur l'apprentissage (au e choisi)
-    CANDS = ["T0-50", "T1", "T3", "T5", "T7"]; ATT = {}
-    for rg in set(REG[s] for s in TR):
-        S_ = [s for s in TR if REG[s] == rg]; ATT[rg] = max(CANDS, key=lambda p_: sum(RES[("app", e, p_)][s]["pnl"] for s in S_))
-    for key in list(RES.keys()):
-        pass
-    def rs_res(src):
-        out = {}
-        for s in src[next(iter(src))].keys() if src else []:
-            pol = ATT.get(REG.get(s), "T0-50"); out[s] = src[pol][s]
-        return out
-    w(f"\n**Calibration de règlement (H1016, décisions toutes les 10 s)** — Brier et log loss ; écart = cerveau B − milieu du marché\n")
-    w("| Échantillon | Décisions | Brier marché | Brier M0 brut | Brier cerveau B | Cerveau B − marché (IC 90 %) | LL marché | LL cerveau B | Ajout de a30 (H1026) : ΔBrier (IC 90 %) |\n|---|---|---|---|---|---|---|---|---|")
-    ca = CAL["apprentissage"]
-    if ca:
-        Xa = np.array([[L.lg(r[1]), (r[4] if r[4] is not None else 0.5) - 0.5] for r in ca]); ya = np.array([r[5] for r in ca]); b26 = L.ajuster(Xa, ya, 0.1)
-    for pt in ["apprentissage", "validation", nomT]:
-        cc = CAL.get(pt)
-        if not cc: continue
-        g = np.array([r[0] for r in cc]); pb = np.array([r[1] for r in cc]); pm = np.array([r[2] for r in cc]); p0 = np.array([r[3] for r in cc]); yy = np.array([r[5] for r in cc])
-        d = L.brier(pb, yy) - L.brier(pm, yy); c = L.ic_g(g, d)
-        p26 = L.predire(b26, np.array([[L.lg(r[1]), (r[4] if r[4] is not None else 0.5) - 0.5] for r in cc])); d2 = L.brier(p26, yy) - L.brier(pb, yy); c2 = L.ic_g(g, d2)
-        w(f"| {pt} | {len(cc)} | {L.brier(pm, yy).mean():.4f} | {L.brier(p0, yy).mean():.4f} | {L.brier(pb, yy).mean():.4f} | {d.mean():+.4f} [{c[0]:+.4f} ; {c[1]:+.4f}] | "
-          f"{L.ll(pm, yy).mean():.4f} | {L.ll(pb, yy).mean():.4f} | {d2.mean():+.5f} [{c2[0]:+.5f} ; {c2[1]:+.5f}] |")
-    w(f"\nSeuil d'entrée e choisi sur l'apprentissage (T0-50) : **{e:.2f}** (" + ", ".join(f"e={k:.2f} → {v:+.0f} $" for k, v in SC_E.items()) + ").\n")
-    w("Attribution RS (apprentissage) : " + ", ".join(f"{k} → {v}" for k, v in sorted(ATT.items())) + ".\n")
-    # ------------------------------------------------ tableaux
-    def tableau(titre, Rd, sts, ref="T0-50", pols=None, ncomp=NCOMP):
-        pols = pols or list(Rd.keys())
-        w(f"### {titre} ({len(sts)} cycles)\n")
-        w(f"| Politique | Cycles actifs | P&L net ($) | Par cycle actif | Par $ de capital max | Cycles gagnants | Perte max | Pertes > 6 $ | Drawdown | ES 5 % | Capital max | Achats / ventes | Frais ($) | Coût d'écart ($) | Parts achetées | P&L couvertures ($) | Plancher le plus bas (moy.) | Jackpots conservés | Sans les 5 meilleurs | Écart avec {ref} ($) | IC 90 % | IC corrigé ({ncomp}) |\n"
-          "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
-        a = np.array([Rd[ref][s]["pnl"] for s in sts])
-        jk = [s for s in sts if s in ENT and ENT[s][1] <= 0.25 and Rd[ref][s]["pnl"] > 0]; jref = sum(Rd[ref][s]["pnl"] for s in jk)
-        for pol in pols:
-            if pol == "R7" and Rd is Rapp: continue
-            if pol not in Rd: continue
-            m = mesures(Rd[pol], sts); d = np.array([Rd[pol][s]["pnl"] for s in sts]) - a; c1 = ic_cy(d); c2 = ic_cy(d, 0.10 / ncomp)
-            jc = (100 * sum(Rd[pol][s]["pnl"] for s in jk) / jref) if jref > 0 else float("nan")
-            w(f"| {pol} | {m['n']} | {m['tot']:+.0f} | {m['moy']:+.2f} | {100 * m['parcap']:+.1f} % | {m['gagn']} | {m['pire']:+.0f} | {m['p6']} | {m['dd']:.0f} | {m['es']:+.1f} | "
-              f"{m['capmax']:.0f} | {m['na']} / {m['nv']} | {m['frais']:.0f} | {m['ecart']:.0f} | {m['qa']:.0f} | {m['hed']:+.0f} | {m['minf']:+.1f} | {jc:.0f} % ({len(jk)}) | {m['sans5']:+.0f} | "
-              f"{d.sum():+.0f} | " + ("—" if pol == ref else f"[{c1[0]:+.0f} ; {c1[1]:+.0f}]") + " | " + ("—" if pol == ref else f"[{c2[0]:+.0f} ; {c2[1]:+.0f}]") + " |")
-        w("")
-    w("\n## 3. Tournoi T0–T7 (H1034), latence 164 ms\n")
-    Rapp = {pol: RES[("app", e, pol)] for pol in POL}; Rapp["RS"] = rs_res(Rapp)
-    tableau("apprentissage (sert au choix de e et de RS)", Rapp, TR)
-    SPL = [(pt, [s for s in (VA if pt == "validation" else TE)]) for pt in ("validation", nomT) if (VA if pt == "validation" else TE)]
-    RV = {}
-    for pt, sts in SPL:
-        Rv = {pol: RES[(pt, "164", pol)] for pol in POL}; Rv["RS"] = rs_res(Rv); RV[pt] = Rv
-        tableau(pt, Rv, sts)
-    # simulations prioritaires
-    w("## 4. Les trois simulations prioritaires\n")
-    for pt, sts in SPL:
-        Rv = RV[pt]
-        for lab, pols in (("Simulation A — entrées progressives", ["T0-50", "T0-10", "T1", "T1v", "T2", "T2p"]),
-                          ("Simulation B — changement de camp", ["T0-50", "T1", "T2", "T4", "LAD", "T5", "T7"]),
-                          ("Simulation C — protection du capital (même plafond de 50 $)", ["T0-50", "T7", "T7s", "T5", "T6"])):
-            tableau(f"{lab} — {pt}", Rv, sts, pols=pols)
-        m7, m7s = mesures(Rv["T7"], sts), mesures(Rv["T7s"], sts); m5, m6 = mesures(Rv["T5"], sts), mesures(Rv["T6"], sts)
-        d = np.array([Rv["T7"][s]["pnl"] - Rv["T7s"][s]["pnl"] for s in sts]); c = ic_cy(d)
-        w(f"**H1033 — coût économique de la protection stricte ({pt})** : T7 − T7s = {d.sum():+.0f} $ [{c[0]:+.0f} ; {c[1]:+.0f}] ; pertes > 6 $ : "
-          f"T7 {m7['p6']}, T7s {m7s['p6']} ; T5 − T6 = {m5['tot'] - m6['tot']:+.0f} $ (pertes > 6 $ : T5 {m5['p6']}, T6 {m6['p6']}).\n")
-    # latence et frais
-    if TE:
-        w(f"## 5. Sensibilité à la latence et aux frais ({nomT})\n")
-        noms = [v[0] for v in variantes]
-        w("| Politique | " + " | ".join(f"{x} ms" if x.isdigit() else x for x in noms) + " |\n|---|" + "---|" * len(noms))
-        for pol in POL:
-            w(f"| {pol} | " + " | ".join(f"{sum(RES[(nomT, x, pol)][s]['pnl'] for s in TE):+.0f}" for x in noms) + " |")
-        w("\n## 6. H1018 — Scénarios défavorables (164 ms)\n")
-        w("| Politique | Normal | " + " | ".join(x for x, _ in STR) + " | Pertes > 6 $ (normal → pire scénario) | Perte max (normal → pire) |\n|---|---|" + "---|" * len(STR) + "---|---|")
-        for pol in POLS_STR:
-            base = mesures(RES[(nomT, "164", pol)], TE); ms_ = [mesures(RES[(nomT, x, pol)], TE) for x, _ in STR]
-            w(f"| {pol} | {base['tot']:+.0f} | " + " | ".join(f"{m_['tot']:+.0f}" for m_ in ms_) + f" | {base['p6']} → {max(m_['p6'] for m_ in ms_)} | {base['pire']:+.0f} → {min(m_['pire'] for m_ in ms_):+.0f} |")
-    # renforts, couvertures, inversions
-    w("\n## 7. Renforts, couvertures, inversions\n")
-    for pt, sts in SPL:
-        Rv = RV[pt]
-        w(f"**H1013 — P&L de chaque tranche jusqu'au règlement ({pt})**\n\n| Politique | Tranche | Nombre | Coût ($) | P&L ($) | P&L / $ |\n|---|---|---|---|---|---|")
-        for pol in ("T1", "T1v", "T2", "T2p"):
-            agg = collections.defaultdict(lambda: [0, 0.0, 0.0])
-            for s in sts:
-                for (r, v, c_) in Rv[pol][s]["tr"]: a_ = agg[r]; a_[0] += 1; a_[1] += c_; a_[2] += v
-            for r in sorted(agg): a_ = agg[r]; w(f"| {pol} | {r} | {a_[0]} | {a_[1]:.0f} | {a_[2]:+.0f} | {100 * a_[2] / max(a_[1], 1e-9):+.1f} % |")
-        w(f"\n**P&L des transactions de protection par type ({pt})** (valeur au règlement − coût)\n\n| Politique | Couverture | Protection (vente) | Inversion | Verrou | Sortie |\n|---|---|---|---|---|---|")
-        for pol in ("T3", "T4", "LAD", "T5", "T6", "T7", "T7s"):
-            h = collections.defaultdict(float)
-            for s in sts:
-                for k_, v in Rv[pol][s]["hed"].items(): h[k_] += v
-            w(f"| {pol} | " + " | ".join(f"{h.get(k_, 0):+.0f}" for k_ in ("couverture", "protection", "inversion", "verrou", "sortie")) + " |")
-        b1 = mesures(Rv["T1"], sts)
-        w(f"\n**H1025 — coût par dollar de perte maximale évitée ({pt}, contre T1)**\n\n| Politique | P&L − T1 ($) | Plancher moyen le plus bas − T1 ($) | Coût par $ évité |\n|---|---|---|---|")
-        for pol in ("T3", "T4", "LAD", "T7"):
-            m_ = mesures(Rv[pol], sts); dp = m_["tot"] - b1["tot"]; df = m_["minf"] - b1["minf"]
-            w(f"| {pol} | {dp:+.0f} | {df:+.2f} | {(-dp / (df * len(sts))) if df > 0 else float('nan'):+.2f} |")
-        nsw = collections.Counter(p_ for (pp_, p_, *_r) in SW if pp_ == pt)
-        w(f"\n**H1020 — changements de camp ({pt})** : " + (", ".join(f"{k_} {v}" for k_, v in nsw.items()) if nsw else "aucun") + ".\n")
-    # régimes
-    w("## 8. H1017 — Régimes au signal d'entrée\n")
-    for pt, sts in SPL:
-        Rv = RV[pt]
-        w(f"| {pt} : régime | Cycles | " + " | ".join(["T0-50", "T1", "T3", "T5", "T7", "RS"]) + " |\n|---|---|" + "---|" * 6)
-        for rg in sorted(set(REG[s] for s in sts)):
-            S_ = [s for s in sts if REG[s] == rg]
-            w(f"| {rg} | {len(S_)} | " + " | ".join(f"{sum(Rv[p_][s]['pnl'] for s in S_):+.0f}" for p_ in ["T0-50", "T1", "T3", "T5", "T7", "RS"]) + " |")
-        w("")
-    # ------------------------------------------------ H1036–H1040 : sauvetage par la jambe opposée
-    w("## 9. H1036–H1040 — Sauvetage de la première position (entrée 10 $, mêmes cycles)\n")
-    w("R0 conserver ; R1 vendre toute la position à −0,15 ; R2 couverture préventive (−0,05 et cerveau A contre ≥ 0,60) ; R3 couverture complète à −0,15 ; "
-      "R4 couverture tardive (p ≤ 0,25) ; R5 vente de 50 % puis couverture du reste à −0,15 ; R6 inversion complète à −0,15 (vente de tout + 10 $ de l'opposé) ; "
-      "R7 adaptatif (H1039 : probabilité de redevenir gagnante, apprise sur l'apprentissage ; vend si acheteur net > probabilité + 0,01, couvre si "
-      "(1 − probabilité) − coût opposé > 0,01, sinon conserve). Couverture = achat de l'opposé pour toutes les parts non appariées. "
-      "Les noms R0–R7 sont propres à cette étude (aucun lien avec le fantôme R4).\n")
-    if RECD:
-        w(f"Modèle de récupération H1039 : {len(RECD)} états détériorés d'apprentissage (taux de récupération {100 * np.mean([r[2] for r in RECD]):.1f} %).\n")
-    RRV = {}
-    for pt, sts in SPL:
-        Rr = {pol: RES[(pt, "164", pol)] for pol in RPOL}; RRV[pt] = Rr
-        tableau(f"Tournoi de sauvetage R0–R7 — {pt}", Rr, sts, ref="R0", pols=["R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7"], ncomp=NCOMP_R)
-        w(f"**Niveaux de détérioration (H1036, descriptif, aucun choix) — {pt}** : " + " ; ".join(
-            f"{p_} {sum(Rr[p_][s_]['pnl'] for s_ in sts) - sum(Rr['R0'][s_]['pnl'] for s_ in sts):+.0f} $" for p_ in ("R1-10", "R1", "R1-20", "R1-30", "R3-10", "R3", "R3-20", "R3-30")) + " (écart avec R0).\n")
-        D_ = [s_ for s_ in sts if Rr["R0"][s_]["defav"]]
-        w(f"**Test décisif (section 9) — {pt}** : {len(D_)} positions devenues défavorables (p ≤ entrée − 0,15) ; ramené à 100.\n")
-        w("| Politique | Perdantes sans intervention | Gagnantes sans intervention | Sauvetages (perte réduite) | Coût moyen d'un sauvetage réussi ($ gagnés) | Couvertures inutiles (gagnantes abîmées) | Coût des couvertures inutiles ($) | Perte moyenne R0 → politique | Perte max R0 → politique | P&L net − R0 (défavorables) | P&L net − R0 (tous) |\n|---|---|---|---|---|---|---|---|---|---|---|")
-        for p_ in ("R1", "R2", "R3", "R4", "R5", "R6", "R7", "Rv", "Ra", "Rm"):
-            if not D_: break
-            k_ = 100 / len(D_); r0 = np.array([Rr["R0"][x]["pnl"] for x in D_]); rp = np.array([Rr[p_][x]["pnl"] for x in D_])
-            perd, gagn = r0 < 0, r0 > 0; sauv = perd & (rp > r0); inut = gagn & (rp < r0)
-            gs = (rp - r0)[sauv]; ci = (r0 - rp)[inut]
-            lm0 = r0[r0 < 0].mean() if (r0 < 0).any() else 0; lmp = rp[rp < 0].mean() if (rp < 0).any() else 0
-            w(f"| {p_} | {k_ * perd.sum():.0f} | {k_ * gagn.sum():.0f} | {k_ * sauv.sum():.0f} | {gs.mean() if len(gs) else float('nan'):+.2f} | {k_ * inut.sum():.0f} | "
-              f"{ci.sum():.0f} | {lm0:+.2f} → {lmp:+.2f} | {r0.min():+.1f} → {rp.min():+.1f} | {(rp - r0).sum():+.0f} | "
-              f"{sum(Rr[p_][x]['pnl'] - Rr['R0'][x]['pnl'] for x in sts):+.0f} |")
-        w(f"\n**H1038 — vendre ou acheter l'opposé, à risque comparable (cible : pire résultat ≥ −6 $, dès p ≤ entrée − 0,15) — {pt}**\n")
-        w("| Réaction | Cycles où elle a agi | Pire résultat final moyen | Pertes > 6 $ | Capital max moyen ($) | Frais ($) | P&L net ($) | Écart avec R0 (IC 90 %) |\n|---|---|---|---|---|---|---|---|")
-        for p_, lab in (("R0", "ne rien faire"), ("Rv", "vendre une partie"), ("Ra", "acheter l'opposé"), ("Rm", "vendre une partie puis acheter l'opposé")):
-            m_ = mesures(Rr[p_], sts); d = np.array([Rr[p_][x]["pnl"] - Rr["R0"][x]["pnl"] for x in sts]); c = ic_cy(d)
-            w(f"| {lab} | {sum(Rr[p_][x]['res'] for x in sts)} | {np.mean([Rr[p_][x]['fl'] for x in sts]):+.2f} | {m_['p6']} | {np.mean([Rr[p_][x]['maxcap'] for x in sts]):.1f} | "
-              f"{m_['frais']:.1f} | {m_['tot']:+.0f} | {d.sum():+.0f} [{c[0]:+.0f} ; {c[1]:+.0f}] |")
-        w("")
-    if TE:
-        w(f"**Sauvetage — latence et frais ({nomT})**\n")
-        noms = [v[0] for v in variantes]
-        w("| Politique | " + " | ".join(f"{x} ms" if x.isdigit() else x for x in noms) + " |\n|---|" + "---|" * len(noms))
-        for pol in ("R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "Rv", "Ra", "Rm"):
-            w(f"| {pol} | " + " | ".join(f"{sum(RES[(nomT, x, pol)][s_]['pnl'] for s_ in TE):+.0f}" for x in noms) + " |")
-        w("\n**Critère (sauvetage, contre R0)** : une politique n'est retenue que si l'IC corrigé (7) de l'écart avec R0 est > 0 sur le test, la validation va "
-          "dans le même sens, l'écart reste > 0 à 500 ms et sans les 5 meilleurs cycles.\n")
-        w("| Politique | IC corrigé > 0 | Validation même sens | > 0 à 500 ms | > 0 sans les 5 meilleurs | Verdict |\n|---|---|---|---|---|---|")
-        for pol in ("R1", "R2", "R3", "R4", "R5", "R6", "R7"):
-            d = np.array([RRV[nomT][pol][x]["pnl"] - RRV[nomT]["R0"][x]["pnl"] for x in TE]); c2 = ic_cy(d, 0.10 / NCOMP_R)
-            cv = sum(RRV["validation"][pol][x]["pnl"] - RRV["validation"]["R0"][x]["pnl"] for x in VA) > 0 if "validation" in RRV else None
-            c5 = sum(RES[(nomT, "500", pol)][x]["pnl"] - RES[(nomT, "500", "R0")][x]["pnl"] for x in TE) > 0; ds = np.sort(d); ce = ds[:-5].sum() > 0 if len(ds) > 5 else False
-            ok = c2[0] > 0 and cv is not False and c5 and ce; yn = lambda b: "—" if b is None else ("oui" if b else "non")
-            w(f"| {pol} | {yn(c2[0] > 0)} | {yn(cv)} | {yn(c5)} | {yn(ce)} | {'**retenue**' if ok else 'non démontrée'} |")
-    # verdict automatique (section 43)
-    if TE:
-        w(f"## 10. Critère de réussite (section 43) sur {nomT}\n")
-        w("| Politique | IC corrigé > 0 | Pertes > 6 $ pas plus fréquentes | Jackpots ≥ 50 % | Écart > 0 à 500 ms | Écart > 0 sans les 5 meilleurs | Validation même sens | Verdict |\n|---|---|---|---|---|---|---|---|")
-        Rt = RV[nomT]; a = np.array([Rt["T0-50"][s]["pnl"] for s in TE]); m0_ = mesures(Rt["T0-50"], TE)
-        jk = [s for s in TE if s in ENT and ENT[s][1] <= 0.25 and Rt["T0-50"][s]["pnl"] > 0]; jref = sum(Rt["T0-50"][s]["pnl"] for s in jk)
-        for pol in POL[1:] + ["RS"]:
-            d = np.array([Rt[pol][s]["pnl"] for s in TE]) - a; c2 = ic_cy(d, 0.10 / NCOMP); m_ = mesures(Rt[pol], TE)
-            c_a = c2[0] > 0; c_b = m_["p6"] <= m0_["p6"]; c_c = (sum(Rt[pol][s]["pnl"] for s in jk) >= 0.5 * jref) if jref > 0 else True
-            c_d = (sum(RES[(nomT, "500", pol)][s]["pnl"] for s in TE) - sum(RES[(nomT, "500", "T0-50")][s]["pnl"] for s in TE) > 0) if pol != "RS" else None
-            ds = np.sort(d); c_e = ds[:-5].sum() > 0 if len(ds) > 5 else False
-            c_f = (sum(RV["validation"][pol][s]["pnl"] - RV["validation"]["T0-50"][s]["pnl"] for s in VA) > 0) if "validation" in RV else None
-            ok = c_a and c_b and c_c and (c_d is not False) and c_e and (c_f is not False)
-            yn = lambda b: "—" if b is None else ("oui" if b else "non")
-            w(f"| {pol} | {yn(c_a)} | {yn(c_b)} | {yn(c_c)} | {yn(c_d)} | {yn(c_e)} | {yn(c_f)} | {'**intéressante**' if ok else 'non démontrée'} |")
-    if JOURNAL:
-        p_ = os.path.join(ICI, "resultat_reversal_h1003_journal" + ("_confirmation" if CONFIRM else "") + ".csv.gz")
-        with gzip.open(p_, "wt") as f:
-            wr = csv.writer(f); wr.writerow(["debut_cycle", "t_ms", "operation", "motif", "parts", "montant", "profit_si_up", "profit_si_down"]); wr.writerows(JOURNAL)
-        w(f"\nJournal T7 ({nomT}) : chaque transaction avec les deux paiements possibles après exécution — {os.path.basename(p_)}, {len(JOURNAL)} lignes.\n")
+    ENTREE = "avantage"
+
+    def rapport(fam, RES, REG, ENT, JOURNAL, SW):
+      e = e_choisi
+      w(f"\n# FAMILLE D'ENTRÉE : {'avantage du cerveau B ≥ e' if fam == 'avantage' else 'favori du marché (vendeur 0,60–0,85, 60 à 180 s écoulées)'}\n")
+      # RS : attribution sur l'apprentissage (au e choisi)
+      CANDS = ["T0-50", "T1", "T3", "T5", "T7"]; ATT = {}
+      for rg in set(REG[s] for s in TR):
+          S_ = [s for s in TR if REG[s] == rg]; ATT[rg] = max(CANDS, key=lambda p_: sum(RES[("app", e, p_)][s]["pnl"] for s in S_))
+      for key in list(RES.keys()):
+          pass
+      def rs_res(src):
+          out = {}
+          for s in src[next(iter(src))].keys() if src else []:
+              pol = ATT.get(REG.get(s), "T0-50"); out[s] = src[pol][s]
+          return out
+      if fam == FAMS[0]: w(f"\n**Calibration de règlement (H1016, décisions toutes les 10 s)** — Brier et log loss ; écart = cerveau B − milieu du marché\n")
+      w("| Échantillon | Décisions | Brier marché | Brier M0 brut | Brier cerveau B | Cerveau B − marché (IC 90 %) | LL marché | LL cerveau B | Ajout de a30 (H1026) : ΔBrier (IC 90 %) |\n|---|---|---|---|---|---|---|---|---|")
+      ca = CAL["apprentissage"]
+      if ca:
+          Xa = np.array([[L.lg(r[1]), (r[4] if r[4] is not None else 0.5) - 0.5] for r in ca]); ya = np.array([r[5] for r in ca]); b26 = L.ajuster(Xa, ya, 0.1)
+      for pt in ["apprentissage", "validation", nomT]:
+          cc = CAL.get(pt)
+          if not cc: continue
+          g = np.array([r[0] for r in cc]); pb = np.array([r[1] for r in cc]); pm = np.array([r[2] for r in cc]); p0 = np.array([r[3] for r in cc]); yy = np.array([r[5] for r in cc])
+          d = L.brier(pb, yy) - L.brier(pm, yy); c = L.ic_g(g, d)
+          p26 = L.predire(b26, np.array([[L.lg(r[1]), (r[4] if r[4] is not None else 0.5) - 0.5] for r in cc])); d2 = L.brier(p26, yy) - L.brier(pb, yy); c2 = L.ic_g(g, d2)
+          w(f"| {pt} | {len(cc)} | {L.brier(pm, yy).mean():.4f} | {L.brier(p0, yy).mean():.4f} | {L.brier(pb, yy).mean():.4f} | {d.mean():+.4f} [{c[0]:+.4f} ; {c[1]:+.4f}] | "
+            f"{L.ll(pm, yy).mean():.4f} | {L.ll(pb, yy).mean():.4f} | {d2.mean():+.5f} [{c2[0]:+.5f} ; {c2[1]:+.5f}] |")
+      w(f"\nSeuil d'entrée e choisi sur l'apprentissage (T0-50) : **{e:.2f}** (" + ", ".join(f"e={k:.2f} → {v:+.0f} $" for k, v in SC_E.items()) + ").\n")
+      w("Attribution RS (apprentissage) : " + ", ".join(f"{k} → {v}" for k, v in sorted(ATT.items())) + ".\n")
+      # ------------------------------------------------ tableaux
+      def tableau(titre, Rd, sts, ref="T0-50", pols=None, ncomp=NCOMP):
+          pols = pols or list(Rd.keys())
+          w(f"### {titre} ({len(sts)} cycles)\n")
+          w(f"| Politique | Cycles actifs | P&L net ($) | Par cycle actif | Par $ de capital max | Cycles gagnants | Perte max | Pertes > 6 $ | Drawdown | ES 5 % | Capital max | Achats / ventes | Frais ($) | Coût d'écart ($) | Parts achetées | P&L couvertures ($) | Plancher le plus bas (moy.) | Jackpots conservés | Sans les 5 meilleurs | Écart avec {ref} ($) | IC 90 % | IC corrigé ({ncomp}) |\n"
+            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+          a = np.array([Rd[ref][s]["pnl"] for s in sts])
+          jk = [s for s in sts if s in ENT and ENT[s][1] <= 0.25 and Rd[ref][s]["pnl"] > 0]; jref = sum(Rd[ref][s]["pnl"] for s in jk)
+          for pol in pols:
+              if pol == "R7" and Rd is Rapp: continue
+              if pol not in Rd: continue
+              m = mesures(Rd[pol], sts); d = np.array([Rd[pol][s]["pnl"] for s in sts]) - a; c1 = ic_cy(d); c2 = ic_cy(d, 0.10 / ncomp)
+              jc = (100 * sum(Rd[pol][s]["pnl"] for s in jk) / jref) if jref > 0 else float("nan")
+              w(f"| {pol} | {m['n']} | {m['tot']:+.0f} | {m['moy']:+.2f} | {100 * m['parcap']:+.1f} % | {m['gagn']} | {m['pire']:+.0f} | {m['p6']} | {m['dd']:.0f} | {m['es']:+.1f} | "
+                f"{m['capmax']:.0f} | {m['na']} / {m['nv']} | {m['frais']:.0f} | {m['ecart']:.0f} | {m['qa']:.0f} | {m['hed']:+.0f} | {m['minf']:+.1f} | {jc:.0f} % ({len(jk)}) | {m['sans5']:+.0f} | "
+                f"{d.sum():+.0f} | " + ("—" if pol == ref else f"[{c1[0]:+.0f} ; {c1[1]:+.0f}]") + " | " + ("—" if pol == ref else f"[{c2[0]:+.0f} ; {c2[1]:+.0f}]") + " |")
+          w("")
+      w("\n## 3. Tournoi T0–T7 (H1034), latence 164 ms\n")
+      Rapp = {pol: RES[("app", e, pol)] for pol in POL}; Rapp["RS"] = rs_res(Rapp)
+      tableau("apprentissage (sert au choix de e et de RS)", Rapp, TR)
+      SPL = [(pt, [s for s in (VA if pt == "validation" else TE)]) for pt in ("validation", nomT) if (VA if pt == "validation" else TE)]
+      RV = {}
+      for pt, sts in SPL:
+          Rv = {pol: RES[(pt, "164", pol)] for pol in POL}; Rv["RS"] = rs_res(Rv); RV[pt] = Rv
+          tableau(pt, Rv, sts)
+      # simulations prioritaires
+      w("## 4. Les trois simulations prioritaires\n")
+      for pt, sts in SPL:
+          Rv = RV[pt]
+          for lab, pols in (("Simulation A — entrées progressives", ["T0-50", "T0-10", "T1", "T1v", "T2", "T2p"]),
+                            ("Simulation B — changement de camp", ["T0-50", "T1", "T2", "T4", "LAD", "T5", "T7"]),
+                            ("Simulation C — protection du capital (même plafond de 50 $)", ["T0-50", "T7", "T7s", "T5", "T6"])):
+              tableau(f"{lab} — {pt}", Rv, sts, pols=pols)
+          m7, m7s = mesures(Rv["T7"], sts), mesures(Rv["T7s"], sts); m5, m6 = mesures(Rv["T5"], sts), mesures(Rv["T6"], sts)
+          d = np.array([Rv["T7"][s]["pnl"] - Rv["T7s"][s]["pnl"] for s in sts]); c = ic_cy(d)
+          w(f"**H1033 — coût économique de la protection stricte ({pt})** : T7 − T7s = {d.sum():+.0f} $ [{c[0]:+.0f} ; {c[1]:+.0f}] ; pertes > 6 $ : "
+            f"T7 {m7['p6']}, T7s {m7s['p6']} ; T5 − T6 = {m5['tot'] - m6['tot']:+.0f} $ (pertes > 6 $ : T5 {m5['p6']}, T6 {m6['p6']}).\n")
+      # latence et frais
+      if TE:
+          w(f"## 5. Sensibilité à la latence et aux frais ({nomT})\n")
+          noms = [v[0] for v in variantes]
+          w("| Politique | " + " | ".join(f"{x} ms" if x.isdigit() else x for x in noms) + " |\n|---|" + "---|" * len(noms))
+          for pol in POL:
+              w(f"| {pol} | " + " | ".join(f"{sum(RES[(nomT, x, pol)][s]['pnl'] for s in TE):+.0f}" for x in noms) + " |")
+          w("\n## 6. H1018 — Scénarios défavorables (164 ms)\n")
+          w("| Politique | Normal | " + " | ".join(x for x, _ in STR) + " | Pertes > 6 $ (normal → pire scénario) | Perte max (normal → pire) |\n|---|---|" + "---|" * len(STR) + "---|---|")
+          for pol in POLS_STR:
+              base = mesures(RES[(nomT, "164", pol)], TE); ms_ = [mesures(RES[(nomT, x, pol)], TE) for x, _ in STR]
+              w(f"| {pol} | {base['tot']:+.0f} | " + " | ".join(f"{m_['tot']:+.0f}" for m_ in ms_) + f" | {base['p6']} → {max(m_['p6'] for m_ in ms_)} | {base['pire']:+.0f} → {min(m_['pire'] for m_ in ms_):+.0f} |")
+      # renforts, couvertures, inversions
+      w("\n## 7. Renforts, couvertures, inversions\n")
+      for pt, sts in SPL:
+          Rv = RV[pt]
+          w(f"**H1013 — P&L de chaque tranche jusqu'au règlement ({pt})**\n\n| Politique | Tranche | Nombre | Coût ($) | P&L ($) | P&L / $ |\n|---|---|---|---|---|---|")
+          for pol in ("T1", "T1v", "T2", "T2p"):
+              agg = collections.defaultdict(lambda: [0, 0.0, 0.0])
+              for s in sts:
+                  for (r, v, c_) in Rv[pol][s]["tr"]: a_ = agg[r]; a_[0] += 1; a_[1] += c_; a_[2] += v
+              for r in sorted(agg): a_ = agg[r]; w(f"| {pol} | {r} | {a_[0]} | {a_[1]:.0f} | {a_[2]:+.0f} | {100 * a_[2] / max(a_[1], 1e-9):+.1f} % |")
+          w(f"\n**P&L des transactions de protection par type ({pt})** (valeur au règlement − coût)\n\n| Politique | Couverture | Protection (vente) | Inversion | Verrou | Sortie |\n|---|---|---|---|---|---|")
+          for pol in ("T3", "T4", "LAD", "T5", "T6", "T7", "T7s"):
+              h = collections.defaultdict(float)
+              for s in sts:
+                  for k_, v in Rv[pol][s]["hed"].items(): h[k_] += v
+              w(f"| {pol} | " + " | ".join(f"{h.get(k_, 0):+.0f}" for k_ in ("couverture", "protection", "inversion", "verrou", "sortie")) + " |")
+          b1 = mesures(Rv["T1"], sts)
+          w(f"\n**H1025 — coût par dollar de perte maximale évitée ({pt}, contre T1)**\n\n| Politique | P&L − T1 ($) | Plancher moyen le plus bas − T1 ($) | Coût par $ évité |\n|---|---|---|---|")
+          for pol in ("T3", "T4", "LAD", "T7"):
+              m_ = mesures(Rv[pol], sts); dp = m_["tot"] - b1["tot"]; df = m_["minf"] - b1["minf"]
+              w(f"| {pol} | {dp:+.0f} | {df:+.2f} | {(-dp / (df * len(sts))) if df > 0 else float('nan'):+.2f} |")
+          nsw = collections.Counter(p_ for (pp_, p_, *_r) in SW if pp_ == pt)
+          w(f"\n**H1020 — changements de camp ({pt})** : " + (", ".join(f"{k_} {v}" for k_, v in nsw.items()) if nsw else "aucun") + ".\n")
+      # régimes
+      w("## 8. H1017 — Régimes au signal d'entrée\n")
+      for pt, sts in SPL:
+          Rv = RV[pt]
+          w(f"| {pt} : régime | Cycles | " + " | ".join(["T0-50", "T1", "T3", "T5", "T7", "RS"]) + " |\n|---|---|" + "---|" * 6)
+          for rg in sorted(set(REG[s] for s in sts)):
+              S_ = [s for s in sts if REG[s] == rg]
+              w(f"| {rg} | {len(S_)} | " + " | ".join(f"{sum(Rv[p_][s]['pnl'] for s in S_):+.0f}" for p_ in ["T0-50", "T1", "T3", "T5", "T7", "RS"]) + " |")
+          w("")
+      # ------------------------------------------------ H1036–H1040 : sauvetage par la jambe opposée
+      w("## 9. H1036–H1040 — Sauvetage de la première position (entrée 10 $, mêmes cycles)\n")
+      w("R0 conserver ; R1 vendre toute la position à −0,15 ; R2 couverture préventive (−0,05 et cerveau A contre ≥ 0,60) ; R3 couverture complète à −0,15 ; "
+        "R4 couverture tardive (p ≤ 0,25) ; R5 vente de 50 % puis couverture du reste à −0,15 ; R6 inversion complète à −0,15 (vente de tout + 10 $ de l'opposé) ; "
+        "R7 adaptatif (H1039 : probabilité de redevenir gagnante, apprise sur l'apprentissage ; vend si acheteur net > probabilité + 0,01, couvre si "
+        "(1 − probabilité) − coût opposé > 0,01, sinon conserve). Couverture = achat de l'opposé pour toutes les parts non appariées. "
+        "Les noms R0–R7 sont propres à cette étude (aucun lien avec le fantôme R4).\n")
+      if RECD:
+          w(f"Modèle de récupération H1039 : {len(RECD)} états détériorés d'apprentissage (taux de récupération {100 * np.mean([r[2] for r in RECD]):.1f} %).\n")
+      RRV = {}
+      for pt, sts in SPL:
+          Rr = {pol: RES[(pt, "164", pol)] for pol in RPOL}; RRV[pt] = Rr
+          tableau(f"Tournoi de sauvetage R0–R7 — {pt}", Rr, sts, ref="R0", pols=["R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7"], ncomp=NCOMP_R)
+          w(f"**Niveaux de détérioration (H1036, descriptif, aucun choix) — {pt}** : " + " ; ".join(
+              f"{p_} {sum(Rr[p_][s_]['pnl'] for s_ in sts) - sum(Rr['R0'][s_]['pnl'] for s_ in sts):+.0f} $" for p_ in ("R1-10", "R1", "R1-20", "R1-30", "R3-10", "R3", "R3-20", "R3-30")) + " (écart avec R0).\n")
+          D_ = [s_ for s_ in sts if Rr["R0"][s_]["defav"]]
+          w(f"**Test décisif (section 9) — {pt}** : {len(D_)} positions devenues défavorables (p ≤ entrée − 0,15) ; ramené à 100.\n")
+          w("| Politique | Perdantes sans intervention | Gagnantes sans intervention | Sauvetages (perte réduite) | Coût moyen d'un sauvetage réussi ($ gagnés) | Couvertures inutiles (gagnantes abîmées) | Coût des couvertures inutiles ($) | Perte moyenne R0 → politique | Perte max R0 → politique | P&L net − R0 (défavorables) | P&L net − R0 (tous) |\n|---|---|---|---|---|---|---|---|---|---|---|")
+          for p_ in ("R1", "R2", "R3", "R4", "R5", "R6", "R7", "Rv", "Ra", "Rm"):
+              if not D_: break
+              k_ = 100 / len(D_); r0 = np.array([Rr["R0"][x]["pnl"] for x in D_]); rp = np.array([Rr[p_][x]["pnl"] for x in D_])
+              perd, gagn = r0 < 0, r0 > 0; sauv = perd & (rp > r0); inut = gagn & (rp < r0)
+              gs = (rp - r0)[sauv]; ci = (r0 - rp)[inut]
+              lm0 = r0[r0 < 0].mean() if (r0 < 0).any() else 0; lmp = rp[rp < 0].mean() if (rp < 0).any() else 0
+              w(f"| {p_} | {k_ * perd.sum():.0f} | {k_ * gagn.sum():.0f} | {k_ * sauv.sum():.0f} | {gs.mean() if len(gs) else float('nan'):+.2f} | {k_ * inut.sum():.0f} | "
+                f"{ci.sum():.0f} | {lm0:+.2f} → {lmp:+.2f} | {r0.min():+.1f} → {rp.min():+.1f} | {(rp - r0).sum():+.0f} | "
+                f"{sum(Rr[p_][x]['pnl'] - Rr['R0'][x]['pnl'] for x in sts):+.0f} |")
+          w(f"\n**H1038 — vendre ou acheter l'opposé, à risque comparable (cible : pire résultat ≥ −6 $, dès p ≤ entrée − 0,15) — {pt}**\n")
+          w("| Réaction | Cycles où elle a agi | Pire résultat final moyen | Pertes > 6 $ | Capital max moyen ($) | Frais ($) | P&L net ($) | Écart avec R0 (IC 90 %) |\n|---|---|---|---|---|---|---|---|")
+          for p_, lab in (("R0", "ne rien faire"), ("Rv", "vendre une partie"), ("Ra", "acheter l'opposé"), ("Rm", "vendre une partie puis acheter l'opposé")):
+              m_ = mesures(Rr[p_], sts); d = np.array([Rr[p_][x]["pnl"] - Rr["R0"][x]["pnl"] for x in sts]); c = ic_cy(d)
+              w(f"| {lab} | {sum(Rr[p_][x]['res'] for x in sts)} | {np.mean([Rr[p_][x]['fl'] for x in sts]):+.2f} | {m_['p6']} | {np.mean([Rr[p_][x]['maxcap'] for x in sts]):.1f} | "
+                f"{m_['frais']:.1f} | {m_['tot']:+.0f} | {d.sum():+.0f} [{c[0]:+.0f} ; {c[1]:+.0f}] |")
+          w("")
+      if TE:
+          w(f"**Sauvetage — latence et frais ({nomT})**\n")
+          noms = [v[0] for v in variantes]
+          w("| Politique | " + " | ".join(f"{x} ms" if x.isdigit() else x for x in noms) + " |\n|---|" + "---|" * len(noms))
+          for pol in ("R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "Rv", "Ra", "Rm"):
+              w(f"| {pol} | " + " | ".join(f"{sum(RES[(nomT, x, pol)][s_]['pnl'] for s_ in TE):+.0f}" for x in noms) + " |")
+          w("\n**Critère (sauvetage, contre R0)** : une politique n'est retenue que si l'IC corrigé (7) de l'écart avec R0 est > 0 sur le test, la validation va "
+            "dans le même sens, l'écart reste > 0 à 500 ms et sans les 5 meilleurs cycles.\n")
+          w("| Politique | IC corrigé > 0 | Validation même sens | > 0 à 500 ms | > 0 sans les 5 meilleurs | Verdict |\n|---|---|---|---|---|---|")
+          for pol in ("R1", "R2", "R3", "R4", "R5", "R6", "R7"):
+              d = np.array([RRV[nomT][pol][x]["pnl"] - RRV[nomT]["R0"][x]["pnl"] for x in TE]); c2 = ic_cy(d, 0.10 / NCOMP_R)
+              cv = sum(RRV["validation"][pol][x]["pnl"] - RRV["validation"]["R0"][x]["pnl"] for x in VA) > 0 if "validation" in RRV else None
+              c5 = sum(RES[(nomT, "500", pol)][x]["pnl"] - RES[(nomT, "500", "R0")][x]["pnl"] for x in TE) > 0; ds = np.sort(d); ce = ds[:-5].sum() > 0 if len(ds) > 5 else False
+              ok = c2[0] > 0 and cv is not False and c5 and ce; yn = lambda b: "—" if b is None else ("oui" if b else "non")
+              w(f"| {pol} | {yn(c2[0] > 0)} | {yn(cv)} | {yn(c5)} | {yn(ce)} | {'**retenue**' if ok else 'non démontrée'} |")
+      # verdict automatique (section 43)
+      if TE:
+          w(f"## 10. Critère de réussite (section 43) sur {nomT}\n")
+          w("| Politique | IC corrigé > 0 | Pertes > 6 $ pas plus fréquentes | Jackpots ≥ 50 % | Écart > 0 à 500 ms | Écart > 0 sans les 5 meilleurs | Validation même sens | Verdict |\n|---|---|---|---|---|---|---|---|")
+          Rt = RV[nomT]; a = np.array([Rt["T0-50"][s]["pnl"] for s in TE]); m0_ = mesures(Rt["T0-50"], TE)
+          jk = [s for s in TE if s in ENT and ENT[s][1] <= 0.25 and Rt["T0-50"][s]["pnl"] > 0]; jref = sum(Rt["T0-50"][s]["pnl"] for s in jk)
+          for pol in POL[1:] + ["RS"]:
+              d = np.array([Rt[pol][s]["pnl"] for s in TE]) - a; c2 = ic_cy(d, 0.10 / NCOMP); m_ = mesures(Rt[pol], TE)
+              c_a = c2[0] > 0; c_b = m_["p6"] <= m0_["p6"]; c_c = (sum(Rt[pol][s]["pnl"] for s in jk) >= 0.5 * jref) if jref > 0 else True
+              c_d = (sum(RES[(nomT, "500", pol)][s]["pnl"] for s in TE) - sum(RES[(nomT, "500", "T0-50")][s]["pnl"] for s in TE) > 0) if pol != "RS" else None
+              ds = np.sort(d); c_e = ds[:-5].sum() > 0 if len(ds) > 5 else False
+              c_f = (sum(RV["validation"][pol][s]["pnl"] - RV["validation"]["T0-50"][s]["pnl"] for s in VA) > 0) if "validation" in RV else None
+              ok = c_a and c_b and c_c and (c_d is not False) and c_e and (c_f is not False)
+              yn = lambda b: "—" if b is None else ("oui" if b else "non")
+              w(f"| {pol} | {yn(c_a)} | {yn(c_b)} | {yn(c_c)} | {yn(c_d)} | {yn(c_e)} | {yn(c_f)} | {'**intéressante**' if ok else 'non démontrée'} |")
+      if JOURNAL:
+          p_ = os.path.join(ICI, "resultat_reversal_h1003_journal_" + fam + ("_confirmation" if CONFIRM else "") + ".csv.gz")
+          with gzip.open(p_, "wt") as f:
+              wr = csv.writer(f); wr.writerow(["debut_cycle", "t_ms", "operation", "motif", "parts", "montant", "profit_si_up", "profit_si_down"]); wr.writerows(JOURNAL)
+          w(f"\nJournal T7 ({nomT}) : chaque transaction avec les deux paiements possibles après exécution — {os.path.basename(p_)}, {len(JOURNAL)} lignes.\n")
+    for fam in FAMS: rapport(fam, RESF[fam], REGF[fam], ENTF[fam], JF[fam], SWF[fam])
     w("\n## Limites\n- Exécution preneur seulement ; notre propre impact au-delà de 5 s n'est pas modélisé.\n"
       "- Toutes les politiques partagent la même probabilité ; si elle n'a pas d'avantage sur le marché, la gestion ne peut pas en créer.\n"
       "- Nombreuses politiques : seuls les IC corrigés comptent. Peu de cycles par échantillon.\n")
