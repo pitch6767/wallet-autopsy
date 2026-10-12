@@ -853,6 +853,15 @@ function flux() {
     (m) => { const tp = m.topic || ""; if (!tp.startsWith("publicTrade")) return; const k = tp.includes("ETH") ? "eth_by" : "sol_by";
       for (const y of m.data || []) trade2(k, +y.T, y.S === "Buy" ? 1 : 0, +y.p, +y.v); }, JSON.stringify({ op: "ping" }), 15000);
   // ---- 12.10.2026 16:21 (GO de Pitch, H994-H1002) : Bybit ticker BTCUSDT (mark, index, OI, funding) ; Binance perp BTCUSDT (mark/index 1 s, liquidations, transactions)
+  // 12.10.2026 21:44 (GO de Pitch) : flux public RTDS « activity / trades » de Polymarket, avec les portefeuilles, marchés BTC 5 min seulement.
+  // Enregistrement seulement (étude H1054 : mesurer le vrai retard pour « jouer contre l'argent bête ») ; aucun ordre.
+  if (muet("act")) connecter("act", "wss://ws-live-data.polymarket.com", [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "activity", type: "trades" }] })],
+    (m) => { if (m.topic !== "activity") return; const p = m.payload || {}, sl = p.eventSlug || p.slug || "";
+      if (!sl.startsWith("btc-updown-5m")) return;
+      try { const t = nowMs(), R = recDe(Math.floor(t / 300000) * 300);
+        R.act = R.act || { format: "[reception_ms, envoi RTDS ms, heure transaction (payload.timestamp), portefeuille, BUY/SELL, outcome, prix, parts, slug, transaction]", l: [] };
+        R.act.l.push([+t.toFixed(1), +m.timestamp || null, p.timestamp ?? null, p.proxyWallet || null, p.side || null, p.outcome || null, +p.price || null, +p.size || null, sl, (p.transactionHash || "").slice(0, 18)]); } catch (_) {} },
+    "PING", 5000);
   if (muet("byt")) connecter("byt", "wss://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args: ["tickers.BTCUSDT"] })], (m) => {
       if (!(m.topic || "").startsWith("tickers")) return; const d = m.data || {}, S = (DERIV.by = DERIV.by || {});
       for (const k of ["lastPrice", "markPrice", "indexPrice", "openInterest", "fundingRate", "bid1Price", "ask1Price"]) if (d[k] != null && d[k] !== "") S[k] = +d[k];
@@ -967,7 +976,7 @@ async function envoyer() {
       calcul_us: { med: med(STAT.decisionUs), p90: qtl(STAT.decisionUs, 0.9) }, evaluations: STAT.evaluations },
     systeme: (() => { const m = process.memoryUsage(); let disque = null; try { const d = fs.statfsSync(DIR); disque = { libre_Mo: Math.round(d.bavail * d.bsize / 1e6), total_Mo: Math.round(d.blocks * d.bsize / 1e6) }; } catch (_) {}
       return { rss_Mo: Math.round(m.rss / 1e6), tas_Mo: Math.round(m.heapUsed / 1e6), disque, dernierCycle: STAT.dernierCycle || null }; })(),
-    flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "pb", "bnd", "byob", "poly", "drb", "cbob", "xbn", "xby", "byt", "bnf"].map((k) => [k, WS[k] ? { muet_s: +(now() - WS[k].msg).toFixed(1), reconnexions: WS[k].n } : null])) };
+    flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "pb", "bnd", "byob", "poly", "drb", "cbob", "xbn", "xby", "byt", "bnf", "act"].map((k) => [k, WS[k] ? { muet_s: +(now() - WS[k].msg).toFixed(1), reconnexions: WS[k].n } : null])) };
   try {
     const r = await fetch(`${U}/api/rapide/donnees`, { method: "POST", headers: { "content-type": "application/json", "x-rapide": TOKEN }, body: JSON.stringify(corps) });
     if (!r.ok) { log("envoi HTTP", r.status); FINIS.unshift(...corps.signaux); MAKER_FINIS.push(...corps.maker.filter((x) => x.type !== "resume")); }
