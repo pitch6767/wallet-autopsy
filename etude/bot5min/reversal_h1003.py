@@ -65,6 +65,12 @@ SAUVETAGE H1036–H1040 (Pitch, 12.10 17:53) : entrée 10 $ au même signal ; «
   couverture si (1 − probabilité) − coût de l'opposé > 0,01, sinon conserver. Couverture = achat de l'opposé pour toutes les parts non appariées.
   H1038 à risque comparable : Rv (vente), Ra (achat de l'opposé), Rm (moitié-moitié), chacun pour ramener le pire résultat à −6 $.
   Mesures : test décisif (section 9, ramené à 100 positions défavorables), IC 90 % par cycles contre R0, IC corrigé (7 comparaisons).
+PROTECTION DES GAINS H1041–H1046 (Pitch, 12.10 18:21, ajouté AVANT le test) : entrée 10 $ au même signal ; profit liquidable à t = cash + produit
+  net de la vente de tout l'inventaire en descendant les acheteurs affichés (frais compris) — information connue à t, jamais de sommet futur.
+  P0 conserver ; P-TP100 / P-TP200 ; P-VP ; P-TR10/20/30/40 (trailing sur le profit liquidable, maximum ≥ 2 $) ; P-TF (p recalibrée ≤ max − 0,15 et
+  cerveau A contre ≥ 0,55) ; P-L0 (free-roll), P-L5, P-L10, P-L20, P-Lm6 (verrou minimal par vente, profondeur réelle) ; à 30 % de retracement :
+  P-HA vente, P-HB achat de l'opposé, P-HC moitié-moitié (verrou 0 $) ; P-PF cliquet du portefeuille (plancher ≥ 50 % du gain max). Tous les
+  seuils sont ceux demandés par Pitch ou fixés ici ; aucun n'est choisi sur les données. IC corrigé : 17 comparaisons contre P0.
 SIMULATIONS PRIORITAIRES : A = T0-50, T0-10, T1, T1v, T2, T2p ; B = T1, T2 contre T4, LAD, T5, T7 ; C = T7s (strict) contre T7 (dynamique), 50 $ max.
 MESURES (section 41) : P&L net, par cycle, par $ de capital maximal, cycles gagnants, perte max, fréquence des pertes > 6 $, drawdown, ES 5 %,
   capital max, achats, ventes, frais, coût d'écart, parts, P&L des transactions de couverture/protection/inversion, jackpots (cycles où T0-50 gagne
@@ -109,7 +115,7 @@ vend, ach, meilleur = DP.vend, DP.ach, DP.meilleur
 class Inv:
     def __init__(s):
         s.q = {"Up": 0.0, "Down": 0.0}; s.cout = {"Up": 0.0, "Down": 0.0}; s.cash = 0.0; s.maxcap = 0.0; s.na = s.nv = 0; s.frais = 0.0; s.ecart = 0.0
-        s.qa = 0.0; s.paires = 0.0; s.lots = []; s.minfloor = 0.0; s.switch = []; s.defav = False; s.tres = None
+        s.qa = 0.0; s.paires = 0.0; s.lots = []; s.minfloor = 0.0; s.switch = []; s.defav = False; s.tres = None; s.partiel = 0; s.Lmax = 0.0; s.bidmax = 0; s.prix0 = None
     def cap(s): return max(-s.cash, 0.0)
     def libre(s): return BUDGET - s.cap()
     def moy(s, X): return s.cout[X] / s.q[X] if s.q[X] > 1e-9 else None
@@ -142,6 +148,7 @@ class Moteur:
         if q > 0:
             inv.q[X] += q; inv.cout[X] += c; inv.cash -= c; inv.na += 1; inv.qa += q; inv.maxcap = max(inv.maxcap, inv.cap())
             inv.lots.append((tag, X, q, c)); inv.minfloor = min(inv.minfloor, inv.floor())
+            if inv.prix0 is None: inv.prix0 = c / q
             if journal is not None: journal.append((t, "achat " + X, tag, round(q, 3), round(c, 3)) + tuple(round(v, 3) for v in inv.legs()))
         return q
     def vendre(s, inv, t, X, parts, lim, mid, tag, journal=None):
@@ -159,11 +166,38 @@ class Moteur:
             pp = px / 1000; k = min(sz, parts - q)
             if k <= 1e-9: break
             q += k; r += k * (pp - fee(pp)); s.pris.append((t, X, "b", px, k)); inv.frais += k * fee(pp); inv.ecart += k * (mid - pp) if mid else 0
+        if q < parts - 1e-6: inv.partiel += 1
         if q > 0:
             m = inv.moy(X); inv.cout[X] -= q * m; inv.q[X] -= q; inv.cash += r; inv.nv += 1
             inv.lots.append((tag, X, -q, -r)); inv.minfloor = min(inv.minfloor, inv.floor())
             if journal is not None: journal.append((t, "vente " + X, tag, round(q, 3), round(r, 3)) + tuple(round(v, 3) for v in inv.legs()))
         return q
+
+
+def liqval(Lo, X, q):
+    """produit net (frais déduits) de la vente de q parts de X en descendant les acheteurs affichés à t"""
+    r = 0.0
+    for px, sz in ach(Lo, X):
+        if q <= 1e-9: break
+        k = min(sz, q); pp = px / 1000; r += k * (pp - fee(pp)); q -= k
+    return r
+
+
+def qte_pour(Lo, X, besoin, qmax):
+    """plus petite quantité de X à vendre (profondeur réelle, frais) pour encaisser « besoin » $ ; renvoie (quantité, prix limite) ou None"""
+    r = q = 0.0
+    for px, sz in ach(Lo, X):
+        pp = px / 1000; net = pp - fee(pp)
+        if net <= 0: break
+        k = min(sz, qmax - q, (besoin - r) / net)
+        q += k; r += k * net
+        if r >= besoin - 1e-9: return q, px
+        if q >= qmax - 1e-9: break
+    return None
+
+
+PPOL = ["P0", "P-TP100", "P-TP200", "P-VP", "P-TR10", "P-TR20", "P-TR30", "P-TR40", "P-TF", "P-L0", "P-L5", "P-L10", "P-L20", "P-Lm6",
+        "P-HA", "P-HB", "P-HC", "P-PF"]; NCOMP_P = 17
 
 
 def simuler(pol, C, e, journal=None):
@@ -259,6 +293,52 @@ def simuler(pol, C, e, journal=None):
                 if okb and buy(Sb, TR_, "achat " + ("inverse" if oppose else "même sens")) > 0:
                     mem["lastside"][Sb] = t; mem["pent"].setdefault(Sb, pX[Sb])
                     if oppose: inv.switch.append((t, Sb))
+        elif pol.startswith("P"):                                                 # H1041–H1046 : protection des gains
+            if inv.q[X] > 1e-6 or inv.q[Y] > 1e-6:
+                Lnow = inv.cash + liqval(Lo, X, inv.q[X]) + liqval(Lo, Y, inv.q[Y])     # profit si tout était liquidé maintenant (exécutable, à t)
+                inv.Lmax = max(inv.Lmax, Lnow)
+            else: Lnow = inv.cash
+            if bid[X]: inv.bidmax = max(inv.bidmax, bid[X])
+            mem["pmax"] = max(mem.get("pmax", 0), pX[X])
+            def lock(k_, tag="verrou gain"):                                     # vend le minimum pour que « X perd » ≥ k_
+                need = k_ - (inv.cash + inv.q[Y])
+                if need <= 1e-9: return True
+                z = qte_pour(Lo, X, need, inv.q[X])
+                if z is None: return False
+                sell(X, z[0], tag); return inv.cash + inv.q[Y] >= k_ - 1e-6
+            def hedge(k_):                                                         # achète l'opposé pour que « X perd » ≥ k_
+                need = k_ - (inv.cash + inv.q[Y])
+                if need <= 1e-9: return True
+                if not u[Y] or u[Y] >= 1: return False
+                buy(Y, need / (1 - u[Y]) * u[Y], "couverture gain"); return inv.cash + inv.q[Y] >= k_ - 1e-6
+            trail = lambda r_: inv.Lmax >= 2.0 and Lnow <= (1 - r_) * inv.Lmax
+            if not mem.get("fait") and inv.q[X] > 1e-6 and pol != "P0":
+                ok = False; m_ = inv.moy(X)
+                if pol in ("P-TP100", "P-TP200") and bn_[X] and m_ and bn_[X] >= (2 if pol == "P-TP100" else 3) * m_: ok = sell(X, inv.q[X], "prise de gain") > 0
+                elif pol == "P-VP" and bn_[X] and m_ and bn_[X] >= m_ + 0.20: ok = sell(X, inv.q[X] * 0.5, "prise de gain") > 0
+                elif pol.startswith("P-TR") and trail(int(pol[4:]) / 100): ok = sell(X, inv.q[X], "trailing") > 0
+                elif pol == "P-TF" and inv.Lmax >= 2.0 and pX[X] <= mem["pmax"] - 0.15 and dirA[Y] >= 0.55: ok = sell(X, inv.q[X], "trailing fondamental") > 0
+                elif pol in ("P-L0", "P-L5", "P-L10", "P-L20", "P-Lm6"): ok = lock({"P-L0": 0, "P-L5": 5, "P-L10": 10, "P-L20": 20, "P-Lm6": -LIM}[pol])
+                elif pol in ("P-HA", "P-HB", "P-HC") and trail(0.30):
+                    if pol == "P-HA": lock(0.0)
+                    elif pol == "P-HB": hedge(0.0)
+                    else:
+                        need = -(inv.cash + inv.q[Y])
+                        if need > 0: lock(-need / 2); hedge(0.0)
+                    ok = True
+                if ok: mem["fait"] = 1
+            if pol == "P-PF" and inv.Lmax >= 2.0 and Lnow <= 0.7 * inv.Lmax:      # cliquet du portefeuille : plancher contractuel ≥ 50 % du gain max
+                cible = 0.5 * inv.Lmax
+                if inv.floor() < cible - 0.01 and mem.get("cible", -9) < cible - 0.01:
+                    S = "Up" if inv.net() > 0 else "Down"; T_ = autre(S)
+                    cs = (pX[S] - bn_[S]) if bn_[S] else 9; cb = (u[T_] - pX[T_]) if u[T_] and u[T_] < 1 else 9
+                    if cs <= cb and cs < 9:
+                        need = cible - (inv.cash + inv.q[T_]); z = qte_pour(Lo, S, need, inv.q[S]) if need > 0 else None
+                        if z: sell(S, z[0], "cliquet")
+                    elif cb < 9:
+                        need = cible - (inv.cash + inv.q[T_])
+                        if need > 0: buy(T_, need / (1 - u[T_]) * u[T_], "cliquet")
+                    mem["cible"] = cible
         elif pol.startswith("R"):                                                 # H1036–H1040 : sauvetage de la première position
             g = mem["p0"] - pX[X]
             if g >= 0.15: inv.defav = True
@@ -300,7 +380,8 @@ def resume(inv, pnl, y, C):
         if tag in ("couverture", "protection", "inversion", "verrou", "sortie"): hed[tag] += v
         if tag == "entrée" or tag.startswith("renfort"): tr.append((1 if tag == "entrée" else int(tag.split()[1]), v, c))
     return dict(pnl=pnl, maxcap=inv.maxcap, na=inv.na, nv=inv.nv, frais=inv.frais, ecart=inv.ecart, qa=inv.qa, hed=dict(hed), tr=tr,
-                minfloor=inv.minfloor, nsw=len(inv.switch), actif=inv.na > 0, defav=inv.defav, res=inv.tres is not None, fl=inv.floor())
+                minfloor=inv.minfloor, nsw=len(inv.switch), actif=inv.na > 0, defav=inv.defav, res=inv.tres is not None, fl=inv.floor(), partiel=inv.partiel, Lmax=inv.Lmax, bidmax=inv.bidmax, prix0=inv.prix0,
+                q0=(inv.lots[0][2] if inv.lots else 0.0))
 
 
 # ------------------------------------------------------------------------------------------------ statistiques
@@ -502,7 +583,7 @@ def main():
             if pt == "apprentissage":
                 vus = set()
                 for e in (0.05, 0.10, 0.15):
-                    for pol in POL + RPOL:
+                    for pol in POL + RPOL + PPOL:
                         EXEC, FEE_K, STRESS = 164, 1.0, {}
                         inv, pnl = simuler(pol, C, e); RES_[("app", e, pol)][st] = resume(inv, pnl, C["y"], C)
                     sg = signal(C, e) if ENTREE == "avantage" else (signal_fav(C) if e == 0.10 else None)
@@ -524,7 +605,7 @@ def main():
                 for nom, lat, fk, _ in variantes:
                     if nom != "164" and pt == "validation" and nom not in ("500",): continue
                     EXEC, FEE_K, STRESS = lat, fk, {}
-                    for pol in POL + RPOL:
+                    for pol in POL + RPOL + PPOL:
                         jj = [] if (nom == "164" and pol == "T7" and pt == nomT) else None
                         inv, pnl = simuler(pol, C, e, jj); RES_[(pt, nom, pol)][st] = resume(inv, pnl, C["y"], C)
                         if jj: JOUR_ += [(st,) + r for r in jj]
@@ -720,6 +801,48 @@ def main():
               d = np.array([RRV[nomT][pol][x]["pnl"] - RRV[nomT]["R0"][x]["pnl"] for x in TE]); c2 = ic_cy(d, 0.10 / NCOMP_R)
               cv = sum(RRV["validation"][pol][x]["pnl"] - RRV["validation"]["R0"][x]["pnl"] for x in VA) > 0 if "validation" in RRV else None
               c5 = sum(RES[(nomT, "500", pol)][x]["pnl"] - RES[(nomT, "500", "R0")][x]["pnl"] for x in TE) > 0; ds = np.sort(d); ce = ds[:-5].sum() > 0 if len(ds) > 5 else False
+              ok = c2[0] > 0 and cv is not False and c5 and ce; yn = lambda b: "—" if b is None else ("oui" if b else "non")
+              w(f"| {pol} | {yn(c2[0] > 0)} | {yn(cv)} | {yn(c5)} | {yn(ce)} | {'**retenue**' if ok else 'non démontrée'} |")
+      # ------------------------------------------------ H1041–H1046 : protection des positions gagnantes
+      w("## 11. H1041–H1046 — Protection des positions gagnantes (entrée 10 $, mêmes cycles)\n")
+      w("P0 conserver ; P-TP100 / P-TP200 tout vendre si acheteur net ≥ 2× / 3× le prix payé ; P-VP vendre 50 % si acheteur net ≥ prix payé + 0,20 ; "
+        "P-TR10…40 trailing : tout vendre quand le profit liquidable (acheteurs affichés, frais, profondeur) retombe de 10/20/30/40 % sous son maximum "
+        "(maximum ≥ 2 $) ; P-TF trailing fondamental : p de règlement recalibrée ≤ son maximum − 0,15 ET cerveau A contre ≥ 0,55 (momentum, OFI, "
+        "liquidations, Chainlink ; ETH/SOL non disponibles avant le 12.10) ; P-L0 (free-roll : mise récupérée), P-L5, P-L10, P-L20, P-Lm6 (5 CHF) : "
+        "vente de la quantité minimale qui verrouille ce résultat dans le cas perdant, dès que la profondeur le permet ; à retracement de 30 % : P-HA vente "
+        "partielle, P-HB achat de l'opposé, P-HC moitié-moitié (verrou 0 $) ; P-PF cliquet du portefeuille : à 30 % de retracement, plancher contractuel "
+        "porté à 50 % du gain liquidable maximal par le moyen le moins cher. Un gain n'est « verrouillé » que s'il est garanti par l'inventaire exécuté.\n")
+      for pt, sts in SPL:
+          Rp = {pol: RES[(pt, "164", pol)] for pol in PPOL}
+          tableau(f"Protection des gains — {pt}", Rp, sts, ref="P0", pols=PPOL, ncomp=NCOMP_P)
+          P0 = Rp["P0"]; act = [s_ for s_ in sts if P0[s_]["actif"]]
+          if act:
+              Lm = np.array([P0[s_]["Lmax"] for s_ in act]); fin = np.array([P0[s_]["pnl"] for s_ in act])
+              gl = [s_ for s_ in act if P0[s_]["Lmax"] >= 5 and P0[s_]["pnl"] < 0]
+              w(f"**H1041 — profit abandonné (P0, {pt})** : {len(act)} positions ; prix d'achat moyen {np.mean([P0[s_]['prix0'] or 0 for s_ in act]):.3f} ; "
+                f"{np.mean([P0[s_]['q0'] for s_ in act]):.1f} parts ; meilleur acheteur moyen pendant le cycle {np.mean([P0[s_]['bidmax'] for s_ in act]) / 1000:.3f} ; "
+                f"profit latent maximal exécutable moyen {Lm.mean():+.2f} $ ; profit final moyen {fin.mean():+.2f} $ ; profit abandonné moyen {np.mean(np.maximum(Lm - np.maximum(fin, 0), 0)):.2f} $ ; "
+                f"gagnants (≥ +5 $ liquidables) devenus perdants : **{len(gl)}** sur {int((Lm >= 5).sum())}.\n")
+              w(f"| Politique | Gagnants devenus perdants | Évités vs P0 | Jackpots supprimés | Profit latent abandonné ($) | Profit réellement verrouillé ($) | Fills partiels | P&L − P0 ($) |\n|---|---|---|---|---|---|---|---|")
+              jk = [s_ for s_ in act if (P0[s_]["prix0"] or 1) <= 0.25 and P0[s_]["pnl"] > 0]
+              for pol in PPOL:
+                  R_ = Rp[pol]; glp = [s_ for s_ in act if P0[s_]["Lmax"] >= 5 and R_[s_]["pnl"] < 0]
+                  sup = sum(1 for s_ in jk if R_[s_]["pnl"] < 0.5 * P0[s_]["pnl"])
+                  aband = sum(max(P0[s_]["Lmax"] - max(R_[s_]["pnl"], 0), 0) for s_ in act); verr = sum(max(R_[s_]["fl"], 0) for s_ in act)
+                  w(f"| {pol} | {len(glp)} | {len(gl) - len(glp)} | {sup} / {len(jk)} | {aband:.0f} | {verr:.0f} | {sum(R_[s_]['partiel'] for s_ in sts)} | "
+                    f"{sum(R_[s_]['pnl'] - P0[s_]['pnl'] for s_ in sts):+.0f} |")
+              w("")
+      if TE:
+          w(f"**Protection des gains — latence et frais ({nomT})**\n")
+          noms = [v[0] for v in variantes]
+          w("| Politique | " + " | ".join(f"{x} ms" if x.isdigit() else x for x in noms) + " |\n|---|" + "---|" * len(noms))
+          for pol in PPOL:
+              w(f"| {pol} | " + " | ".join(f"{sum(RES[(nomT, x, pol)][s_]['pnl'] for s_ in TE):+.0f}" for x in noms) + " |")
+          w("\n| Politique | IC corrigé (17) > 0 contre P0 | Validation même sens | > 0 à 500 ms | > 0 sans les 5 meilleurs | Verdict |\n|---|---|---|---|---|---|")
+          for pol in PPOL[1:]:
+              d = np.array([RES[(nomT, "164", pol)][x]["pnl"] - RES[(nomT, "164", "P0")][x]["pnl"] for x in TE]); c2 = ic_cy(d, 0.10 / NCOMP_P)
+              cv = (sum(RES[("validation", "164", pol)][x]["pnl"] - RES[("validation", "164", "P0")][x]["pnl"] for x in VA) > 0) if VA else None
+              c5 = sum(RES[(nomT, "500", pol)][x]["pnl"] - RES[(nomT, "500", "P0")][x]["pnl"] for x in TE) > 0; ds = np.sort(d); ce = ds[:-5].sum() > 0 if len(ds) > 5 else False
               ok = c2[0] > 0 and cv is not False and c5 and ce; yn = lambda b: "—" if b is None else ("oui" if b else "non")
               w(f"| {pol} | {yn(c2[0] > 0)} | {yn(cv)} | {yn(c5)} | {yn(ce)} | {'**retenue**' if ok else 'non démontrée'} |")
       # verdict automatique (section 43)
