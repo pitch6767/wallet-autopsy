@@ -121,6 +121,7 @@ def main():
                 lim = v[0][0]; q = c = 0.0
                 for px, sz in DP.vend(Lx, X):
                     if px > lim: break
+                    if px <= 0 or px >= 1000: continue
                     pp = px / 1000; u = pp + fee(pp); k = min(sz, (MISE - c) / u)
                     if k <= 1e-9: break
                     q += k; c += k * u
