@@ -37,6 +37,22 @@ H1002 ALPHA EXÉCUTABLE : à chaque signal H1000 (et à chaque salve H997/H998 p
   comparaison au prix Polymarket (avantage = résultat − prix − frais), Up / Down / abstention.
 CRITÈRE DE POURSUITE (section 16 de Pitch) : amélioration de la calibration hors échantillon face au marché ET/OU P&L net exécutable avec IC > 0
   sur la validation ET le test, sans dépendre des 5 meilleurs trades. Verdicts : confirmé / non démontré / rejeté / données insuffisantes.
+ADDENDUM (Pitch, 12.10.2026 17:03, avant toute donnée de validation ou de test ; périodes, seuil de 50 000 $ et règles inchangés, aucun seuil
+  optimisé sur la validation ni le test) — section 8 du rapport :
+  8.1 Pression pré-liquidation à 1 / 3 / 5 / 10 / 30 s avant le début de chaque salve (première seconde avec liquidation du côté de la salve
+      dans les 5 s du déclenchement), variables connues à cet instant (OFI 5 s, pression nette 5 s, prix 5 s, mark − index Bybit et Binance
+      signés dans le sens forcé ; OI Bybit 10 s non signé), contre 5 témoins par salve tirés parmi les instants du même échantillon sans aucune
+      liquidation dans les 60 s avant et après (sens tiré au hasard). Différence salves − témoins, IC 90 % par cycles.
+  8.2 Délais réels (s, depuis la seconde de la première liquidation) : premier avertissement H1000 (score ≥ seuil dans les 30 s avant),
+      déclenchement de la salve, réaction BTC (premier écart Binance ≥ max(5 $, 2 σ1s √k) dans le sens forcé, ≤ 60 s), réaction Polymarket
+      (premier mouvement ≥ 1 c du meilleur vendeur du jeton du sens forcé, carnet relu toutes les 100 ms sur 20 s), première exécution possible
+      (avertissement ou déclenchement + 164 ms). Part des cas où Polymarket a réagi avant notre première exécution possible.
+  8.3 Par latence 164 / 200 / 250 / 500 ms : exécutions, quantité, prix réellement payé (frais compris, seuls les niveaux ≤ meilleur vendeur vu),
+      taux de victoire, avantage, P&L net total et par signal (IC 90 % par cycles).
+  8.4 Rapports séparés : cascades anticipées (≥ 1 avertissement H1000 dans les 5–30 s avant le début), fausses alertes (signal H1000 sans salve
+      dans 5–30 s), cascades manquées, précision, rappel, gain de temps, impact sur le TWAP Chainlink (mouvement Chainlink 5/30/60 s signé et,
+      pour les salves avant la fin du cycle, TWAP final − Chainlink au déclenchement, signé, contre témoins), P&L par signal, drawdown,
+      pire perte et moyenne des 5 % pires, IC par cycles.
 Usage : python3 etude/bot5min/liq_h994.py dossier_cycles_dublin [--controle]  (--controle = apprentissage seul, pour vérifier le code)"""
 import os, sys, math, time, json, gzip, collections
 import numpy as np, pandas as pd
@@ -62,6 +78,9 @@ def part_of(st):
     return "validation" if st < TEST else "test"
 
 
+COUPES = set()
+
+
 def charger_deriv(G, cyc):
     n = G["n"]; t0 = G["t0"]
     F = {k: np.full(n, np.nan) for k in ("by_mark", "by_index", "by_oi", "by_fund", "bn_mark", "bn_index", "bn_oi")}
@@ -70,6 +89,7 @@ def charger_deriv(G, cyc):
     for st, c in cyc.items():
         try: R = json.load(gzip.open(c["f"]))
         except Exception: continue
+        if R.get("coupe"): COUPES.add(st)
         D = R.get("deriv") or {}
         for r in D.get("by_ticker", []):
             i = int(math.ceil(r[0] / 1000)) - t0
@@ -109,10 +129,12 @@ def main():
     CA, CV = cs(LQ["a"]), cs(LQ["v"])
     w(f"# Bot95 — Liquidation Intelligence Engine H994–H1002 ({'CONTRÔLE : apprentissage seul' if CONTROLE else 'apprentissage / validation / test inédit'})\n")
     w(f"Généré le {time.strftime('%d.%m.%Y %H:%M', time.gmtime())} UTC. Cycles : " + ", ".join(f"{k} {nb[k]}" for k in PARTS) + ". Aucun ordre ; aucun abonnement.\n")
-    w("## 0. Audit des nouveaux flux\n\n| Flux | Messages | Intervalle médian (ms) | Trous > 5 s | Doublons |\n|---|---|---|---|---|")
+    w("## 0. Audit des nouveaux flux\n\n| Flux | Messages | Intervalle médian (ms) | Trous > max(5 s ; 3 × médiane) | Plus long trou (s) | Doublons d'horodatage |\n|---|---|---|---|---|---|")
     for k, T in audit.items():
-        T = np.sort(np.array(T)); d = np.diff(T) if len(T) > 1 else np.array([0])
-        w(f"| {k} | {len(T)} | {np.median(d):.0f} | {int((d > 5000).sum())} | {int((d == 0).sum())} |")
+        T = np.sort(np.array(T)); d = np.diff(T) if len(T) > 1 else np.array([0]); md = np.median(d)
+        w(f"| {k} | {len(T)} | {md:.0f} | {int((d > max(5000, 3 * md)).sum())} | {d.max() / 1000:.0f} | {int((d == 0).sum())} |")
+    cc_ = [s_ for s_ in cyc if part_of(s_)]; nc = len(COUPES & set(cc_))
+    w(f"\nCycles de l'étude : {len(cc_)}" + f" ; tronqués par la limite de stockage du serveur : {nc} (gardés, signalés)" + ".\n")
     # variables
     z600 = lambda x: ((pd.Series(x) - pd.Series(x).rolling(600, min_periods=200).mean().shift(1)) / pd.Series(x).rolling(600, min_periods=200).std().shift(1)).values
     dby = F["by_mark"] - F["by_index"]; dbn = F["bn_mark"] - F["bn_index"]; zby, zbn = z600(dby), z600(dbn)
@@ -185,9 +207,9 @@ def main():
                 if 0 < yt[mm].sum() < mm.sum(): D.append(L.auc(prd["F"][m][mm], yt[mm]) - L.auc(prd["A"][m][mm], yt[mm]))
             w(f"| {lab} | {pt} | {100 * yt.mean():.2f} % | {L.auc(prd['A'][m], yt):.3f} | {L.auc(prd['F'][m], yt):.3f} | "
               f"{np.percentile(D, 50):+.3f} [{np.percentile(D, 5):+.3f} ; {np.percentile(D, 95):+.3f}] ; [{np.percentile(D, 1.25):+.3f} ; {np.percentile(D, 98.75):+.3f}] |")
-    sig = []
+    sig = []; score = {}; thr = np.inf
     if pr5_30 is not None:
-        sc, y = pr5_30; thr = np.percentile(sc[trm], 99)
+        sc, y = pr5_30; thr = np.percentile(sc[trm], 99); score = dict(zip(I.tolist(), sc.tolist()))
         w(f"\n**H1000** — seuil = 99e centile du score d'apprentissage ({thr:.4f}).\n")
         w("| Échantillon | Signaux | Précision (salve dans 5–30 s) | Rappel | Délai d'avance médian (s) |\n|---|---|---|---|---|")
         for pt in PARTS:
@@ -291,6 +313,7 @@ def main():
     # H1002
     w("\n## 7. H1002 — Alpha exécutable sur Polymarket\n")
     w("| Échantillon | Source | Signaux | Exécutés à 164 ms | Victoire | Prix payé | Avantage (résultat − prix − frais) | P&L 164 / 200 / 250 / 500 ms ($) | P&L sans les 1 / 3 / 5 meilleurs | IC 90 % (164 ms) |\n|---|---|---|---|---|---|---|---|---|---|")
+    RES = {}
     for pt in PARTS:
         for src in ("H1000", "salve (après coup)"):
             Z = [s_ for s_ in sig if s_["part"] == pt and s_["src"] == src and s_["st"] in Y and s_["st"] + 300 - (G["t0"] + s_["i"]) >= 35]
@@ -309,15 +332,129 @@ def main():
                             pp = px / 1000; u = pp + fee(pp); k = min(sz, (MISE - cc) / u)
                             if k <= 1e-9: break
                             q += k; cc += k * u
-                    row[ms] = (q * yX - cc, cc / q if q > 0 else np.nan, q > 0)
-                R_.append((s_["st"], yX, row))
-            ex = [r for r in R_ if r[2][164][2]]
+                    row[ms] = (q * yX - cc, cc / q if q > 0 else np.nan, q > 0, q)
+                R_.append((s_["st"], yX, row, s_["i"]))
+            RES[(pt, src)] = R_; ex = [r for r in R_ if r[2][164][2]]
             if not ex: w(f"| {pt} | {src} | {len(Z)} | 0 | — | — | — | — | — | — |"); continue
             pn = np.array([r[2][164][0] for r in ex]); g = np.array([r[0] for r in ex]); srt = np.sort(pn)[::-1]
             ci = L.ic_tot(g, pn) if len(ex) >= 3 else (np.nan, np.nan)
             w(f"| {pt} | {src} | {len(Z)} | {len(ex)} | {100 * np.mean([r[1] for r in ex]):.0f} % | {np.nanmean([r[2][164][1] for r in ex]):.2f} | "
               f"{cell([r[1] - r[2][164][1] for r in ex], g)} | " + " / ".join(f"{sum(r[2][ms][0] for r in R_):+.0f}" for ms in (164, 200, 250, 500)) +
               f" | {srt[1:].sum():+.0f} / {srt[3:].sum():+.0f} / {srt[5:].sum():+.0f} | [{ci[0]:+.0f} ; {ci[1]:+.0f}] |")
+    # ===== 8. ADDENDUM Pitch 12.10 17:03 — contrôles supplémentaires (règles, périodes et seuils inchangés) =====
+    w("\n## 8. Contrôles demandés par Pitch le 12.10 à 17:03 (règles, périodes et seuils inchangés)\n")
+    def debut(z):
+        L_ = LQ[z["sd"]]
+        for j in range(z["i"] - 4, z["i"] + 1):
+            if L_[j] > 0: return j
+        return z["i"]
+    for z in sal: z["i0"] = debut(z)
+    def diff_ic(gs, vs, gc, vc, B=2000):
+        gs, vs, gc, vc = np.asarray(gs), np.asarray(vs, float), np.asarray(gc), np.asarray(vc, float)
+        ms, mc = np.isfinite(vs), np.isfinite(vc); gs, vs, gc, vc = gs[ms], vs[ms], gc[mc], vc[mc]
+        U = np.unique(np.concatenate([gs, gc]))
+        if len(U) < 3 or not len(vs) or not len(vc): return np.nan, np.nan, np.nan
+        D = []
+        for _ in range(B):
+            u = RNG.choice(U, len(U)); a = np.isin(gs, u); b = np.isin(gc, u)
+            if a.any() and b.any():
+                ws = np.array([np.sum(u == x) for x in gs[a]]); wc = np.array([np.sum(u == x) for x in gc[b]])
+                D.append(np.average(vs[a], weights=ws) - np.average(vc[b], weights=wc))
+        return vs.mean() - vc.mean(), np.percentile(D, 5), np.percentile(D, 95)
+    calme = lambda i: (CA[min(i + 61, n)] - CA[max(i - 60, 0)]) + (CV[min(i + 61, n)] - CV[max(i - 60, 0)]) == 0
+    temoins = {pt: np.array([i for i in range(700, n - 121, 13) if part.get(stof(i)) == pt and G["ok"][i] and calme(i)]) for pt in PARTS}
+    # 8.1
+    w("### 8.1 Pression avant le début de chaque salve, contre des périodes sans liquidation\n")
+    w("Variables connues à l'instant indiqué (avant le déclenchement). Signe aligné sur le sens forcé (témoins : sens au hasard) ; OI non signé.\n")
+    VARS = (("OFI 5 s", lambda i: V["ofi5"][i], 1), ("Pression nette 5 s", lambda i: V["Pn5"][i], 1), ("Prix Binance 5 s ($)", lambda i: d5[i], 1),
+            ("Mark − index Bybit ($)", lambda i: dby[i], 1), ("Mark − index Binance ($)", lambda i: dbn[i], 1), ("OI Bybit 10 s (%)", lambda i: oi10[i], 0))
+    w("| Échantillon | Variable | Avant | Salves | Témoins | Salves − témoins (IC 90 %) |\n|---|---|---|---|---|---|")
+    for pt in PARTS:
+        Z = [z for z in sal if z["part"] == pt]; T = temoins[pt]
+        if not Z or not len(T): continue
+        TT = RNG.choice(T, min(len(T), 5 * len(Z)), replace=len(T) < 5 * len(Z)); sT = RNG.choice([-1, 1], len(TT))
+        for nom, fv, sg in VARS:
+            for k in (1, 3, 5, 10, 30):
+                vs = [fv(z["i0"] - k) * (z["s"] if sg else 1) for z in Z]; gs = [z["st"] for z in Z]
+                vc = [fv(i - k) * (s0 if sg else 1) for i, s0 in zip(TT, sT)]; gc = [stof(i) for i in TT]
+                d, a, b = diff_ic(gs, vs, gc, vc)
+                w(f"| {pt} | {nom} | {k} s | {cell(vs, gs)} | {cell(vc, gc)} | {d:+.3f} [{a:+.3f} ; {b:+.3f}] |")
+    # 8.2
+    w("\n### 8.2 Délais réels depuis la première liquidation (secondes)\n")
+    w("Résolution : seconde pour les liquidations, 100 ms pour le carnet Polymarket. Médiane [10e ; 90e centile] (n).\n")
+    q3 = lambda v: (f"{np.median(v):+.1f} [{np.percentile(v, 10):+.1f} ; {np.percentile(v, 90):+.1f}] (n={len(v)})" if len(v) else "—")
+    w("| Échantillon | Salves | 1er avertissement | Déclenchement | Réaction BTC | Réaction Polymarket | 1re exécution possible | Polymarket avant nous |\n|---|---|---|---|---|---|---|---|")
+    for pt in PARTS:
+        Z = [z for z in sal if z["part"] == pt]
+        if not Z: continue
+        A_, Dc, Bt, Pm, Ex, avant = [], [], [], [], [], []
+        for z in Z:
+            i0, s0 = z["i0"], z["s"]; ref = G["t0"] + i0 - 1
+            war = [j for j in range(i0 - 30, i0) if score.get(j, -1) >= thr]
+            if war: A_.append(war[0] - i0 + 1)
+            Dc.append(z["i"] - i0 + 1)
+            for k in range(0, 61):
+                if i0 + k < n and np.isfinite(bn[i0 + k]) and np.isfinite(bn[i0 - 1]) and (bn[i0 + k] - bn[i0 - 1]) * s0 >= max(5, 2 * vol[i0] * math.sqrt(k + 1)): Bt.append(k + 1); break
+            ex = ((war[0] if war else z["i"]) + G["t0"] - ref) + 0.164; Ex.append(ex)
+            if z["st"] in cyc and z["st"] + 300 - ref >= 1:
+                X = "Up" if s0 > 0 else "Down"; tt = [ref * 1000 + 100 * j for j in range(201)]
+                try: E = {k_: DP.compact(x) for k_, x in LH.Cycle(cyc[z["st"]]["f"]).etats(tt).items()}
+                except Exception: E = {}
+                v0 = DP.vend(E[tt[0]], X) if tt[0] in E else None
+                if v0:
+                    for t_ in tt[1:]:
+                        vv = DP.vend(E[t_], X) if t_ in E else None
+                        if vv and vv[0][0] - v0[0][0] >= 10: Pm.append((t_ - tt[0]) / 1000); avant.append((t_ - tt[0]) / 1000 < ex); break
+        w(f"| {pt} | {len(Z)} | {q3(A_)} | {q3(Dc)} | {q3(Bt)} | {q3(Pm)} | {q3(Ex)} | {100 * np.mean(avant) if avant else float('nan'):.0f} % (n={len(avant)}) |")
+    # 8.3
+    w("\n### 8.3 Qualité et P&L net par latence (frais, quantité disponible, prix réellement accessible)\n")
+    w("| Échantillon | Source | Latence | Exécutés / signaux | Parts moyennes | Prix payé moyen (frais compris) | Victoire | Avantage (IC 90 %) | P&L net total (IC 90 %) | P&L par signal exécuté (IC 90 %) |\n|---|---|---|---|---|---|---|---|---|---|")
+    for (pt, src), R_ in RES.items():
+        for ms in (164, 200, 250, 500):
+            ex = [r for r in R_ if r[2][ms][2]]
+            if not ex: w(f"| {pt} | {src} | {ms} ms | 0 / {len(R_)} | — | — | — | — | — | — |"); continue
+            pn = np.array([r[2][ms][0] for r in ex]); g = np.array([r[0] for r in ex]); u = np.array([r[2][ms][1] for r in ex]); qq = np.array([r[2][ms][3] for r in ex])
+            ct = L.ic_tot(g, pn) if len(ex) >= 3 else (np.nan, np.nan)
+            w(f"| {pt} | {src} | {ms} ms | {len(ex)} / {len(R_)} | {qq.mean():.1f} | {u.mean():.3f} | {100 * np.mean([r[1] for r in ex]):.0f} % | "
+              f"{cell([r[1] - uu for r, uu in zip(ex, u)], g)} | {pn.sum():+.1f} [{ct[0]:+.1f} ; {ct[1]:+.1f}] | {cell(pn, g)} |")
+    # 8.4
+    w("\n### 8.4 Bilan séparé\n")
+    w("**Cascades anticipées, fausses alertes, manquées (H1000, seuil d'apprentissage inchangé)**\n")
+    w("| Échantillon | Salves | Anticipées (≥ 1 avertissement 5–30 s avant) | Manquées | Signaux H1000 (dédoublonnés) | Fausses alertes | Précision | Rappel | Gain de temps médian (s) |\n|---|---|---|---|---|---|---|---|---|")
+    for pt in PARTS:
+        Z = [z for z in sal if z["part"] == pt]; S_ = [s_ for s_ in sig if s_["part"] == pt and s_["src"] == "H1000"]
+        ant = [z for z in Z if any(score.get(j, -1) >= thr for j in range(z["i0"] - 30, z["i0"] - 4))]
+        gain = [z["i"] - min(j for j in range(z["i0"] - 30, z["i0"] - 4) if score.get(j, -1) >= thr) for z in ant]
+        fa = [s_ for s_ in S_ if not salve_dans(s_["i"], 5, 30)]
+        w(f"| {pt} | {len(Z)} | {len(ant)} | {len(Z) - len(ant)} | {len(S_)} | {len(fa)} | {100 * (1 - len(fa) / len(S_)) if S_ else float('nan'):.0f} % | "
+          f"{100 * len(ant) / len(Z) if Z else float('nan'):.0f} % | {np.median(gain) if gain else float('nan'):.0f} |")
+    w("\n**Impact sur Chainlink et sur le TWAP final** (sens forcé, $ ; témoins = instants sans liquidation, sens au hasard)\n")
+    w("| Échantillon | Mesure | Salves | Témoins | Différence (IC 90 %) |\n|---|---|---|---|---|")
+    cl = G["cl"]
+    def twap(st, i, s0):
+        a = st + 240 - G["t0"]; b = st + 300 - G["t0"]
+        if i >= a or b > n or not np.isfinite(cl[i]): return np.nan
+        x = cl[a:b]; x = x[np.isfinite(x)]; return (x.mean() - cl[i]) * s0 if len(x) > 30 else np.nan
+    for pt in PARTS:
+        Z = [z for z in sal if z["part"] == pt]; T = temoins[pt]
+        if not Z or not len(T): continue
+        TT = RNG.choice(T, min(len(T), 5 * len(Z)), replace=len(T) < 5 * len(Z)); sT = RNG.choice([-1, 1], len(TT))
+        gs = [z["st"] for z in Z]; gc = [stof(i) for i in TT]
+        for lab, f_ in ((f"Chainlink {k} s", (lambda k: lambda i, s0, st: (cl[min(i + k, n - 1)] - cl[i]) * s0)(k)) for k in (5, 30, 60)):
+            vs = [f_(z["i"], z["s"], z["st"]) for z in Z]; vc = [f_(i, s0, stof(i)) for i, s0 in zip(TT, sT)]; d, a, b = diff_ic(gs, vs, gc, vc)
+            w(f"| {pt} | {lab} | {cell(vs, gs)} | {cell(vc, gc)} | {d:+.2f} [{a:+.2f} ; {b:+.2f}] |")
+        vs = [twap(z["st"], z["i"], z["s"]) for z in Z]; vc = [twap(stof(i), i, s0) for i, s0 in zip(TT, sT)]; d, a, b = diff_ic(gs, vs, gc, vc)
+        w(f"| {pt} | TWAP final − Chainlink au déclenchement | {cell(vs, gs)} | {cell(vc, gc)} | {d:+.2f} [{a:+.2f} ; {b:+.2f}] |")
+    w("\n**P&L par signal, drawdown et pertes extrêmes** (ordre chronologique, mise 20 $)\n")
+    w("| Échantillon | Source | Latence | Exécutés | P&L par signal (IC 90 %) | P&L total | Drawdown max | Pire perte | Moyenne des 5 % pires | Pertes consécutives max |\n|---|---|---|---|---|---|---|---|---|---|")
+    for (pt, src), R_ in RES.items():
+        for ms in (164, 200, 250, 500):
+            ex = sorted([r for r in R_ if r[2][ms][2]], key=lambda r: r[3])
+            if not ex: continue
+            pn = np.array([r[2][ms][0] for r in ex]); cum = np.cumsum(pn); dd = float(np.max(np.maximum.accumulate(np.concatenate([[0], cum]))[1:] - cum))
+            k5 = max(1, int(math.ceil(0.05 * len(pn)))); run = mx = 0
+            for x in pn: run = run + 1 if x < 0 else 0; mx = max(mx, run)
+            w(f"| {pt} | {src} | {ms} ms | {len(ex)} | {cell(pn, [r[0] for r in ex])} | {pn.sum():+.1f} | {dd:.1f} | {pn.min():+.1f} | {np.sort(pn)[:k5].mean():+.1f} | {mx} |")
     w("\n## Limites\n- Niveaux réels de liquidation inconnus (carte = scénarios). Binance forceOrder : au plus une liquidation par seconde (échantillonné).\n"
       "- Open interest Bybit publié à la cadence du ticker ; pas d'interpolation de valeurs futures.\n")
     w(f"_Calcul : {time.time() - t_go:.0f} s._\n")
