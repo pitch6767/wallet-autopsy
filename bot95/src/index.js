@@ -331,14 +331,21 @@ export class Bot {
       if (u.pathname === "/api/rapide/donnees" && req.method === "POST") {
         const d = await req.json();
         await this.state.storage.put("rap:etat", { recu: now(), version: d.version, latence: d.latence, flux: d.flux, systeme: d.systeme || null, chainlink: d.chainlink || null, makerEnCours: d.makerEnCours || null });
-        for (const O of d.maker || []) {                 // fantômes MAKER (offres posées), réglés
-          const cle = "rapm:" + Math.floor(O.start / 3600), J = (await this.state.storage.get(cle)) || [];
-          if (!J.some((x) => x.oid === O.oid)) { J.push(O); await this.state.storage.put(cle, J); }
+        // 12.10.2026 : stockage par cycle de 5 min (et non plus par heure) — la clé horaire des fantômes maker dépassait la taille maximale
+        // d'une valeur (≈ 3 Mo vers 02:00 UTC) et faisait échouer tout l'envoi depuis 03:06 UTC. Regroupement par clé : une lecture et une écriture par clé.
+        const grouper = (L, pre) => { const G = new Map(); for (const x of L || []) { const k = pre + x.start; if (!G.has(k)) G.set(k, []); G.get(k).push(x); } return G; };
+        const erreurs = [], cache = new Map();
+        for (const [pre, L, memes] of [["rapm:", d.maker, (a, b) => a.oid === b.oid], ["rap:", d.signaux, (a, b) => a.start === b.start && a.nom === b.nom]]) {
+          for (const [cle, X] of grouper(L, pre)) {
+            try {
+              const J = (await this.state.storage.get(cle)) || []; let ajout = false;
+              const ch = pre + Math.floor(X[0].start / 3600); if (!cache.has(ch)) cache.set(ch, (await this.state.storage.get(ch)) || []); const ancienne = cache.get(ch);   // anciennes clés horaires (avant le 12.10)
+              for (const x of X) if (!J.some((y) => memes(x, y)) && !ancienne.some((y) => memes(x, y))) { J.push(x); ajout = true; }
+              if (ajout) await this.state.storage.put(cle, J);
+            } catch (e) { erreurs.push(cle + " : " + String((e && e.message) || e).slice(0, 120)); }
+          }
         }
-        for (const S of d.signaux || []) {
-          const cle = "rap:" + Math.floor(S.start / 3600), J = (await this.state.storage.get(cle)) || [];
-          if (!J.some((x) => x.start === S.start && x.nom === S.nom)) { J.push(S); await this.state.storage.put(cle, J); }
-        }
+        if (erreurs.length) { const E = (await this.state.storage.get("rap:etat")) || {}; E.erreursStockage = erreurs.slice(0, 20); await this.state.storage.put("rap:etat", E); }
         return json({ ok: true, n: (d.signaux || []).length });
       }
       return new Response("?", { status: 404 });
