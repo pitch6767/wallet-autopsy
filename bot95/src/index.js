@@ -2832,3 +2832,10 @@ el.innerHTML=d.refus.length?d.refus.map(r=>'<div class=card><b>'+r.actif+'</b> �
 '<div class=mu>Favori '+r.fav+' · vendeur '+r.ask+' · acheteur '+r.bid+' · T-'+r.tleft+' s'+(r.z!=null?' · z '+r.z+' · proba '+(r.proba*100).toFixed(2)+' %':'')+'</div><div class=mu>Secondes bloquées : '+nb(r.comptes)+'</div></div>').join(''):'<div class=card>Aucun refus enregistré pour l\\'instant.</div>'}
 go();setInterval(go,10000);
 </script></body></html>`;
+
+// 12.10.2026 : classe créée par un déploiement Replit (migration « maker-realism-20261012 »). Conservée à vide pour ne pas effacer ses données ;
+// le code « realism » est archivé sur la branche GitHub realism et n'est pas déployé (décision de Pitch : une seule source, GitHub).
+export class RealismStore {
+  constructor(state) { this.state = state; }
+  async fetch() { return new Response("realism archivé (non déployé)", { status: 410 }); }
+}
