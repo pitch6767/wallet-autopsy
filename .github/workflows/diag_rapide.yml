@@ -22,6 +22,11 @@ jobs:
           try:
               c = json.load(open('/tmp/c.json'))['cycles']; print('cycles', len(c), 'dernier', c[-1])
           except Exception as x: print('cycles', x)
+          import urllib.request
+          for u in ('/rapide-realiste','/api/realism/etat','/api/realism/resume'):
+              try:
+                  r=urllib.request.urlopen('https://bot95.pitch67.workers.dev'+u,timeout=60); print(u, r.status, r.read()[:200])
+              except Exception as x: print(u, x)
           print('maintenant', time.strftime('%d.%m %H:%M:%S', time.gmtime()), 'UTC')
           P
           cat bot95/diag_rapide.txt
