@@ -1,6 +1,6 @@
 # Bot95 — Validation future B0 / B1 contre D (fantôme R4 vivant)
 
-Mis à jour le 12.10.2026 06:08 UTC. Signaux réglés avec R4 : 499 ; décisions uniques : 159 sur 119 cycles.
+Mis à jour le 12.10.2026 15:40 UTC. Signaux réglés avec R4 : 499 ; décisions uniques : 159 sur 119 cycles.
 
 | Politique | P&L ($) | / décision | IC 90 % | vs D ($) | IC 90 % de l'écart / décision | compléments : gagnants / perdants |
 |---|---|---|---|---|---|---|
