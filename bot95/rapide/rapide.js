@@ -858,7 +858,7 @@ function flux() {
       for (const k of ["lastPrice", "markPrice", "indexPrice", "openInterest", "fundingRate", "bid1Price", "ask1Price"]) if (d[k] != null && d[k] !== "") S[k] = +d[k];
       deriv("by_ticker", [+m.ts || null, S.lastPrice ?? null, S.markPrice ?? null, S.indexPrice ?? null, S.openInterest ?? null, S.fundingRate ?? null, S.bid1Price ?? null, S.ask1Price ?? null, m.type === "snapshot" ? 1 : 0]); },
     JSON.stringify({ op: "ping" }), 15000);
-  if (muet("bnf")) connecter("bnf", "wss://fstream.binance.com/stream?streams=btcusdt@markPrice@1s/btcusdt@forceOrder/btcusdt@aggTrade", [], (m) => {
+  if (muet("bnf")) connecter("bnf", "wss://fstream.binance.com/market/stream?streams=btcusdt@markPrice@1s/btcusdt@forceOrder/btcusdt@aggTrade", [], (m) => {
       const d = m.data || {}, e = d.e;
       if (e === "markPriceUpdate") deriv("bn_mark", [+d.E, +d.p, +d.i, +d.r]);
       else if (e === "forceOrder") { const x = d.o || {}; deriv("bn_liq", [+x.T || +d.E, x.S, +x.q, +x.p, +x.ap, x.X, +x.l || null]); }
