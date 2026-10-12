@@ -61,7 +61,7 @@ SAUVETAGE H1036–H1040 (Pitch, 12.10 17:53) : entrée 10 $ au même signal ; «
   0,10 / 0,20 / 0,30 rapportés à titre descriptif pour R1 et R3). R0 conserver ; R1 vendre tout ; R2 couverture préventive (− 0,05 et cerveau A contre
   ≥ 0,60) ; R3 couverture complète ; R4 couverture tardive (p_X ≤ 0,25) ; R5 vente de 50 % puis couverture du reste ; R6 inversion complète (vente
   de tout + 10 $ de l'opposé) ; R7 adaptatif : probabilité de redevenir gagnante (H1039, logistique apprise sur les états détériorés de
-  l'apprentissage : cerveau B, milieu du marché, M0, cerveau A, temps restant, OFI, liquidations) ; vente si acheteur net > probabilité + 0,01,
+  l'apprentissage — états des deux familles d'entrée — : cerveau B, milieu du marché, M0, cerveau A, temps restant, OFI, liquidations) ; vente si acheteur net > probabilité + 0,01,
   couverture si (1 − probabilité) − coût de l'opposé > 0,01, sinon conserver. Couverture = achat de l'opposé pour toutes les parts non appariées.
   H1038 à risque comparable : Rv (vente), Ra (achat de l'opposé), Rm (moitié-moitié), chacun pour ramener le pire résultat à −6 $.
   Mesures : test décisif (section 9, ramené à 100 positions défavorables), IC 90 % par cycles contre R0, IC corrigé (7 comparaisons).
@@ -344,6 +344,17 @@ def signal(C, e):
     return None
 
 
+def signal_fav(C):
+    for k, t in enumerate(C["T"]):
+        Lo = C["E"].get(t); rest = 300 - (t // 1000 - C["st"])
+        if Lo is None or C["p"][k] is None or not (120 <= rest <= 240): continue
+        a, b = meilleur(Lo, "Up", "a"), meilleur(Lo, "Up", "b")
+        if not (a and b): continue
+        X = "Up" if (a + b) / 2000 >= 0.5 else "Down"; aX = meilleur(Lo, X, "a")
+        if aX and 600 <= aX <= 850: return k, X, (C["p"][k] if X == "Up" else 1 - C["p"][k]), aX / 1000
+    return None
+
+
 def rec_x(C, k, X):
     pU = C["p"][k]; s_ = 1 if X == "Up" else -1
     if pU is None: return None
@@ -494,7 +505,7 @@ def main():
                     for pol in POL + RPOL:
                         EXEC, FEE_K, STRESS = 164, 1.0, {}
                         inv, pnl = simuler(pol, C, e); RES_[("app", e, pol)][st] = resume(inv, pnl, C["y"], C)
-                    sg = signal(C, e) if ENTREE == "avantage" else None
+                    sg = signal(C, e) if ENTREE == "avantage" else (signal_fav(C) if e == 0.10 else None)
                     if sg:
                         k0, X, p0, _a = sg; dans = False
                         for k in range(k0 + 1, len(C["T"])):
@@ -507,7 +518,8 @@ def main():
                 if e_choisi is None:
                     sc = {e: sum(RESF["avantage"][("app", e, "T0-50")][s]["pnl"] for s in TR) for e in (0.05, 0.10, 0.15)}; e_choisi = max(sc, key=sc.get); SC_E = sc
                     Xr = np.array([r[1] for r in RECD], float); yr_ = np.array([r[2] for r in RECD], float); mu_r, sd_r = Xr.mean(0), Xr.std(0) + 1e-9
-                    bR = L.ajuster((Xr - mu_r) / sd_r, yr_, 2.0); REC_MODEL = lambda C_, k_, X_: float(L.predire(bR, (np.array([rec_x(C_, k_, X_)]) - mu_r) / sd_r)[0])
+                    bR = L.ajuster((Xr - mu_r) / sd_r, yr_, 2.0) if len(RECD) >= 30 else None
+                    if bR is not None: REC_MODEL = lambda C_, k_, X_: float(L.predire(bR, (np.array([rec_x(C_, k_, X_)]) - mu_r) / sd_r)[0])
                 e = e_choisi
                 for nom, lat, fk, _ in variantes:
                     if nom != "164" and pt == "validation" and nom not in ("500",): continue
