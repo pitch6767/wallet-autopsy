@@ -1,0 +1,56 @@
+name: Historique transactions Polymarket BTC 5 min (lecture seule, API publique)
+on:
+  workflow_dispatch:
+    inputs:
+      debut: { description: "debut AAAA-MM-JJTHH:MM (UTC)", default: "2026-10-09T00:00" }
+      fin: { description: "fin AAAA-MM-JJTHH:MM (UTC, au plus 13.10 00:00)", default: "2026-10-13T00:00" }
+permissions:
+  contents: write
+jobs:
+  h:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 1 }
+      - run: |
+          set +e
+          mkdir -p /tmp/h && cd /tmp/h
+          python3 - <<'P'
+          import json, time, gzip, datetime, urllib.request, collections
+          G = "https://gamma-api.polymarket.com"; D = "https://data-api.polymarket.com"
+          def get(u):
+              for k in range(5):
+                  try: return json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "bot95-etude"}), timeout=60).read())
+                  except Exception as e:
+                      if "404" in str(e) or "400" in str(e): return None
+                      time.sleep(5 if "429" in str(e) else 1.5 * (k + 1))
+              return None
+          d0 = int(datetime.datetime.fromisoformat("${{ inputs.debut }}").replace(tzinfo=datetime.timezone.utc).timestamp())
+          d1 = int(datetime.datetime.fromisoformat("${{ inputs.fin }}").replace(tzinfo=datetime.timezone.utc).timestamp())
+          assert d1 <= 1791849600, "periode reservee interdite"
+          par_jour = collections.defaultdict(dict); n = 0; manq = 0
+          for st in range(d0 - d0 % 300, d1, 300):
+              ev = get(f"{G}/events?slug=btc-updown-5m-{st}")
+              if not ev: manq += 1; continue
+              m = ev[0]["markets"][0]; cid = m.get("conditionId")
+              try: out = json.loads(m["outcomes"]); px = [float(x) for x in json.loads(m["outcomePrices"])]
+              except Exception: out, px = [], []
+              T = []; off = 0
+              while off <= 9500:
+                  r = get(f"{D}/trades?market={cid}&limit=500&offset={off}&takerOnly=false")
+                  if not r: break
+                  T += [[x.get("timestamp"), x.get("proxyWallet"), x.get("side"), x.get("outcome"), x.get("price"), x.get("size"), x.get("transactionHash")] for x in r]
+                  if len(r) < 500: break
+                  off += 500; time.sleep(0.15)
+              par_jour[time.strftime("%Y-%m-%d", time.gmtime(st))][st] = {"resultat": dict(zip(out, px)), "trades": T}; n += len(T)
+              time.sleep(0.1)
+          for j, M in par_jour.items():
+              with gzip.open(f"polytrades_{j}.json.gz", "wt") as f: json.dump({"format": "[timestamp_s, portefeuille, BUY/SELL, outcome, prix, parts, transaction]", "marches": {str(k): v for k, v in M.items()}}, f)
+          print("transactions", n, "marches manquants", manq)
+          P
+          ls -la | head
+          cd $GITHUB_WORKSPACE
+          git config user.name histo; git config user.email bot@users.noreply.github.com
+          git fetch -q origin donnees-btc && git checkout -q -B donnees-btc origin/donnees-btc
+          mkdir -p polytrades && cp /tmp/h/*.json.gz polytrades/ && git add polytrades && git commit -qm "Transactions Polymarket BTC 5 min ${{ inputs.debut }} -> ${{ inputs.fin }}" && for k in 1 2 3; do git push -q origin donnees-btc && break; sleep 5; done
