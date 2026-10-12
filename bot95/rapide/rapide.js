@@ -802,6 +802,14 @@ function flux() {
       if (o.t && t - o.t > 1000) obTrou("by", "silence", Math.round(t - o.t) + " ms");
       o.seq = +d.u; o.seqSrc = +d.seq; o.ts = +m.ts;
       for (const x of d.b || []) obAppliquer(o, 0, +x[0], +x[1], m.type === "delta"); for (const x of d.a || []) obAppliquer(o, 1, +x[0], +x[1], m.type === "delta"); o.t = t; }, JSON.stringify({ op: "ping" }), 15000);
+  if (muet("drb")) connecter("drb", "wss://www.deribit.com/ws/api/v2",              // Deribit (lecture seule, accord de Pitch 12.10) : indice, perpétuel, DVOL
+    [JSON.stringify({ jsonrpc: "2.0", id: 1, method: "public/subscribe", params: { channels: ["deribit_price_index.btc_usd", "ticker.BTC-PERPETUAL.100ms", "deribit_volatility_index.btc_usd"] } })],
+    (m) => { if (m.method !== "subscription" || !m.params) return; const ch = m.params.channel || "", x = m.params.data || {}, t = nowMs();
+      const R = recDe(Math.floor(t / 300000) * 300); R.deribit = R.deribit || { format: "[reception_ms, heure source ms, type, ...] ; i = indice BTC/USD [prix] ; p = BTC-PERPETUAL [dernier, mark, meilleur acheteur, meilleur vendeur, open interest USD, funding 8 h] ; v = DVOL [volatilite]", d: [] };
+      if (ch.startsWith("deribit_price_index")) R.deribit.d.push([+t.toFixed(1), +x.timestamp, "i", +x.price]);
+      else if (ch.startsWith("ticker.BTC-PERPETUAL")) R.deribit.d.push([+t.toFixed(1), +x.timestamp, "p", +x.last_price, +x.mark_price, +x.best_bid_price, +x.best_ask_price, +x.open_interest, +x.funding_8h]);
+      else if (ch.startsWith("deribit_volatility_index")) R.deribit.d.push([+t.toFixed(1), +x.timestamp, "v", +x.volatility]); },
+    JSON.stringify({ jsonrpc: "2.0", id: 9, method: "public/test", params: {} }), 10000);
   if (PB && muet("pb")) { CLS.pbAuth = false; connecter("pb", "wss://ws-live-v2.polymarket.com/ws", [JSON.stringify({ op: "auth", rid: "a1", auth: PB })], surPB, JSON.stringify({ op: "ping" }), 20000); }
 }
 // ---------------------------------------------------------------- PolyBolt (wss://ws-live-v2.polymarket.com/ws) : Chainlink BTC/USD et moyenne 60 s officielle
