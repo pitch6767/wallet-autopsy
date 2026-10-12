@@ -98,6 +98,7 @@ Le 11.10, Pitch a décidé de garder Cloudflare comme bot existant et Dublin com
 - Toute la piste maker (M1 à M21) : tous négatifs, même avec une annulation rapide.
 - Relances R4 : en direct, elles ne font pas mieux que l'achat immédiat (§7).
 - Sauvetage, stop, ventes par paliers, couverture : rien ne bat le fait de garder jusqu'au règlement.
+- Gestion dynamique de la position (DPE H841–H860, 12.10) : achats fractionnés, rotations et DPE complet ne battent pas le hold ; quelques protections écrêtent les pertes sur le test seulement.
 - Routeurs, méta-modèles, Kronos, arbitrage 15/5 min, paires, filtres d'exécution H818.
 - Supports, résistances et figures de liquidité (H822–H832, 12.10) : les anciens sommets et creux rejettent même moins que des niveaux fictifs, les figures n'ajoutent rien au modèle de règlement, et le meilleur veto n'est pas démontré. Marge de sécurité utile : environ 1,9 σ pour 90 % de victoires et 2,6 σ pour 95 %.
 
