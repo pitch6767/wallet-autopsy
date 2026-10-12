@@ -25,7 +25,7 @@ const NV = {
   // 07.10.2026 (décision de Pitch) : on oublie ETH — plus aucun trade ETH (les données ETH restent enregistrées)
   TRADE: ["BTC"],
   CORRIGE_ACTIFS: ["BTC", "ETH"],                // cohorte « corrigé » aussi testée sur ETH (09.10.2026)
-  ACTIVES: ["consensus K2", "desaccord 20 sans nuit", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-F + pas les deux baissent", "V2-F + plus de 120 s", "V2-G jury des bourses", "V2-H veto complet", "V2-F miroir 1 s", "V2-F incertitude 0,01 %", "V2-F pause memoire", "desaccord 30", "desaccord 20 60-180 s", "desaccord 20 jeton 0,35-0,65", "desaccord 20 Poly rejoint 10 s sans nuit", "desaccord 20 Binance avec nous", "desaccord 20 Binance avec nous sans nuit", "desaccord 20 Binance ou perp avec nous", "desaccord 20 Binance ou perp avec nous sans nuit", "desaccord 30 zone 0,15-0,35", "desaccord 30 zone 0,15-0,35 + Binance et perp", "desaccord 30 zone + sortie modele -10", "desaccord 30 zone + Binance et perp + sortie modele -10", "desaccord 30 0,15-0,60 + perp + ecart qui grandit", "desaccord 30 zone + modele monte", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50", "corrige : V2-F + garde-fou", "TWAP fin", "TWAP fin sauts", "TWAP fin correction spot-perp", "TWAP fin confirme Chainlink 0,5 s", "TWAP fin anti-saut", "TWAP fin prevision Chainlink", "TWAP fin quantiles", "corrige marge mesuree : V2-F", "corrige : desaccord 20", "corrige : V2-F ecart qui grandit", "corrige : V2-F + pas les deux baissent", "corrige : zone + Binance et perp + sortie -10"],
+  ACTIVES: ["consensus K2", "consensus K5", "desaccord 20 sans nuit", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-F + pas les deux baissent", "V2-F + plus de 120 s", "V2-G jury des bourses", "V2-H veto complet", "V2-F miroir 1 s", "V2-F incertitude 0,01 %", "V2-F pause memoire", "desaccord 30", "desaccord 20 60-180 s", "desaccord 20 jeton 0,35-0,65", "desaccord 20 Poly rejoint 10 s sans nuit", "desaccord 20 Binance avec nous", "desaccord 20 Binance avec nous sans nuit", "desaccord 20 Binance ou perp avec nous", "desaccord 20 Binance ou perp avec nous sans nuit", "desaccord 30 zone 0,15-0,35", "desaccord 30 zone 0,15-0,35 + Binance et perp", "desaccord 30 zone + sortie modele -10", "desaccord 30 zone + Binance et perp + sortie modele -10", "desaccord 30 0,15-0,60 + perp + ecart qui grandit", "desaccord 30 zone + modele monte", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50", "corrige : V2-F + garde-fou", "TWAP fin", "TWAP fin sauts", "TWAP fin correction spot-perp", "TWAP fin confirme Chainlink 0,5 s", "TWAP fin anti-saut", "TWAP fin prevision Chainlink", "TWAP fin quantiles", "corrige marge mesuree : V2-F", "corrige : desaccord 20", "corrige : V2-F ecart qui grandit", "corrige : V2-F + pas les deux baissent", "corrige : zone + Binance et perp + sortie -10"],
   // 09.10.2026 : stratégies à plus de 500 $ de pertes (et leurs lignes sœurs) — supprimées du bot et de la page ; trades sauvés dans bot95/sauvegarde sur GitHub
   SUPPRIMEES: ["V5 gain attendu BTC", "V5 gain attendu ETH", "V6 loterie BTC", "V6 loterie ETH", "desaccord 10 +convergence BTC", "desaccord 10 +convergence ETH", "desaccord 10 +demi ETH", "desaccord 10 +freeroll BTC", "desaccord 10 +freeroll ETH", "desaccord 10 +validation ETH", "desaccord 10 +validation+inversion ETH", "desaccord 10 +verrou BTC", "desaccord 10 +verrou ETH", "desaccord 10 ETH", "desaccord 15 +convergence BTC", "desaccord 15 +convergence ETH", "desaccord 15 +demi ETH", "desaccord 15 +freeroll BTC", "desaccord 15 +freeroll ETH", "desaccord 15 +validation ETH", "desaccord 15 +validation+inversion ETH", "desaccord 15 +verrou BTC", "desaccord 15 +verrou ETH", "desaccord 15 ETH", "desaccord 20 +convergence BTC", "desaccord 20 +convergence ETH", "desaccord 20 +demi BTC", "desaccord 20 +demi ETH", "desaccord 20 +freeroll BTC", "desaccord 20 +freeroll ETH", "desaccord 20 +validation BTC", "desaccord 20 +validation ETH", "desaccord 20 +validation+inversion BTC", "desaccord 20 +validation+inversion ETH", "desaccord 20 +verrou BTC", "desaccord 20 +verrou ETH", "desaccord 20 ETH", "desaccord 20 Poly rejoint 3 s BTC", "desaccord 20 Poly rejoint 3 s sans nuit BTC", "desaccord combine 2.5 +convergence BTC", "desaccord combine 2.5 +convergence ETH", "desaccord combine 2.5 +freeroll ETH", "desaccord combine 2.5 +validation+inversion ETH", "desaccord combine 2.5 +verrou BTC", "desaccord combine 2.5 +verrou ETH", "desaccord combine 2.5 ETH", "desaccord combine 4 +convergence BTC", "desaccord combine 4 +convergence ETH", "desaccord combine 4 +freeroll ETH", "desaccord combine 4 +validation+inversion ETH", "desaccord combine 4 +verrou ETH", "desaccord combine 4 ETH", "desaccord confirme BTC", "desaccord confirme ETH", "desaccord croise 10 +convergence BTC", "desaccord croise 10 +convergence ETH", "desaccord croise 10 +freeroll BTC", "desaccord croise 10 +freeroll ETH", "desaccord croise 10 +validation+inversion ETH", "desaccord croise 10 +verrou BTC", "desaccord croise 10 +verrou ETH", "desaccord croise 10 ETH", "desaccord maker 10 +convergence BTC", "desaccord maker 10 +freeroll BTC", "desaccord maker 10 +validation+inversion BTC", "desaccord maker 10 +verrou BTC", "desaccord maker 10 BTC", "inverse desaccord 10 BTC", "inverse desaccord 15 BTC", "V2-F + pas les deux baissent + volatilite >= 2 BTC", "desaccord 20 aucune bourse contre + sortie 10 s BTC", "desaccord 20 aucune bourse contre + sortie 10 s sans nuit BTC", "desaccord 20 Poly rejoint 10 s BTC", "assurance 6/9/12 BTC", "assurance 6/9/12 ETH", "assurance 4/7/10 BTC", "assurance 4/7/10 ETH", "desaccord 20 BTC"],
   // 07.10.2026 : désaccord CONFIRMÉ (analyse sur les vrais carnets) : écart >= 0,20 (BTC) / 0,10 (ETH) repéré, on attend 20 s,
@@ -1467,31 +1467,46 @@ export class Bot {
   // dans ce cycle. Si au moins 8 l'ont fait et qu'il reste au moins 120 s : achat du même côté (50 $ au plus, meilleur vendeur + 1 c),
   // une seule fois par cycle. Fantôme seulement : aucun ordre réel ; aucune autre stratégie modifiée.
   consensusK2(strat, a, mk, extra) {
-    const NOM = "consensus K2", TOP = ["V2-F + pas les deux baissent", "V2-D perp 120-269 s", "V2-F + plus de 120 s", "V2-C perp", "V2-G jury des bourses",
+    // 12.10.2026 19:36 (Pitch : « Oui ») : variante « consensus K5 » = K2 + décision dans les 3 s qui suivent le premier achat du même côté
+    // par une AUTRE stratégie dans le cycle (étude H1053, addendum, commit a2e0211). Même achat, une fois par cycle, fantôme seulement.
+    const TOP = ["V2-F + pas les deux baissent", "V2-D perp 120-269 s", "V2-F + plus de 120 s", "V2-C perp", "V2-G jury des bourses",
       "V2-F ecart qui grandit", "V2-B hors 60-89 s", "V2-H veto complet", "desaccord 20 Binance ou perp avec nous", "desaccord 20 sans nuit"];
+    const NOMS = ["consensus K2", "consensus K5"];
     const C = (this._consK2 = this._consK2 || {}), cle = a + ":" + mk.start;
     for (const k of Object.keys(C)) if (k.startsWith(a + ":") && k !== cle) delete C[k];
-    const M = (C[cle] = C[cle] || { Up: new Set(), Down: new Set(), fait: false });
-    if (strat === NOM) return;
-    if (extra.cote === "Up" || extra.cote === "Down") M[extra.cote].add(strat);
-    if (a !== "BTC" || !TOP.includes(strat) || M.fait || !NV.ACTIVES.includes(NOM)) return;
-    if (this.N.ouvertes.some((P) => P.strat === NOM && P.actif === a && P.start === mk.start)) { M.fait = true; return; }
-    const cote = extra.cote, tleft = extra.restant_s != null ? +extra.restant_s : mk.end - now();
+    const M = (C[cle] = C[cle] || { Up: new Map(), Down: new Map(), fait: {} });
+    if (NOMS.includes(strat)) return;
+    const tNow = now();
+    if ((extra.cote === "Up" || extra.cote === "Down") && !M[extra.cote].has(strat)) M[extra.cote].set(strat, tNow);
+    if (a !== "BTC" || !TOP.includes(strat)) return;
+    const cote = extra.cote, tleft = extra.restant_s != null ? +extra.restant_s : mk.end - tNow;
     if (cote !== "Up" && cote !== "Down") return;
-    const autres = new Set(M[cote]);
-    for (const P of this.N.ouvertes) if (P.actif === a && P.start === mk.start && P.strat !== strat && P.strat !== NOM && ((P.cote || (P.U > 0 ? "Up" : P.D > 0 ? "Down" : null)) === cote)) autres.add(P.strat);
+    const autres = new Map(M[cote]);
+    for (const P of this.N.ouvertes) {
+      if (P.actif !== a || P.start !== mk.start || P.strat === strat || NOMS.includes(P.strat)) continue;
+      if ((P.cote || (P.U > 0 ? "Up" : P.D > 0 ? "Down" : null)) !== cote) continue;
+      const tp = P.heure ? Date.parse(P.heure) / 1000 : tNow;
+      if (!autres.has(P.strat) || tp < autres.get(P.strat)) autres.set(P.strat, tp);
+    }
     autres.delete(strat);
     if (autres.size < 8 || tleft < 120) return;
-    const id = cote === "Up" ? mk.up : mk.down, L = this.livreTrie(id, "asks"); if (!L.length) return;
-    const k0 = L[0][0]; if (k0 < 0.01 || k0 > 0.99) return;
-    const r = this.nAcheter(id, 50 / k0, k0 + 0.01); if (r.parts < 1) return;
-    M.fait = true;
-    const P = this.nPos(NOM, a, mk, { famille: "consensus", cote, prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: extra.proba0 ?? null,
-      restant_s: +(+tleft).toFixed(0), declencheur: strat, consensus: autres.size });
-    P.cash = -r.cout; if (cote === "Up") P.U = r.parts; else P.D = r.parts;
-    this.nNote(P, `${strat} achète ${cote} avec ${autres.size} autres stratégies du même côté, ${(+tleft).toFixed(0)} s restantes → achat ${r.parts.toFixed(1)} parts à ${P.prix}`);
-    this.nSauver();
+    const t1 = Math.min(...autres.values()), delai = tNow - t1;
+    for (const NOM of NOMS) {
+      if (M.fait[NOM] || !NV.ACTIVES.includes(NOM)) continue;
+      if (NOM === "consensus K5" && delai > 3) continue;
+      if (this.N.ouvertes.some((P) => P.strat === NOM && P.actif === a && P.start === mk.start)) { M.fait[NOM] = true; continue; }
+      const id = cote === "Up" ? mk.up : mk.down, L = this.livreTrie(id, "asks"); if (!L.length) return;
+      const k0 = L[0][0]; if (k0 < 0.01 || k0 > 0.99) return;
+      const r = this.nAcheter(id, 50 / k0, k0 + 0.01); if (r.parts < 1) continue;
+      M.fait[NOM] = true;
+      const P = this.nPos(NOM, a, mk, { famille: "consensus", cote, prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: extra.proba0 ?? null,
+        restant_s: +(+tleft).toFixed(0), declencheur: strat, consensus: autres.size, delai_s: +delai.toFixed(2) });
+      P.cash = -r.cout; if (cote === "Up") P.U = r.parts; else P.D = r.parts;
+      this.nNote(P, `${strat} achète ${cote} avec ${autres.size} autres stratégies du même côté (première il y a ${delai.toFixed(1)} s), ${(+tleft).toFixed(0)} s restantes → achat ${r.parts.toFixed(1)} parts à ${P.prix}`);
+      this.nSauver();
+    }
   }
+
   nNote(P, x) { P.journal.push((now() - P.start).toFixed(1) + "s " + x); if (P.journal.length > 30) P.journal.shift(); }
   nClore(P, issue) {
     P.fini = true; P.issue = issue; P.net = +P.cash.toFixed(2);
@@ -2804,7 +2819,7 @@ const ENTREE={"V1 actuel (avec stop)":"V1 d'origine : achète la jambe à 0,55�
 "V2-C perp":"V2-C : désaccord 20 seulement si le perp Bybit va dans notre sens sur 5 s.",
 "V2-D perp 120-269 s":"V2-D : désaccord 20 + perp avec nous + entre 120 et 269 s de la fin.",
 "V2-E persistant":"V2-E : désaccord 20 seulement s'il tient au moins 1,5 s (pas un éclair).",
-"consensus K2":"CONSENSUS K2 (12.10, étude H1053) : quand une des 10 stratégies BTC gagnantes du 12.10 achète et qu'au moins 8 autres stratégies BTC ont déjà acheté le même côté dans le cycle, avec au moins 120 s restantes, on achète le même côté (50 $ au plus). Une fois par cycle. Fantôme seulement.","V2-F ecart qui grandit":"V2-F : désaccord 20 seulement si l'écart a grandi d'au moins 3 pts sur 3 s.","V2-F + plus de 120 s":"V2-F + PLUS DE 120 S : comme V2-F, mais seulement s'il reste au moins 120 secondes dans le cycle (les achats de fin de cycle perdent).","V2-F + pas les deux baissent":"V2-F SANS « LES DEUX BAISSENT » : comme V2-F, mais pas d'achat quand, sur les 3 s, le modèle ET le prix Polymarket ont baissé et que Polymarket a baissé plus fort (16 % de gagnants seulement dans l'historique).","V2-F + pas les deux baissent + volatilite >= 2":"V2-F SANS « LES DEUX BAISSENT » + MARCHÉ ACTIF : comme la précédente, et seulement si le perp BTC bouge d'au moins 2 $ par seconde en moyenne sur 60 s (pas de marché calme).",
+"consensus K5":"CONSENSUS K5 (12.10, étude H1053) : comme CONSENSUS K2, mais seulement si la décision tombe dans les 3 secondes qui suivent le premier achat du même côté par une autre stratégie (on suit la rafale, on évite d'arriver après coup). Une fois par cycle. Fantôme seulement.","consensus K2":"CONSENSUS K2 (12.10, étude H1053) : quand une des 10 stratégies BTC gagnantes du 12.10 achète et qu'au moins 8 autres stratégies BTC ont déjà acheté le même côté dans le cycle, avec au moins 120 s restantes, on achète le même côté (50 $ au plus). Une fois par cycle. Fantôme seulement.","V2-F ecart qui grandit":"V2-F : désaccord 20 seulement si l'écart a grandi d'au moins 3 pts sur 3 s.","V2-F + plus de 120 s":"V2-F + PLUS DE 120 S : comme V2-F, mais seulement s'il reste au moins 120 secondes dans le cycle (les achats de fin de cycle perdent).","V2-F + pas les deux baissent":"V2-F SANS « LES DEUX BAISSENT » : comme V2-F, mais pas d'achat quand, sur les 3 s, le modèle ET le prix Polymarket ont baissé et que Polymarket a baissé plus fort (16 % de gagnants seulement dans l'historique).","V2-F + pas les deux baissent + volatilite >= 2":"V2-F SANS « LES DEUX BAISSENT » + MARCHÉ ACTIF : comme la précédente, et seulement si le perp BTC bouge d'au moins 2 $ par seconde en moyenne sur 60 s (pas de marché calme).",
 "V2-G jury des bourses":"V2-G : désaccord 20 seulement si Bybit, OKX, Binance et Coinbase vont tous dans notre sens sur 3 s ET que Polymarket a moins suivi que le modèle (en retard).",
 "V2-H veto complet":"V2-H : désaccord 20 sauf veto : écart qui fond, Binance contre nous, Bybit+OKX contre nous, 60-89 s, Polymarket déjà en train de corriger, vendeur < 20 parts.",
 "desaccord confirme":"Désaccord CONFIRMÉ : le modèle a 20 pts d'avance (BTC) ou 10 pts (ETH) ; on attend 20 s et on n'achète que si le marché est déjà monté de 3 cents vers le modèle (il garde 3 cents d'avance). Gardé jusqu'à la fin.",
