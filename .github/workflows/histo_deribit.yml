@@ -1,0 +1,49 @@
+name: Historique options BTC Deribit (lecture seule, API publique)
+on:
+  workflow_dispatch:
+    inputs:
+      debut: { description: "debut AAAA-MM-JJ", default: "2026-09-12" }
+      fin: { description: "fin AAAA-MM-JJTHH:MM (avant le 13.10)", default: "2026-10-12T13:00" }
+permissions:
+  contents: write
+jobs:
+  h:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 1 }
+      - run: |
+          set +e
+          mkdir -p /tmp/h && cd /tmp/h
+          python3 - <<'P'
+          import json, time, gzip, datetime, urllib.request, collections
+          U = "https://history.deribit.com/api/v2/public/get_last_trades_by_currency_and_time"
+          d0 = int(datetime.datetime.fromisoformat("${{ inputs.debut }}").replace(tzinfo=datetime.timezone.utc).timestamp() * 1000)
+          d1 = int(datetime.datetime.fromisoformat("${{ inputs.fin }}").replace(tzinfo=datetime.timezone.utc).timestamp() * 1000)
+          assert d1 <= 1791849600000, "periode reservee interdite"
+          par_jour = collections.defaultdict(list); t = d0; n = 0; err = 0
+          while t < d1:
+              q = f"{U}?currency=BTC&kind=option&start_timestamp={t}&end_timestamp={min(t + 3600000, d1)}&count=1000&sorting=asc&include_old=true"
+              try:
+                  r = json.loads(urllib.request.urlopen(urllib.request.Request(q, headers={"User-Agent": "bot95-etude"}), timeout=60).read())["result"]
+              except Exception as e:
+                  err += 1; time.sleep(3)
+                  if err > 50: break
+                  continue
+              tr = r.get("trades", [])
+              for x in tr:
+                  par_jour[time.strftime("%Y-%m-%d", time.gmtime(x["timestamp"] / 1000))].append([x["timestamp"], x["instrument_name"], x["direction"], x["price"], x["amount"], x.get("iv"), x.get("index_price"), x.get("mark_price"), x.get("trade_id"), x.get("block_trade_id") is not None, x.get("liquidation")])
+              n += len(tr)
+              if r.get("has_more") and tr: t = tr[-1]["timestamp"] + 1
+              else: t = min(t + 3600000, d1)
+              time.sleep(0.12)
+          for j, L in par_jour.items():
+              with gzip.open(f"deribit_options_{j}.json.gz", "wt") as f: json.dump({"format": "[timestamp_ms, instrument, direction (cote preneur), prix (BTC), quantite (BTC), iv %, indice, mark, trade_id, bloc, liquidation]", "trades": L}, f)
+          print("transactions", n, "jours", len(par_jour), "erreurs", err)
+          P
+          ls -la | head
+          cd $GITHUB_WORKSPACE
+          git config user.name histo; git config user.email bot@users.noreply.github.com
+          git fetch -q origin donnees-btc && git checkout -q -B donnees-btc origin/donnees-btc
+          mkdir -p deribit && cp /tmp/h/*.json.gz deribit/ && git add deribit && git commit -qm "Deribit options BTC ${{ inputs.debut }} -> ${{ inputs.fin }}" && for k in 1 2 3; do git push -q origin donnees-btc && break; sleep 5; done
