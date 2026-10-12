@@ -1,8 +1,8 @@
 
  ⛅️ wrangler 4.149.0
 ────────────────────
-Total Upload: 1105.63 KiB / gzip: 265.88 KiB
-Worker Startup Time: 24 ms
+Total Upload: 1106.51 KiB / gzip: 266.15 KiB
+Worker Startup Time: 25 ms
 Your Worker has access to the following bindings:
 Binding                    Resource                  
 env.BOT (Bot)              Durable Object            
@@ -10,83 +10,30 @@ env.SONDE (Sonde)          Durable Object
 env.MODE_REEL ("non")      Environment Variable      
 env.MISE_REEL ("50")       Environment Variable      
 
-Uploaded bot95 (14.70 sec)
-Deployed bot95 triggers (0.88 sec)
+Uploaded bot95 (4.88 sec)
+Deployed bot95 triggers (0.90 sec)
   https://bot95.pitch67.workers.dev
   schedule: * * * * *
-Current Version ID: d3b4a303-bf46-4f39-b449-24291eca57c9
+Current Version ID: 13aa957a-2b46-44bb-8826-dbe48d7f6512
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
-page 500
+page 200
 === etat 1
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
-    return loads(fp.read(),
-           ^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
-    return _default_decoder.decode(s)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
-    raise JSONDecodeError("Expecting value", s, err.value) from None
-json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+{"actifs": [{"a": "BTC", "regles": [{"W": 90, "pmin": 0.95, "pmax": 0.999, "z": 6}], "strike": 83357.52120269577, "cl": 83309.124844395, "ageCl": 0.5, "perp": 83350.3, "agePerp": 1.4, "spot": 83312.26, "ageSpot": 0.3, "deseq": 0.94, "raison": null}, {"a": "ETH", "regles": [{"W": 120, "pmin": 0.95, "pmax": 0.999, "z": 6}], "strike": 2546.721095838671, "cl": 2544.93606503, "ageCl": 0.7, "perp": 2546.76, "agePerp": 0.2, "spot": 2544.99, "ageSpot": 0.2, "deseq": 0.65, "raison": null}, {"a": "SOL", "regles": [{"W": 90, "pmin": 0.95, "pmax": 0.999, "z": 4}], "strike": 111.20379500992979, "cl": 111.09755156750943, "ageCl": 0.8, "perp": 111.16, "agePerp": 0.8, "spot": 111.12, "ageSpot": 0.5, "deseq": 0.28, "raison": null}, {"a": "XRP", "regles": [{"W": 30, "pmin": 0.95, "pmax": 0.999, "z": 2.5}], "strike": 1.4009531675112017, "cl": 1.4001633404456597, "ageCl": 0.7, "perp": 1.401, "agePerp": 0.9, "spot": 1.4006, "ageSpot": 0.2, "deseq": 0.4, "raison": null}, {"a": "DOGE", "regles": [{"W": 90, "pmin": 0.95, "pmax": 0.999, "z": 4}], "strike": 0.08711375924526088, "cl": 0.087029389, "ageCl": 0.6, "perp": 0.08708, "agePerp": 2.3, "spot": 0.087, "ageSpot": 0.5, "deseq": 0.13, "raison": null}, {"a": "BNB", "regles": [{"W": 30, "pmin": 0.95, "pmax": 0.999, "z": 2.5}], "strike": 749.8676922064432, "cl": 749.4658764432329, "ageCl": 0.8, "perp": 749.9, "agePerp": 28.4, "spot": "—", "ageSpot": null, "deseq": 0.02, "raison": null}, {"a": "HYPE", "regles": [{"W": 60, "pmin": 0.95, "pmax": 0.999, "z": 3}], "strike": 86.08924608906602, "cl": 85.9732005353002, "ageCl": 0.7, "perp": 85.982, "agePerp": 0.4, "spot": "—", "ageSpot": null, "deseq": -0.26, "raison": null}], "diag": {"reconnexions": {"poly": 3, "cl": 1, "cl2": 1, "cb": 1, "perp": 1, "okx": 1, "bn": 1}, "erreurs": ["11:30:01 flux poly fermé: code 1005", "11:27:31 flux poly fermé: code 1005"]}, "vetos": {"BTC": {"aucun vendeur dans la bande de prix": 1839, "sources pas d'accord": 1, "modèle pas assez sûr": 4}, "ETH": {"aucun vendeur dans la bande de prix": 1838, "sources pas d'accord": 2, "modèle pas assez sûr": 4, "source figée ou absente": 1}, "SOL": {"aucun vendeur dans la bande de prix": 1833, "sources pas d'accord": 2, "modèle pas assez sûr": 4}, "XRP": {"aucun vendeur dans la bande de prix": 1828, "modèle pas assez sûr": 3, "sources pas d'accord": 1, "source figée ou absente": 3}, "DOGE": {"aucun vendeur dans la bande de prix": 1833, "modèle pas assez sûr": 5, "source figée ou absente": 2, "sources pas d'accord": 3}, "BNB": {"aucun vendeur dans la bande de prix": 1838, "modèle pas assez sûr": 2, "source figée ou absente": 3, "sources pas d'accord": 1}, "HYPE": {"aucun vendeur dans la bande de prix": 1829, "modèle pas assez sûr": 7, "source figée ou absente": 3, "données insuffisantes": 1, "sources pas d'accord": 2}}, "candidats": {"BTC": 1844, "ETH": 1845, "SOL": 1845, "XRP": 1839, "DOGE": 1845, "BNB": 1844, "HYPE": 1843}, "trades": 17}
 
 === etat 2
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
-    return loads(fp.read(),
-           ^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
-    return _default_decoder.decode(s)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
-    raise JSONDecodeError("Expecting value", s, err.value) from None
-json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+{"actifs": [{"a": "BTC", "regles": [{"W": 90, "pmin": 0.95, "pmax": 0.999, "z": 6}], "strike": 83357.52120269577, "cl": 83319.06405304521, "ageCl": 0.6, "perp": 83361.6, "agePerp": 6.4, "spot": 83316.88, "ageSpot": 0.7, "deseq": -0.27, "raison": null}, {"a": "ETH", "regles": [{"W": 120, "pmin": 0.95, "pmax": 0.999, "z": 6}], "strike": 2546.721095838671, "cl": 2545.6506212934123, "ageCl": 0.5, "perp": 2546.98, "agePerp": 0.6, "spot": 2545.53, "ageSpot": 0.2, "deseq": 0.98, "raison": null}, {"a": "SOL", "regles": [{"W": 90, "pmin": 0.95, "pmax": 0.999, "z": 4}], "strike": 111.20379500992979, "cl": 111.12263629998385, "ageCl": 0.4, "perp": 111.17, "agePerp": 0.2, "spot": 111.12, "ageSpot": 0.2, "deseq": 0.01, "raison": null}, {"a": "XRP", "regles": [{"W": 30, "pmin": 0.95, "pmax": 0.999, "z": 2.5}], "strike": 1.4009531675112017, "cl": 1.400297020343541, "ageCl": 0.6, "perp": 1.4009, "agePerp": 0.3, "spot": 1.4003, "ageSpot": 0.2, "deseq": 0.05, "raison": null}, {"a": "DOGE", "regles": [{"W": 90, "pmin": 0.95, "pmax": 0.999, "z": 4}], "strike": 0.08711375924526088, "cl": 0.08705351, "ageCl": 0.5, "perp": 0.08709, "agePerp": 7.3, "spot": 0.087056, "ageSpot": 0.2, "deseq": -0.22, "raison": null}, {"a": "BNB", "regles": [{"W": 30, "pmin": 0.95, "pmax": 0.999, "z": 2.5}], "strike": 749.8676922064432, "cl": 749.5052442243142, "ageCl": 0.5, "perp": 749.91, "agePerp": 18.6, "spot": "—", "ageSpot": null, "deseq": -0.51, "raison": null}, {"a": "HYPE", "regles": [{"W": 60, "pmin": 0.95, "pmax": 0.999, "z": 3}], "strike": 86.08924608906602, "cl": 85.9854466143551, "ageCl": 0.4, "perp": 85.994, "agePerp": 0.8, "spot": "—", "ageSpot": null, "deseq": 0, "raison": null}], "diag": {"reconnexions": {"poly": 3, "cl": 1, "cl2": 1, "cb": 1, "perp": 1, "okx": 1, "bn": 1}, "erreurs": ["11:30:01 flux poly fermé: code 1005", "11:27:31 flux poly fermé: code 1005"]}, "vetos": {"BTC": {"aucun vendeur dans la bande de prix": 1839, "sources pas d'accord": 1, "modèle pas assez sûr": 4}, "ETH": {"aucun vendeur dans la bande de prix": 1838, "sources pas d'accord": 2, "modèle pas assez sûr": 4, "source figée ou absente": 1}, "SOL": {"aucun vendeur dans la bande de prix": 1833, "sources pas d'accord": 2, "modèle pas assez sûr": 4}, "XRP": {"aucun vendeur dans la bande de prix": 1828, "modèle pas assez sûr": 3, "sources pas d'accord": 1, "source figée ou absente": 3}, "DOGE": {"aucun vendeur dans la bande de prix": 1833, "modèle pas assez sûr": 5, "source figée ou absente": 2, "sources pas d'accord": 3}, "BNB": {"aucun vendeur dans la bande de prix": 1838, "modèle pas assez sûr": 2, "source figée ou absente": 3, "sources pas d'accord": 1}, "HYPE": {"aucun vendeur dans la bande de prix": 1829, "modèle pas assez sûr": 7, "source figée ou absente": 3, "données insuffisantes": 1, "sources pas d'accord": 2}}, "candidats": {"BTC": 1844, "ETH": 1845, "SOL": 1845, "XRP": 1839, "DOGE": 1845, "BNB": 1844, "HYPE": 1843}, "trades": 17}
 
 === etat 3
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
-    return loads(fp.read(),
-           ^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
-    return _default_decoder.decode(s)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
-    raise JSONDecodeError("Expecting value", s, err.value) from None
-json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+{"actifs": [{"a": "BTC", "regles": [{"W": 90, "pmin": 0.95, "pmax": 0.999, "z": 6}], "strike": null, "cl": 83343.45515193023, "ageCl": 1, "perp": 83396.5, "agePerp": 1.2, "spot": 83352.4, "ageSpot": 0.1, "deseq": 0.63, "raison": null}, {"a": "ETH", "regles": [{"W": 120, "pmin": 0.95, "pmax": 0.999, "z": 6}], "strike": null, "cl": 2547.261908205, "ageCl": 0.9, "perp": 2548.96, "agePerp": 0.5, "spot": 2547.56, "ageSpot": 0.5, "deseq": 0.03, "raison": null}, {"a": "SOL", "regles": [{"W": 90, "pmin": 0.95, "pmax": 0.999, "z": 4}], "strike": 111.19679710655558, "cl": 111.17899512723697, "ageCl": 1, "perp": 111.24, "agePerp": 1.9, "spot": 111.09, "ageSpot": 0.3, "deseq": 0.17, "raison": null}, {"a": "XRP", "regles": [{"W": 30, "pmin": 0.95, "pmax": 0.999, "z": 2.5}], "strike": 1.4010566574543368, "cl": 1.400673169882188, "ageCl": 1, "perp": 1.4015, "agePerp": 2.3, "spot": 1.4008, "ageSpot": 0.9, "deseq": 0.19, "raison": null}, {"a": "DOGE", "regles": [{"W": 90, "pmin": 0.95, "pmax": 0.999, "z": 4}], "strike": 0.08710689682920673, "cl": 0.087071798, "ageCl": 0.1, "perp": 0.08711, "agePerp": 3.7, "spot": 0.08705, "ageSpot": 1, "deseq": 0.43, "raison": null}, {"a": "BNB", "regles": [{"W": 30, "pmin": 0.95, "pmax": 0.999, "z": 2.5}], "strike": 749.8674568618112, "cl": 749.6652359737703, "ageCl": 1.1, "perp": 750, "agePerp": 2.7, "spot": "—", "ageSpot": null, "deseq": 0.64, "raison": null}, {"a": "HYPE", "regles": [{"W": 60, "pmin": 0.95, "pmax": 0.999, "z": 3}], "strike": 86.05924579793891, "cl": 85.99196048930665, "ageCl": 0.9, "perp": 86.004, "agePerp": 0.6, "spot": "—", "ageSpot": null, "deseq": 0.44, "raison": null}], "diag": {"reconnexions": {"poly": 1, "cl": 1, "cb": 1, "perp": 1, "okx": 1, "bn": 1, "cl2": 1}, "erreurs": []}, "vetos": {"BTC": {"aucun vendeur dans la bande de prix": 1838, "sources pas d'accord": 1, "modèle pas assez sûr": 4}, "ETH": {"aucun vendeur dans la bande de prix": 1837, "sources pas d'accord": 2, "modèle pas assez sûr": 4, "source figée ou absente": 1}, "SOL": {"aucun vendeur dans la bande de prix": 1832, "sources pas d'accord": 2, "modèle pas assez sûr": 4}, "XRP": {"aucun vendeur dans la bande de prix": 1827, "modèle pas assez sûr": 3, "sources pas d'accord": 1, "source figée ou absente": 3}, "DOGE": {"aucun vendeur dans la bande de prix": 1832, "modèle pas assez sûr": 5, "source figée ou absente": 2, "sources pas d'accord": 3}, "BNB": {"aucun vendeur dans la bande de prix": 1837, "modèle pas assez sûr": 2, "source figée ou absente": 3, "sources pas d'accord": 1}, "HYPE": {"aucun vendeur dans la bande de prix": 1828, "modèle pas assez sûr": 7, "source figée ou absente": 3, "données insuffisantes": 1, "sources pas d'accord": 2}}, "candidats": {"BTC": 1843, "ETH": 1844, "SOL": 1844, "XRP": 1838, "DOGE": 1844, "BNB": 1843, "HYPE": 1842}, "trades": 17}
 
 === v1
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
-    return loads(fp.read(),
-           ^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
-    return _default_decoder.decode(s)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
-    raise JSONDecodeError("Expecting value", s, err.value) from None
-json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+{"entrees": 157, "pos": null, "refusElan": 53138, "derniers": [["2026-10-12T00:27:58.975Z", "paire", 16.56], ["2026-10-11T18:05:08.017Z", "paire", 14], ["2026-10-10T15:57:11.402Z", "fin perdue", -51.58], ["2026-10-10T09:45:30.265Z", "paire", 16.56]], "eth": {"entrees": 145, "pos": null, "derniers": [["2026-10-11T20:52:08.781Z", "paire", 3.88], ["2026-10-11T18:05:08.017Z", "paire", 18.82], ["2026-10-11T17:45:08.044Z", "stop", -9.6], ["2026-10-11T16:05:28.776Z", "stop", -19.02]]}, "capital": -508.89000000000004, "mise": 0, "reserve": 1324.0599999999997, "pnl": -708.8900000000001, "depuis": 1791187020.136, "ethcap": [-179.72999999999988, 0, 1274.333333333334, -379.73000000000013, 1791200734.631], "nTrades": 40, "polyOk": true, "latPolyMed": -0.239}
 === fantomes
-{"depuis":1791633049.024,"typesDesaccord":{"milieu | bon marché (<0,30) | perp contre nous | marché contre nous | autre crypto d'accord":{"simple":{"n":17,"g":0,"pnl":-666.65,"etats":{}}},"milieu | bon marché (<0,30) | perp contre nous | marché ? | autre crypto pas d'accord":{"simple":{"n":1,"g":0,"pnl":-53.89,"etats":{}}},"début (>4 min) | bon marché (<0,30) | perp avec nous | marché stable | autre crypto d'accord":{"simple":{"n":2,"g":0,"pnl":-71.94,"etats":{}}},"fin (<2 min) | bon marché (<0,30) | perp contre nous | marché ? | autre crypto d'accord":{"simple":{"n":2,"g":0,"pnl":-110.63,"etats":{}}},"milieu | bon marché (<0,30) | perp avec nous | marché stable | autre crypto d'accord":{"simple":{"n":4,"g":2,"pnl":77.78,"etats":{}}},"milieu | bon marché (<0,30) | perp contre nous | marché ? | autre crypto d'accord":{"simple":{"n":4,"g":1,"pnl":71.98,"etats":{}}},"début (>4 min) | bon marché (<0,30) | perp contre nous | marché contre nous | autre crypto d'accord":{"simple":{"n":4,"g":0,"pnl":-157.69,"etats":{}}},"milieu | bon marché (<0,30) | perp ? | marché ? | autre crypto d'accord":{"simple":{"n":1,"g":0,"pnl":-15.86,"etats":{}}},"milieu | bon marché (<0,30) | perp avec nous | marché contre nous | autre crypto d'accord":{"simple":{"n":6,"g":1,"pnl":-169.13,"etats":{}}},"début (>4 min) | bon marché (<0,30) | perp contre nous | marché ? | autre crypto d'accord":{"simple":{"n":1,"g":1,"pnl":155.6,"etats":{}}},"milieu | bon marché (<0,30) | perp contre 
+{"depuis":1791633049.024,"typesDesaccord":{"milieu | bon marché (<0,30) | perp avec nous | marché contre nous | autre crypto d'accord":{"simple":{"n":8,"g":1,"pnl":-274.85,"etats":{}}},"milieu | bon marché (<0,30) | perp contre nous | marché stable | autre crypto d'accord":{"simple":{"n":4,"g":0,"pnl":-154.41,"etats":{}}},"milieu | bon marché (<0,30) | perp avec nous | marché vers nous | autre crypto d'accord":{"simple":{"n":2,"g":1,"pnl":-42.73,"etats":{}}},"milieu | bon marché (<0,30) | perp contre nous | marché contre nous | autre crypto d'accord":{"simple":{"n":16,"g":0,"pnl":-631.37,"etats":{}}},"milieu | bon marché (<0,30) | perp contre nous | marché ? | autre crypto pas d'accord":{"simple":{"n":1,"g":0,"pnl":-53.89,"etats":{}}},"début (>4 min) | bon marché (<0,30) | perp avec nous | marché stable | autre crypto d'accord":{"simple":{"n":2,"g":0,"pnl":-71.94,"etats":{}}},"fin (<2 min) | bon marché (<0,30) | perp contre nous | marché ? | autre crypto d'accord":{"simple":{"n":2,"g":0,"pnl":-110.63,"etats":{}}},"milieu | bon marché (<0,30) | perp avec nous | marché stable | autre crypto d'accord":{"simple":{"n":3,"g":1,"pnl":74.2,"etats":{}}},"milieu | bon marché (<0,30) | perp contre nous | marché ? | autre crypto d'accord":{"simple":{"n":4,"g":1,"pnl":71.98,"etats":{}}},"début (>4 min) | bon marché (<0,30) | perp contre nous | marché contre nous | autre crypto d'accord":{"simple":{"n":4,"g":0,"pnl":-157.69,"etats":{}}},"milieu | bon marché (<0,30) |
 page nouveaux 200
 === boite noire
-{"total":617,"par":{"BTC entree":217,"BTC alerte":62,"BTC stop":44,"ETH entree":162,"ETH alerte":76,"ETH stop":56},"echantillons_en_memoire":{"BTC":10,"ETH":10},"derniere_ligne":[1791802615.27,null,null,83417.45,null,null,83467,83467.1,1787442,685210,1983901,968945,1983901,968945,1983901,968945,50,50,0,0,0,0,0,0,0,null,null,null,null,null,null]}
+{"total":617,"par":{"BTC entree":217,"BTC alerte":62,"BTC stop":44,"ETH entree":162,"ETH alerte":76,"ETH stop":56},"echantillons_en_memoire":{"BTC":90,"ETH":90},"derniere_ligne":[1791804788.54,83396.4,83399.5,83352.4,83429.32,83343.50903234602,83396.4,83396.5,140018,1378606,1238460,1409883,1238460,1409883,1238460,1409883,50,50,0,0,0,0,0,0,0,[[0.25,83],[0.24,46],[0.23,123]],[[0.26,1307],[0.27,630],[0.28,1694]],[[0.74,1307],[0.73,630],[0.72,1694]],[[0.75,83],[0.76,46],[0.77,123]],[7,218,15,213,0,0],[261,33,247,60,15,0]]}
 === sonde binance (idee 2)
-error code: 1101
-
+{"http":{"api.binance.com (spot)":"403 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.or","data-api.binance.vision (spot)":"403 <html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbi","fapi.binance.com (perp)":"403 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.or","api.binance.us":"200 {\"serverTime\":1791804791484}"},"flux":{"bybit_perp":{"messages":340,"retard_median_ms":-154},"binance_perp":"refusé HTTP 403 <html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n","binance_spot_vision":{"messages":1059,"retard_median_ms":-83},"binance_spot_443":{"messages":1059,"retard_median_ms":-81},"binance_spot":{"messages":1059,"retard_median_ms":-85},"binance_us":{"messages":6,"retard_median_ms":-109},"bybit_spot":{"messages":601,"retard_median_ms":-144},"coinbase":{"messages":0,"retard_median_ms":null},"okx_perp":{"messages":251,"retard_median_ms":-91}},"avance_sur_bybit_ms":{"binance_spot_vision":{"avance_ms":-50,"correlation":0.32},"binance_spot_443":{"avance_ms":-50,"correlation":0.35},"binance_spot":{"avance_ms":-50,"correlation":0.28},"bybit_spot":{"avance_ms":-50,"correlation":0.37},"okx_perp":{"avance_ms":0,"correlation":0.31}},"lieu":"AMS"}
