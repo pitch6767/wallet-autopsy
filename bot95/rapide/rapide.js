@@ -36,6 +36,30 @@ function noter(src, p, tsSrc) {
 // (arrondi inférieur au centime) : exécuté tout de suite si le vendeur de l'opposé est déjà ≤ b (preneur), sinon rempli (prudent) quand le
 // vendeur de l'opposé descend à b − 1 c dans les 10 s (optimiste : touche b) ; sinon X gardé jusqu'au règlement. Enregistré dans le
 // fichier du cycle (clé « cp »). AUCUN ORDRE RÉEL.
+// ---- FANTÔMES FG150 / FG300 « contre les gros preneurs » (H1060, accord de Pitch 13.10.2026 15:41 « Oui 150 et 300 $ ») : une transaction
+// Polymarket d'au moins 150 $ (FG150) ou 300 $ (FG300), 30 à 280 s écoulées, pause 3 s par cycle (comptée sur 150 $) ; côté poussé X =
+// acheté par le preneur ; si le meilleur vendeur de X est entre 0,40 et 0,70 : achat fictif de l'AUTRE côté, 10 $, carnet vu à +164 ms,
+// limite + 1 c, gardé jusqu'au règlement. Enregistré dans le fichier du cycle (clé « fg »). AUCUN ORDRE RÉEL.
+const FGD = {};
+function fgSurTrade(id, side, px, sz, tR) {
+  const v = px * sz; if (!(v >= 150)) return;
+  const [st, k] = tokIdx(id); if (st == null) return;
+  const el = tR / 1000 - st; if (el < 30 || el > 280) return;
+  if (FGD[st] && tR - FGD[st] < 3000) return;
+  FGD[st] = tR; for (const s2 of Object.keys(FGD)) if (+s2 < st - 900) delete FGD[s2];
+  const mk = M[st]; if (!mk || !mk.up || !mk.down) return;
+  const X = side === "BUY" ? (k === 0 ? "Up" : "Down") : (k === 0 ? "Down" : "Up"), O = X === "Up" ? "Down" : "Up";
+  const idX = X === "Up" ? mk.up : mk.down, idO = O === "Up" ? mk.up : mk.down;
+  const a = asksTries(idX)[0], ao = asksTries(idO)[0];
+  const E = { regles: v >= 300 ? ["FG150", "FG300"] : ["FG150"], t: +tR.toFixed(1), start: st, montant: +v.toFixed(2), pousse: X, cote: O, aX: a ? a[0] : null, aO: ao ? ao[0] : null, statut: "en cours" };
+  const R = recDe(st); (R.fg = R.fg || []).push(E);
+  if (!a || a[0] < 0.40 - 1e-9 || a[0] > 0.70 + 1e-9 || !ao) { E.statut = "hors zone"; return; }
+  setTimeout(() => {
+    let q = 0, c = 0;
+    for (const [p2, z] of asksTries(idO)) { if (p2 > ao[0] + 0.01 + 1e-9) break; const u = p2 + FEE7(p2); const kk = Math.min(z, (10 - c) / u); if (kk <= 1e-9) break; q += kk; c += kk * u; }
+    E.q = +q.toFixed(3); E.c = +c.toFixed(4); E.statut = q > 0 && c >= 5 ? "ouvert" : "non rempli";
+  }, 164);
+}
 const CPH = []; let cpDernier = 0;
 // ---- FANTÔMES JC5 et CP5 (H1058 / H1059, accord de Pitch 13.10.2026 14:36 « En fantôme svp ») : même entrée que CP10 mais saut du perp ≥ 5 $
 // en 300 ms (pause 5 s propre à ce détecteur). Une seule jambe fictive (10 $, +164 ms), deux couvertures suivies en parallèle :
@@ -260,7 +284,7 @@ function surPoly(m) {
   const tR = nowMs(), ts = +m.timestamp > 1e12 ? +m.timestamp : (+m.timestamp ? +m.timestamp * 1000 : null);
   const L = (id) => (livres[id] = livres[id] || { asks: new Map(), bids: new Map() });
   const touches = new Set();
-  if (m.event_type === "last_trade_price") { recEv(m.asset_id, ["T", +tR.toFixed(1), ts, m.side === "BUY" ? 1 : 0, +m.price, +m.size]); try { makerTransaction(m.asset_id, m.side, +m.price, +m.size); } catch (_) {} return; }
+  if (m.event_type === "last_trade_price") { recEv(m.asset_id, ["T", +tR.toFixed(1), ts, m.side === "BUY" ? 1 : 0, +m.price, +m.size]); try { makerTransaction(m.asset_id, m.side, +m.price, +m.size); } catch (_) {} try { fgSurTrade(m.asset_id, m.side, +m.price, +m.size, tR); } catch (_) {} return; }
   if (m.event_type === "book") {
     recEv(m.asset_id, ["B", +tR.toFixed(1), ts, (m.bids || []).map((x) => [+x.price, +x.size]), (m.asks || []).map((x) => [+x.price, +x.size])]);
     const B = L(m.asset_id);
