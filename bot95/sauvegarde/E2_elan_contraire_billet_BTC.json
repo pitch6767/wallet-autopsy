@@ -1,0 +1,66 @@
+{
+"nom": "E2 elan contraire billet BTC",
+"trades": {
+"2026-10-13T20:16:30.551Z|Up": {
+"heure": "2026-10-13T20:16:30.551Z",
+"cote": "Up",
+"prix": 0.1799,
+"parts": 55.594,
+"U": 0,
+"D": 0,
+"cash": -10,
+"net": -10,
+"issue": "perdu,",
+"journal": [
+"perdu, 10 $"
+],
+"start": 1791922500,
+"slug": "btc-updown-5m-1791922500"
+},
+"2026-10-13T20:13:30.188Z|Down": {
+"heure": "2026-10-13T20:13:30.188Z",
+"cote": "Down",
+"prix": 0.2216,
+"parts": 45.124,
+"U": 0,
+"D": 0,
+"cash": 35.12,
+"net": 35.12,
+"issue": "gagné,",
+"journal": [
+"gagné, 10 $"
+],
+"start": 1791922200,
+"slug": "btc-updown-5m-1791922200"
+}
+},
+"resume_bot": {
+"depuis": 1791922779.484,
+"n": 2,
+"gains": 1,
+"pertes": 1,
+"pnl": 25.119999999999997
+},
+"archive": [
+[
+"2026-10-13T20:13:30.188Z",
+"Down",
+0.2216,
+35.12,
+"gagné,",
+null,
+null
+],
+[
+"2026-10-13T20:16:30.551Z",
+"Up",
+0.1799,
+-10,
+"perdu,",
+null,
+null
+]
+],
+"n_sauves": 2,
+"maj": "2026-10-13 20:51 UTC"
+}

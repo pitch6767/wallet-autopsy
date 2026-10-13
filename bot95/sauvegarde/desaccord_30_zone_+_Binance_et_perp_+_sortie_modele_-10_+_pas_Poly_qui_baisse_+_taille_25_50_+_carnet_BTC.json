@@ -1,0 +1,73 @@
+{
+"nom": "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50 + carnet BTC",
+"trades": {
+"2026-10-13T20:40:45.054Z|Down": {
+"heure": "2026-10-13T20:40:45.054Z",
+"cote": "Down",
+"prix": 0.1644,
+"parts": 28,
+"U": 0,
+"D": 0,
+"cash": 3.5670287999999992,
+"net": 3.57,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.483,
+"restant_s": 255,
+"journal": [
+"45.1s écart 0.33 (modèle 0.483, vendeur 0.15), 255 s restantes ; 3 s avant : Binance 11.9, perp 45.4 (+ = dans notre sens)",
+"75.8s le modèle est passé de 0.483 à 0.372 → revente de 28.0 parts pour 8.17 $ (224 s restantes)"
+],
+"start": 1791924000,
+"slug": "btc-updown-5m-1791924000"
+},
+"2026-10-13T20:27:37.088Z|Down": {
+"heure": "2026-10-13T20:27:37.088Z",
+"cote": "Down",
+"prix": 0.1846,
+"parts": 52,
+"U": 0,
+"D": 52,
+"cash": -9.5985744,
+"net": -9.6,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.479,
+"restant_s": 143,
+"journal": [
+"157.1s écart 0.31 (modèle 0.479, vendeur 0.17), 143 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1791923100,
+"slug": "btc-updown-5m-1791923100"
+}
+},
+"resume_bot": {
+"depuis": 1791923700.988,
+"n": 2,
+"gains": 1,
+"pertes": 1,
+"pnl": -6.029999999999999
+},
+"archive": [
+[
+"2026-10-13T20:27:37.088Z",
+"Down",
+0.1846,
+-9.6,
+"perdu",
+0.479,
+143
+],
+[
+"2026-10-13T20:40:45.054Z",
+"Down",
+0.1644,
+3.57,
+"perdu",
+0.483,
+255
+]
+],
+"n_sauves": 2,
+"maj": "2026-10-13 20:52 UTC"
+}

@@ -1,0 +1,100 @@
+{
+"nom": "V2-F incertitude 0,01 % + carnet BTC",
+"trades": {
+"2026-10-13T20:40:44.882Z|Down": {
+"heure": "2026-10-13T20:40:44.882Z",
+"cote": "Down",
+"prix": 0.1487,
+"parts": 145.76,
+"U": 0,
+"D": 145.76,
+"cash": -21.669964288000003,
+"net": -21.67,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.464,
+"restant_s": 255,
+"journal": [
+"44.9s écart 0.32 avec 0,01 % (modèle 0,08 % : 0.479) → achat Down 145.8 parts à 0.1487 (meilleur vendeur seul, 146 parts affichées)"
+],
+"start": 1791924000,
+"slug": "btc-updown-5m-1791924000"
+},
+"2026-10-13T20:30:11.021Z|Down": {
+"heure": "2026-10-13T20:30:11.021Z",
+"cote": "Down",
+"prix": 0.5678,
+"parts": 10,
+"U": 0,
+"D": 10,
+"cash": 4.3218,
+"net": 4.32,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.781,
+"restant_s": 289,
+"journal": [
+"11.0s écart 0.23 avec 0,01 % (modèle 0,08 % : 0.614) → achat Down 10.0 parts à 0.5678 (meilleur vendeur seul, 10 parts affichées)"
+],
+"start": 1791923400,
+"slug": "btc-updown-5m-1791923400"
+},
+"2026-10-13T20:14:24.219Z|Down": {
+"heure": "2026-10-13T20:14:24.219Z",
+"cote": "Down",
+"prix": 0.2115,
+"parts": 250,
+"U": 0,
+"D": 250,
+"cash": 197.12,
+"net": 197.12,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.499,
+"restant_s": 36,
+"journal": [
+"264.2s écart 0.30 avec 0,01 % (modèle 0,08 % : 0.500) → achat Down 250.0 parts à 0.2115 (meilleur vendeur seul, 425 parts affichées)"
+],
+"start": 1791922200,
+"slug": "btc-updown-5m-1791922200"
+}
+},
+"resume_bot": {
+"depuis": 1791922756.271,
+"n": 3,
+"gains": 2,
+"pertes": 1,
+"pnl": 179.76999999999998
+},
+"archive": [
+[
+"2026-10-13T20:14:24.219Z",
+"Down",
+0.2115,
+197.12,
+"une seule jambe",
+0.499,
+36
+],
+[
+"2026-10-13T20:30:11.021Z",
+"Down",
+0.5678,
+4.32,
+"une seule jambe",
+0.781,
+289
+],
+[
+"2026-10-13T20:40:44.882Z",
+"Down",
+0.1487,
+-21.67,
+"une seule jambe",
+0.464,
+255
+]
+],
+"n_sauves": 3,
+"maj": "2026-10-13 20:51 UTC"
+}
