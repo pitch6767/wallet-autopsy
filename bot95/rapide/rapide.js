@@ -27,7 +27,7 @@ function noter(src, p, tsSrc) {
   const s = Math.floor(t); let o = sec.get(s);
   if (!o) { o = {}; sec.set(s, o); if (sec.size > 800) sec.delete(sec.keys().next().value); }
   o[src] = p;
-  if (src === "perp") { try { cpSurPerp(p); } catch (_) {} }
+  if (src === "perp") { try { cpSurPerp(p); } catch (_) {} try { cp5SurPerp(p); } catch (_) {} }
   if (src === "perp" || src === "okx") evaluer(src);
 }
 // ---------------------------------------------------------------- FANTÔME CP10 « jambe + couverture posée » (H1059, accord de Pitch 13.10.2026 12:01)
@@ -37,6 +37,53 @@ function noter(src, p, tsSrc) {
 // vendeur de l'opposé descend à b − 1 c dans les 10 s (optimiste : touche b) ; sinon X gardé jusqu'au règlement. Enregistré dans le
 // fichier du cycle (clé « cp »). AUCUN ORDRE RÉEL.
 const CPH = []; let cpDernier = 0;
+// ---- FANTÔMES JC5 et CP5 (H1058 / H1059, accord de Pitch 13.10.2026 14:36 « En fantôme svp ») : même entrée que CP10 mais saut du perp ≥ 5 $
+// en 300 ms (pause 5 s propre à ce détecteur). Une seule jambe fictive (10 $, +164 ms), deux couvertures suivies en parallèle :
+//   JC5 : toutes les 250 ms pendant 5 s, si prix payé + vendeur de l'opposé + frais ≤ 0,98 → achat preneur de l'opposé 250 ms plus tard ;
+//   CP5 : couverture posée à 1 − 0,06 − prix payé, comme CP10 (prudent : vendeur ≤ b − 1 c ; optimiste : touche b), 10 s.
+// Enregistré dans le fichier du cycle (clé « cp5 »). AUCUN ORDRE RÉEL.
+const CP5H = []; let cp5Dernier = 0;
+function cp5SurPerp(p) {
+  const t = nowMs(); CP5H.push([t, p]); while (CP5H.length && CP5H[0][0] < t - 1000) CP5H.shift();
+  let p0 = null; for (const [tt, pp] of CP5H) if (tt >= t - 300) { p0 = pp; break; }
+  if (p0 == null) return;
+  const d = p - p0;
+  if (Math.abs(d) < 5 || t - cp5Dernier < 5000) return;
+  const start = Math.floor(t / 300000) * 300, el = t / 1000 - start;
+  if (el < 30 || el > 280) return;
+  const mk = M[start]; if (!mk || !mk.up || !mk.down) return;
+  cp5Dernier = t;
+  const X = d > 0 ? "Up" : "Down", idX = X === "Up" ? mk.up : mk.down, idO = X === "Up" ? mk.down : mk.up;
+  const a0 = asksTries(idX)[0];
+  const E = { regle: "JC5/CP5", t: +t.toFixed(1), start, d: +d.toFixed(2), cote: X, a0: a0 ? a0[0] : null, statut: "en cours" };
+  const R = recDe(start); (R.cp5 = R.cp5 || []).push(E);
+  if (!a0 || a0[0] < 0.40 - 1e-9 || a0[0] > 0.70 + 1e-9) { E.statut = "hors zone"; return; }
+  setTimeout(() => {
+    let q = 0, c = 0;
+    for (const [px, sz] of asksTries(idX)) { if (px > a0[0] + 0.01 + 1e-9) break; const u = px + FEE7(px); const k = Math.min(sz, (10 - c) / u); if (k <= 1e-9) break; q += k; c += k * u; }
+    E.q = +q.toFixed(3); E.c = +c.toFixed(4);
+    if (q <= 0 || c < 5) { E.statut = "non rempli"; return; }
+    E.statut = "ouvert";
+    const pe = c / q, b = Math.floor((1 - 0.06 - pe) * 100 + 1e-9) / 100; E.b = b;
+    const oa0 = asksTries(idO)[0];
+    if (oa0 && oa0[0] <= b + 1e-9) { E.cp5 = { mode: "preneur", px: oa0[0], ms: 164 }; E.cp5opt = E.cp5; }
+    let n = 0, jcFini = false;
+    const iv = setInterval(() => {
+      n++; const o = asksTries(idO)[0];
+      if (!E.cp5) {
+        if (o && !E.cp5opt && o[0] <= b + 1e-9) E.cp5opt = { mode: "posé", px: b, ms: 164 + 250 * n };
+        if (o && o[0] <= b - 0.01 + 1e-9) E.cp5 = { mode: "posé", px: b, ms: 164 + 250 * n };
+      }
+      if (!jcFini && n <= 20 && o && pe + o[0] + FEE7(o[0]) <= 0.98 + 1e-9) {
+        jcFini = true; const lim = o[0] + 0.01, nn = n;
+        setTimeout(() => { let q2 = 0, c2 = 0; for (const [px, sz] of asksTries(idO)) { if (px > lim + 1e-9) break; const k = Math.min(sz, q - q2); if (k <= 1e-9) break; q2 += k; c2 += k * (px + FEE7(px)); }
+          if (q2 >= 0.95 * q) E.jc5 = { px: o[0], q: +q2.toFixed(3), c: +c2.toFixed(4), ms: 164 + 250 * (nn + 1) }; }, 250);
+      }
+      if (n > 20) jcFini = true;
+      if ((E.cp5 || n >= 40) && jcFini) { E.statut = "fini"; clearInterval(iv); }
+    }, 250);
+  }, 164);
+}
 function cpSurPerp(p) {
   const t = nowMs(); CPH.push([t, p]); while (CPH.length && CPH[0][0] < t - 1000) CPH.shift();
   let p0 = null; for (const [tt, pp] of CPH) if (tt >= t - 300) { p0 = pp; break; }
