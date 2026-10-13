@@ -467622,25 +467622,25 @@
 }
 ],
 "etat": {
-"recu": 1791899370.123,
-"version": "c7da0fa16535",
+"recu": 1791900452.242,
+"version": "e0f02935f49a",
 "latence": {
 "rttClob_ms": {
-"med": 40.12,
-"p10": 33.39,
-"p90": 76.78,
-"n": 11
+"med": 40.55,
+"p10": 35.26,
+"p90": 70.1,
+"n": 19
 },
 "polyVersNous_ms": {
-"med": 8.657470703125,
-"p10": 7.8056640625,
-"p90": 17.742919921875
+"med": 50.17626953125,
+"p10": 7.667236328125,
+"p90": 279.640380859375
 },
 "calcul_us": {
 "med": null,
 "p90": null
 },
-"evaluations": 0
+"evaluations": 170967
 },
 "flux": {
 "perp": {
@@ -467648,27 +467648,27 @@
 "reconnexions": 1
 },
 "okx": {
-"muet_s": 0.8,
+"muet_s": 0,
 "reconnexions": 1
 },
 "bn": {
-"muet_s": 0.4,
-"reconnexions": 1
-},
-"cb": {
-"muet_s": 0,
-"reconnexions": 1
-},
-"cl": {
-"muet_s": 0.2,
-"reconnexions": 1
-},
-"pb": {
 "muet_s": 0.5,
 "reconnexions": 1
 },
-"bnd": {
+"cb": {
+"muet_s": 0.1,
+"reconnexions": 1
+},
+"cl": {
+"muet_s": 0.7,
+"reconnexions": 1
+},
+"pb": {
 "muet_s": 0,
+"reconnexions": 1
+},
+"bnd": {
+"muet_s": 0.1,
 "reconnexions": 1
 },
 "byob": {
@@ -467677,14 +467677,14 @@
 },
 "poly": {
 "muet_s": 0,
-"reconnexions": 2
+"reconnexions": 3
 },
 "drb": {
-"muet_s": 0.3,
+"muet_s": 0.1,
 "reconnexions": 1
 },
 "cbob": {
-"muet_s": 0,
+"muet_s": 0.1,
 "reconnexions": 1
 },
 "xbn": {
@@ -467696,98 +467696,260 @@
 "reconnexions": 1
 },
 "byt": {
-"muet_s": 0.1,
-"reconnexions": 1
-},
-"bnf": {
 "muet_s": 0,
 "reconnexions": 1
 },
+"bnf": {
+"muet_s": 0.1,
+"reconnexions": 1
+},
 "act": {
-"muet_s": 0.7,
+"muet_s": 0.5,
 "reconnexions": 1
 }
 },
 "systeme": {
-"rss_Mo": 163,
-"tas_Mo": 68,
+"rss_Mo": 347,
+"tas_Mo": 71,
 "disque": {
-"libre_Mo": 51081,
+"libre_Mo": 51077,
 "total_Mo": 61225
 },
-"dernierCycle": null
+"dernierCycle": {
+"start": 1791900000,
+"ev": 136527,
+"ex": 1277,
+"octets": 914312,
+"coupe": false
+}
 },
 "chainlink": {
 "decomposition_rtds_ms": {
 "publication": {
-"med": 1265,
-"p10": 920,
-"p90": 1672,
-"n": 175
+"med": 1138,
+"p10": 825,
+"p90": 1528,
+"n": 296
 },
 "transport": {
-"med": 321.98095703125,
-"p10": 196.671630859375,
-"p90": 431.153076171875,
-"n": 175
+"med": 320.6025390625,
+"p10": 188.6259765625,
+"p90": 449.23291015625,
+"n": 296
 },
 "traitement_boucle": {
-"med": 0.1875,
+"med": 0.156494140625,
 "p10": 0,
-"p90": 0.947265625,
-"n": 1782
+"p90": 1.8447265625,
+"n": 2000
 }
 },
 "rtds_ms": {
-"med": 1570.369873046875,
-"p10": 1209.23095703125,
-"p90": 2017.5966796875,
-"n": 175
+"med": 1490.783447265625,
+"p10": 1106.193603515625,
+"p90": 1925.6064453125,
+"n": 296
 },
 "polybolt_ms": {
-"med": 1234.16015625,
-"p10": 897.5341796875,
-"p90": 1654.655517578125,
-"n": 174
+"med": 1134.584716796875,
+"p10": 835.52392578125,
+"p90": 1572.996826171875,
+"n": 235
 },
 "twap_ms": {
-"med": 1307.850341796875,
-"p10": 975.143310546875,
-"p90": 1711.920166015625,
-"n": 174
+"med": 1212.010009765625,
+"p10": 917.442626953125,
+"p90": 1610.140380859375,
+"n": 234
 },
 "premier": {
 "rtds": 0,
-"pb": 174
+"pb": 234
 },
 "avanceDuPremier_ms": {
 "rtds": null,
-"polybolt": 330.3
+"polybolt": 312
 },
 "messages": {
-"rtds": 175,
-"pb": 174
+"rtds": 296,
+"pb": 235
 },
 "exemples": [
-"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":1,\"ts\":1791899190000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83213.255332997025\",\"timestamp\":1791899072000,\"value\":83213.25533299703},{\"full_accuracy_value\":\"83212.43764337065\",\"timestamp\":1791899073000,\"value\":83212.43764337066},{\"full_accuracy_value\":\"83220.12359236311\",\"timestamp\":1791899074000,\"value\":83220.12359236312},{\"full_accuracy_value\":\"83220.64683001621\",\"timestamp\":1791899075000,\"value\":83220.64683001621},{\"full_accuracy_value\":\"83220.037169818875\",\"timestamp\":1791899076000,\"value\":83220.03716981887},{\"full_accuracy_value\":\"",
-"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":1,\"ts\":1791899190000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83280.207131392264372224\",\"timestamp\":1791899072000,\"value\":83280.20713139226},{\"full_accuracy_value\":\"83278.068558340175167488\",\"timestamp\":1791899073000,\"value\":83278.06855834018},{\"full_accuracy_value\":\"83274.383938897150214144\",\"timestamp\":1791899074000,\"value\":83274.38393889715},{\"full_accuracy_value\":\"83274.383938897150214144\",\"timestamp\":1791899075000,\"value\":83274.38393889715},{\"full_accuracy_value\":\"83271.355559568941776896\",\"timestamp\":1791899076000,\"value\":83271",
-"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":2,\"ts\":1791899191000,\"payload\":{\"full_accuracy_value\":\"83308.49476721494\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791899191000,\"value\":83308.49476721494}}",
-"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":2,\"ts\":1791899191000,\"payload\":{\"full_accuracy_value\":\"83276.742188019793002496\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791899191000,\"value\":83276.7421880198,\"window_seconds\":60}}",
-"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":3,\"ts\":1791899192000,\"payload\":{\"full_accuracy_value\":\"83307.167415365795\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791899192000,\"value\":83307.1674153658}}",
-"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":3,\"ts\":1791899192000,\"payload\":{\"full_accuracy_value\":\"83276.742188019793002496\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791899192000,\"value\":83276.7421880198,\"window_seconds\":60}}"
+"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":1,\"ts\":1791900214000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83164.871554352085\",\"timestamp\":1791900096000,\"value\":83164.87155435208},{\"full_accuracy_value\":\"83170.28835716327\",\"timestamp\":1791900097000,\"value\":83170.28835716326},{\"full_accuracy_value\":\"83169.15012905694\",\"timestamp\":1791900098000,\"value\":83169.15012905693},{\"full_accuracy_value\":\"83169.34852774966\",\"timestamp\":1791900099000,\"value\":83169.34852774967},{\"full_accuracy_value\":\"83171.0115672\",\"timestamp\":1791900100000,\"value\":83171.01156720001},{\"full_accuracy_value\":\"83171",
+"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":1,\"ts\":1791900214000,\"snapshot\":true,\"payload\":{\"data\":[{\"full_accuracy_value\":\"83155.834000212666351616\",\"timestamp\":1791900096000,\"value\":83155.83400021266},{\"full_accuracy_value\":\"83156.36870043156873216\",\"timestamp\":1791900097000,\"value\":83156.36870043157},{\"full_accuracy_value\":\"83156.7754149406703616\",\"timestamp\":1791900098000,\"value\":83156.77541494067},{\"full_accuracy_value\":\"83157.236169643856494592\",\"timestamp\":1791900099000,\"value\":83157.23616964386},{\"full_accuracy_value\":\"83157.92151955755761664\",\"timestamp\":1791900100000,\"value\":83157.921",
+"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":2,\"ts\":1791900215000,\"payload\":{\"full_accuracy_value\":\"83245.668696472755\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791900215000,\"value\":83245.66869647276}}",
+"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":2,\"ts\":1791900215000,\"payload\":{\"full_accuracy_value\":\"83200.335529112074452992\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791900215000,\"value\":83200.33552911207,\"window_seconds\":60}}",
+"{\"v\":1,\"channel\":\"price.crypto\",\"seq\":3,\"ts\":1791900216000,\"payload\":{\"full_accuracy_value\":\"83251.291067450935\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791900216000,\"value\":83251.29106745095}}",
+"{\"v\":1,\"channel\":\"price.crypto.twap\",\"seq\":3,\"ts\":1791900216000,\"payload\":{\"full_accuracy_value\":\"83200.90602375634485248\",\"source\":\"chainlink\",\"symbol\":\"btcusd\",\"timestamp\":1791900216000,\"value\":83200.90602375634,\"window_seconds\":60}}"
 ],
 "abonnements": [
 "{\"op\":\"subscribed\",\"channel\":\"price.crypto\",\"rid\":\"s1\",\"provider\":\"chainlink\"}",
 "{\"op\":\"subscribed\",\"channel\":\"price.crypto.twap\",\"rid\":\"s1\",\"provider\":\"chainlink\"}"
 ],
 "polyboltConnecte": true,
-"polyboltErreur": null,
+"polyboltErreur": "identifiants : https://bot95.pitch67.workers.dev/api/rapide/polycreds HTTP 500",
 "source": "chainlink",
 "identifiants": true
 },
 "makerEnCours": {
-"offres": {},
-"compteurs": {}
+"offres": {
+"M3 anticipation Chainlink": {
+"posees": 0,
+"remplies": 1
+},
+"M10 double maker meilleur prix": {
+"posees": 0,
+"remplies": 11
+},
+"M2 cotation marge 5 c": {
+"posees": 1,
+"remplies": 1
+},
+"M4a seul bourses -10 $": {
+"posees": 0,
+"remplies": 1
+},
+"M4c seul ventes Polymarket": {
+"posees": 0,
+"remplies": 1
+},
+"M5 remplissage attendu": {
+"posees": 0,
+"remplies": 12
+},
+"M4 retrait toxique": {
+"posees": 0,
+"remplies": 1
+},
+"M6 duree de vie 1000 ms": {
+"posees": 1,
+"remplies": 1
+},
+"M6 duree de vie 500 ms": {
+"posees": 1,
+"remplies": 1
+},
+"M6 duree de vie 100 ms": {
+"posees": 1,
+"remplies": 4
+},
+"M6 duree de vie 250 ms": {
+"posees": 1,
+"remplies": 3
+},
+"M4b seul flux agressif": {
+"posees": 1,
+"remplies": 3
+},
+"M2 cotation marge 10 c": {
+"posees": 1,
+"remplies": 1
+},
+"M21 maker du favori": {
+"posees": 0,
+"remplies": 7
+}
+},
+"compteurs": {
+"M3 anticipation Chainlink": {
+"posees": 219,
+"rejetees": 0,
+"annulees": 219,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M2 cotation marge 5 c": {
+"posees": 694,
+"rejetees": 0,
+"annulees": 693,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M2 cotation marge 10 c": {
+"posees": 764,
+"rejetees": 0,
+"annulees": 763,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M4 retrait toxique": {
+"posees": 442,
+"rejetees": 0,
+"annulees": 442,
+"remplies": 1,
+"retraitsToxiques": 21
+},
+"M4a seul bourses -10 $": {
+"posees": 574,
+"rejetees": 0,
+"annulees": 574,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M4b seul flux agressif": {
+"posees": 683,
+"rejetees": 8,
+"annulees": 674,
+"remplies": 4,
+"retraitsToxiques": 0
+},
+"M4c seul ventes Polymarket": {
+"posees": 441,
+"rejetees": 0,
+"annulees": 441,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M6 duree de vie 100 ms": {
+"posees": 1282,
+"rejetees": 10,
+"annulees": 1271,
+"remplies": 5,
+"retraitsToxiques": 0
+},
+"M6 duree de vie 250 ms": {
+"posees": 981,
+"rejetees": 10,
+"annulees": 970,
+"remplies": 4,
+"retraitsToxiques": 0
+},
+"M6 duree de vie 500 ms": {
+"posees": 762,
+"rejetees": 0,
+"annulees": 761,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M6 duree de vie 1000 ms": {
+"posees": 714,
+"rejetees": 0,
+"annulees": 713,
+"remplies": 1,
+"retraitsToxiques": 0
+},
+"M5 remplissage attendu": {
+"posees": 151,
+"rejetees": 17,
+"annulees": 134,
+"remplies": 21,
+"retraitsToxiques": 0
+},
+"M10 double maker meilleur prix": {
+"posees": 109,
+"rejetees": 4,
+"annulees": 105,
+"remplies": 18,
+"retraitsToxiques": 0
+},
+"M21 maker du favori": {
+"posees": 18,
+"rejetees": 0,
+"annulees": 18,
+"remplies": 11,
+"retraitsToxiques": 0
+}
+}
 }
 }
 }
