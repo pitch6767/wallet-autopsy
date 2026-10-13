@@ -1,5 +1,5 @@
 + python3 -
-nouveaux cycles 1 dans le bot 478
+nouveaux cycles 80 dans le bot 558
 ++ date -u -d '21 days ago' +%Y-%m-%d
 + LIM=2026-09-22
 + for d in cycles/*/
@@ -17,8 +17,8 @@ nouveaux cycles 1 dans le bot 478
 + git add cycles README.md
 ++ git rev-list --max-parents=0 HEAD
 ++ tail -1
-+ R=5b36b67c350e4611f681d300ce9f8f9ac4c7e755
-+ git reset -q --soft 5b36b67c350e4611f681d300ce9f8f9ac4c7e755
++ R=999e4b61127cfdf760fb98680e29265389f70cb5
++ git reset -q --soft 999e4b61127cfdf760fb98680e29265389f70cb5
 + git commit -q --amend -m 'cycles bot rapide (un seul commit, 21 jours)'
 + for k in 1 2 3
 + git push -q -f origin donnees-rapide
