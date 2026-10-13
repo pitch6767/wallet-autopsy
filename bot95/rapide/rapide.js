@@ -1218,14 +1218,20 @@ function by1SurTrade(p) {
   const a = asksTries(X === "Up" ? mk.up : mk.down)[0];
   if (conf > 0 || !a || a[0] < 0.40 - 1e-9 || a[0] > 0.70 + 1e-9) return;
   fantAchat(start, "BY1 Bybit premier 10 $", X, 10, { d: +d.toFixed(2) }); fantAchat(start, "BY1 Bybit premier 100 $", X, 100, { d: +d.toFixed(2) });
+  // H1069 (accord de Pitch 13.10.2026 21:19 « combines ») : en plus, saut CONTRE l'élan des 30 s du perp et marché calme (σ 300 s / σ 3 600 s < 1)
+  const n = PERP1H.length;
+  if (n >= 1800) { const m30 = sg * (PERP1H[n - 1] - PERP1H[n - 31]), s1h = sdDiff(PERP1H), s300 = sdDiff(PERP1H.slice(-301));
+    if (m30 < 0 && s1h && s300 / s1h < 1) { const info = { d: +d.toFixed(2), m30: +m30.toFixed(1), vr: +(s300 / s1h).toFixed(3) };
+      fantAchat(start, "BY1 contre-elan calme 10 $", X, 10, info); fantAchat(start, "BY1 contre-elan calme 100 $", X, 100, info); } }
 }
-const BN1H = [];                                                          // prix Binance spot chaque seconde, 1 h
+const BN1H = [], PERP1H = [];                                                          // prix Binance spot chaque seconde, 1 h
 const OIH = [];                                                           // [t, open interest] Binance
 const NVF = {};                                                           // "start|règle" → déjà décidé
 function sdDiff(L) { if (L.length < 3) return null; const d = []; for (let i = 1; i < L.length; i++) d.push(L[i] - L[i - 1]); const m = d.reduce((a, b) => a + b, 0) / d.length; return Math.sqrt(d.reduce((a, b) => a + (b - m) * (b - m), 0) / d.length); }
 setInterval(() => {
   try {
     const t = now(); if (f.bn) { BN1H.push(f.bn.p); if (BN1H.length > 3600) BN1H.shift(); }
+    if (f.perp) { PERP1H.push(f.perp.p); if (PERP1H.length > 3600) PERP1H.shift(); }
     const start = Math.floor(t / 300) * 300, el = t - start, mk = M[start]; if (!mk || !mk.up || !mk.down) return;
     const fait = (r) => NVF[start + "|" + r], marque = (r) => { NVF[start + "|" + r] = 1; };
     for (const k of Object.keys(NVF)) if (+k.split("|")[0] < start - 900) delete NVF[k];
