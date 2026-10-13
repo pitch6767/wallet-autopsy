@@ -1029,6 +1029,50 @@ async function versionDistante() {
 log("bot95 rapide", VERSION, "démarre — fantôme uniquement, aucun ordre");
 flux(); cycle();
 setInterval(cycle, 1000);
+// ---------------------------------------------------------------- FANTÔME « billet bas + favori si recul 20 c » (accord de Pitch 13.10.2026 13:26)
+// Par cycle et par côté : premier instant (60 à 240 s écoulées, contrôle chaque seconde) où le meilleur vendeur est entre 0,10 et 0,45 →
+// achat fictif preneur 10 $ sur le carnet vu à +164 ms (limite + 1 c). Ensuite, chaque seconde jusqu'à 298 s : si le meilleur acheteur du
+// billet ≤ prix payé − 0,20, achat fictif du favori (l'opposé), à +164 ms, limite meilleur vendeur + 2 c, de y = 0,5 × coût du billet /
+// (1 − prix − frais) parts (moitié de la perte couverte). Une seule couverture. Enregistré dans le fichier du cycle (clé « bf »). AUCUN ORDRE RÉEL.
+const BF = {};                                                            // "start|cote" → position
+function bfAchat(id, lim, dollars, parts) {
+  let q = 0, c = 0;
+  for (const [px, sz] of asksTries(id)) { if (px > lim + 1e-9) break; const u = px + FEE7(px); const k = parts != null ? Math.min(sz, parts - q) : Math.min(sz, (dollars - c) / u); if (k <= 1e-9) break; q += k; c += k * u; }
+  return { q: +q.toFixed(3), c: +c.toFixed(4) };
+}
+setInterval(() => {
+  try {
+    const t = now(), start = Math.floor(t / 300) * 300, el = t - start, mk = M[start];
+    if (!mk || !mk.up || !mk.down) return;
+    for (const X of ["Up", "Down"]) {
+      const k = start + "|" + X, idX = X === "Up" ? mk.up : mk.down, idO = X === "Up" ? mk.down : mk.up;
+      let P = BF[k];
+      if (!P) {
+        if (el < 60 || el > 240) continue;
+        const a = asksTries(idX)[0];
+        if (!a || a[0] < 0.10 - 1e-9 || a[0] > 0.45 + 1e-9) continue;
+        P = BF[k] = { regle: "billet + favori 50 % si recul 20 c", start, cote: X, t: Math.round(t * 1000), a0: a[0], statut: "achat" };
+        const R = recDe(start); (R.bf = R.bf || []).push(P);
+        setTimeout(() => { const f = bfAchat(idX, a[0] + 0.01, 10); P.q = f.q; P.c = f.c; P.statut = f.q > 0 && f.c >= 5 ? "ouvert" : "non rempli"; }, 164);
+        continue;
+      }
+      if (P.statut !== "ouvert" || el > 298) continue;
+      const bb = meilleurAcheteur(idX), p0 = P.c / P.q;
+      if (bb > 0 && bb <= p0 - 0.20 + 1e-9) {
+        P.statut = "couverture"; P.tCouv = Math.round(t * 1000); P.bidCouv = bb;
+        setTimeout(() => {
+          const o = asksTries(idO)[0];
+          if (!o) { P.statut = "ouvert sans couverture"; return; }
+          const g = 1 - o[0] - FEE7(o[0]);
+          if (g <= 0.005) { P.statut = "ouvert sans couverture"; return; }
+          const y = 0.5 * P.c / g, f = bfAchat(idO, o[0] + 0.02, null, y);
+          P.fav = { prix: o[0], visees: +y.toFixed(3), q: f.q, c: f.c }; P.statut = f.q >= 0.9 * y ? "couvert" : "couverture partielle";
+        }, 164);
+      }
+    }
+    for (const k of Object.keys(BF)) if (+k.split("|")[0] < start - 600) delete BF[k];
+  } catch (_) {}
+}, 1000);
 setInterval(() => reglements().catch(() => {}), 10000);
 setInterval(sonde, 15000);
 setInterval(envoyer, 60000);
