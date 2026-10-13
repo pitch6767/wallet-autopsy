@@ -16055,17 +16055,74 @@
 ],
 "start": 1791877800,
 "slug": "btc-updown-5m-1791877800"
+},
+"2026-10-13T14:51:39.557Z|Up": {
+"heure": "2026-10-13T14:51:39.557Z",
+"cote": "Up",
+"prix": 0.1276,
+"parts": 6,
+"U": 6,
+"D": 0,
+"cash": -0.7656191999999999,
+"net": -0.77,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.337,
+"restant_s": 200,
+"journal": [
+"99.6s écart 0.22, 200 s restantes → achat Up 6.0 parts à 0.1276 (modèle 0.337)"
+],
+"start": 1791903000,
+"slug": "btc-updown-5m-1791903000"
+},
+"2026-10-13T14:47:49.889Z|Down": {
+"heure": "2026-10-13T14:47:49.889Z",
+"cote": "Down",
+"prix": 0.3325,
+"parts": 161.29,
+"U": 0,
+"D": 161.29032258064515,
+"cash": -53.626550967741935,
+"net": -53.63,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.512,
+"restant_s": 130,
+"journal": [
+"169.9s écart 0.20, 130 s restantes → achat Down 161.3 parts à 0.3325 (modèle 0.512)"
+],
+"start": 1791902700,
+"slug": "btc-updown-5m-1791902700"
+},
+"2026-10-13T14:37:12.338Z|Up": {
+"heure": "2026-10-13T14:37:12.338Z",
+"cote": "Up",
+"prix": 0.4362,
+"parts": 37.06,
+"U": 37.06,
+"D": 0,
+"cash": 20.895409248,
+"net": 20.9,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.615,
+"restant_s": 168,
+"journal": [
+"132.3s écart 0.20, 168 s restantes → achat Up 37.1 parts à 0.4362 (modèle 0.615)"
+],
+"start": 1791902100,
+"slug": "btc-updown-5m-1791902100"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 531,
-"gains": 122,
-"pertes": 409,
-"pnl": 1402.369999999998
+"n": 534,
+"gains": 123,
+"pertes": 411,
+"pnl": 1368.869999999998
 },
-"n_sauves": 845,
-"maj": "2026-10-13 14:07 UTC",
+"n_sauves": 848,
+"maj": "2026-10-13 15:34 UTC",
 "archive": [
 [
 "2026-10-09T05:31:54.168Z",
@@ -23176,6 +23233,33 @@
 "une seule jambe",
 0.431,
 133
+],
+[
+"2026-10-13T14:37:12.338Z",
+"Up",
+0.4362,
+20.9,
+"une seule jambe",
+0.615,
+168
+],
+[
+"2026-10-13T14:47:49.889Z",
+"Down",
+0.3325,
+-53.63,
+"une seule jambe",
+0.512,
+130
+],
+[
+"2026-10-13T14:51:39.557Z",
+"Up",
+0.1276,
+-0.77,
+"une seule jambe",
+0.337,
+200
 ]
 ]
 }
