@@ -1,0 +1,66 @@
+{
+"nom": "billet elan retourne BTC",
+"trades": {
+"2026-10-13T19:47:11.220Z|Up": {
+"heure": "2026-10-13T19:47:11.220Z",
+"cote": "Up",
+"prix": 0.1694,
+"parts": 59.029,
+"U": 0,
+"D": 0,
+"cash": -10,
+"net": -10,
+"issue": "perdu,",
+"journal": [
+"perdu, 10 $"
+],
+"start": 1791920700,
+"slug": "btc-updown-5m-1791920700"
+},
+"2026-10-13T19:29:28.485Z|Down": {
+"heure": "2026-10-13T19:29:28.485Z",
+"cote": "Down",
+"prix": 0.0852,
+"parts": 117.437,
+"U": 0,
+"D": 0,
+"cash": -10,
+"net": -10,
+"issue": "perdu,",
+"journal": [
+"perdu, 10 $"
+],
+"start": 1791919500,
+"slug": "btc-updown-5m-1791919500"
+}
+},
+"resume_bot": {
+"depuis": 1791920167.86,
+"n": 2,
+"gains": 0,
+"pertes": 2,
+"pnl": -20
+},
+"archive": [
+[
+"2026-10-13T19:29:28.485Z",
+"Down",
+0.0852,
+-10,
+"perdu,",
+null,
+null
+],
+[
+"2026-10-13T19:47:11.220Z",
+"Up",
+0.1694,
+-10,
+"perdu,",
+null,
+null
+]
+],
+"n_sauves": 2,
+"maj": "2026-10-13 20:02 UTC"
+}

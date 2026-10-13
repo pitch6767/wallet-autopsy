@@ -1,0 +1,67 @@
+BY1 Bybit premier 10 $ BTC 9
+BY1 Bybit premier 100 $ BTC 5
+CP10 couverture posee BTC 120
+CP5 couverture posee BTC 179
+FG150 contre les gros BTC 48
+FG300 contre les gros BTC 12
+JC5 couverture preneur BTC 179
+PB seul + Poly immobile BTC 7
+PB seul BTC 22
+TWAP fin BTC 274
+TWAP fin anti-saut BTC 237
+TWAP fin confirme Chainlink 0,5 s BTC 94
+TWAP fin correction spot-perp BTC 232
+TWAP fin prevision Chainlink BTC 203
+TWAP fin quantiles BTC 225
+TWAP fin sauts BTC 248
+V2-C perp + carnet BTC 1
+V2-C perp BTC 1103
+V2-D perp 120-269 s + carnet BTC 1
+V2-D perp 120-269 s BTC 870
+V2-F + plus de 120 s BTC 829
+V2-F incertitude 0,01 % BTC 520
+V2-F miroir 1 s BTC 318
+V2-G jury des bourses + carnet BTC 1
+V2-G jury des bourses BTC 1028
+billet + favori si recul 20 c BTC 125
+billet elan retourne BTC 2
+consensus K2 + carnet BTC 1
+consensus K2 BTC 116
+consensus K5 BTC 69
+consensus K5 anti-bete BTC 28
+consensus K9 BTC 14
+corrige : V2-F + garde-fou + carnet BTC 1
+corrige : V2-F + garde-fou BTC 666
+corrige : V2-F + pas les deux baissent + carnet BTC 2
+corrige : V2-F + pas les deux baissent BTC 765
+corrige : V2-F ecart qui grandit + carnet BTC 1
+corrige : V2-F ecart qui grandit BTC 775
+corrige : desaccord 20 + carnet BTC 1
+corrige : desaccord 20 BTC 781
+corrige : zone + Binance et perp + sortie -10 BTC 218
+corrige : zone + Binance et perp + sortie -10 ETH 76
+corrige marge mesuree : V2-F BTC 670
+desaccord 20 Binance avec nous BTC 141
+desaccord 20 Binance avec nous sans nuit BTC 98
+desaccord 20 Binance ou perp avec nous BTC 285
+desaccord 20 Binance ou perp avec nous sans nuit BTC 226
+desaccord 20 jeton 0,35-0,65 BTC 58
+desaccord 30 0,15-0,60 + perp + ecart qui grandit BTC 441
+desaccord 30 BTC 552
+desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50 BTC 358
+desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse BTC 359
+desaccord 30 zone + modele monte BTC 268
+desaccord 30 zone + sortie modele -10 BTC 504
+desaccord 30 zone 0,15-0,35 BTC 504
+desaccord confirme perp BTC 235
+petit a petit 10 $ BTC 43
+petit a petit 10 puis 5 $ BTC 52
+petit a petit selon le saut BTC 52
+reglements 2326
+twap_confirme 268
+twap_carnets 1428
+v2f_variantes 2743
+vitesse 3465 {'med': -0.20300006866455078, 'p90': -0.1770000457763672} {'med': None, 'p90': None}
+rapide 1739 {'recu': 1791921759.231, 'version': '6c6962625ff1', 'latence': {'rttClob_ms': {'med': 39.12, 'p10': 32.57, 'p90': 97.67, 'n': 87}, 'polyVersNous_ms': {'med': 9.27490234375, 'p10': 8.22900390625, 'p90': 28.81103515625}, 'calcul_us': {'med': 543.586, 'p90': 747.196}, 'evaluations': 478447}, 'flux': {'perp': {'muet_s': 4.6, 'reconnexions': 1}, 'okx': {'muet_s': 0.1, 'reconnexions': 1}, 'bn': {'muet_s': 0.1, 'reconnexions': 1}, 'cb': {'muet_s': 0.2, 'reconnexions': 1}, 'cl': {'muet_s': 1, 'reconnexions': 1}, 'pb': {'muet_s': 0.1, 'reconnexions': 1}, 'bnd': {'muet_s': 0.1, 'reconnexions': 1}, 'byob': {'muet_s': 0, 'reconnexions': 1}, 'poly': {'muet_s': 0.3, 'reconnexions': 9}, 'drb': {'muet_s': 0.3, 'reconnexions': 1}, 'cbob': {'muet_s': 0, 'reconnexions': 1}, 'xbn': {'muet_s': 0.1, 'reconnexions': 1}, 'xby': {'muet_s': 0, 'reconnexions': 1}, 'byt': {'muet_s': 0.1, 'reconnexions': 1}, 'bnf': {'muet_s': 0, 'reconnexions': 1}, 'act': {'muet_s': 0, 'reconnexions': 1}}, 'systeme': {'rss_Mo': 348, 'tas_Mo': 61, 'disque': {'libre_Mo': 50842, 'total_Mo': 61225}, 'dernierCycle': {'start': 1791921300, 'ev': 309095, 'ex': 1223, 'octets': 1243158, 'coupe': False}}, 'chainlink': {'decomposition_rtds_ms': {'publication': {'med': 1182, 'p10': 847, 'p90': 1607, 'n': 1297}, 'transport': {'med': 341.543701171875, 'p10': 231.1708984375, 'p90': 461.126220703125, 'n': 1297}, 'traitement_boucle': {'med': 0.2177734375, 'p10': 0, 'p90': 1.095458984375, 'n': 2000}}, 'rtds_ms': {'med': 1515.33447265625, 'p10': 1164.472412109375, 'p90': 1976.432861328125, 'n': 1297}, 'polybolt_ms': {'med': 1187.442138671875, 'p10': 860.43896484375, 'p90': 1624.4189453125, 'n': 1305}, 'twap_ms': {'med': 1256.94921875, 'p10': 924.84619140625, 'p90': 1701.673828125, 'n': 1305}, 'premier': {'rtds': 2, 'pb': 1295}, 'avanceDuPremier_ms': {'rtds': 2209.9, 'polybolt': 329.7}, 'messages': {'rtds': 1297, 'pb': 1305}, 'exemples': ['{"v":1,"channel":"price.crypto","seq":1,"ts":1791920438000,"snapshot":true,"payload":{"data":[{"full_accuracy_value":"83126.71998900319","timestamp":1791920321000,"value":83126.71998900318},{"full_accuracy_value":"83126.53507883876","timestamp":1791920322000,"value":83126.53507883876},{"full_accuracy_value":"83125.69465632155","timestamp":1791920323000,"value":83125.69465632156},{"full_accuracy_value":"83126.89056086445","timestamp":1791920324000,"value":83126.89056086446},{"full_accuracy_value":"83126.86560629227","timestamp":1791920325000,"value":83126.86560629227},{"full_accuracy_value":"83', '{"v":1,"channel":"price.crypto.twap","seq":1,"ts":1791920438000,"snapshot":true,"payload":{"data":[{"full_accuracy_value":"83130.819431858698190848","timestamp":1791920321000,"value":83130.8194318587},{"full_accuracy_value":"83129.947066822081642496","timestamp":1791920322000,"value":83129.94706682207},{"full_accuracy_value":"83129.947066822081642496","timestamp":1791920323000,"value":83129.94706682207},{"full_accuracy_value":"83129.141702232394170368","timestamp":1791920324000,"value":83129.14170223239},{"full_accuracy_value":"83129.141702232394170368","timestamp":1791920325000,"value":83129.', '{"v":1,"channel":"price.crypto","seq":2,"ts":1791920439000,"payload":{"full_accuracy_value":"83141.644665489265","source":"chainlink","symbol":"btcusd","timestamp":1791920439000,"value":83141.64466548928}}', '{"v":1,"channel":"price.crypto.twap","seq":2,"ts":1791920439000,"payload":{"full_accuracy_value":"83135.781833944317558784","source":"chainlink","symbol":"btcusd","timestamp":1791920439000,"value":83135.78183394432,"window_seconds":60}}', '{"v":1,"channel":"price.crypto","seq":3,"ts":1791920440000,"payload":{"full_accuracy_value":"83140.302227485065","source":"chainlink","symbol":"btcusd","timestamp":1791920440000,"value":83140.30222748507}}', '{"v":1,"channel":"price.crypto.twap","seq":3,"ts":1791920440000,"payload":{"full_accuracy_value":"83135.781833944317558784","source":"chainlink","symbol":"btcusd","timestamp":1791920440000,"value":83135.78183394432,"window_seconds":60}}'], 'abonnements': ['{"op":"subscribed","channel":"price.crypto","rid":"s1","provider":"chainlink"}', '{"op":"subscribed","channel":"price.crypto.twap","rid":"s1","provider":"chainlink"}'], 'polyboltConnecte': True, 'polyboltErreur': None, 'source': 'chainlink', 'identifiants': True}, 'makerEnCours': {'offres': {'M10 double maker meilleur prix': {'posees': 0, 'remplies': 4}, 'M5 remplissage attendu': {'posees': 0, 'remplies': 7}, 'M3 anticipation Chainlink': {'posees': 0, 'remplies': 2}, 'M2 cotation marge 5 c': {'posees': 1, 'remplies': 8}, 'M4a seul bourses -10 $': {'posees': 0, 'remplies': 9}, 'M4b seul flux agressif': {'posees': 1, 'remplies': 8}, 'M6 duree de vie 250 ms': {'posees': 0, 'remplies': 6}, 'M6 duree de vie 500 ms': {'posees': 0, 'remplies': 7}, 'M6 duree de vie 1000 ms': {'posees': 0, 'remplies': 6}, 'M6 duree de vie 100 ms': {'posees': 0, 'remplies': 5}, 'M4 retrait toxique': {'posees': 0, 'remplies': 7}, 'M4c seul ventes Polymarket': {'posees': 1, 'remplies': 7}, 'M21 maker du favori': {'posees': 0, 'remplies': 1}, 'M1 V2-F incertitude 0,01 %': {'posees': 0, 'remplies': 0}, 'M8 hybride V2-F incertitude 0,01 %': {'posees': 0, 'remplies': 0}, 'M8b routeur corrige V2-F incertitude 0,01 %': {'posees': 0, 'remplies': 0}, 'M1 cohorte B : V2-F corrige 0,015 %': {'posees': 0, 'remplies': 0}, 'M8 hybride cohorte B : V2-F corrige 0,015 %': {'posees': 0, 'remplies': 0}, 'M8b routeur corrige cohorte B : V2-F corrige 0,015 %': {'posees': 0, 'remplies': 0}, 'M2 cotation marge 10 c': {'posees': 1, 'remplies': 1}, 'M0 temoin aleatoire': {'posees': 0, 'remplies': 1}, 'M1 V2-F ecart qui grandit': {'posees': 1, 'remplies': 0}, 'M8 hybride V2-F ecart qui grandit': {'posees': 0, 'remplies': 1}, 'M8b routeur corrige V2-F ecart qui grandit': {'posees': 0, 'remplies': 1}, 'M1 desaccord 20 60-180 s': {'posees': 1, 'remplies': 0}, 'M8 hybride desaccord 20 60-180 s': {'posees': 0, 'remplies': 1}, 'M8b routeur corrige desaccord 20 60-180 s': {'posees': 0, 'remplies': 1}}, 'compteurs': {'M3 anticipation Chainlink': {'posees': 269, 'rejetees': 4, 'annulees': 265, 'remplies': 15, 'retraitsToxiques': 0}, 'M2 cotation marge 5 c': {'posees': 623, 'rejetees': 4, 'annulees': 616, 'remplies': 21, 'retraitsToxiques': 0}, 'M2 cotation marge 10 c': {'posees': 842, 'rejetees': 1, 'annulees': 837, 'remplies': 16, 'retraitsToxiques': 0}, 'M4 retrait toxique': {'posees': 702, 'rejetees': 4, 'annulees': 695, 'remplies': 27, 'retraitsToxiques': 152}, 'M4a seul bourses -10 $': {'posees': 617, 'rejetees': 5, 'annulees': 610, 'remplies': 28, 'retraitsToxiques': 0}, 'M4b seul flux agressif': {'posees': 584, 'rejetees': 4, 'annulees': 577, 'remplies': 20, 'retraitsToxiques': 0}, 'M4c seul ventes Polymarket': {'posees': 554, 'rejetees': 3, 'annulees': 548, 'remplies': 28, 'retraitsToxiques': 0}, 'M6 duree de vie 100 ms': {'posees': 3737, 'rejetees': 5, 'annulees': 3731, 'remplies': 23, 'retraitsToxiques': 0}, 'M6 duree de vie 250 ms': {'posees': 2587, 'rejetees': 9, 'annulees': 2576, 'remplies': 31, 'retraitsToxiques': 0}, 'M6 duree de vie 500 ms': {'posees': 1587, 'rejetees': 7, 'annulees': 1578, 'remplies': 21, 'retraitsToxiques': 0}, 'M6 duree de vie 1000 ms': {'posees': 1039, 'rejetees': 4, 'annulees': 1033, 'remplies': 21, 'retraitsToxiques': 0}, 'M10 double maker meilleur prix': {'posees': 122, 'rejetees': 2, 'annulees': 120, 'remplies': 38, 'retraitsToxiques': 0}, 'M5 remplissage attendu': {'posees': 123, 'rejetees': 10, 'annulees': 113, 'remplies': 35, 'retraitsToxiques': 0}, 'M21 maker du favori': {'posees': 42, 'rejetees': 0, 'annulees': 42, 'remplies': 12, 'retraitsToxiques': 0}, 'M0 temoin aleatoire': {'posees': 4, 'rejetees': 0, 'annulees': 4, 'remplies': 4, 'retraitsToxiques': 0}, 'M1 desaccord 20 60-180 s': {'posees': 4, 'rejetees': 0, 'annulees': 3, 'remplies': 3, 'retraitsToxiques': 0}, 'M8 hybride desaccord 20 60-180 s': {'posees': 4, 'rejetees': 0, 'annulees': 2, 'remplies': 4, 'retraitsToxiques': 0}, 'M8b routeur corrige desaccord 20 60-180 s': {'posees': 4, 'rejetees': 0, 'annulees': 2, 'remplies': 4, 'retraitsToxiques': 0}, 'M1 V2-F ecart qui grandit': {'posees': 4, 'rejetees': 0, 'annulees': 3, 'remplies': 3, 'retraitsToxiques': 0}, 'M8 hybride V2-F ecart qui grandit': {'posees': 4, 'rejetees': 0, 'annulees': 3, 'remplies': 4, 'retraitsToxiques': 0}, 'M8b routeur corrige V2-F ecart qui grandit': {'posees': 4, 'rejetees': 0, 'annulees': 3, 'remplies': 4, 'retraitsToxiques': 0}, 'M1 desaccord 30': {'posees': 1, 'rejetees': 0, 'annulees': 0, 'remplies': 1, 'retraitsToxiques': 0}, 'M8 hybride desaccord 30': {'posees': 1, 'rejetees': 0, 'annulees': 0, 'remplies': 1, 'retraitsToxiques': 0}, 'M8b routeur corrige desaccord 30': {'posees': 1, 'rejetees': 0, 'annulees': 0, 'remplies': 1, 'retraitsToxiques': 0}, 'M1 V2-F incertitude 0,01 %': {'posees': 1, 'rejetees': 0, 'annulees': 1, 'remplies': 0, 'retraitsToxiques': 0}, 'M8 hybride V2-F incertitude 0,01 %': {'posees': 1, 'rejetees': 0, 'annulees': 0, 'remplies': 0, 'retraitsToxiques': 0}, 'M8b routeur corrige V2-F incertitude 0,01 %': {'posees': 1, 'rejetees': 0, 'annulees': 0, 'remplies': 0, 'retraitsToxiques': 0}, 'M1 cohorte B : V2-F corrige 0,015 %': {'posees': 1, 'rejetees': 0, 'annulees': 1, 'remplies': 0, 'retraitsToxiques': 0}, 'M8 hybride cohorte B : V2-F corrige 0,015 %': {'posees': 1, 'rejetees': 0, 'annulees': 0, 'remplies': 0, 'retraitsToxiques': 0}, 'M8b routeur corrige cohorte B : V2-F corrige 0,015 %': {'posees': 1, 'rejetees': 0, 'annulees': 0, 'remplies': 0, 'retraitsToxiques': 0}}}}
+maker 72276
+chainlink True None
