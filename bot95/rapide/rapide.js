@@ -47,7 +47,7 @@ async function fantReglements() {
   for (let i = FANT.length - 1; i >= 0; i--) {
     const E = FANT[i];
     if (t < E.start + 330) continue;
-    if (!(E.q > 0) || E.c < 5) { FANT.splice(i, 1); continue; }
+    if (!(E.q > 0) || E.c < (E.montant ? E.montant / 2 : 5)) { FANT.splice(i, 1); continue; }
     const g = await gagnantDe(E.start); if (g == null) { if (t > E.start + 3600) FANT.splice(i, 1); continue; }
     const win = g === E.cote ? 1 : 0, q = E.q, c = E.c, garde = q * win - c, h = new Date(E.t).toISOString();
     const L = (nom, net, detail) => FANT_REGLES.push({ id: nom + "|" + E.start + "|" + Math.round(E.t), nom, actif: "BTC", start: E.start, heure: h, cote: E.cote, prix: +(c / q).toFixed(4), parts: q, net: +net.toFixed(2), issue: detail.split(" ")[0], detail });
@@ -59,6 +59,7 @@ async function fantReglements() {
     } else if (E.regle && E.regle.startsWith("billet")) {
       const f = E.fav && E.fav.q > 0 ? E.fav.q * (1 - win) - E.fav.c : 0; L("billet + favori si recul 20 c", garde + f, (E.fav ? "couvert, " : "") + (win ? "billet gagné" : "billet perdu"));
     } else if (E.regles) { for (const nom of E.regles) L(nom + " contre les gros", garde, (win ? "gagné" : "perdu") + " contre " + E.montant.toFixed(0) + " $"); }
+    else if (["SA10", "SA10-5", "SAsig"].includes(E.regle)) L({ "SA10": "petit a petit 10 $", "SA10-5": "petit a petit 10 puis 5 $", "SAsig": "petit a petit selon le saut" }[E.regle], garde, (win ? "gagné" : "perdu") + ", " + E.montant + " $");
     FANT.splice(i, 1);
   }
 }
@@ -88,6 +89,25 @@ const CPH = []; let cpDernier = 0;
 //   JC5 : toutes les 250 ms pendant 5 s, si prix payé + vendeur de l'opposé + frais ≤ 0,98 → achat preneur de l'opposé 250 ms plus tard ;
 //   CP5 : couverture posée à 1 − 0,06 − prix payé, comme CP10 (prudent : vendeur ≤ b − 1 c ; optimiste : touche b), 10 s.
 // Enregistré dans le fichier du cycle (clé « cp5 »). AUCUN ORDRE RÉEL.
+// ---- FANTÔMES « petit à petit » (H1062, accord de Pitch 13.10.2026 19:30) : à chaque saut du perp ≥ 5 $ en 300 ms (même détecteur que JC5/CP5,
+// côté 0,40–0,70), achat fictif preneur à +164 ms (limite + 1 c), gardé jusqu'au règlement, au plus 50 $ par cycle et par règle :
+//   SA10 = 10 $ à chaque saut ; SA10-5 = 10 $ au 1er saut du cycle puis 5 $ ; SAsig = 5 $ si saut 5–10 $, 10 $ si saut ≥ 10 $.
+// Enregistré dans le fichier du cycle (clé « sa »). AUCUN ORDRE RÉEL.
+const SAB = {};
+function saSurSaut(start, X, idX, a0, dAbs, t) {
+  const B = (SAB[start] = SAB[start] || { "SA10": 0, "SA10-5": 0, "SAsig": 0, n: 0 });
+  for (const s2 of Object.keys(SAB)) if (+s2 < start - 900) delete SAB[s2];
+  const tailles = { "SA10": 10, "SA10-5": B.n === 0 ? 10 : 5, "SAsig": dAbs >= 10 ? 10 : 5 }; B.n++;
+  for (const [regle, m] of Object.entries(tailles)) {
+    if (B[regle] + m > 50 + 1e-9) continue;
+    B[regle] += m;
+    const E = { regle, t: +t.toFixed(1), start, d: +dAbs.toFixed(2), cote: X, a0, montant: m, statut: "achat" };
+    const R = recDe(start); (R.sa = R.sa || []).push(E); FANT.push(E);
+    setTimeout(() => { let q = 0, c = 0;
+      for (const [px, sz] of asksTries(idX)) { if (px > a0 + 0.01 + 1e-9) break; const u = px + FEE7(px); const k = Math.min(sz, (m - c) / u); if (k <= 1e-9) break; q += k; c += k * u; }
+      E.q = +q.toFixed(3); E.c = +c.toFixed(4); E.statut = q > 0 && c >= m / 2 ? "ouvert" : "non rempli"; if (E.statut !== "ouvert") E.q = 0; }, 164);
+  }
+}
 const CP5H = []; let cp5Dernier = 0;
 function cp5SurPerp(p) {
   const t = nowMs(); CP5H.push([t, p]); while (CP5H.length && CP5H[0][0] < t - 1000) CP5H.shift();
@@ -104,6 +124,7 @@ function cp5SurPerp(p) {
   const E = { regle: "JC5/CP5", t: +t.toFixed(1), start, d: +d.toFixed(2), cote: X, a0: a0 ? a0[0] : null, statut: "en cours" };
   const R = recDe(start); (R.cp5 = R.cp5 || []).push(E); FANT.push(E);
   if (!a0 || a0[0] < 0.40 - 1e-9 || a0[0] > 0.70 + 1e-9) { E.statut = "hors zone"; return; }
+  try { saSurSaut(start, X, idX, a0[0], Math.abs(d), t); } catch (_) {}
   setTimeout(() => {
     let q = 0, c = 0;
     for (const [px, sz] of asksTries(idX)) { if (px > a0[0] + 0.01 + 1e-9) break; const u = px + FEE7(px); const k = Math.min(sz, (10 - c) / u); if (k <= 1e-9) break; q += k; c += k * u; }
@@ -1130,7 +1151,7 @@ try {
     if (d < lim) continue;
     for (const f of fs.readdirSync(base + "/" + d)) {
       try { const R = JSON.parse(zlib.gunzipSync(fs.readFileSync(base + "/" + d + "/" + f)));
-        for (const k of ["cp", "cp5", "bf", "fg"]) for (const E of R[k] || []) if (E && E.q > 0) { FANT.push(E); n++; } } catch (_) {}
+        for (const k of ["cp", "cp5", "bf", "fg", "sa"]) for (const E of R[k] || []) if (E && E.q > 0) { FANT.push(E); n++; } } catch (_) {}
     }
   }
   log("fantômes relus sur le disque", n);
