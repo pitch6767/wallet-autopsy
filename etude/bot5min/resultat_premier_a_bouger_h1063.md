@@ -18,3 +18,18 @@ Généré le 13.10.2026 18:00 UTC. 10 $ par saut, preneur 164 ms, gardé jusqu'a
 
 - PB1 : abandon
 - PB2 : abandon
+
+## Correction (13.10.2026 20:20)
+
+Erreur de signe : `poly1s` était signé deux fois. Pour les sauts vers le bas, PB1/PB2 ne testaient donc PAS « Polymarket pas contre nous ».
+Le verdict ci-dessus (abandon) reste valable pour les règles telles que calculées. Règles corrigées, regardées après coup (NON pré-enregistrées) :
+
+| Règle (signe juste) | Apprentissage | Validation | Test |
+|---|---|---|---|
+| perp seul (nconf = 0) | 105 sauts, +15,3 % | 73, +21,9 % | 182, +10,9 % |
+| Polymarket immobile 1 s | 46, +29,7 % | 19, +26,8 % | 99, +19,7 % |
+| perp seul + Polymarket immobile | 31, +38,3 % | 17, +30,6 % | 64, +25,3 % |
+| tous (témoin) | 153, +9,9 % | 100, +14,8 % | 299, +5,8 % |
+
+Seule preuve propre possible : la période réservée ≥ 13.10, une fois, par `confirmation_h1063.py` (figé avant calcul). Fantômes « PB seul » et
+« PB seul + Poly immobile » en ligne à Dublin depuis 13.10 20:15 (accord de Pitch « Go »).

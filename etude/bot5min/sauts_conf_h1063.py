@@ -4,9 +4,11 @@ import numpy as np
 sys.path.insert(0, "/home/claude/wallet-autopsy/etude/bot5min")
 import liquidite_h833 as L, latence_h766 as LH, dpe_h841 as DP
 from jambe_couverture_h1058 import achat_d
+CONF = "--confirmation" in sys.argv
+if CONF: L.RESERVE = 10 ** 12
 G, cyc = L.grille(sys.argv[1]); Y = L.resultats_officiels(cyc); out = []
 SRC = ["perp", "okx", "bn", "cb", "cl"]
-for st in sorted(s for s in cyc if s in Y):
+for st in sorted(s for s in cyc if s in Y and ((s >= 1791849600) if CONF else (s < 1791849600))):
     try: R = json.load(gzip.open(cyc[st]["f"]))
     except Exception: continue
     rows = sorted(R.get("ex", []), key=lambda r: r[0])
