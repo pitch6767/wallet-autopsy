@@ -40,6 +40,28 @@ function noter(src, p, tsSrc) {
 // Polymarket d'au moins 150 $ (FG150) ou 300 $ (FG300), 30 à 280 s écoulées, pause 3 s par cycle (comptée sur 150 $) ; côté poussé X =
 // acheté par le preneur ; si le meilleur vendeur de X est entre 0,40 et 0,70 : achat fictif de l'AUTRE côté, 10 $, carnet vu à +164 ms,
 // limite + 1 c, gardé jusqu'au règlement. Enregistré dans le fichier du cycle (clé « fg »). AUCUN ORDRE RÉEL.
+// 13.10.2026 15:51 : règlement des fantômes de Dublin et envoi au bot Cloudflare pour le classement (clé « fantomes » de l'envoi).
+const FANT = [], FANT_REGLES = [];
+async function fantReglements() {
+  const t = now();
+  for (let i = FANT.length - 1; i >= 0; i--) {
+    const E = FANT[i];
+    if (t < E.start + 330) continue;
+    if (!(E.q > 0) || E.c < 5) { FANT.splice(i, 1); continue; }
+    const g = await gagnantDe(E.start); if (g == null) { if (t > E.start + 3600) FANT.splice(i, 1); continue; }
+    const win = g === E.cote ? 1 : 0, q = E.q, c = E.c, garde = q * win - c, h = new Date(E.t).toISOString();
+    const L = (nom, net, detail) => FANT_REGLES.push({ id: nom + "|" + E.start + "|" + Math.round(E.t), nom, actif: "BTC", start: E.start, heure: h, cote: E.cote, prix: +(c / q).toFixed(4), parts: q, net: +net.toFixed(2), issue: detail.split(" ")[0], detail });
+    const couv = (x) => x ? (x.mode === "preneur" ? q - c - q * (x.px + FEE7(x.px)) : q - c - q * x.px) : null;
+    if (E.regle === "CP10") { const v = couv(E.couv); L("CP10 couverture posee", v ?? garde, v != null ? "couvert à " + E.couv.px : "gardé, " + (win ? "gagné" : "perdu")); }
+    else if (E.regle === "JC5/CP5") {
+      const vj = E.jc5 ? E.jc5.q - c - E.jc5.c + (q - E.jc5.q) * win : null; L("JC5 couverture preneur", vj ?? garde, vj != null ? "couvert à " + E.jc5.px : "gardé, " + (win ? "gagné" : "perdu"));
+      const vc = couv(E.cp5); L("CP5 couverture posee", vc ?? garde, vc != null ? "couvert à " + E.cp5.px : "gardé, " + (win ? "gagné" : "perdu"));
+    } else if (E.regle && E.regle.startsWith("billet")) {
+      const f = E.fav && E.fav.q > 0 ? E.fav.q * (1 - win) - E.fav.c : 0; L("billet + favori si recul 20 c", garde + f, (E.fav ? "couvert, " : "") + (win ? "billet gagné" : "billet perdu"));
+    } else if (E.regles) { for (const nom of E.regles) L(nom + " contre les gros", garde, (win ? "gagné" : "perdu") + " contre " + E.montant.toFixed(0) + " $"); }
+    FANT.splice(i, 1);
+  }
+}
 const FGD = {};
 function fgSurTrade(id, side, px, sz, tR) {
   const v = px * sz; if (!(v >= 150)) return;
@@ -52,7 +74,7 @@ function fgSurTrade(id, side, px, sz, tR) {
   const idX = X === "Up" ? mk.up : mk.down, idO = O === "Up" ? mk.up : mk.down;
   const a = asksTries(idX)[0], ao = asksTries(idO)[0];
   const E = { regles: v >= 300 ? ["FG150", "FG300"] : ["FG150"], t: +tR.toFixed(1), start: st, montant: +v.toFixed(2), pousse: X, cote: O, aX: a ? a[0] : null, aO: ao ? ao[0] : null, statut: "en cours" };
-  const R = recDe(st); (R.fg = R.fg || []).push(E);
+  const R = recDe(st); (R.fg = R.fg || []).push(E); FANT.push(E);
   if (!a || a[0] < 0.40 - 1e-9 || a[0] > 0.70 + 1e-9 || !ao) { E.statut = "hors zone"; return; }
   setTimeout(() => {
     let q = 0, c = 0;
@@ -80,7 +102,7 @@ function cp5SurPerp(p) {
   const X = d > 0 ? "Up" : "Down", idX = X === "Up" ? mk.up : mk.down, idO = X === "Up" ? mk.down : mk.up;
   const a0 = asksTries(idX)[0];
   const E = { regle: "JC5/CP5", t: +t.toFixed(1), start, d: +d.toFixed(2), cote: X, a0: a0 ? a0[0] : null, statut: "en cours" };
-  const R = recDe(start); (R.cp5 = R.cp5 || []).push(E);
+  const R = recDe(start); (R.cp5 = R.cp5 || []).push(E); FANT.push(E);
   if (!a0 || a0[0] < 0.40 - 1e-9 || a0[0] > 0.70 + 1e-9) { E.statut = "hors zone"; return; }
   setTimeout(() => {
     let q = 0, c = 0;
@@ -121,7 +143,7 @@ function cpSurPerp(p) {
   const X = d > 0 ? "Up" : "Down", idX = X === "Up" ? mk.up : mk.down, idO = X === "Up" ? mk.down : mk.up;
   const a0 = asksTries(idX)[0];
   const E = { regle: "CP10", t: +t.toFixed(1), start, d: +d.toFixed(2), cote: X, a0: a0 ? a0[0] : null, v0: asksTries(idX).slice(0, 3), statut: "en cours" };
-  const R = recDe(start); (R.cp = R.cp || []).push(E);
+  const R = recDe(start); (R.cp = R.cp || []).push(E); FANT.push(E);
   if (!a0 || a0[0] < 0.40 - 1e-9 || a0[0] > 0.70 + 1e-9) { E.statut = "hors zone"; return; }
   setTimeout(() => {
     let q = 0, c = 0;
@@ -1052,6 +1074,7 @@ async function gagnantDe(start) {
 }
 async function reglements() {
   await makerReglements().catch((e) => log("maker reglements", e.message));
+  await fantReglements().catch((e) => log("fantomes reglements", e.message));
   const t = now();
   for (const S of SIGNAUX) {
     if (!S.fini || S.envoye || t < S.start + 300 + 60) continue;
@@ -1079,7 +1102,8 @@ async function envoyer() {
   regles.push(...RESUMES.splice(0, RESUMES.length));
   const qd = (L) => ({ med: med(L), p10: qtl(L, 0.1), p90: qtl(L, 0.9), n: L.length });
   const enCours = {}; for (const O of OFFRES) { const e = (enCours[O.variante] = enCours[O.variante] || { posees: 0, remplies: 0 }); if (O.etat === "posee") e.posees++; if (O.remplR > 0) e.remplies++; }
-  const corps = { version: VERSION, t: now(), signaux: FINIS.splice(0, FINIS.length).map(({ id, fini, envoye, ...s }) => s), maker: regles, makerEnCours: { offres: enCours, compteurs: MSTAT },
+  const fantomes = FANT_REGLES.splice(0, FANT_REGLES.length);
+  const corps = { version: VERSION, t: now(), fantomes, signaux: FINIS.splice(0, FINIS.length).map(({ id, fini, envoye, ...s }) => s), maker: regles, makerEnCours: { offres: enCours, compteurs: MSTAT },
     chainlink: { decomposition_rtds_ms: { publication: qd(CLS.publication), transport: qd(CLS.transport), traitement_boucle: qd(CLS.boucle) }, rtds_ms: qd(CLS.delai.rtds), polybolt_ms: qd(CLS.delai.pb), twap_ms: qd(CLS.twap), premier: CLS.premier, avanceDuPremier_ms: { rtds: med(CLS.avance.filter((x) => x[0] === "rtds").map((x) => x[1])), polybolt: med(CLS.avance.filter((x) => x[0] === "pb").map((x) => x[1])) },
       messages: CLS.n, exemples: CLS.exemples || [], abonnements: CLS.pbAbos || [], polyboltConnecte: CLS.pbAuth, polyboltErreur: CLS.pbErreur, source: CLS.source, identifiants: !!PB },
     latence: { rttClob_ms: { med: med(STAT.rttClob), p10: qtl(STAT.rttClob, 0.1), p90: qtl(STAT.rttClob, 0.9), n: STAT.rttClob.length },
@@ -1090,8 +1114,8 @@ async function envoyer() {
     flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "pb", "bnd", "byob", "poly", "drb", "cbob", "xbn", "xby", "byt", "bnf", "act"].map((k) => [k, WS[k] ? { muet_s: +(now() - WS[k].msg).toFixed(1), reconnexions: WS[k].n } : null])) };
   try {
     const r = await fetch(`${U}/api/rapide/donnees`, { method: "POST", headers: { "content-type": "application/json", "x-rapide": TOKEN }, body: JSON.stringify(corps) });
-    if (!r.ok) { log("envoi HTTP", r.status); FINIS.unshift(...corps.signaux); MAKER_FINIS.push(...corps.maker.filter((x) => x.type !== "resume")); }
-  } catch (e) { log("envoi", e.message); FINIS.unshift(...corps.signaux); MAKER_FINIS.push(...corps.maker.filter((x) => x.type !== "resume")); }
+    if (!r.ok) { log("envoi HTTP", r.status); FANT_REGLES.unshift(...corps.fantomes); FINIS.unshift(...corps.signaux); MAKER_FINIS.push(...corps.maker.filter((x) => x.type !== "resume")); }
+  } catch (e) { log("envoi", e.message); FANT_REGLES.unshift(...corps.fantomes); FINIS.unshift(...corps.signaux); MAKER_FINIS.push(...corps.maker.filter((x) => x.type !== "resume")); }
   try { fs.writeFileSync(DIR + "/dernier_envoi.json", JSON.stringify(corps)); } catch (_) {}
 }
 async function versionDistante() {
@@ -1123,7 +1147,7 @@ setInterval(() => {
         const a = asksTries(idX)[0];
         if (!a || a[0] < 0.10 - 1e-9 || a[0] > 0.45 + 1e-9) continue;
         P = BF[k] = { regle: "billet + favori 50 % si recul 20 c", start, cote: X, t: Math.round(t * 1000), a0: a[0], statut: "achat" };
-        const R = recDe(start); (R.bf = R.bf || []).push(P);
+        const R = recDe(start); (R.bf = R.bf || []).push(P); FANT.push(P);
         setTimeout(() => { const f = bfAchat(idX, a[0] + 0.01, 10); P.q = f.q; P.c = f.c; P.statut = f.q > 0 && f.c >= 5 ? "ouvert" : "non rempli"; }, 164);
         continue;
       }

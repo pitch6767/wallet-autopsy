@@ -355,6 +355,18 @@ export class Bot {
           }
         }
         if (erreurs.length) { const E = (await this.state.storage.get("rap:etat")) || {}; E.erreursStockage = erreurs.slice(0, 20); await this.state.storage.put("rap:etat", E); }
+        // 13.10.2026 15:51 (Pitch : « JC5 et CP5 je ne les vois pas ») : les fantômes de Dublin (CP10, JC5, CP5, billet + favori, FG150, FG300)
+        // arrivent réglés et sont ajoutés au classement comme les autres stratégies (une seule fois par identifiant). Aucun ordre réel.
+        if (Array.isArray(d.fantomes) && d.fantomes.length) {
+          const vus = new Set((await this.state.storage.get("fant:vus")) || []);
+          for (const f of d.fantomes) {
+            if (!f || !f.id || vus.has(f.id) || typeof f.net !== "number") continue; vus.add(f.id);
+            const P = { strat: f.nom, actif: f.actif || "BTC", start: f.start, end: f.start + 300, slug: "btc-updown-5m-" + f.start, U: 0, D: 0, cash: f.net, heure: f.heure,
+              cote: f.cote, prix: f.prix, parts: f.parts, journal: [String(f.detail || "")], famille: "dublin" };
+            this.nClore(P, f.issue || "dublin");
+          }
+          await this.state.storage.put("fant:vus", [...vus].slice(-5000));
+        }
         return json({ ok: true, n: (d.signaux || []).length });
       }
       return new Response("?", { status: 404 });
@@ -2728,7 +2740,7 @@ export class Bot {
     }
     // 13.10.2026 15:39 (Pitch : « toutes les stratégies qui sont à 0 depuis le 10, on enlève ») : celles sans aucun trade depuis la remise à zéro du
     // 10.10 ne sont plus affichées (données gardées : stockage, archive raz:… et sauvegarde GitHub intacts).
-    const visibles = Object.entries(this.N.strats).filter(([k, v]) => (v.n || 0) > 0 || (v.trades || []).length > 0 || this.N.ouvertes.some((P) => (P.strat + " " + P.actif) === k));
+    const visibles = Object.entries(this.N.strats).filter(([k, v]) => !STOPPEES.has(k.replace(/ ([A-Z]+)$/, "|$1")) && ((v.n || 0) > 0 || (v.trades || []).length > 0 || this.N.ouvertes.some((P) => (P.strat + " " + P.actif) === k)));
     const resume = Object.fromEntries(visibles.map(([k, v]) => [k, { depuis: v.depuis, n: v.n, pnl: v.pnl, gains: v.gains, pertes: v.pertes,
       pertesTot: v.trades.filter((x) => x.net < 0).reduce((s2, x) => s2 + x.net, 0), pire: v.trades.length ? Math.min(...v.trades.map((x) => x.net)) : 0, ...nRisqueVue(v.rq && v.rq.hist ? v.rq : nRisqueDepuis(v.trades)) }]));
     return { depuis: this.N.depuis, typesDesaccord: this.dTypesResume(), markout: Object.fromEntries(Object.entries(this.N.markout || {}).map(([k, v]) => [k, { remplissages: v.n, ...Object.fromEntries(["0.1s", "0.5s", "1s", "3s", "10s"].map((h) => [h, v.nOk[h] ? +(100 * v[h] / v.nOk[h]).toFixed(2) : null])) }])), ordres: this.nOrdresResume(), audit: ((this.N.audit || {}).lignes || []).slice(0, 200), manquees: this.N.manq || {}, resume: { ...v1, ...resume }, reglages: NV, strats: Object.fromEntries(visibles.map(([k, v]) => [k, { depuis: v.depuis, n: v.n, gains: v.gains, pertes: v.pertes, pnl: v.pnl, issues: v.issues, trades: v.trades.slice(0, 25).map((t) => ({ heure: t.heure, cote: t.cote, U: t.U, D: t.D, issue: t.issue, net: t.net, prix: t.prix, type: t.type, etatSignal: t.etatSignal, journal: (t.journal || []).slice(-4) })) }])),
