@@ -33,3 +33,15 @@ test("strategy chooses a sale when covering is more expensive",()=>{
  s.tick({type:"settlement",at:400,winner:"Down",closed:true,resolved:true,evidence:"fixture"});
  a.equal(s.account.snapshot().settlementPnl,0);
 });
+test("late print after cancellation marks ambiguity instead of pretending it was impossible",()=>{
+ const s=new ProtectedShadow({makerFeePerShare:0});s.tick(book(0));s.tick({type:"clock",at:100});
+ s.tick({type:"trade",at:110,sourceAt:105,token:"Up",side:"SELL",price:.4,quantity:10,id:"one"});
+ s.tick({type:"clock",at:210});
+ s.tick({type:"trade",at:215,sourceAt:205,token:"Up",side:"SELL",price:.4,quantity:1,id:"late"});
+ a.equal(s.latePrints,1);
+});
+test("orders arriving after market expiry cannot fill",()=>{
+ const s=new ProtectedShadow({makerFeePerShare:0,endAt:50});s.tick(book(0));
+ s.tick({type:"clock",at:100});a.equal(s.account.snapshot().openOrders,0);
+ a.equal(s.account.snapshot().simulatedFills,0);
+});

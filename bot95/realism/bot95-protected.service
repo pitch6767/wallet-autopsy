@@ -1,0 +1,32 @@
+[Unit]
+Description=Bot95 protected shadow - public data only, no live orders
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bot95-protected
+Group=bot95-protected
+WorkingDirectory=/opt/bot95-protected
+ExecStart=/opt/bot95-protected/node /opt/bot95-protected/protected-service.cjs
+Environment=BOT95_PROTECTED_DIR=/opt/bot95-protected/data
+Environment=NODE_OPTIONS=--dns-result-order=ipv4first
+Restart=on-failure
+RestartSec=15
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/bot95-protected/data
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+MemoryMax=350M
+CPUQuota=35%
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

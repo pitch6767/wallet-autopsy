@@ -5,6 +5,7 @@ class PositionAccount {
     this.file=file; this.orders=new Map(); this.receipts=new Map(); this.events=[];
     this.qty={Up:0,Down:0}; this.spent={Up:0,Down:0}; this.proceeds=0; this.fees=0;
     this.winner=null; this.lastAt=-Infinity;
+    this.exposureMs=0;this.shareMilliseconds=0;
     if(file && fs.existsSync(file)){
       const text=fs.readFileSync(file,"utf8");
       if(text && !text.endsWith("\n"))throw Error("Incomplete journal: reconciliation required");
@@ -43,7 +44,7 @@ class PositionAccount {
       mutate=()=>this.orders.set(e.id,{...e,purpose,filled:0,feeLeft:e.feeReserve,closed:false,cancelRequested:false});
     }else if(e.type==="cancel-request"||e.type==="cancelled"){
       const o=this.orders.get(e.orderId);if(!o||o.closed)throw Error("Unknown or closed order");
-      mutate=()=>{if(e.type==="cancel-request")o.cancelRequested=true;else o.closed=true;};
+      mutate=()=>{if(e.type==="cancel-request")o.cancelRequested=true;else {o.closed=true;o.closedAt=e.at;}};
     }else if(e.type==="fill"){
       const o=this.orders.get(e.orderId);
       if(!e.id||!o||o.closed||!positive(e.quantity)||!price(e.price)||!Number.isFinite(e.fee)||e.fee<0||
@@ -69,11 +70,18 @@ class PositionAccount {
       const fd=fs.openSync(this.file,"a",0o600);
       try{fs.writeSync(fd,JSON.stringify(e)+"\n");fs.fsyncSync(fd);}finally{fs.closeSync(fd);}
     }
+    const dt=Number.isFinite(this.lastAt)?e.at-this.lastAt:0,gap=Math.abs(this.qty.Up-this.qty.Down);
+    if(gap>1e-8)this.exposureMs+=dt;
+    this.shareMilliseconds+=gap*dt;
     mutate();this.lastAt=e.at;this.events.push(e);
   }
-  snapshot(){
+  snapshot(asOf=this.lastAt){
+    const gap=Math.abs(this.qty.Up-this.qty.Down);
+    const elapsed=Number.isFinite(this.lastAt)?Math.max(0,asOf-this.lastAt):0;
     return {quantities:{...this.qty},paired:Math.min(this.qty.Up,this.qty.Down),
       unmatched:Math.abs(this.qty.Up-this.qty.Down),spent:{...this.spent},fees:this.fees,
+      exposureMs:this.exposureMs+(gap>1e-8?elapsed:0),
+      shareSeconds:(this.shareMilliseconds+gap*elapsed)/1000,
       netCash:this.proceeds-this.spent.Up-this.spent.Down,
       settlementPnl:this.winner?this.proceeds-this.spent.Up-this.spent.Down:null,
       winner:this.winner,openOrders:[...this.orders.values()].filter(o=>!o.closed).length,

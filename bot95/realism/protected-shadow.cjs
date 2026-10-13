@@ -2,13 +2,14 @@
 // No exchange client. All generated receipts explicitly say "simulation".
 const {PositionAccount}=require("./position-account.cjs");
 class ProtectedShadow {
-  constructor({latencyMs=100,maxAgeMs=500,entryBudget=10,makerFeePerShare}={}){
+  constructor({latencyMs=100,maxAgeMs=500,entryBudget=10,makerFeePerShare,accountFile,endAt=Infinity}={}){
     if(![latencyMs,maxAgeMs,entryBudget,makerFeePerShare].every(Number.isFinite)||
        latencyMs<0||maxAgeMs<=0||entryBudget<=0||entryBudget>50||makerFeePerShare<0)
       throw Error("Explicit valid simulation assumptions required");
     Object.assign(this,{latencyMs,maxAgeMs,entryBudget,makerFeePerShare});
-    this.account=new PositionAccount();this.jobs=[];this.book=null;this.t=-Infinity;
-    this.seq=0;this.prints=new Set();this.entered=false;this.trace=[];
+    this.endAt=endAt;
+    this.account=new PositionAccount(accountFile);this.jobs=[];this.book=null;this.t=-Infinity;
+    this.seq=0;this.prints=new Set();this.entered=false;this.trace=[];this.latePrints=0;
   }
   id(){return String(++this.seq);}
   emit(e){this.account.apply(e);}
@@ -32,6 +33,7 @@ class ProtectedShadow {
     while(this.jobs.length&&this.jobs[0].at<=at){
       const job=this.jobs.shift(),o=this.account.orders.get(job.orderId);
       if(!o||o.closed)continue;
+      if(job.at>=this.endAt){this.emit({type:"cancelled",orderId:o.id,at:job.at});continue;}
       if(job.type==="cancelled"){this.emit(job);continue;}
       if(!this.fresh(job.at)){this.emit({type:"cancelled",orderId:o.id,at:job.at});continue;}
       if(o.purpose==="entry"){
@@ -70,6 +72,8 @@ class ProtectedShadow {
         if(!this.prints.has(key)){
           this.prints.add(key);let remaining=e.quantity;
           for(const o of this.account.orders.values()){
+            if(o.closedAt && e.sourceAt<o.closedAt && e.sourceAt>=o.arrival &&
+               o.side===e.token && o.limit===e.price)this.latePrints++;
             if(o.closed||o.purpose!=="entry"||o.side!==e.token||o.limit!==e.price||
                o.arrival===undefined||o.arrival>e.sourceAt)continue;
             const ahead=Math.min(o.queue,remaining);o.queue-=ahead;remaining-=ahead;
@@ -81,7 +85,7 @@ class ProtectedShadow {
     }else if(e.type==="settlement"){
       this.emit(e);
     }else if(e.type!=="clock")throw Error("Unknown market event");
-    if(!this.account.winner){
+    if(!this.account.winner&&e.at<this.endAt){
       const plan=this.account.protection(this.book,e.at,{maxAgeMs:this.maxAgeMs});
       if(plan.action==="cancel-and-wait")for(const id of plan.orderIds)this.cancel(this.account.orders.get(id),e.at);
       if(plan.action==="hedge"||plan.action==="sell")

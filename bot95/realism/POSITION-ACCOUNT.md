@@ -71,12 +71,41 @@ une réconciliation : l'import est arrêté, pas silencieusement corrigé.
 Ce livrable rend testable la chaîne complète de comptabilité et de décisions.
 Il ne signifie PAS que le bot officiel est corrigé ou que son PnL est fiable.
 Le moteur est raccordé au fantôme séparé protected-shadow.cjs, avec tests de
-couverture partielle et de revente. Le branchement de la collecte continue reste
-à effectuer. Les anciennes archives réduites au carnet Up ne doivent pas être
+couverture partielle et de revente. La collecte continue est fournie par
+protected-service.cjs et le service distinct bot95-protected. Les anciennes
+archives réduites au carnet Up ne doivent pas être
 transformées en un faux carnet Down pour alimenter ce moteur.
 Les tests utilisent des événements synthétiques, pas une validation sur un marché.
 Un arrêt du simulateur ne restaure pas ses files d'attente ni ses jobs en cours ;
 une reprise doit recommencer un nouveau cycle, jamais recoller silencieusement
 des résultats. Le journal PositionAccount restaure, lui, les événements comptables.
 Les frais et latences restent des hypothèses non calibrées ;
-aucun déploiement n'est autorisé par ce document.
+le déploiement du service séparé a été explicitement autorisé par Pitch.
+
+## Service séparé sur le VPS
+
+Le service bot95-protected utilise son propre utilisateur, son propre dossier
+/opt/bot95-protected et une copie privée de Node. Il n'écoute sur aucun port.
+Il ne modifie pas bot95-rapide, Limitless Pulse, Caddy, le pare-feu ou le Worker.
+Les carnets des DEUX jetons et les transactions viennent du WebSocket public CLOB.
+Les marchés et résolutions viennent de GET Gamma ; aucun secret n'est chargé.
+
+Le barème crypto_fees_v2 est reconnu explicitement ; un autre barème bloque.
+Source consultée : https://docs.polymarket.com/trading/fees, formule
+quantité × 0,07 × prix × (1 − prix), maker sans frais. Aucun rebate inventé.
+Le délai de 100 ms reste une hypothèse, pas une latence d'ordre mesurée.
+
+data/latest.json : état courant. data/report.json : bilan des cycles réglés
+complets seulement, avec les incomplets exclus et les règlements en attente.
+Chaque cycle conserve son journal comptable et ses événements normalisés,
+compressés après clôture et conservés 48 h. Les résumés comptables sont conservés.
+L'exposition avant règlement, sa durée et les parts-secondes restent distinctes
+du solde final après paiement.
+
+Un démarrage en cours de cycle, une interruption du flux, une rupture de chronologie
+ou un print tardif ambigu après annulation exclut le cycle du bilan validé.
+« Complet » signifie complet pour ce modèle, jamais preuve d'exécution réelle.
+
+Contrôles : systemctl status bot95-protected ;
+journalctl -u bot95-protected --no-pager -n 20.
+Arrêt de ce seul fantôme : systemctl stop bot95-protected.
