@@ -535,6 +535,10 @@ export class Bot {
       let pu = null; try { pu = this.probaV1(a, mk); } catch (_) {}
       const b = (id, c) => (this.livreTrie(id, c)[0] || [null, null]);
       const [ub, ubs] = b(mk.up, "bids"), [ua, uas] = b(mk.up, "asks"), [db, dbs] = b(mk.down, "bids"), [da, das] = b(mk.down, "asks");
+      // H1075 (13.10.2026) : nombre de passages du milieu Up par 0,5 depuis le début du cycle (échantillon 1 s), pour les fantômes « + calme »
+      if (a === "BTC" && ub != null && ua != null) { const X = (this._cross = this._cross || {}), sec = Math.floor(t);
+        if (X.start !== mk.start) { X.start = mk.start; X.n = 0; X.sg = null; X.sec = 0; }
+        if (sec !== X.sec) { X.sec = sec; const sg = (ub + ua) / 2 >= 0.5 ? 1 : -1; if (X.sg != null && sg !== X.sg) X.n++; X.sg = sg; } }
       const px = (src) => (this.f[a][src] ? +this.f[a][src].p : null);
       const r4 = (x) => (x == null ? null : +x.toFixed(4));
       const ligne = [+t.toFixed(2), mk.start, r4(pu), ub, ua, db, da, ubs && Math.round(ubs), uas && Math.round(uas), dbs && Math.round(dbs), das && Math.round(das),
@@ -1172,6 +1176,7 @@ export class Bot {
         { const R = (this._pch = this._pch || []); R.push([t, c.asset_id, c.side === "BUY" ? 0 : 1, +c.price, apres - avant]); while (R.length && R[0][0] < t - 5) R.shift(); }
       }
     } else if (ev === "last_trade_price") {
+      { const R = (this._ltp = this._ltp || []); R.push([t, m.asset_id, m.side === "BUY" ? 1 : 0, +m.price * +m.size]); while (R.length && R[0][0] < t - 35) R.shift(); }
       this.noterFlux(m.asset_id, "echange_" + (m.side === "BUY" ? "achat" : "vente"), +m.price * +m.size, t);
       this.pmAcc(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size;
       this.sigP(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size;
@@ -1506,12 +1511,16 @@ export class Bot {
     // 13.10.2026 21:35 (Pitch : « tes dernières trouvailles avec les autres stratégies du bot ») : on note le déséquilibre du carnet Polymarket
     // de NOTRE jeton au moment de l'achat (5 premiers niveaux, (acheteurs − vendeurs) / total). À la clôture, si > 0, une copie du trade est
     // comptée dans la stratégie fantôme « <nom> + carnet » (H1070). Aucun ordre réel ; la stratégie d'origine est inchangée.
-    if (a === "BTC" && !/ \+ (carnet|carnet pression|ecart serre|carnet ecart serre)$/.test(strat)) { try { const c = extra && extra.cote;
+    if (a === "BTC" && !/ \+ (carnet|carnet pression|ecart serre|carnet ecart serre|calme|contre foule|ecart carnet calme)$/.test(strat)) { try { const c = extra && extra.cote;
       if (c === "Up" || c === "Down") { const id = c === "Up" ? mk.up : mk.down, s5 = (k) => this.livreTrie(id, k).slice(0, 5).reduce((x, y) => x + y[1], 0), b = s5("bids"), q = s5("asks");
         if (b + q > 0) P.carnetPour = +((b - q) / (b + q)).toFixed(3);
         // H1073 (accord de Pitch 13.10.2026 22:26 « Go en fantôme ») : pression du carnet Up sur 3 s (±3 c du milieu), signée pour notre côté
         const bu = (this.livreTrie(mk.up, "bids")[0] || [null])[0], au = (this.livreTrie(mk.up, "asks")[0] || [null])[0];
         if (bu != null && au != null) P.ecart = +(au - bu).toFixed(3);   // H1074 (22:35) : écart Polymarket à l'achat
+        // H1075 : flux des preneurs Polymarket sur 30 s (achats de notre jeton ou ventes de l'autre = pour nous), et passages par 0,5
+        { const t30 = now() - 30, nous = id; let fl = 0, vol = 0; for (const [t2, id2, sb, usd] of this._ltp || []) { if (t2 < t30 || (id2 !== mk.up && id2 !== mk.down)) continue;
+            vol += usd; fl += ((id2 === nous) === (sb === 1) ? 1 : -1) * usd; } if (vol > 0) P.flux30 = +(fl / vol).toFixed(3); }
+        if (this._cross && this._cross.start === mk.start) P.passages = this._cross.n;
         if (bu != null && au != null) { const mid = (bu + au) / 2, t = now(); let ab = 0, db = 0, aa = 0, da = 0;
           for (const [t2, id2, sd, px, dq] of this._pch || []) { if (t2 < t - 3 || id2 !== mk.up || Math.abs(px - mid) > 0.03 + 1e-9) continue;
             if (sd === 0) { if (dq > 0) ab += dq; else db -= dq; } else { if (dq > 0) aa += dq; else da -= dq; } }
@@ -1593,6 +1602,12 @@ export class Bot {
     const kh = "hist:" + P.strat + " " + P.actif, ligne = [P.heure, P.cote || null, P.prix ?? null, P.net, issue, P.proba0 ?? null, P.restant_s ?? null];
     this.state.storage.get(kh).then((L) => { L = L || []; L.push(ligne); if (L.length > 1500) L.splice(0, L.length - 1500); return this.state.storage.put(kh, L); }).catch((err) => this.erreur("archive " + kh, err));
     this.N.ouvertes = this.N.ouvertes.filter((x) => x !== P);
+    // H1075 (accord de Pitch « fantômes de toutes tes trouvailles ») : cycle calme (≤ 2 passages par 0,5), contre la foule (flux preneurs 30 s ≤ −0,296),
+    // et combinaison écart ≤ 1 c + carnet pour nous + cycle calme. Copies seulement ; aucun ordre réel.
+    if (!P.copieCarnet && P.actif === "BTC") { const cp = (suf) => { try { this.nClore({ ...P, strat: P.strat + suf, copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie" + suf, err); } };
+      if (P.passages != null && P.passages <= 2) cp(" + calme");
+      if (P.flux30 != null && P.flux30 <= -0.296) cp(" + contre foule");
+      if (P.passages != null && P.passages <= 2 && P.ecart != null && P.ecart <= 0.011 && P.carnetPour > 0) cp(" + ecart carnet calme"); }
     // H1074 (accord de Pitch « fantômes de toutes tes trouvailles », 13.10.2026) : écart Polymarket ≤ 1 c à l'achat → copie « + ecart serre »
     if (P.ecart != null && P.ecart <= 0.011 && !P.copieCarnet && P.actif === "BTC") { try { this.nClore({ ...P, strat: P.strat + " + ecart serre", copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie ecart", err); } }
     if (P.carnetPour > 0 && !P.copieCarnet && P.actif === "BTC") { try { this.nClore({ ...P, strat: P.strat + " + carnet", copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie carnet", err); }
