@@ -49,13 +49,13 @@ function cpSurPerp(p) {
   cpDernier = t;
   const X = d > 0 ? "Up" : "Down", idX = X === "Up" ? mk.up : mk.down, idO = X === "Up" ? mk.down : mk.up;
   const a0 = asksTries(idX)[0];
-  const E = { regle: "CP10", t: +t.toFixed(1), start, d: +d.toFixed(2), cote: X, a0: a0 ? a0[0] : null, statut: "en cours" };
+  const E = { regle: "CP10", t: +t.toFixed(1), start, d: +d.toFixed(2), cote: X, a0: a0 ? a0[0] : null, v0: asksTries(idX).slice(0, 3), statut: "en cours" };
   const R = recDe(start); (R.cp = R.cp || []).push(E);
   if (!a0 || a0[0] < 0.40 - 1e-9 || a0[0] > 0.70 + 1e-9) { E.statut = "hors zone"; return; }
   setTimeout(() => {
     let q = 0, c = 0;
     for (const [px, sz] of asksTries(idX)) { if (px > a0[0] + 0.01 + 1e-9) break; const u = px + FEE7(px); const k = Math.min(sz, (10 - c) / u); if (k <= 1e-9) break; q += k; c += k * u; }
-    E.q = +q.toFixed(3); E.c = +c.toFixed(4);
+    E.q = +q.toFixed(3); E.c = +c.toFixed(4); E.v164 = asksTries(idX).slice(0, 3); E.o164 = asksTries(idO).slice(0, 2);
     if (q <= 0 || c < 5) { E.statut = "non rempli"; return; }
     const b = Math.floor((1 - 0.06 - c / q) * 100 + 1e-9) / 100; E.b = b;
     const oa = asksTries(idO)[0];
