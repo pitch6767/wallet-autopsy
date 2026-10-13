@@ -362,6 +362,7 @@ function surPoly(m) {
   } else if (m.event_type === "price_change") {
     for (const c of m.price_changes || []) { recEv(c.asset_id, ["P", +tR.toFixed(1), ts, c.side === "BUY" ? 0 : 1, +c.price, +c.size]); const B = L(c.asset_id), cote = c.side === "BUY" ? B.bids : B.asks;
       const avant = cote.get(+c.price) || 0; +c.size ? cote.set(+c.price, +c.size) : cote.delete(+c.price); B.tRecu = tR; B.tsPoly = ts; touches.add(c.asset_id);
+      try { PCH.push([tR, c.asset_id, c.side === "BUY" ? 0 : 1, +c.size - avant]); while (PCH.length && PCH[0][0] < tR - 4000) PCH.shift(); } catch (_) {}
       if (c.side === "BUY") { try { makerNiveau(c.asset_id, +c.price, avant, +c.size); } catch (_) {} } }
   } else return;
   if (ts) { STAT.retardPoly.push(tR - ts); if (STAT.retardPoly.length > 2000) STAT.retardPoly.shift(); }
@@ -1205,7 +1206,7 @@ function fantAchat(start, nom, X, dollars, info) {
     for (const [px, sz] of asksTries(id)) { if (px > a[0] + 0.01 + 1e-9) break; const u = px + FEE7(px); const k = Math.min(sz, (dollars - c) / u); if (k <= 1e-9) break; q += k; c += k * u; }
     E.q = +q.toFixed(3); E.c = +c.toFixed(4); E.statut = q > 0 && c >= dollars / 2 ? "ouvert" : "non rempli"; if (E.statut !== "ouvert") E.q = 0; }, 164);
 }
-const BYH = []; let by1Dernier = 0;
+const BYH = [], PCH = []; let by1Dernier = 0;
 function by1SurTrade(p) {
   const t = nowMs(); BYH.push([t, p]); while (BYH.length && BYH[0][0] < t - 1000) BYH.shift();
   let p0 = null; for (const [tt, pp] of BYH) if (tt >= t - 300) { p0 = pp; break; }
@@ -1218,6 +1219,12 @@ function by1SurTrade(p) {
   const a = asksTries(X === "Up" ? mk.up : mk.down)[0];
   if (conf > 0 || !a || a[0] < 0.40 - 1e-9 || a[0] > 0.70 + 1e-9) return;
   fantAchat(start, "BY1 Bybit premier 10 $", X, 10, { d: +d.toFixed(2) }); fantAchat(start, "BY1 Bybit premier 100 $", X, 100, { d: +d.toFixed(2) });
+  // H1073 (accord de Pitch 13.10.2026 21:08 « fantômes de toutes tes trouvailles ») : BY1 quand les ordres du carnet Polymarket (jeton Up, 3 s)
+  // poussaient CONTRE le saut (renfort net acheteurs − renfort net vendeurs, signé pour le côté du saut, < 0).
+  { const tt = nowMs(); let ab = 0, db = 0, aa = 0, da = 0;
+    for (const [t2, id, sd, dq] of PCH) { if (t2 < tt - 3000 || id !== mk.up) continue; if (sd === 0) { if (dq > 0) ab += dq; else db -= dq; } else { if (dq > 0) aa += dq; else da -= dq; } }
+    const tot = ab + db + aa + da;
+    if (tot > 0) { const pr = sg * ((ab - db) - (aa - da)) / (tot + 1); if (pr < 0) fantAchat(start, "BY1 pression contre 10 $", X, 10, { d: +d.toFixed(2), pr: +pr.toFixed(3) }); } }
   // H1069 (accord de Pitch 13.10.2026 21:19 « combines ») : en plus, saut CONTRE l'élan des 30 s du perp et marché calme (σ 300 s / σ 3 600 s < 1)
   const n = PERP1H.length;
   if (n >= 1800) { const m30 = sg * (PERP1H[n - 1] - PERP1H[n - 31]), s1h = sdDiff(PERP1H), s300 = sdDiff(PERP1H.slice(-301));
