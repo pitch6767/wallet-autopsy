@@ -6602,17 +6602,74 @@
 ],
 "start": 1791831300,
 "slug": "btc-updown-5m-1791831300"
+},
+"2026-10-12T22:23:52.173Z|Down": {
+"heure": "2026-10-12T22:23:52.173Z",
+"cote": "Down",
+"prix": 0.1597,
+"parts": 105,
+"U": 0,
+"D": 105,
+"cash": -16.766384,
+"net": -16.77,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.473,
+"restant_s": 68,
+"journal": [
+"232.2s écart 0.32 (modèle 0.473, vendeur 0.15), 68 s restantes ; 3 s avant : Binance 15.1, perp 14.1 (+ = dans notre sens)"
+],
+"start": 1791843600,
+"slug": "btc-updown-5m-1791843600"
+},
+"2026-10-12T22:13:58.732Z|Down": {
+"heure": "2026-10-12T22:13:58.732Z",
+"cote": "Down",
+"prix": 0.2115,
+"parts": 27,
+"U": 0,
+"D": 27,
+"cash": 21.28896,
+"net": 21.29,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.516,
+"restant_s": 61,
+"journal": [
+"238.7s écart 0.32 (modèle 0.516, vendeur 0.2), 61 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1791843000,
+"slug": "btc-updown-5m-1791843000"
+},
+"2026-10-12T20:48:43.994Z|Up": {
+"heure": "2026-10-12T20:48:43.994Z",
+"cote": "Up",
+"prix": 0.1644,
+"parts": 20,
+"U": 20,
+"D": 0,
+"cash": 16.711432,
+"net": 16.71,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.471,
+"restant_s": 76,
+"journal": [
+"224.0s écart 0.32 (modèle 0.471, vendeur 0.15), 76 s restantes ; 3 s avant : Binance 10.0, perp 15.5 (+ = dans notre sens)"
+],
+"start": 1791837900,
+"slug": "btc-updown-5m-1791837900"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 189,
-"gains": 48,
-"pertes": 141,
-"pnl": -62.500000000000014
+"n": 192,
+"gains": 50,
+"pertes": 142,
+"pnl": -41.27000000000001
 },
-"n_sauves": 341,
-"maj": "2026-10-12 19:12 UTC",
+"n_sauves": 344,
+"maj": "2026-10-13 00:41 UTC",
 "archive": [
 [
 "2026-10-09T05:38:25.744Z",
@@ -9349,6 +9406,33 @@
 "perdu",
 0.459,
 75
+],
+[
+"2026-10-12T20:48:43.994Z",
+"Up",
+0.1644,
+16.71,
+"gagné",
+0.471,
+76
+],
+[
+"2026-10-12T22:13:58.732Z",
+"Down",
+0.2115,
+21.29,
+"gagné",
+0.516,
+61
+],
+[
+"2026-10-12T22:23:52.173Z",
+"Down",
+0.1597,
+-16.77,
+"perdu",
+0.473,
+68
 ]
 ]
 }
