@@ -27,7 +27,47 @@ function noter(src, p, tsSrc) {
   const s = Math.floor(t); let o = sec.get(s);
   if (!o) { o = {}; sec.set(s, o); if (sec.size > 800) sec.delete(sec.keys().next().value); }
   o[src] = p;
+  if (src === "perp") { try { cpSurPerp(p); } catch (_) {} }
   if (src === "perp" || src === "okx") evaluer(src);
+}
+// ---------------------------------------------------------------- FANTÔME CP10 « jambe + couverture posée » (H1059, accord de Pitch 13.10.2026 12:01)
+// Le perp bouge d'au moins 10 $ en 300 ms (30 à 280 s écoulées, pause 5 s) ; côté X du mouvement au meilleur vendeur 0,40–0,70 ; achat fictif
+// preneur 10 $ sur le carnet vu à +164 ms (limite + 1 c) ; au même instant, achat fictif POSÉ de l'opposé au prix b = 1 − 0,06 − prix payé
+// (arrondi inférieur au centime) : exécuté tout de suite si le vendeur de l'opposé est déjà ≤ b (preneur), sinon rempli (prudent) quand le
+// vendeur de l'opposé descend à b − 1 c dans les 10 s (optimiste : touche b) ; sinon X gardé jusqu'au règlement. Enregistré dans le
+// fichier du cycle (clé « cp »). AUCUN ORDRE RÉEL.
+const CPH = []; let cpDernier = 0;
+function cpSurPerp(p) {
+  const t = nowMs(); CPH.push([t, p]); while (CPH.length && CPH[0][0] < t - 1000) CPH.shift();
+  let p0 = null; for (const [tt, pp] of CPH) if (tt >= t - 300) { p0 = pp; break; }
+  if (p0 == null) return;
+  const d = p - p0;
+  if (Math.abs(d) < 10 || t - cpDernier < 5000) return;
+  const start = Math.floor(t / 300000) * 300, el = t / 1000 - start;
+  if (el < 30 || el > 280) return;
+  const mk = M[start]; if (!mk || !mk.up || !mk.down) return;
+  cpDernier = t;
+  const X = d > 0 ? "Up" : "Down", idX = X === "Up" ? mk.up : mk.down, idO = X === "Up" ? mk.down : mk.up;
+  const a0 = asksTries(idX)[0];
+  const E = { regle: "CP10", t: +t.toFixed(1), start, d: +d.toFixed(2), cote: X, a0: a0 ? a0[0] : null, statut: "en cours" };
+  const R = recDe(start); (R.cp = R.cp || []).push(E);
+  if (!a0 || a0[0] < 0.40 - 1e-9 || a0[0] > 0.70 + 1e-9) { E.statut = "hors zone"; return; }
+  setTimeout(() => {
+    let q = 0, c = 0;
+    for (const [px, sz] of asksTries(idX)) { if (px > a0[0] + 0.01 + 1e-9) break; const u = px + FEE7(px); const k = Math.min(sz, (10 - c) / u); if (k <= 1e-9) break; q += k; c += k * u; }
+    E.q = +q.toFixed(3); E.c = +c.toFixed(4);
+    if (q <= 0 || c < 5) { E.statut = "non rempli"; return; }
+    const b = Math.floor((1 - 0.06 - c / q) * 100 + 1e-9) / 100; E.b = b;
+    const oa = asksTries(idO)[0];
+    if (oa && oa[0] <= b + 1e-9) { E.couv = { mode: "preneur", px: oa[0], ms: 164 }; E.couvOpt = E.couv; E.statut = "couvert"; return; }
+    let n = 0;
+    const iv = setInterval(() => {
+      n++; const o = asksTries(idO)[0];
+      if (o && !E.couvOpt && o[0] <= b + 1e-9) E.couvOpt = { mode: "posé", px: b, ms: 164 + 250 * n };
+      if (o && o[0] <= b - 0.01 + 1e-9) { E.couv = { mode: "posé", px: b, ms: 164 + 250 * n }; E.statut = "couvert"; clearInterval(iv); return; }
+      if (n >= 40) { E.statut = "gardé"; clearInterval(iv); }
+    }, 250);
+  }, 164);
 }
 // Chainlink arrive par deux flux (11.10.2026) : RTDS (ancien, public) et PolyBolt (nouveau, identifiants API). On garde l'observation la plus récente.
 const CLS = { publication: [], transport: [], boucle: [], delai: { rtds: [], pb: [] }, premier: { rtds: 0, pb: 0 }, avance: [], vu: new Map(), dernObs: { rtds: null, pb: null }, n: { rtds: 0, pb: 0 }, pbAuth: false, pbErreur: null, source: null, twap: [] };
