@@ -9,3 +9,8 @@
    14.10 à 14 h 30** : les résultats de cette fenêtre seront à lire à part.
 4. **Téléchargement des 27 jours** : les morceaux de 7 jours tombaient en panne (mémoire du serveur GitHub) ; le script écrit maintenant chaque jour
    dès qu'il est fini, et les jours manquants sont relancés par morceaux de 3–4 jours.
+
+5. **Sorties anticipées** (trades du bot, carnet Dublin) : vendre quand le prix a fait ×1,5, ×2 ou ×3, ou couper à −50 %, ne fait pas mieux
+   que garder jusqu'au règlement de façon stable (billets ≤ 0,25 : garder −4 322 / +12 022 / +3 282 $ ; ×2 : −6 978 / +5 716 / −642 $). On garde.
+6. **Temps restant à l'achat** : 120–180 s restantes positif dans les 3 périodes (+9 % / +67 % / +45 %) ; 60–120 s négatif en validation et test
+   (+10 % / −28 % / −20 %) ; le reste varie. Piste seulement.
