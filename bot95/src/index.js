@@ -2,6 +2,9 @@ import { Reel, identifiantsLecture } from "./reel.js";
 import { RAPIDE_VERSION, RAPIDE_CODE, RAPIDE_LAUNCHER } from "./rapide_code.js";
 import { QTWAP } from "./quantiles_twap.js";
 import { BETES } from "./portefeuilles_betes.js";
+// 13.10.2026 13:27 (Pitch : « Tu peux enlever les stratégies à moins 1000 $ ») : résultat affiché par le bot < −1 000 $ (depuis le 10.10 11:50 UTC).
+const STOPPEES = new Set(["V2-E persistant|BTC", "V2-H veto complet|BTC", "desaccord 20 60-180 s|BTC", "corrige : desaccord 20|ETH",
+  "corrige marge mesuree : V2-F|ETH", "corrige : V2-F ecart qui grandit|ETH"]);
 // bot95 v2 — option A sur les 7 cryptos 5 min de Polymarket (BTC, ETH, SOL, XRP, DOGE, BNB, HYPE).
 // MODE FANTÔME : aucun ordre réel, aucune clé. Le bot note ce qu'il aurait fait.
 // Règle Polymarket : Up si moyenne Chainlink 60 s à la fin >= moyenne 60 s au début (prix d'exercice publié par Polymarket).
@@ -1462,6 +1465,9 @@ export class Bot {
   }
   nPos(strat, a, mk, extra) {
     const P = { strat, actif: a, start: mk.start, end: mk.end, slug: mk.slug, up: mk.up, down: mk.down, U: 0, D: 0, cash: 0, heure: new Date().toISOString(), journal: [], ...extra };
+    // 13.10.2026 13:27 (Pitch : « Tu peux enlever les stratégies à moins 1000 $ ») : ces stratégies n'ouvrent plus de position (rien n'est compté
+    // ni affiché pour elles). Leur signal reste transmis au consensus K2/K5/K9 pour que ces fantômes approuvés restent inchangés.
+    if (STOPPEES.has(strat + "|" + a)) { P.stoppee = true; try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); } return P; }
     this.N.ouvertes.push(P);
     try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); }
     return P;
