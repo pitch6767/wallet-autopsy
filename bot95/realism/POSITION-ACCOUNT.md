@@ -89,6 +89,11 @@ Le service bot95-protected utilise son propre utilisateur, son propre dossier
 Il ne modifie pas bot95-rapide, Limitless Pulse, Caddy, le pare-feu ou le Worker.
 Les carnets des DEUX jetons et les transactions viennent du WebSocket public CLOB.
 Les marchés et résolutions viennent de GET Gamma ; aucun secret n'est chargé.
+Les mises à jour des carnets sont ordonnées par niveau de prix et non par un
+horodatage global : les niveaux distincts peuvent arriver dans un ordre différent.
+Les snapshots conservent les mises à jour de niveaux plus récentes qu'eux.
+La connexion est maintenue par un PING toutes les 10 secondes.
+Tests complémentaires : node --test public-books.test.cjs.
 
 Le barème crypto_fees_v2 est reconnu explicitement ; un autre barème bloque.
 Source consultée : https://docs.polymarket.com/trading/fees, formule
@@ -97,6 +102,7 @@ Le délai de 100 ms reste une hypothèse, pas une latence d'ordre mesurée.
 
 data/latest.json : état courant. data/report.json : bilan des cycles réglés
 complets seulement, avec les incomplets exclus et les règlements en attente.
+Le PnL est null, et non artificiellement zéro, tant qu'aucun cycle n'est admissible.
 Chaque cycle conserve son journal comptable et ses événements normalisés,
 compressés après clôture et conservés 48 h. Les résumés comptables sont conservés.
 L'exposition avant règlement, sa durée et les parts-secondes restent distinctes

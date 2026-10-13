@@ -2,6 +2,7 @@
 const fs=require("node:fs"),path=require("node:path"),zlib=require("node:zlib");
 const {ProtectedShadow}=require("./protected-shadow.cjs");
 const {PositionAccount}=require("./position-account.cjs");
+const publicBooks=require("./public-books.cjs");
 const DIR=process.env.BOT95_PROTECTED_DIR||path.join(__dirname,"data");
 fs.mkdirSync(DIR,{recursive:true});
 const log=(type,fields={})=>console.log(JSON.stringify({at:new Date().toISOString(),type,...fields}));
@@ -36,12 +37,13 @@ function emit(c,e){
 }
 function top(c,at){
  if(c.tokens.some(id=>!c.maps[id]||at-c.maps[id].received>500||at-c.maps[id].source>1000))return null;
- const out={type:"book",at};
+ const out={type:"book",at,sourceAt:{}};
  for(let i=0;i<2;i++){
    const b=c.maps[c.tokens[i]],bid=[...b.bids].sort((a,b)=>b[0]-a[0])[0],ask=[...b.asks].sort((a,b)=>a[0]-b[0])[0];
    if(!bid||!ask||bid[0]<=0||ask[0]>=1||bid[0]>=ask[0])return null;
    const q=x=>({price:x[0],quantity:x[1],feePerShare:.07*x[0]*(1-x[0])});
    out[i===0?"Up":"Down"]={bid:q(bid),ask:q(ask)};
+   out.sourceAt[i===0?"Up":"Down"]=b.source;
  }
  return out;
 }
@@ -52,16 +54,11 @@ function message(c,m){
  if(!["book","price_change","last_trade_price"].includes(m.event_type))return;
  if(!Number.isFinite(ts)||ts>at+50){incomplete(c,"invalid source timestamp");return;}
  if(m.event_type==="book" && c.tokens.includes(m.asset_id)){
-   if(c.maps[m.asset_id]&&ts<c.maps[m.asset_id].source){incomplete(c,"out-of-order book snapshot");return;}
-   c.maps[m.asset_id]={bids:new Map(m.bids.map(x=>[+x.price,+x.size]).filter(x=>x[1]>0)),
-     asks:new Map(m.asks.map(x=>[+x.price,+x.size]).filter(x=>x[1]>0)),received:at,source:ts};
+   c.maps[m.asset_id]=publicBooks.snapshot(c.maps[m.asset_id],m,at);
  }else if(m.event_type==="price_change"){
    for(const x of m.price_changes||[]){
      const b=c.maps[x.asset_id];if(!b)continue;
-     if(ts<b.source){incomplete(c,"out-of-order book update");continue;}
-     const side=x.side==="BUY"?b.bids:b.asks;
-     if(+x.size>0)side.set(+x.price,+x.size);else side.delete(+x.price);
-     b.received=at;b.source=ts;
+     publicBooks.delta(b,x,ts,at);
    }
  }else if(m.event_type==="last_trade_price" && c.tokens.includes(m.asset_id)){
    c.prints++;emit(c,{type:"trade",at,sourceAt:ts,token:c.tokens.indexOf(m.asset_id)===0?"Up":"Down",
@@ -140,7 +137,7 @@ async function settlements(){
  atomic(path.join(DIR,"report.json"),{at:Date.now(),version:VERSION,
    verdict:"SIMULATION_NOT_LIVE_VALIDATED",cycles:cycles.length,eligibleSettledCycles:eligible.length,
    excludedIncomplete:cycles.filter(s=>!s.complete).length,pending:cycles.filter(s=>!s.position.winner).length,
-   simulatedNetPnl:eligible.reduce((n,s)=>n+s.position.settlementPnl,0),
+   simulatedNetPnl:eligible.length?eligible.reduce((n,s)=>n+s.position.settlementPnl,0):null,
    filledCycles:eligible.filter(s=>s.position.simulatedFills>0).length,
    fees:eligible.reduce((n,s)=>n+s.position.fees,0),recent:cycles.slice(-12)});
 }
@@ -158,7 +155,8 @@ setInterval(async()=>{
    }
  }catch(e){fatal(e);}
 },100);
-setInterval(()=>{if(current){save(current);log("heartbeat",status(current));if(current.ws?.readyState===1)current.ws.send("PING");}},30000);
+setInterval(()=>{if(current){save(current);log("heartbeat",status(current));}},30000);
+setInterval(()=>{if(current?.ws?.readyState===1)current.ws.send("PING");},10000);
 let settling=false;
 setInterval(async()=>{if(settling)return;settling=true;try{await settlements();}catch(e){log("settlement-error",{error:e.message});}finally{settling=false;}},60000);
 process.on("SIGTERM",()=>{shutting=true;if(current){incomplete(current,"service interrupted");save(current);fs.fsyncSync(current.events);}process.exit(0);});
