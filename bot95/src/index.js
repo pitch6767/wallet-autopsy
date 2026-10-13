@@ -800,6 +800,14 @@ export class Bot {
   noter(a, k, p, t) {
     if (V1.ACTIFS.includes(a) && EVT_SRC[k]) { const last = (this._evL = this._evL || {})[a + k]; if (last !== p) { this._evL[a + k] = p; this.evt(a[0] + EVT_SRC[k], p); } }
     this.f[a][k] = { p, t };
+    // H1077 (Pitch 14.10.2026 00:18) : sauts Bybit vus en premier (≥ 5 $ en 0,3 s, OKX / Binance / Coinbase pas bougé de 2 $ dans le même sens)
+    if (a === "BTC" && (k === "perp" || k === "okx" || k === "bn" || k === "cb")) { try {
+      const H = (this._pxh = this._pxh || {}), L = (H[k] = H[k] || []); L.push([t, p]); while (L.length && L[0][0] < t - 2) L.shift();
+      if (k === "perp") { let p0 = null; for (const [t2, q] of L) if (t2 >= t - 0.3) { p0 = q; break; }
+        const d = p0 == null ? 0 : p - p0, J = (this._byJ = this._byJ || []);
+        if (Math.abs(d) >= 5 && !(J.length && t - J[J.length - 1][0] < 5)) { const sg = d > 0 ? 1 : -1;
+          const mv = (src) => { const M2 = H[src] || []; if (!M2.length) return 0; let q0 = null; for (const [t2, q] of M2) { if (t2 <= t - 0.3) q0 = q; else break; } return q0 == null ? 0 : M2[M2.length - 1][1] - q0; };
+          if (!["okx", "bn", "cb"].some((src) => sg * mv(src) >= 2)) { J.push([t, sg]); while (J.length && J[0][0] < t - 30) J.shift(); } } } } catch (_) {} }
     const s = Math.floor(t), m = this.sec[a];
     let o = m.get(s);
     if (!o) { o = {}; m.set(s, o); if (m.size > 700) m.delete(m.keys().next().value); }
@@ -1511,7 +1519,7 @@ export class Bot {
     // 13.10.2026 21:35 (Pitch : « tes dernières trouvailles avec les autres stratégies du bot ») : on note le déséquilibre du carnet Polymarket
     // de NOTRE jeton au moment de l'achat (5 premiers niveaux, (acheteurs − vendeurs) / total). À la clôture, si > 0, une copie du trade est
     // comptée dans la stratégie fantôme « <nom> + carnet » (H1070). Aucun ordre réel ; la stratégie d'origine est inchangée.
-    if (a === "BTC" && !/ \+ (carnet|carnet pression|ecart serre|carnet ecart serre|calme|contre foule|ecart carnet calme)$/.test(strat)) { try { const c = extra && extra.cote;
+    if (a === "BTC" && !/ \+ (carnet|carnet pression|ecart serre|carnet ecart serre|calme|contre foule|ecart carnet calme|foule bybit|foule bybit x2)$/.test(strat)) { try { const c = extra && extra.cote;
       if (c === "Up" || c === "Down") { const id = c === "Up" ? mk.up : mk.down, s5 = (k) => this.livreTrie(id, k).slice(0, 5).reduce((x, y) => x + y[1], 0), b = s5("bids"), q = s5("asks");
         if (b + q > 0) P.carnetPour = +((b - q) / (b + q)).toFixed(3);
         // H1073 (accord de Pitch 13.10.2026 22:26 « Go en fantôme ») : pression du carnet Up sur 3 s (±3 c du milieu), signée pour notre côté
@@ -1521,6 +1529,9 @@ export class Bot {
         { const t30 = now() - 30, nous = id; let fl = 0, vol = 0; for (const [t2, id2, sb, usd] of this._ltp || []) { if (t2 < t30 || (id2 !== mk.up && id2 !== mk.down)) continue;
             vol += usd; fl += ((id2 === nous) === (sb === 1) ? 1 : -1) * usd; } if (vol > 0) P.flux30 = +(fl / vol).toFixed(3); }
         if (this._cross && this._cross.start === mk.start) P.passages = this._cross.n;
+        // H1077 : saut Bybit vu en premier CONTRE nous dans les 10 s ; et coût d'une mise doublée (même carnet, limite prix + 2 c)
+        { const t10 = now() - 10, sgn = c === "Up" ? 1 : -1; P.bySautContre = (this._byJ || []).some(([t2, sg]) => t2 >= t10 && sg === -sgn);
+          if (extra.parts > 0 && extra.prix > 0) { const r2 = this.nAcheter(id, 2 * extra.parts, extra.prix + 0.02); P.x2 = { parts: +r2.parts.toFixed(2), cout: +r2.cout.toFixed(3) }; } }
         if (bu != null && au != null) { const mid = (bu + au) / 2, t = now(); let ab = 0, db = 0, aa = 0, da = 0;
           for (const [t2, id2, sd, px, dq] of this._pch || []) { if (t2 < t - 3 || id2 !== mk.up || Math.abs(px - mid) > 0.03 + 1e-9) continue;
             if (sd === 0) { if (dq > 0) ab += dq; else db -= dq; } else { if (dq > 0) aa += dq; else da -= dq; } }
@@ -1604,6 +1615,12 @@ export class Bot {
     this.N.ouvertes = this.N.ouvertes.filter((x) => x !== P);
     // H1075 (accord de Pitch « fantômes de toutes tes trouvailles ») : cycle calme (≤ 2 passages par 0,5), contre la foule (flux preneurs 30 s ≤ −0,296),
     // et combinaison écart ≤ 1 c + carnet pour nous + cycle calme. Copies seulement ; aucun ordre réel.
+    // H1077 (accord de Pitch 14.10.2026 00:18) : contre la foule (flux preneurs 30 s ≤ −0,296) ET pas de saut Bybit contre nous (10 s), mise actuelle
+    // et mise doublée (P&L doublé moins le surcoût mesuré dans le carnet à l'achat ; si le carnet ne permet pas de doubler, seulement la part remplie).
+    if (!P.copieCarnet && P.actif === "BTC" && P.flux30 != null && P.flux30 <= -0.296 && P.bySautContre === false) {
+      try { this.nClore({ ...P, strat: P.strat + " + foule bybit", copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie foule bybit", err); }
+      if (P.x2 && P.parts > 0 && P.x2.parts > 0) { try { const k2 = P.x2.parts / P.parts, sur = P.x2.cout - k2 * P.prix * P.parts;
+        this.nClore({ ...P, strat: P.strat + " + foule bybit x2", copieCarnet: true, cash: k2 * P.cash - Math.max(0, sur), parts: P.x2.parts, journal: [...(P.journal || []), "mise x" + k2.toFixed(2) + ", surcoût " + sur.toFixed(2) + " $"] }, issue); } catch (err) { this.erreur("copie foule bybit x2", err); } } }
     if (!P.copieCarnet && P.actif === "BTC") { const cp = (suf) => { try { this.nClore({ ...P, strat: P.strat + suf, copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie" + suf, err); } };
       if (P.passages != null && P.passages <= 2) cp(" + calme");
       if (P.flux30 != null && P.flux30 <= -0.296) cp(" + contre foule");
