@@ -1122,6 +1122,19 @@ async function versionDistante() {
   try { const d = await getJSON(`${U}/api/rapide/version`, { headers: { "x-rapide": TOKEN } }); if (d.version && d.version !== VERSION) { log("nouvelle version", d.version, "→ redémarrage"); await envoyer(); process.exit(0); } } catch (_) {}
 }
 log("bot95 rapide", VERSION, "démarre — fantôme uniquement, aucun ordre");
+// 13.10.2026 15:53 (Pitch : « je veux TOUT sur le bot ») : au démarrage, relecture des fichiers de cycle déjà écrits (12 et 13.10 et suivants, 3 jours)
+// pour remettre dans la file de règlement tous les trades des fantômes de Dublin ; le bot Cloudflare ignore ceux qu'il a déjà (identifiant).
+try {
+  const base = DIR + "/cycles", lim = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10); let n = 0;
+  for (const d of fs.existsSync(base) ? fs.readdirSync(base) : []) {
+    if (d < lim) continue;
+    for (const f of fs.readdirSync(base + "/" + d)) {
+      try { const R = JSON.parse(zlib.gunzipSync(fs.readFileSync(base + "/" + d + "/" + f)));
+        for (const k of ["cp", "cp5", "bf", "fg"]) for (const E of R[k] || []) if (E && E.q > 0) { FANT.push(E); n++; } } catch (_) {}
+    }
+  }
+  log("fantômes relus sur le disque", n);
+} catch (e) { log("relecture fantômes", e.message); }
 flux(); cycle();
 setInterval(cycle, 1000);
 // ---------------------------------------------------------------- FANTÔME « billet bas + favori si recul 20 c » (accord de Pitch 13.10.2026 13:26)
