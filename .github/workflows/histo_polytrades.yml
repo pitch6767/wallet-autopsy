@@ -17,7 +17,7 @@ jobs:
       - run: |
           set +e
           mkdir -p /tmp/h && cd /tmp/h
-          python3 - <<'P'
+          python3 - > /tmp/h_sortie.txt 2>&1 <<'P'
           import json, time, gzip, datetime, urllib.request, collections
           G = "https://gamma-api.polymarket.com"; D = "https://data-api.polymarket.com"
           def get(u):
@@ -52,8 +52,12 @@ jobs:
           print("transactions", n, "marches manquants", manq)
           open(f"journal_{A}.txt", "w").write(f"actif {A} debut {d0} fin {d1} transactions {n} marches manquants {manq} jours {sorted(par_jour)}\n")
           P
-          ls -la | head
+          ls -la | head; tail -30 /tmp/h_sortie.txt
           cd $GITHUB_WORKSPACE
+          # journal du téléchargement sur main (les journaux GitHub ne sont pas lisibles depuis la session)
+          git config user.name histo; git config user.email bot@users.noreply.github.com
+          mkdir -p bot95/journaux && { ls -la /tmp/h; tail -60 /tmp/h_sortie.txt; } > bot95/journaux/histo_${{ inputs.actif }}.txt
+          git add bot95/journaux && git commit -qm "Journal telechargement ${{ inputs.actif }} [skip ci]" && for k in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
           git config user.name histo; git config user.email bot@users.noreply.github.com
           git fetch -q origin donnees-btc && git checkout -q -B donnees-btc origin/donnees-btc
           mkdir -p polytrades && cp /tmp/h/*.json.gz /tmp/h/journal_*.txt polytrades/ ; git add polytrades && git commit -qm "Transactions Polymarket ${{ inputs.actif }} 5 min ${{ inputs.debut }} -> ${{ inputs.fin }}" && for k in 1 2 3; do git push -q origin donnees-btc && break; sleep 5; done
