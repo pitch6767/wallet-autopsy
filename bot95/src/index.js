@@ -4,7 +4,12 @@ import { QTWAP } from "./quantiles_twap.js";
 import { BETES } from "./portefeuilles_betes.js";
 // 13.10.2026 13:27 (Pitch : « Tu peux enlever les stratégies à moins 1000 $ ») : résultat affiché par le bot < −1 000 $ (depuis le 10.10 11:50 UTC).
 const STOPPEES = new Set(["V2-E persistant|BTC", "V2-H veto complet|BTC", "desaccord 20 60-180 s|BTC", "corrige : desaccord 20|ETH",
-  "corrige marge mesuree : V2-F|ETH", "corrige : V2-F ecart qui grandit|ETH"]);
+  "corrige marge mesuree : V2-F|ETH", "corrige : V2-F ecart qui grandit|ETH",
+  // 13.10.2026 15:48 (Pitch : « tu peux enlever encore les 10 dernières du classement ») : les 10 derniers du classement à 15:50 (hors stratégies
+  // déjà arrêtées et hors fantômes consensus approuvés)
+  "desaccord 20 Poly rejoint 10 s sans nuit|BTC", "V2-B hors 60-89 s|BTC", "V2-F ecart qui grandit|BTC", "corrige : V2-F + garde-fou|ETH",
+  "corrige : V2-F + pas les deux baissent|ETH", "V2-F pause memoire|BTC", "desaccord 30 zone 0,15-0,35 + Binance et perp|BTC", "desaccord 20 sans nuit|BTC",
+  "desaccord 30 zone + Binance et perp + sortie modele -10|BTC", "V2-F + pas les deux baissent|BTC"]);
 // bot95 v2 — option A sur les 7 cryptos 5 min de Polymarket (BTC, ETH, SOL, XRP, DOGE, BNB, HYPE).
 // MODE FANTÔME : aucun ordre réel, aucune clé. Le bot note ce qu'il aurait fait.
 // Règle Polymarket : Up si moyenne Chainlink 60 s à la fin >= moyenne 60 s au début (prix d'exercice publié par Polymarket).
