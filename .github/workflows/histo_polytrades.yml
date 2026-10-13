@@ -30,7 +30,7 @@ jobs:
           d0 = int(datetime.datetime.fromisoformat("${{ inputs.debut }}").replace(tzinfo=datetime.timezone.utc).timestamp())
           d1 = int(datetime.datetime.fromisoformat("${{ inputs.fin }}").replace(tzinfo=datetime.timezone.utc).timestamp())
           assert d1 <= 1791849600, "periode reservee interdite"
-          par_jour = collections.defaultdict(dict); n = 0; manq = 0
+          par_jour = collections.defaultdict(dict); n = 0; manq = 0; jours_ecrits = []
           for st in range(d0 - d0 % 300, d1, 300):
               ev = get(f"{G}/events?slug=${{ inputs.actif }}-updown-5m-{st}")
               if not ev: manq += 1; continue
@@ -44,13 +44,18 @@ jobs:
                   T += [[x.get("timestamp"), x.get("proxyWallet"), x.get("side"), x.get("outcome"), x.get("price"), x.get("size"), x.get("transactionHash")] for x in r]
                   if len(r) < 500: break
                   off += 500; time.sleep(0.15)
-              par_jour[time.strftime("%Y-%m-%d", time.gmtime(st))][st] = {"resultat": dict(zip(out, px)), "trades": T}; n += len(T)
+              jour = time.strftime("%Y-%m-%d", time.gmtime(st))
+              for j_ in [j for j in list(par_jour) if j < jour]:   # 14.10.2026 : on écrit chaque jour terminé tout de suite (mémoire)
+                  pre_ = "polytrades_" if "${{ inputs.actif }}" == "btc" else "polytrades_${{ inputs.actif }}_"
+                  with gzip.open(f"{pre_}{j_}.json.gz", "wt") as f_: json.dump({"format": "[timestamp_s, portefeuille, BUY/SELL, outcome, prix, parts, transaction]", "marches": {str(k): v for k, v in par_jour[j_].items()}}, f_)
+                  jours_ecrits.append(j_); del par_jour[j_]
+              par_jour[jour][st] = {"resultat": dict(zip(out, px)), "trades": T}; n += len(T)
               time.sleep(0.1)
           A = "${{ inputs.actif }}"; pre = "polytrades_" if A == "btc" else f"polytrades_{A}_"
           for j, M in par_jour.items():
               with gzip.open(f"{pre}{j}.json.gz", "wt") as f: json.dump({"format": "[timestamp_s, portefeuille, BUY/SELL, outcome, prix, parts, transaction]", "marches": {str(k): v for k, v in M.items()}}, f)
           print("transactions", n, "marches manquants", manq)
-          open(f"journal_{A}.txt", "w").write(f"actif {A} debut {d0} fin {d1} transactions {n} marches manquants {manq} jours {sorted(par_jour)}\n")
+          open(f"journal_{A}.txt", "w").write(f"actif {A} debut {d0} fin {d1} transactions {n} marches manquants {manq} jours {sorted(set(par_jour) | set(jours_ecrits))}\n")
           P
           ls -la | head; tail -30 /tmp/h_sortie.txt
           cd $GITHUB_WORKSPACE
