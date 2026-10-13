@@ -1502,6 +1502,12 @@ export class Bot {
     // ni affiché pour elles). Leur signal reste transmis au consensus K2/K5/K9 pour que ces fantômes approuvés restent inchangés.
     if (STOPPEES.has(strat + "|" + a)) { P.stoppee = true; try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); } return P; }
     this.N.ouvertes.push(P);
+    // 13.10.2026 21:35 (Pitch : « tes dernières trouvailles avec les autres stratégies du bot ») : on note le déséquilibre du carnet Polymarket
+    // de NOTRE jeton au moment de l'achat (5 premiers niveaux, (acheteurs − vendeurs) / total). À la clôture, si > 0, une copie du trade est
+    // comptée dans la stratégie fantôme « <nom> + carnet » (H1070). Aucun ordre réel ; la stratégie d'origine est inchangée.
+    if (a === "BTC" && !strat.endsWith(" + carnet")) { try { const c = extra && extra.cote;
+      if (c === "Up" || c === "Down") { const id = c === "Up" ? mk.up : mk.down, s5 = (k) => this.livreTrie(id, k).slice(0, 5).reduce((x, y) => x + y[1], 0), b = s5("bids"), q = s5("asks");
+        if (b + q > 0) P.carnetPour = +((b - q) / (b + q)).toFixed(3); } } catch (_) {} }
     try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); }
     return P;
   }
@@ -1579,6 +1585,7 @@ export class Bot {
     const kh = "hist:" + P.strat + " " + P.actif, ligne = [P.heure, P.cote || null, P.prix ?? null, P.net, issue, P.proba0 ?? null, P.restant_s ?? null];
     this.state.storage.get(kh).then((L) => { L = L || []; L.push(ligne); if (L.length > 1500) L.splice(0, L.length - 1500); return this.state.storage.put(kh, L); }).catch((err) => this.erreur("archive " + kh, err));
     this.N.ouvertes = this.N.ouvertes.filter((x) => x !== P);
+    if (P.carnetPour > 0 && !P.copieCarnet && P.actif === "BTC") { try { this.nClore({ ...P, strat: P.strat + " + carnet", copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie carnet", err); } }
     this.nSauver();
   }
 
