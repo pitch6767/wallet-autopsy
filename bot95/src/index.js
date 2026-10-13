@@ -1169,6 +1169,7 @@ export class Bot {
         { const z = this.pmAcc(c.asset_id), cs = c.side === "BUY" ? "achat" : "vente"; if (apres < avant) z["retrait_" + cs] += (avant - apres) * +c.price; else z["ajout_" + cs] += (apres - avant) * +c.price;
           const z2 = this.sigP(c.asset_id); if (apres < avant) z2["retrait_" + cs] += (avant - apres) * +c.price; else z2["ajout_" + cs] += (apres - avant) * +c.price; }
         apres ? cote.set(+c.price, apres) : cote.delete(+c.price); L.tRecu = t; L.tsPoly = ts || null;
+        { const R = (this._pch = this._pch || []); R.push([t, c.asset_id, c.side === "BUY" ? 0 : 1, +c.price, apres - avant]); while (R.length && R[0][0] < t - 5) R.shift(); }
       }
     } else if (ev === "last_trade_price") {
       this.noterFlux(m.asset_id, "echange_" + (m.side === "BUY" ? "achat" : "vente"), +m.price * +m.size, t);
@@ -1505,9 +1506,15 @@ export class Bot {
     // 13.10.2026 21:35 (Pitch : « tes dernières trouvailles avec les autres stratégies du bot ») : on note le déséquilibre du carnet Polymarket
     // de NOTRE jeton au moment de l'achat (5 premiers niveaux, (acheteurs − vendeurs) / total). À la clôture, si > 0, une copie du trade est
     // comptée dans la stratégie fantôme « <nom> + carnet » (H1070). Aucun ordre réel ; la stratégie d'origine est inchangée.
-    if (a === "BTC" && !strat.endsWith(" + carnet")) { try { const c = extra && extra.cote;
+    if (a === "BTC" && !strat.endsWith(" + carnet") && !strat.endsWith(" + carnet pression")) { try { const c = extra && extra.cote;
       if (c === "Up" || c === "Down") { const id = c === "Up" ? mk.up : mk.down, s5 = (k) => this.livreTrie(id, k).slice(0, 5).reduce((x, y) => x + y[1], 0), b = s5("bids"), q = s5("asks");
-        if (b + q > 0) P.carnetPour = +((b - q) / (b + q)).toFixed(3); } } catch (_) {} }
+        if (b + q > 0) P.carnetPour = +((b - q) / (b + q)).toFixed(3);
+        // H1073 (accord de Pitch 13.10.2026 22:26 « Go en fantôme ») : pression du carnet Up sur 3 s (±3 c du milieu), signée pour notre côté
+        const bu = (this.livreTrie(mk.up, "bids")[0] || [null])[0], au = (this.livreTrie(mk.up, "asks")[0] || [null])[0];
+        if (bu != null && au != null) { const mid = (bu + au) / 2, t = now(); let ab = 0, db = 0, aa = 0, da = 0;
+          for (const [t2, id2, sd, px, dq] of this._pch || []) { if (t2 < t - 3 || id2 !== mk.up || Math.abs(px - mid) > 0.03 + 1e-9) continue;
+            if (sd === 0) { if (dq > 0) ab += dq; else db -= dq; } else { if (dq > 0) aa += dq; else da -= dq; } }
+          const tot = ab + db + aa + da; if (tot > 0) P.pressPour = +((c === "Up" ? 1 : -1) * ((ab - db) - (aa - da)) / (tot + 1)).toFixed(3); } } } catch (_) {} }
     try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); }
     return P;
   }
@@ -1585,7 +1592,8 @@ export class Bot {
     const kh = "hist:" + P.strat + " " + P.actif, ligne = [P.heure, P.cote || null, P.prix ?? null, P.net, issue, P.proba0 ?? null, P.restant_s ?? null];
     this.state.storage.get(kh).then((L) => { L = L || []; L.push(ligne); if (L.length > 1500) L.splice(0, L.length - 1500); return this.state.storage.put(kh, L); }).catch((err) => this.erreur("archive " + kh, err));
     this.N.ouvertes = this.N.ouvertes.filter((x) => x !== P);
-    if (P.carnetPour > 0 && !P.copieCarnet && P.actif === "BTC") { try { this.nClore({ ...P, strat: P.strat + " + carnet", copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie carnet", err); } }
+    if (P.carnetPour > 0 && !P.copieCarnet && P.actif === "BTC") { try { this.nClore({ ...P, strat: P.strat + " + carnet", copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie carnet", err); }
+      if (P.pressPour > 0) { try { this.nClore({ ...P, strat: P.strat + " + carnet pression", copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie carnet pression", err); } } }
     this.nSauver();
   }
 
