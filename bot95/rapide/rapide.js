@@ -27,6 +27,7 @@ function noter(src, p, tsSrc) {
   const s = Math.floor(t); let o = sec.get(s);
   if (!o) { o = {}; sec.set(s, o); if (sec.size > 800) sec.delete(sec.keys().next().value); }
   o[src] = p;
+  if (src === "okx" || src === "bn" || src === "cb") { const H = (HMS[src] = HMS[src] || []), tm = nowMs(); H.push([tm, p]); while (H.length && H[0][0] < tm - 2000) H.shift(); }
   if (src === "perp") { try { cpSurPerp(p); } catch (_) {} try { cp5SurPerp(p); } catch (_) {} }
   if (src === "perp" || src === "okx") evaluer(src);
 }
@@ -93,6 +94,27 @@ const CPH = []; let cpDernier = 0;
 // côté 0,40–0,70), achat fictif preneur à +164 ms (limite + 1 c), gardé jusqu'au règlement, au plus 50 $ par cycle et par règle :
 //   SA10 = 10 $ à chaque saut ; SA10-5 = 10 $ au 1er saut du cycle puis 5 $ ; SAsig = 5 $ si saut 5–10 $, 10 $ si saut ≥ 10 $.
 // Enregistré dans le fichier du cycle (clé « sa »). AUCUN ORDRE RÉEL.
+// ---- FANTÔMES « premier à bouger » (H1063, accord de Pitch 13.10.2026 20:05 « Go ») : même saut que JC5/CP5 (perp ≥ 5 $ en 300 ms, côté
+// 0,40–0,70), achat fictif preneur 10 $ à +164 ms (limite + 1 c), gardé jusqu'au règlement, SEULEMENT si :
+//   PB seul = aucune des bourses OKX / Binance / Coinbase n'a bougé de 2 $ ou plus dans le même sens sur les 300 ms (le perp bouge seul) ;
+//   PB seul + Poly immobile = en plus, milieu Polymarket inchangé par rapport à 1 s avant.
+// Enregistré dans le fichier du cycle (clé « pb »). AUCUN ORDRE RÉEL.
+const HMS = {}, MIDH = [];
+setInterval(() => { try { const t = nowMs(), start = Math.floor(t / 300000) * 300, mk = M[start]; if (!mk || !mk.up) return;
+  const a = asksTries(mk.up)[0], L = livres[mk.up]; let b = null; if (L) for (const [px, z] of L.bids) if (z > 0 && (b == null || px > b)) b = px;
+  if (a && b != null) { MIDH.push([t, start, +((a[0] + b) / 2).toFixed(4)]); while (MIDH.length && MIDH[0][0] < t - 3000) MIDH.shift(); } } catch (_) {} }, 100);
+function mvMs(src, t) { const H = HMS[src]; if (!H || !H.length) return null; let p0 = null; for (const [tt, p] of H) { if (tt <= t - 300) p0 = p; else break; } return p0 == null ? null : H[H.length - 1][1] - p0; }
+function pbSurSaut(start, X, idX, a0, d, t) {
+  const sg = d > 0 ? 1 : -1, nconf = ["okx", "bn", "cb"].filter((k) => { const m = mvMs(k, t); return m != null && sg * m >= 2; }).length;
+  let m1 = null, m0 = null; for (const [tt, s2, v] of MIDH) { if (s2 !== start) continue; if (tt <= t - 1000) m1 = v; m0 = v; }
+  const immobile = m1 != null && m0 != null && Math.abs(m0 - m1) < 1e-9;
+  const regles = nconf === 0 ? (immobile ? ["PB seul", "PB seul + Poly immobile"] : ["PB seul"]) : [];
+  const E = { regle: "PB", regles, t: +t.toFixed(1), start, d: +d.toFixed(2), cote: X, a0, nconf, immobile, statut: regles.length ? "achat" : "filtré" };
+  const R = recDe(start); (R.pb = R.pb || []).push(E); if (!regles.length) return; FANT.push(E);
+  setTimeout(() => { let q = 0, c = 0;
+    for (const [px, sz] of asksTries(idX)) { if (px > a0 + 0.01 + 1e-9) break; const u = px + FEE7(px); const k = Math.min(sz, (10 - c) / u); if (k <= 1e-9) break; q += k; c += k * u; }
+    E.q = +q.toFixed(3); E.c = +c.toFixed(4); E.statut = q > 0 && c >= 5 ? "ouvert" : "non rempli"; if (E.statut !== "ouvert") E.q = 0; }, 164);
+}
 const SAB = {};
 function saSurSaut(start, X, idX, a0, dAbs, t) {
   const B = (SAB[start] = SAB[start] || { "SA10": 0, "SA10-5": 0, "SAsig": 0, n: 0 });
@@ -125,6 +147,7 @@ function cp5SurPerp(p) {
   const R = recDe(start); (R.cp5 = R.cp5 || []).push(E); FANT.push(E);
   if (!a0 || a0[0] < 0.40 - 1e-9 || a0[0] > 0.70 + 1e-9) { E.statut = "hors zone"; return; }
   try { saSurSaut(start, X, idX, a0[0], Math.abs(d), t); } catch (_) {}
+  try { pbSurSaut(start, X, idX, a0[0], d, t); } catch (_) {}
   setTimeout(() => {
     let q = 0, c = 0;
     for (const [px, sz] of asksTries(idX)) { if (px > a0[0] + 0.01 + 1e-9) break; const u = px + FEE7(px); const k = Math.min(sz, (10 - c) / u); if (k <= 1e-9) break; q += k; c += k * u; }
@@ -1151,7 +1174,7 @@ try {
     if (d < lim) continue;
     for (const f of fs.readdirSync(base + "/" + d)) {
       try { const R = JSON.parse(zlib.gunzipSync(fs.readFileSync(base + "/" + d + "/" + f)));
-        for (const k of ["cp", "cp5", "bf", "fg", "sa"]) for (const E of R[k] || []) if (E && E.q > 0) { FANT.push(E); n++; } } catch (_) {}
+        for (const k of ["cp", "cp5", "bf", "fg", "sa", "pb"]) for (const E of R[k] || []) if (E && E.q > 0) { FANT.push(E); n++; } } catch (_) {}
     }
   }
   log("fantômes relus sur le disque", n);
