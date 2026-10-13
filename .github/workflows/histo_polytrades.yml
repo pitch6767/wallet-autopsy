@@ -50,9 +50,10 @@ jobs:
           for j, M in par_jour.items():
               with gzip.open(f"{pre}{j}.json.gz", "wt") as f: json.dump({"format": "[timestamp_s, portefeuille, BUY/SELL, outcome, prix, parts, transaction]", "marches": {str(k): v for k, v in M.items()}}, f)
           print("transactions", n, "marches manquants", manq)
+          open(f"journal_{A}.txt", "w").write(f"actif {A} debut {d0} fin {d1} transactions {n} marches manquants {manq} jours {sorted(par_jour)}\n")
           P
           ls -la | head
           cd $GITHUB_WORKSPACE
           git config user.name histo; git config user.email bot@users.noreply.github.com
           git fetch -q origin donnees-btc && git checkout -q -B donnees-btc origin/donnees-btc
-          mkdir -p polytrades && cp /tmp/h/*.json.gz polytrades/ && git add polytrades && git commit -qm "Transactions Polymarket ${{ inputs.actif }} 5 min ${{ inputs.debut }} -> ${{ inputs.fin }}" && for k in 1 2 3; do git push -q origin donnees-btc && break; sleep 5; done
+          mkdir -p polytrades && cp /tmp/h/*.json.gz /tmp/h/journal_*.txt polytrades/ ; git add polytrades && git commit -qm "Transactions Polymarket ${{ inputs.actif }} 5 min ${{ inputs.debut }} -> ${{ inputs.fin }}" && for k in 1 2 3; do git push -q origin donnees-btc && break; sleep 5; done
