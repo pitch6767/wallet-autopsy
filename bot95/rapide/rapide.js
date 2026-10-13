@@ -59,7 +59,9 @@ async function fantReglements() {
       const vc = couv(E.cp5); L("CP5 couverture posee", vc ?? garde, vc != null ? "couvert à " + E.cp5.px : "gardé, " + (win ? "gagné" : "perdu"));
     } else if (E.regle && E.regle.startsWith("billet")) {
       const f = E.fav && E.fav.q > 0 ? E.fav.q * (1 - win) - E.fav.c : 0; L("billet + favori si recul 20 c", garde + f, (E.fav ? "couvert, " : "") + (win ? "billet gagné" : "billet perdu"));
-    } else if (E.regles) { for (const nom of E.regles) L(nom + " contre les gros", garde, (win ? "gagné" : "perdu") + " contre " + E.montant.toFixed(0) + " $"); }
+    } else if (E.nomFant) L(E.nomFant, garde, (win ? "gagné" : "perdu") + (E.montant ? ", " + E.montant + " $" : ""));
+    else if (E.regle === "PB") { for (const nom of E.regles || []) L(nom, garde, win ? "gagné" : "perdu"); }
+    else if (E.regles) { for (const nom of E.regles) L(nom + " contre les gros", garde, (win ? "gagné" : "perdu") + " contre " + E.montant.toFixed(0) + " $"); }
     else if (["SA10", "SA10-5", "SAsig"].includes(E.regle)) L({ "SA10": "petit a petit 10 $", "SA10-5": "petit a petit 10 puis 5 $", "SAsig": "petit a petit selon le saut" }[E.regle], garde, (win ? "gagné" : "perdu") + ", " + E.montant + " $");
     FANT.splice(i, 1);
   }
@@ -102,7 +104,7 @@ const CPH = []; let cpDernier = 0;
 const HMS = {}, MIDH = [];
 setInterval(() => { try { const t = nowMs(), start = Math.floor(t / 300000) * 300, mk = M[start]; if (!mk || !mk.up) return;
   const a = asksTries(mk.up)[0], L = livres[mk.up]; let b = null; if (L) for (const [px, z] of L.bids) if (z > 0 && (b == null || px > b)) b = px;
-  if (a && b != null) { MIDH.push([t, start, +((a[0] + b) / 2).toFixed(4)]); while (MIDH.length && MIDH[0][0] < t - 3000) MIDH.shift(); } } catch (_) {} }, 100);
+  if (a && b != null) { MIDH.push([t, start, +((a[0] + b) / 2).toFixed(4)]); while (MIDH.length && MIDH[0][0] < t - 10000) MIDH.shift(); } } catch (_) {} }, 100);
 function mvMs(src, t) { const H = HMS[src]; if (!H || !H.length) return null; let p0 = null; for (const [tt, p] of H) { if (tt <= t - 300) p0 = p; else break; } return p0 == null ? null : H[H.length - 1][1] - p0; }
 function pbSurSaut(start, X, idX, a0, d, t) {
   const sg = d > 0 ? 1 : -1, nconf = ["okx", "bn", "cb"].filter((k) => { const m = mvMs(k, t); return m != null && sg * m >= 2; }).length;
@@ -953,7 +955,7 @@ function deriv(k, row) {                                                  // dé
     (R.deriv[k] = R.deriv[k] || []).push([+t.toFixed(1), ...row]); } catch (_) {}
 }
 async function sondeOIbn() {
-  try { const r = await fetch("https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT").then((x) => x.json()); if (r && r.openInterest) deriv("bn_oi", [+r.time, +r.openInterest]); } catch (_) {}
+  try { const r = await fetch("https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT").then((x) => x.json()); if (r && r.openInterest) { deriv("bn_oi", [+r.time, +r.openInterest]); OIH.push([+r.time, +r.openInterest]); while (OIH.length && OIH[0][0] < +r.time - 900000) OIH.shift(); } } catch (_) {}
 }
 setInterval(sondeOIbn, 5000);
 const TRADE_ID = {};
@@ -962,6 +964,7 @@ function obTrade(k, tsSrc, achat, p, q, id) {                              // tr
     if (k === "bn" && TRADE_ID.bn && id !== TRADE_ID.bn + 1 && id > TRADE_ID.bn) obTrou("bn", "transactions manquantes", (id - TRADE_ID.bn - 1) + " id");
     if (k === "bn") TRADE_ID.bn = id;
     R.trx[k].push([+t.toFixed(1), tsSrc, achat, p, q]); } catch (_) {}
+  if (k === "by") { try { by1SurTrade(p); } catch (_) {} }
 }
 
 // ---------------------------------------------------------------- flux WebSocket (reconnexion si muet 20 s)
@@ -1174,13 +1177,87 @@ try {
     if (d < lim) continue;
     for (const f of fs.readdirSync(base + "/" + d)) {
       try { const R = JSON.parse(zlib.gunzipSync(fs.readFileSync(base + "/" + d + "/" + f)));
-        for (const k of ["cp", "cp5", "bf", "fg", "sa", "pb"]) for (const E of R[k] || []) if (E && E.q > 0) { FANT.push(E); n++; } } catch (_) {}
+        for (const k of ["cp", "cp5", "bf", "fg", "sa", "pb", "nv"]) for (const E of R[k] || []) if (E && E.q > 0) { FANT.push(E); n++; } } catch (_) {}
     }
   }
   log("fantômes relus sur le disque", n);
 } catch (e) { log("relecture fantômes", e.message); }
 flux(); cycle();
 setInterval(cycle, 1000);
+// ---------------------------------------------------------------- FANTÔMES « trouvailles du 13.10 » (accord de Pitch 13.10.2026 21:08 « fait des fantômes
+// de toutes tes trouvailles »). AUCUN ORDRE RÉEL. Achat fictif preneur sur le carnet vu à +164 ms, limite meilleur vendeur + 1 c, gardé jusqu'au
+// règlement. Enregistré dans le fichier du cycle (clé « nv »).
+//   BY1 (H1068) : chaque transaction Bybit ; saut ≥ 5 $ en 300 ms (30–280 s, pause 5 s), OKX / Binance / Coinbase pas bougé de 2 $ dans le même sens,
+//     côté du saut 0,40–0,70 → 10 $ et 100 $.
+//   BT (H1065 bis) : billet 0,02–0,20 (60–280 s, un par cycle) quand l'élan du favori se retourne : milieu Polymarket du favori en baisse sur 5 s,
+//     perp contre le favori sur 30 s, carnet Binance (cumul 10 $) penché contre le favori → 10 $.
+//   E1–E4 (H1067, verdict sur 27 jours en attente) aux instants 60, 90, …, 240, 260 s, une fois par cycle et par règle, 10 $ :
+//     E1 favori 0,60–0,95 et élan Binance 10 s (/ σ 1 h) ≥ 0,32 → favori ; E2 même zone et élan < 0 → billet ;
+//     E3 favori 0,60–0,95 et σ 300 s / σ 3 600 s ≥ 1,2 → favori ; E4 fenêtre commençant à :00 ou :30, favori 0,65–0,95 → billet.
+//   OI : entre 2 et 10 s du début du cycle, open interest Binance en hausse ≥ 17,75 pb sur 5 min → Up, 10 $.
+function fantAchat(start, nom, X, dollars, info) {
+  const mk = M[start]; if (!mk) return; const id = X === "Up" ? mk.up : mk.down, a = asksTries(id)[0];
+  const E = { nomFant: nom, start, cote: X, t: Math.round(nowMs()), a0: a ? a[0] : null, montant: dollars, statut: "achat", ...(info || {}) };
+  const R = recDe(start); (R.nv = R.nv || []).push(E);
+  if (!a) { E.statut = "pas de vendeur"; return; }
+  FANT.push(E);
+  setTimeout(() => { let q = 0, c = 0;
+    for (const [px, sz] of asksTries(id)) { if (px > a[0] + 0.01 + 1e-9) break; const u = px + FEE7(px); const k = Math.min(sz, (dollars - c) / u); if (k <= 1e-9) break; q += k; c += k * u; }
+    E.q = +q.toFixed(3); E.c = +c.toFixed(4); E.statut = q > 0 && c >= dollars / 2 ? "ouvert" : "non rempli"; if (E.statut !== "ouvert") E.q = 0; }, 164);
+}
+const BYH = []; let by1Dernier = 0;
+function by1SurTrade(p) {
+  const t = nowMs(); BYH.push([t, p]); while (BYH.length && BYH[0][0] < t - 1000) BYH.shift();
+  let p0 = null; for (const [tt, pp] of BYH) if (tt >= t - 300) { p0 = pp; break; }
+  if (p0 == null) return; const d = p - p0;
+  if (Math.abs(d) < 5 || t - by1Dernier < 5000) return;
+  const start = Math.floor(t / 300000) * 300, el = t / 1000 - start; if (el < 30 || el > 280) return;
+  const mk = M[start]; if (!mk || !mk.up || !mk.down) return;
+  by1Dernier = t; const sg = d > 0 ? 1 : -1, X = d > 0 ? "Up" : "Down";
+  const conf = ["okx", "bn", "cb"].filter((k) => { const m = mvMs(k, t); return m != null && sg * m >= 2; }).length;
+  const a = asksTries(X === "Up" ? mk.up : mk.down)[0];
+  if (conf > 0 || !a || a[0] < 0.40 - 1e-9 || a[0] > 0.70 + 1e-9) return;
+  fantAchat(start, "BY1 Bybit premier 10 $", X, 10, { d: +d.toFixed(2) }); fantAchat(start, "BY1 Bybit premier 100 $", X, 100, { d: +d.toFixed(2) });
+}
+const BN1H = [];                                                          // prix Binance spot chaque seconde, 1 h
+const OIH = [];                                                           // [t, open interest] Binance
+const NVF = {};                                                           // "start|règle" → déjà décidé
+function sdDiff(L) { if (L.length < 3) return null; const d = []; for (let i = 1; i < L.length; i++) d.push(L[i] - L[i - 1]); const m = d.reduce((a, b) => a + b, 0) / d.length; return Math.sqrt(d.reduce((a, b) => a + (b - m) * (b - m), 0) / d.length); }
+setInterval(() => {
+  try {
+    const t = now(); if (f.bn) { BN1H.push(f.bn.p); if (BN1H.length > 3600) BN1H.shift(); }
+    const start = Math.floor(t / 300) * 300, el = t - start, mk = M[start]; if (!mk || !mk.up || !mk.down) return;
+    const fait = (r) => NVF[start + "|" + r], marque = (r) => { NVF[start + "|" + r] = 1; };
+    for (const k of Object.keys(NVF)) if (+k.split("|")[0] < start - 900) delete NVF[k];
+    const aU = asksTries(mk.up)[0], bU = meilleurAcheteur(mk.up); if (!aU || !(bU > 0)) return;
+    const um = (aU[0] + bU) / 2, sg = um >= 0.5 ? 1 : -1, fp = sg > 0 ? um : 1 - um, FAV = sg > 0 ? "Up" : "Down", TIC = sg > 0 ? "Down" : "Up";
+    if (el >= 2 && el <= 10 && !fait("OI") && OIH.length) {
+      const o1 = OIH[OIH.length - 1]; let o0 = null; for (const x of OIH) if (x[0] <= o1[0] - 300000) o0 = x;
+      if (o0) { marque("OI"); const doi = (o1[1] / o0[1] - 1) * 1e4; if (doi >= 17.75) fantAchat(start, "OI monte Up", "Up", 10, { doi: +doi.toFixed(1) }); }
+    }
+    if (el >= 60 && el <= 280 && !fait("BT")) {
+      const aT = asksTries(TIC === "Up" ? mk.up : mk.down)[0];
+      if (aT && aT[0] >= 0.02 && aT[0] <= 0.20 + 1e-9) {
+        let m5 = null; for (const [tt, s2, v] of MIDH) if (s2 === start && tt <= nowMs() - 5000) m5 = v;
+        const p30 = prixA("perp", Math.floor(t) - 30), ph = OB.bn ? obPhoto(OB.bn) : null;
+        if (m5 != null && f.perp && p30 && ph) {
+          const t1 = sg * (um - m5) < 0, t2 = sg * (f.perp.p - p30) < 0, t3 = sg * (ph[5] - ph[9]) < 0;
+          if (t1 && t2 && t3) { marque("BT"); fantAchat(start, "billet elan retourne", TIC, 10, { fp: +fp.toFixed(3) }); }
+        }
+      }
+    }
+    const inst = [60, 90, 120, 150, 180, 210, 240, 260].find((x) => el >= x && el < x + 1);
+    if (inst != null && BN1H.length >= 1800) {
+      const s1h = sdDiff(BN1H), s300 = sdDiff(BN1H.slice(-301)), n = BN1H.length, m10 = s1h ? sg * (BN1H[n - 1] - BN1H[n - 11]) / (s1h * Math.sqrt(10)) : null;
+      if (fp >= 0.60 && fp <= 0.95 && m10 != null) {
+        if (!fait("E1") && m10 >= 0.319) { marque("E1"); fantAchat(start, "E1 elan frais favori", FAV, 10, { m10: +m10.toFixed(3) }); }
+        if (!fait("E2") && m10 < 0) { marque("E2"); fantAchat(start, "E2 elan contraire billet", TIC, 10, { m10: +m10.toFixed(3) }); }
+        if (!fait("E3") && s1h && s300 / s1h >= 1.199) { marque("E3"); fantAchat(start, "E3 volatilite haute favori", FAV, 10, { vr: +(s300 / s1h).toFixed(3) }); }
+      }
+      if (!fait("E4") && (start / 60) % 30 === 0 && fp >= 0.65 && fp <= 0.95) { marque("E4"); fantAchat(start, "E4 fenetre 00 et 30 billet", TIC, 10, { fp: +fp.toFixed(3) }); }
+    }
+  } catch (_) {}
+}, 1000);
 // ---------------------------------------------------------------- FANTÔME « billet bas + favori si recul 20 c » (accord de Pitch 13.10.2026 13:26)
 // Par cycle et par côté : premier instant (60 à 240 s écoulées, contrôle chaque seconde) où le meilleur vendeur est entre 0,10 et 0,45 →
 // achat fictif preneur 10 $ sur le carnet vu à +164 ms (limite + 1 c). Ensuite, chaque seconde jusqu'à 298 s : si le meilleur acheteur du
