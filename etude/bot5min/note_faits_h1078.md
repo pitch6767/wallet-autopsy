@@ -23,3 +23,9 @@
    Les paquets de plus de 30 trades sur le même côté d'un cycle : −37 % (06–10.10) et −30 % (11–12.10). Mais ce nombre n'est connu qu'après coup ;
    « ne pas suivre quand ≥ 15 stratégies ont déjà acheté » n'est pas stable (pire le 06–10, mieux le 11–12). Pour l'argent réel : plafonner la mise
    totale par cycle, toutes stratégies confondues.
+
+10. **Portefeuilles sur 9 jours** (03–06.10 pour classer, 07–11.10 pour vérifier ; 1 596 portefeuilles actifs ≥ 50 cycles dans chaque moitié) :
+    corrélation des ROI 0,07. Les 20 % meilleurs : +11 % → +1,4 % ; les 20 % pires : −9,7 % → −2,0 %. Le talent ne persiste presque pas ;
+    les mauvais restent un peu mauvais (cohérent avec le fantôme « anti-bête »). Copier les meilleurs : non.
+11. **« Contre la foule » tout seul sur 9 jours** (flux des preneurs 30 s, achat à la première transaction suivante) : rien de stable selon le prix
+    et la moitié (ex. billets 0,05–0,35 avec flux fort contre eux : +9 % puis −14 %). Comme le carnet, ça ne marche qu'en filtre d'un signal.
