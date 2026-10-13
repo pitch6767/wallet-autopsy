@@ -18164,17 +18164,74 @@
 ],
 "start": 1791831900,
 "slug": "btc-updown-5m-1791831900"
+},
+"2026-10-13T00:59:00.005Z|Down": {
+"heure": "2026-10-13T00:59:00.005Z",
+"cote": "Down",
+"prix": 0.0641,
+"parts": 833.33,
+"U": 0,
+"D": 833.3333333333334,
+"cash": -53.384,
+"net": -53.38,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.274,
+"restant_s": 60,
+"journal": [
+"240.0s écart 0.21, 60 s restantes → achat Down 833.3 parts à 0.0641 (modèle 0.274)"
+],
+"start": 1791852900,
+"slug": "btc-updown-5m-1791852900"
+},
+"2026-10-13T00:54:09.358Z|Down": {
+"heure": "2026-10-13T00:54:09.358Z",
+"cote": "Down",
+"prix": 0.1276,
+"parts": 14,
+"U": 0,
+"D": 14,
+"cash": -1.7864448,
+"net": -1.79,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.326,
+"restant_s": 51,
+"journal": [
+"249.4s écart 0.21, 51 s restantes → achat Down 14.0 parts à 0.1276 (modèle 0.326)"
+],
+"start": 1791852600,
+"slug": "btc-updown-5m-1791852600"
+},
+"2026-10-13T00:45:01.049Z|Up": {
+"heure": "2026-10-13T00:45:01.049Z",
+"cote": "Up",
+"prix": 0.2986,
+"parts": 178.57,
+"U": 178.57142857142856,
+"D": 0,
+"cash": -53.3298728,
+"net": -53.33,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.488,
+"restant_s": 299,
+"journal": [
+"1.0s écart 0.21, 299 s restantes → achat Up 178.6 parts à 0.2986 (modèle 0.488)"
+],
+"start": 1791852300,
+"slug": "btc-updown-5m-1791852300"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 577,
+"n": 580,
 "gains": 137,
-"pertes": 440,
-"pnl": -167.38999999999996
+"pertes": 443,
+"pnl": -275.89
 },
-"n_sauves": 956,
-"maj": "2026-10-13 00:41 UTC",
+"n_sauves": 959,
+"maj": "2026-10-13 01:28 UTC",
 "archive": [
 [
 "2026-10-09T05:31:54.168Z",
@@ -26256,6 +26313,33 @@
 -9.1,
 "une seule jambe",
 0.319,
+60
+],
+[
+"2026-10-13T00:45:01.049Z",
+"Up",
+0.2986,
+-53.33,
+"une seule jambe",
+0.488,
+299
+],
+[
+"2026-10-13T00:54:09.358Z",
+"Down",
+0.1276,
+-1.79,
+"une seule jambe",
+0.326,
+51
+],
+[
+"2026-10-13T00:59:00.005Z",
+"Down",
+0.0641,
+-53.38,
+"une seule jambe",
+0.274,
 60
 ]
 ]
