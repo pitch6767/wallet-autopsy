@@ -102,6 +102,8 @@ Le 11.10, Pitch a décidé de garder Cloudflare comme bot existant et Dublin com
 - Routeurs, méta-modèles, Kronos, arbitrage 15/5 min, paires, filtres d'exécution H818.
 - Supports, résistances et figures de liquidité (H822–H832, 12.10) : les anciens sommets et creux rejettent même moins que des niveaux fictifs, les figures n'ajoutent rien au modèle de règlement, et le meilleur veto n'est pas démontré. Marge de sécurité utile : environ 1,9 σ pour 90 % de victoires et 2,6 σ pour 95 %.
 
+- **Sorties anticipées, TEST unique du 13.10 (H1003–H1052)** : sur les favoris, les billets bon marché et les 10 gagnantes du 12.10, aucune règle de sortie (trailing, prise de gain, free-roll, verrou, sauvetage, couverture) ne bat la conservation. Sur les gagnantes : conserver +2 170 $, meilleure sortie −1 115 $ de moins. Les sorties coupent les jackpots. Le cerveau de règlement égale le marché sans le battre. Rapports : archives/rapports/TEST_*_13-10.md.
+
 **Où se perd l'argent.** Ce n'est pas l'exécution : 94 % des ordres passent, sans remplissage toxique, et la profondeur suffit jusqu'à 100 $. C'est **le choix des billets** : le gain moyen repose sur quelques jackpots, et la médiane est négative.
 
 ## 7. Résultats actuels des fantômes (12.10, ~08:00)
@@ -150,9 +152,12 @@ Lecture des colonnes de la page /nouveaux :
 | Quand (heure suisse) | Quoi | Protocole |
 |---|---|---|
 | 12.10, 20:00 | Diagnostic FAST / maker / Chainlink (pas un verdict) | — |
+| 13.10, 02:40 | **Fait** : test unique H1003–H1052, tout abandonné ou non démontré | commits f2110b7, 30c5972, d1dded1, 3681242 |
+| 14.10, 08:40 | Verdicts consensus H1053, anti-bête H1054, alerte de retournement H1055 | commits 553026d, ddf200e |
 | 14.10, 08:00 | Verdict sur journées inédites : combinaison D, robustesse E, variantes V2-F | — |
 | **14.10, 09:30** | **Verdicts H816, H816 + H821, calibration** sur la période réservée, lancés une seule fois | commits 56ef5e2 et 9f2eabf |
 | 14.10, 10:00 | Queue Race phases 3 à 6 | — |
+| 15.10, 14:52 | Analyse H994 (liquidations) et confirmation H1003 / H1047 / H1051 | — |
 | 15.10, 19:00 | Verdict makers / FAST sur la période réservée | — |
 
 **Critères validés par Pitch le 11.10 à 22:06**
