@@ -14,3 +14,12 @@
    que garder jusqu'au règlement de façon stable (billets ≤ 0,25 : garder −4 322 / +12 022 / +3 282 $ ; ×2 : −6 978 / +5 716 / −642 $). On garde.
 6. **Temps restant à l'achat** : 120–180 s restantes positif dans les 3 périodes (+9 % / +67 % / +45 %) ; 60–120 s négatif en validation et test
    (+10 % / −28 % / −20 %) ; le reste varie. Piste seulement.
+
+7. **Les stratégies « en forme » le restent-elles ?** Corrélation de rang entre blocs successifs (3, 6, 12, 24 h) : +0,11 / −0,05 / +0,10 / +0,14 ;
+   le quart du haut bat le quart du bas au bloc suivant dans 42 à 62 % des cas seulement. Le classement est utile pour voir, faible pour prévoir.
+8. **Diversification** : 97 stratégies BTC ≈ 13 paris indépendants (corrélation moyenne 0,11 ; 1er facteur 20 %).
+9. **Les pertes viennent de quelques cycles** : sur 1 300 cycles (06–12.10), les 10 pires = −16 624 $ sur −29 839 $ de perte totale.
+   Dans ces cycles, 29 à 43 stratégies achètent le même billet (0,18–0,36) et presque toutes perdent, souvent dans un marché calme (BTC bouge de 10 à 50 $).
+   Les paquets de plus de 30 trades sur le même côté d'un cycle : −37 % (06–10.10) et −30 % (11–12.10). Mais ce nombre n'est connu qu'après coup ;
+   « ne pas suivre quand ≥ 15 stratégies ont déjà acheté » n'est pas stable (pire le 06–10, mieux le 11–12). Pour l'argent réel : plafonner la mise
+   totale par cycle, toutes stratégies confondues.
