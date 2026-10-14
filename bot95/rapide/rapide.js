@@ -56,6 +56,8 @@ async function fantReglements() {
     if (E.regle === "CP10") { const v = couv(E.couv); L("CP10 couverture posee", v ?? garde, v != null ? "couvert à " + E.couv.px : "gardé, " + (win ? "gagné" : "perdu")); }
     else if (E.regle === "JC5/CP5") {
       const vj = E.jc5 ? E.jc5.q - c - E.jc5.c + (q - E.jc5.q) * win : null; L("JC5 couverture preneur", vj ?? garde, vj != null ? "couvert à " + E.jc5.px : "gardé, " + (win ? "gagné" : "perdu"));
+      // 14.10.2026 09:26 (Pitch : « oui rajoute svp ») : JC10 (H1058) = mêmes entrées que JC5 quand le saut du perp est ≥ 10 $. AUCUN ORDRE RÉEL.
+      if (Math.abs(E.d || 0) >= 10) L("JC10 couverture preneur", vj ?? garde, vj != null ? "couvert à " + E.jc5.px : "gardé, " + (win ? "gagné" : "perdu"));
       const vc = couv(E.cp5); L("CP5 couverture posee", vc ?? garde, vc != null ? "couvert à " + E.cp5.px : "gardé, " + (win ? "gagné" : "perdu"));
     } else if (E.regle && E.regle.startsWith("billet")) {
       const f = E.fav && E.fav.q > 0 ? E.fav.q * (1 - win) - E.fav.c : 0; L("billet + favori si recul 20 c", garde + f, (E.fav ? "couvert, " : "") + (win ? "billet gagné" : "billet perdu"));
