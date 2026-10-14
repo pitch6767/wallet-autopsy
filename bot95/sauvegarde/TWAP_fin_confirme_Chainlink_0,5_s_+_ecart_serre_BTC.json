@@ -1448,14 +1448,76 @@
 "tAchat": 1791970430.489,
 "tailleAffichee": 787.96,
 "prixABattre": 83199.65
+},
+"2026-10-14T12:38:36.414Z|Up": {
+"heure": "2026-10-14T12:38:36.414Z",
+"cote": "Up",
+"prix": 0.0534,
+"parts": 829.17,
+"U": 829.17,
+"D": 0,
+"cash": -44.2942614,
+"net": -44.29,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.31,
+"restant_s": 84,
+"journal": [
+"216.4s signal à 84.6 s (proba 0.318, vendeur 0.08) ; Chainlink suivant reçu 1 s après → proba 0.31, vendeur 0.05 → achat Up 829.2 parts"
+],
+"start": 1791981300,
+"slug": "btc-updown-5m-1791981300",
+"carnet": {
+"0": [
+[
+0.05,
+829
+],
+[
+0.06,
+651
+],
+[
+0.07,
+698
+],
+[
+0.08,
+626
+],
+[
+0.09,
+3261
+],
+[
+0.1,
+175
+],
+[
+0.11,
+611
+],
+[
+0.12,
+514
+]
+],
+"achat": [
+829.17,
+44.29
+]
+},
+"tAchat": 1791981516.414,
+"tailleAffichee": 829.17,
+"prixABattre": 82834.29
 }
 },
 "resume_bot": {
 "depuis": 1791929704.23,
-"n": 9,
+"n": 10,
 "gains": 3,
-"pertes": 6,
-"pnl": 204.76999999999998
+"pertes": 7,
+"pnl": 160.48
 },
 "archive": [
 [
@@ -1538,8 +1600,17 @@
 "une seule jambe",
 0.564,
 89
+],
+[
+"2026-10-14T12:38:36.414Z",
+"Up",
+0.0534,
+-44.29,
+"une seule jambe",
+0.31,
+84
 ]
 ],
-"n_sauves": 9,
-"maj": "2026-10-14 12:30 UTC"
+"n_sauves": 10,
+"maj": "2026-10-14 14:35 UTC"
 }
