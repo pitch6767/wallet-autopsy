@@ -38,7 +38,7 @@ jobs:
           MOIS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
           def slug_h(a, st):
               e = datetime.datetime.fromtimestamp(st, ZoneInfo("America/New_York")); h = e.hour % 12 or 12
-              return f"{NOMS[a]}-up-or-down-{MOIS[e.month - 1]}-{e.day}-{h}{'am' if e.hour < 12 else 'pm'}-et"
+              return f"{NOMS[a]}-up-or-down-{MOIS[e.month - 1]}-{e.day}-{e.year}-{h}{'am' if e.hour < 12 else 'pm'}-et"
           def slugs(ty, st):
               a, du = ty.split("-")
               if du == "1h": return slug_h(a, st)
@@ -110,7 +110,7 @@ jobs:
                   jour = time.strftime("%Y-%m-%d", time.gmtime(st))
                   for j_ in [j for j in list(par_jour) if j < jour]:
                       ecrire(j_, par_jour[j_]); jours_ecrits.append(j_); del par_jour[j_]
-                  par_jour[jour][st] = {"slug": s, "debut": st, "fin": st + pas, "resultat": dict(zip(out, px)), "meta": meta, "volume": m.get("volume"),
+                  par_jour[jour][st] = {"slug": s, "debut": st, "fin": st + pas, "resultat": dict(zip(out, px)), "meta": meta, "volume": m.get("volume"), "source": m.get("resolutionSource"), "ouverture": m.get("startDate"),
                                         "tronque": tr, "trades": T}
                   n += len(T); time.sleep(0.1)
               for j, M in par_jour.items(): ecrire(j, M)
