@@ -456,14 +456,147 @@
 ],
 "start": 1791939000,
 "slug": "btc-updown-5m-1791939000"
+},
+"2026-10-14T05:48:56.650Z|Up": {
+"heure": "2026-10-14T05:48:56.650Z",
+"cote": "Up",
+"prix": 0.1697,
+"parts": 25,
+"U": 25,
+"D": 0,
+"cash": -4.24192,
+"net": -4.24,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.47,
+"restant_s": 63,
+"journal": [
+"236.7s écart 0.31 (modèle 0.470, vendeur 0.16), 63 s restantes → achat Up 25.0 parts à 0.1697 (meilleur vendeur seul, 25 parts affichées)"
+],
+"start": 1791956700,
+"slug": "btc-updown-5m-1791956700"
+},
+"2026-10-14T05:21:15.800Z|Down": {
+"heure": "2026-10-14T05:21:15.800Z",
+"cote": "Down",
+"prix": 0.2011,
+"parts": 249.53,
+"U": 0,
+"D": 249.53,
+"cash": -50.175692024,
+"net": -50.18,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.499,
+"restant_s": 224,
+"journal": [
+"75.8s écart 0.31 (modèle 0.499, vendeur 0.19), 224 s restantes → achat Down 249.5 parts à 0.2011 (meilleur vendeur seul, 250 parts affichées)"
+],
+"start": 1791955200,
+"slug": "btc-updown-5m-1791955200"
+},
+"2026-10-14T05:18:43.400Z|Up": {
+"heure": "2026-10-14T05:18:43.400Z",
+"cote": "Up",
+"prix": 0.0214,
+"parts": 462.87,
+"U": 462.87,
+"D": 0,
+"cash": -9.910602144,
+"net": -9.91,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.344,
+"restant_s": 77,
+"journal": [
+"223.4s écart 0.32 (modèle 0.344, vendeur 0.02), 77 s restantes → achat Up 462.9 parts à 0.0214 (meilleur vendeur seul, 463 parts affichées)"
+],
+"start": 1791954900,
+"slug": "btc-updown-5m-1791954900"
+},
+"2026-10-14T04:58:57.943Z|Down": {
+"heure": "2026-10-14T04:58:57.943Z",
+"cote": "Down",
+"prix": 0.0214,
+"parts": 33.76,
+"U": 0,
+"D": 33.76,
+"cash": -0.722842112,
+"net": -0.72,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.345,
+"restant_s": 62,
+"journal": [
+"237.9s écart 0.32 (modèle 0.345, vendeur 0.02), 62 s restantes → achat Down 33.8 parts à 0.0214 (meilleur vendeur seul, 34 parts affichées)"
+],
+"start": 1791953700,
+"slug": "btc-updown-5m-1791953700"
+},
+"2026-10-14T03:48:35.924Z|Down": {
+"heure": "2026-10-14T03:48:35.924Z",
+"cote": "Down",
+"prix": 0.1065,
+"parts": 5,
+"U": 0,
+"D": 5,
+"cash": -0.5324,
+"net": -0.53,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.402,
+"restant_s": 84,
+"journal": [
+"215.9s écart 0.30 (modèle 0.402, vendeur 0.1), 84 s restantes → achat Down 5.0 parts à 0.1065 (meilleur vendeur seul, 5 parts affichées)"
+],
+"start": 1791949500,
+"slug": "btc-updown-5m-1791949500"
+},
+"2026-10-14T03:43:49.897Z|Down": {
+"heure": "2026-10-14T03:43:49.897Z",
+"cote": "Down",
+"prix": 0.0641,
+"parts": 189,
+"U": 0,
+"D": 189,
+"cash": 176.8925088,
+"net": 176.89,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.386,
+"restant_s": 70,
+"journal": [
+"229.9s écart 0.33 (modèle 0.386, vendeur 0.06), 70 s restantes → achat Down 189.0 parts à 0.0641 (meilleur vendeur seul, 189 parts affichées)"
+],
+"start": 1791949200,
+"slug": "btc-updown-5m-1791949200"
+},
+"2026-10-14T03:28:19.742Z|Up": {
+"heure": "2026-10-14T03:28:19.742Z",
+"cote": "Up",
+"prix": 0.0428,
+"parts": 80,
+"U": 80,
+"D": 0,
+"cash": -3.4211840000000002,
+"net": -3.42,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.355,
+"restant_s": 100,
+"journal": [
+"199.7s écart 0.31 (modèle 0.355, vendeur 0.04), 100 s restantes → achat Up 80.0 parts à 0.0428 (meilleur vendeur seul, 80 parts affichées)"
+],
+"start": 1791948300,
+"slug": "btc-updown-5m-1791948300"
 }
 },
 "resume_bot": {
 "depuis": 1791931340.173,
-"n": 24,
-"gains": 1,
-"pertes": 23,
-"pnl": -148.89999999999998
+"n": 31,
+"gains": 2,
+"pertes": 29,
+"pnl": -41.009999999999984
 },
 "archive": [
 [
@@ -681,8 +814,71 @@
 "gagné",
 0.641,
 73
+],
+[
+"2026-10-14T03:28:19.742Z",
+"Up",
+0.0428,
+-3.42,
+"perdu",
+0.355,
+100
+],
+[
+"2026-10-14T03:43:49.897Z",
+"Down",
+0.0641,
+176.89,
+"gagné",
+0.386,
+70
+],
+[
+"2026-10-14T03:48:35.924Z",
+"Down",
+0.1065,
+-0.53,
+"perdu",
+0.402,
+84
+],
+[
+"2026-10-14T04:58:57.943Z",
+"Down",
+0.0214,
+-0.72,
+"perdu",
+0.345,
+62
+],
+[
+"2026-10-14T05:18:43.400Z",
+"Up",
+0.0214,
+-9.91,
+"perdu",
+0.344,
+77
+],
+[
+"2026-10-14T05:21:15.800Z",
+"Down",
+0.2011,
+-50.18,
+"perdu",
+0.499,
+224
+],
+[
+"2026-10-14T05:48:56.650Z",
+"Up",
+0.1697,
+-4.24,
+"perdu",
+0.47,
+63
 ]
 ],
-"n_sauves": 24,
-"maj": "2026-10-14 03:31 UTC"
+"n_sauves": 31,
+"maj": "2026-10-14 06:03 UTC"
 }
