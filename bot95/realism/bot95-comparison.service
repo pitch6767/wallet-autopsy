@@ -1,0 +1,15 @@
+[Unit]
+Description=Read-only replay of recorded official M10 decisions
+[Service]
+Type=oneshot
+User=bot95
+Group=bot95
+ExecStart=/opt/bot95-protected/node /opt/bot95-comparison/comparison-service.cjs
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/bot95-comparison/data /opt/bot95-comparison/public
+MemoryMax=512M
+CPUQuota=25%
+TimeoutStartSec=180

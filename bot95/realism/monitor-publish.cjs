@@ -33,7 +33,10 @@ async function publish() {
     readiness = assess('');
     readiness.evidence[0].detail = 'Copie de référence inaccessible ou absente.';
   }
-  const output = JSON.stringify({ generatedAt: Date.now(), latest, report, errors, readiness });
+  let comparison=null;
+  try { comparison=JSON.parse(await fs.readFile('/opt/bot95-comparison/public/comparison.json','utf8')); }
+  catch { errors.push('Comparaison officielle indisponible'); }
+  const output = JSON.stringify({ generatedAt: Date.now(), latest, report, errors, readiness, comparison });
   const tmp = path.join(PUBLIC, '.status.tmp');
   await fs.writeFile(tmp, output, { mode: 0o644 });
   await fs.rename(tmp, path.join(PUBLIC, 'status.json'));

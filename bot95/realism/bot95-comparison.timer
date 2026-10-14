@@ -1,0 +1,8 @@
+[Unit]
+Description=Replay official M10 cycle records
+[Timer]
+OnBootSec=10s
+OnUnitInactiveSec=30s
+AccuracySec=1s
+[Install]
+WantedBy=timers.target

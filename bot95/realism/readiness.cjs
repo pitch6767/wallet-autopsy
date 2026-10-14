@@ -9,8 +9,8 @@ function assess(source) {
     scope:'M10 officiel — aucun ordre réel',
     evidence:[
       {name:'Identification de la copie de référence officielle',status:identity?'verifie':'bloquant',detail:error||'Version figée pour les tests ; les mises à jour automatiques du bot officiel ne sont pas encore suivies par ce comparateur.'},
-      {name:'Même stratégie dans le comparateur en fonctionnement',status:'bloquant',detail:'Le fantôme actuel reste une stratégie différente. Ses résultats ne valident pas M10.'},
-      {name:'Décisions officielles avec exécutions simulées et sorties',status:'bloquant',detail:'Extraction du code M10 disponible ; raccordement complet aux flux et à la comptabilité non terminé.'},
+      {name:'Même stratégie et mêmes entrées',status:'a_verifier',detail:'Le rejeu utilise les signaux enregistrés par M10 et le code de la même version. Consulter les cycles exploitables ci-dessous ; l’ancien essai reste hors validation.'},
+      {name:'Décisions officielles avec exécutions simulées et règlement',status:'tests_reussis',detail:'Boucle raccordée et testée sur scénarios synthétiques. Les données réelles et les hypothèses de file/latence doivent encore être évaluées ; aucune couverture inventée.'},
       {name:'Exécution et annulation calibrées',status:'non_verifie',detail:'100 ms est une hypothèse, pas une latence de passage d’ordre mesurée.'},
       {name:'Règlements et réconciliation de compte',status:'non_verifie',detail:'Aucun rapprochement avec des exécutions privées et un compte non vide.'},
     ],

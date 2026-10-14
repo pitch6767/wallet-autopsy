@@ -50,7 +50,7 @@ footer{margin-top:30px;font-size:12px;color:var(--mute);border-top:1px solid var
 <body>
 <div class="wrap">
 <header>
- <h1><small>Paper trading expérimental · VPS externe</small>Bot95 Protected</h1>
+ <h1><small>Signaux officiels · exécution simulée</small>Bot95 · Validation M10</h1>
  <button id="refresh" type="button">Actualiser</button>
 </header>
 
@@ -59,13 +59,15 @@ footer{margin-top:30px;font-size:12px;color:var(--mute);border-top:1px solid var
  <ul>
   <li>Simulation <strong>NON validée en réel</strong> : exécution non calibrée.</li>
   <li>Aucun ordre réel n'est envoyé.</li>
-  <li>Une seule paire d'entrées par cycle : ce n'est <strong>pas</strong> la même stratégie que le bot officiel.</li>
+  <li>Le rejeu utilise les signaux et le code M10 officiels. L'ancien essai simplifié est présenté séparément et ne valide pas M10.</li>
  </ul>
  <p style="margin:8px 0 0">Bot officiel : <a href="https://bot95.pitch67.workers.dev/rapide" target="_blank" rel="noopener">bot95.pitch67.workers.dev/rapide</a></p>
 </div>
 
 <h2>Décision de passage en réel — stratégie officielle</h2>
 <section class="notice" id="readiness"><strong>Preuves insuffisantes — vérification en attente.</strong></section>
+<h2>Rejeu des signaux M10 officiels — simulation non calibrée</h2>
+<section class="notice" id="comparison">En attente du premier relevé.</section>
 <h2>État du fantôme expérimental — pas une validation de M10</h2>
 <div class="lights">
  <div class="light bad" id="l-net"><b>Requête</b><span>En attente</span><em></em></div>
@@ -190,12 +192,38 @@ function renderReadiness(){
  var r=state.data&&state.data.readiness;
  box.appendChild(el("strong","neg","PAS DE FEU VERT LIVE — PREUVES INSUFFISANTES"));
  if(!r){box.appendChild(el("p",null,"Rapport de validation indisponible."));return;}
- if(r.official)box.appendChild(el("p",null,"Référence officielle figée : "+r.official.version+" · SHA-256 "+r.official.sha256+" · copie du "+fmtTime(r.referenceCapturedAt)));
+ var comp=state.data&&state.data.comparison;
+ if(comp)box.appendChild(el("p",null,"Code officiel observé : "+comp.officialVersion+" · SHA-256 "+comp.officialSha256));
+ else if(r.official)box.appendChild(el("p",null,"Référence initiale des tests : "+r.official.version));
  var list=el("ul");
  (r.evidence||[]).forEach(function(x){list.appendChild(el("li",null,x.name+" — "+x.status+" : "+x.detail));});
  box.appendChild(list);box.appendChild(el("p",null,r.conclusion));
 }
-function render(){evaluate();renderErrors();renderReadiness();renderLatest();renderReport();renderCycles();}
+function renderComparison(){
+ var box=$("comparison");clear(box);var c=state.data&&state.data.comparison;
+ if(!c){box.appendChild(el("p",null,"Comparateur indisponible — aucun résultat à interpréter."));return;}
+ var stale=age(c.at)>180;
+ box.appendChild(el("strong",stale?"neg":null,(stale?"DONNÉES PÉRIMÉES · ":"")+"Pas de feu vert live"));
+ box.appendChild(el("p",null,"Version officielle observée : "+c.officialVersion+" · relevé "+fmtTime(c.at)));
+ box.appendChild(el("p",null,c.cycles+" cycles enregistrés · "+c.settled+" réglés exploitables · "+c.excluded+" exclus."));
+ if(!c.latestRecordedCycle||Date.now()-(c.latestRecordedCycle+300)*1000>600000)
+  box.appendChild(el("p","neg","Aucun fichier de cycle récent : collecte absente, en démarrage ou interrompue."));
+ box.appendChild(el("p",null,c.assumptions));
+ (c.limitations||[]).forEach(function(x){box.appendChild(el("p","note",x));});
+ if(!c.cycles)box.appendChild(el("p",null,"En attente des premiers fichiers de cycle officiels. Les résultats de l'ancien essai ne sont pas réutilisés."));
+ (c.recent||[]).slice().reverse().forEach(function(r){
+  var item=el("div","cycle");
+  item.appendChild(el("strong",null,fmtTime(r.start*1000)+" · "+r.version));
+  if(r.reason)item.appendChild(el("p","neg",(r.excluded?"Exclu : ":"En attente : ")+r.reason));
+  (r.scenarios||[]).forEach(function(s){item.appendChild(el("p",null,
+   s.latencyMs+" ms : PnL "+(fmtUsd(s.settlementPnl)||"en attente de règlement")+
+   " · déséquilibre avant règlement "+fmtN(s.unmatched)+" parts · pic "+fmtN(s.peakUnmatched)+
+   " parts · exposition "+fmtN(s.exposureMs/1000)+" s · "+s.decisions+" décisions officielles"+
+   (s.sideSpendOver50?" · DÉPASSEMENT DE 50 $ PAR CÔTÉ":"")));
+  });box.appendChild(item);
+ });
+}
+function render(){evaluate();renderErrors();renderReadiness();renderComparison();renderLatest();renderReport();renderCycles();}
 
 function load(){
  if(state.busy)return;state.busy=true;var b=$("refresh");b.disabled=true;b.textContent="Chargement…";
@@ -213,7 +241,7 @@ function load(){
 $("refresh").addEventListener("click",load);
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")load();});
 setInterval(load,15000);
-setInterval(function(){evaluate();renderErrors();},5000);
+setInterval(function(){evaluate();renderErrors();renderComparison();},5000);
 render();load();
 })();
 </script>
