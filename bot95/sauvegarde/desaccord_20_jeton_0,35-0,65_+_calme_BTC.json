@@ -1,0 +1,72 @@
+{
+"nom": "desaccord 20 jeton 0,35-0,65 + calme BTC",
+"trades": {
+"2026-10-13T23:25:49.924Z|Down": {
+"heure": "2026-10-13T23:25:49.924Z",
+"cote": "Down",
+"prix": 0.3766,
+"parts": 5.77,
+"U": 0,
+"D": 5.77,
+"cash": 3.5970826239999996,
+"net": 3.6,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.606,
+"restant_s": 250,
+"journal": [
+"49.9s écart 0.25 (modèle 0.606, vendeur 0.36), 250 s restantes → achat Down 5.8 parts à 0.3766 (meilleur vendeur seul, 6 parts affichées)"
+],
+"start": 1791933900,
+"slug": "btc-updown-5m-1791933900"
+},
+"2026-10-13T22:29:20.345Z|Down": {
+"heure": "2026-10-13T22:29:20.345Z",
+"cote": "Down",
+"prix": 0.3664,
+"parts": 15,
+"U": 0,
+"D": 15,
+"cash": -5.4957,
+"net": -5.5,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.557,
+"restant_s": 40,
+"journal": [
+"260.3s écart 0.21 (modèle 0.557, vendeur 0.35), 40 s restantes → achat Down 15.0 parts à 0.3664 (meilleur vendeur seul, 15 parts affichées)"
+],
+"start": 1791930300,
+"slug": "btc-updown-5m-1791930300"
+}
+},
+"resume_bot": {
+"depuis": 1791931003.234,
+"n": 2,
+"gains": 1,
+"pertes": 1,
+"pnl": -1.9
+},
+"archive": [
+[
+"2026-10-13T22:29:20.345Z",
+"Down",
+0.3664,
+-5.5,
+"perdu",
+0.557,
+40
+],
+[
+"2026-10-13T23:25:49.924Z",
+"Down",
+0.3766,
+3.6,
+"gagné",
+0.606,
+250
+]
+],
+"n_sauves": 2,
+"maj": "2026-10-14 00:00 UTC"
+}

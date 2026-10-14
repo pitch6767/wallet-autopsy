@@ -1,0 +1,72 @@
+{
+"nom": "desaccord 20 Binance ou perp avec nous + carnet ecart serre BTC",
+"trades": {
+"2026-10-13T23:25:49.924Z|Down": {
+"heure": "2026-10-13T23:25:49.924Z",
+"cote": "Down",
+"prix": 0.3459,
+"parts": 151.52,
+"U": 0,
+"D": 151.5151515151515,
+"cash": 99.1031515151515,
+"net": 99.1,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.606,
+"restant_s": 250,
+"journal": [
+"49.9s désaccord 20 (modèle 0.606, vendeur 0.33) ; 3 s avant : Binance 0 pb, perp 4.45 pb, OKX 3.4 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.3459"
+],
+"start": 1791933900,
+"slug": "btc-updown-5m-1791933900"
+},
+"2026-10-13T22:43:07.869Z|Down": {
+"heure": "2026-10-13T22:43:07.869Z",
+"cote": "Down",
+"prix": 0.2219,
+"parts": 238.1,
+"U": 0,
+"D": 238.0952380952381,
+"cash": -52.844,
+"net": -52.84,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.412,
+"restant_s": 112,
+"journal": [
+"187.9s désaccord 20 (modèle 0.412, vendeur 0.21) ; 3 s avant : Binance 0 pb, perp 0.65 pb, OKX 0.59 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.2219"
+],
+"start": 1791931200,
+"slug": "btc-updown-5m-1791931200"
+}
+},
+"resume_bot": {
+"depuis": 1791931741.524,
+"n": 2,
+"gains": 1,
+"pertes": 1,
+"pnl": 46.25999999999999
+},
+"archive": [
+[
+"2026-10-13T22:43:07.869Z",
+"Down",
+0.2219,
+-52.84,
+"perdu",
+0.412,
+112
+],
+[
+"2026-10-13T23:25:49.924Z",
+"Down",
+0.3459,
+99.1,
+"gagné",
+0.606,
+250
+]
+],
+"n_sauves": 2,
+"maj": "2026-10-14 00:00 UTC"
+}

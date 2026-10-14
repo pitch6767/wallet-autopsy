@@ -1,0 +1,72 @@
+{
+"nom": "V2-F miroir 1 s + foule bybit BTC",
+"trades": {
+"2026-10-13T23:25:49.924Z|Down": {
+"heure": "2026-10-13T23:25:49.924Z",
+"cote": "Down",
+"prix": 0.3459,
+"parts": 151.52,
+"U": 0,
+"D": 151.5151515151515,
+"cash": 99.1031515151515,
+"net": 99.1,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.606,
+"restant_s": 250,
+"journal": [
+"49.9s écart 0.28 né dans la dernière seconde (modèle 1 s avant 0.416) → achat Down 151.5 parts à 0.3459 (meilleur vendeur seul, 1434 parts affichées)"
+],
+"start": 1791933900,
+"slug": "btc-updown-5m-1791933900"
+},
+"2026-10-13T22:31:30.776Z|Down": {
+"heure": "2026-10-13T22:31:30.776Z",
+"cote": "Down",
+"prix": 0.1276,
+"parts": 15,
+"U": 0,
+"D": 15,
+"cash": -1.9140479999999997,
+"net": -1.91,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.331,
+"restant_s": 209,
+"journal": [
+"90.8s écart 0.21 né dans la dernière seconde (modèle 1 s avant 0.318) → achat Down 15.0 parts à 0.1276 (meilleur vendeur seul, 15 parts affichées)"
+],
+"start": 1791930600,
+"slug": "btc-updown-5m-1791930600"
+}
+},
+"resume_bot": {
+"depuis": 1791931324.773,
+"n": 2,
+"gains": 1,
+"pertes": 1,
+"pnl": 97.19
+},
+"archive": [
+[
+"2026-10-13T22:31:30.776Z",
+"Down",
+0.1276,
+-1.91,
+"une seule jambe",
+0.331,
+209
+],
+[
+"2026-10-13T23:25:49.924Z",
+"Down",
+0.3459,
+99.1,
+"une seule jambe",
+0.606,
+250
+]
+],
+"n_sauves": 2,
+"maj": "2026-10-14 00:00 UTC"
+}

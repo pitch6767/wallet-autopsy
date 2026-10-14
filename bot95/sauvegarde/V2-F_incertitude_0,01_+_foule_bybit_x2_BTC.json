@@ -1,0 +1,103 @@
+{
+"nom": "V2-F incertitude 0,01 % + foule bybit x2 BTC",
+"trades": {
+"2026-10-13T23:25:49.924Z|Down": {
+"heure": "2026-10-13T23:25:49.924Z",
+"cote": "Down",
+"prix": 0.3459,
+"parts": 303.04,
+"U": 0,
+"D": 151.5151515151515,
+"cash": 198.200839030303,
+"net": 198.2,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.701,
+"restant_s": 250,
+"journal": [
+"49.9s écart 0.37 avec 0,01 % (modèle 0,08 % : 0.606) → achat Down 151.5 parts à 0.3459 (meilleur vendeur seul, 1434 parts affichées)",
+"mise x2.00, surcoût 0.01 $"
+],
+"start": 1791933900,
+"slug": "btc-updown-5m-1791933900"
+},
+"2026-10-13T22:58:17.977Z|Up": {
+"heure": "2026-10-13T22:58:17.977Z",
+"cote": "Up",
+"prix": 0.2531,
+"parts": 5,
+"U": 5,
+"D": 0,
+"cash": -1.266164,
+"net": -1.27,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.495,
+"restant_s": 102,
+"journal": [
+"198.0s écart 0.26 avec 0,01 % (modèle 0,08 % : 0.499) → achat Up 5.0 parts à 0.2531 (meilleur vendeur seul, 5 parts affichées)",
+"mise x1.00, surcoût 0.00 $"
+],
+"start": 1791932100,
+"slug": "btc-updown-5m-1791932100"
+},
+"2026-10-13T22:38:10.423Z|Down": {
+"heure": "2026-10-13T22:38:10.423Z",
+"cote": "Down",
+"prix": 0.1381,
+"parts": 55,
+"U": 0,
+"D": 55,
+"cash": -7.600376,
+"net": -7.6,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.393,
+"restant_s": 110,
+"journal": [
+"190.4s écart 0.26 avec 0,01 % (modèle 0,08 % : 0.463) → achat Down 55.0 parts à 0.1381 (meilleur vendeur seul, 55 parts affichées)",
+"mise x1.00, surcoût 0.00 $"
+],
+"start": 1791930900,
+"slug": "btc-updown-5m-1791930900"
+}
+},
+"resume_bot": {
+"depuis": 1791931340.173,
+"n": 3,
+"gains": 1,
+"pertes": 2,
+"pnl": 189.32999999999998
+},
+"archive": [
+[
+"2026-10-13T22:38:10.423Z",
+"Down",
+0.1381,
+-7.6,
+"une seule jambe",
+0.393,
+110
+],
+[
+"2026-10-13T22:58:17.977Z",
+"Up",
+0.2531,
+-1.27,
+"une seule jambe",
+0.495,
+102
+],
+[
+"2026-10-13T23:25:49.924Z",
+"Down",
+0.3459,
+198.2,
+"une seule jambe",
+0.701,
+250
+]
+],
+"n_sauves": 3,
+"maj": "2026-10-14 00:00 UTC"
+}

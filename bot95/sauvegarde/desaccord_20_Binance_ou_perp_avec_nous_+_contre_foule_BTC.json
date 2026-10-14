@@ -1,0 +1,72 @@
+{
+"nom": "desaccord 20 Binance ou perp avec nous + contre foule BTC",
+"trades": {
+"2026-10-13T23:25:49.924Z|Down": {
+"heure": "2026-10-13T23:25:49.924Z",
+"cote": "Down",
+"prix": 0.3459,
+"parts": 151.52,
+"U": 0,
+"D": 151.5151515151515,
+"cash": 99.1031515151515,
+"net": 99.1,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.606,
+"restant_s": 250,
+"journal": [
+"49.9s désaccord 20 (modèle 0.606, vendeur 0.33) ; 3 s avant : Binance 0 pb, perp 4.45 pb, OKX 3.4 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.3459"
+],
+"start": 1791933900,
+"slug": "btc-updown-5m-1791933900"
+},
+"2026-10-13T22:23:24.751Z|Down": {
+"heure": "2026-10-13T22:23:24.751Z",
+"cote": "Down",
+"prix": 0.0415,
+"parts": 296,
+"U": 0,
+"D": 296,
+"cash": -12.2742752,
+"net": -12.27,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.31,
+"restant_s": 95,
+"journal": [
+"204.8s désaccord 20 (modèle 0.31, vendeur 0.03) ; 3 s avant : Binance 2.29 pb, perp 2.12 pb, OKX 1.82 pb, Coinbase 2.86 pb (+ = dans notre sens) → achat à 0.0415"
+],
+"start": 1791930000,
+"slug": "btc-updown-5m-1791930000"
+}
+},
+"resume_bot": {
+"depuis": 1791930650.557,
+"n": 2,
+"gains": 1,
+"pertes": 1,
+"pnl": 86.83
+},
+"archive": [
+[
+"2026-10-13T22:23:24.751Z",
+"Down",
+0.0415,
+-12.27,
+"perdu",
+0.31,
+95
+],
+[
+"2026-10-13T23:25:49.924Z",
+"Down",
+0.3459,
+99.1,
+"gagné",
+0.606,
+250
+]
+],
+"n_sauves": 2,
+"maj": "2026-10-14 00:00 UTC"
+}

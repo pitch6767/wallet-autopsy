@@ -1,0 +1,100 @@
+{
+"nom": "desaccord 20 Binance ou perp avec nous + carnet pression BTC",
+"trades": {
+"2026-10-13T22:43:07.869Z|Down": {
+"heure": "2026-10-13T22:43:07.869Z",
+"cote": "Down",
+"prix": 0.2219,
+"parts": 238.1,
+"U": 0,
+"D": 238.0952380952381,
+"cash": -52.844,
+"net": -52.84,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.412,
+"restant_s": 112,
+"journal": [
+"187.9s désaccord 20 (modèle 0.412, vendeur 0.21) ; 3 s avant : Binance 0 pb, perp 0.65 pb, OKX 0.59 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.2219"
+],
+"start": 1791931200,
+"slug": "btc-updown-5m-1791931200"
+},
+"2026-10-13T22:23:24.751Z|Down": {
+"heure": "2026-10-13T22:23:24.751Z",
+"cote": "Down",
+"prix": 0.0415,
+"parts": 296,
+"U": 0,
+"D": 296,
+"cash": -12.2742752,
+"net": -12.27,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.31,
+"restant_s": 95,
+"journal": [
+"204.8s désaccord 20 (modèle 0.31, vendeur 0.03) ; 3 s avant : Binance 2.29 pb, perp 2.12 pb, OKX 1.82 pb, Coinbase 2.86 pb (+ = dans notre sens) → achat à 0.0415"
+],
+"start": 1791930000,
+"slug": "btc-updown-5m-1791930000"
+},
+"2026-10-13T20:40:44.777Z|Down": {
+"heure": "2026-10-13T20:40:44.777Z",
+"cote": "Down",
+"prix": 0.1487,
+"parts": 357.14,
+"U": 0,
+"D": 357.1428571428571,
+"cash": -53.096000000000004,
+"net": -53.1,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.346,
+"restant_s": 255,
+"journal": [
+"44.8s désaccord 20 (modèle 0.346, vendeur 0.14) ; 3 s avant : Binance 0 pb, perp 0.01 pb, OKX -0.01 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.1487"
+],
+"start": 1791924000,
+"slug": "btc-updown-5m-1791924000"
+}
+},
+"resume_bot": {
+"depuis": 1791924695.55,
+"n": 3,
+"gains": 0,
+"pertes": 3,
+"pnl": -118.21000000000001
+},
+"archive": [
+[
+"2026-10-13T20:40:44.777Z",
+"Down",
+0.1487,
+-53.1,
+"perdu",
+0.346,
+255
+],
+[
+"2026-10-13T22:23:24.751Z",
+"Down",
+0.0415,
+-12.27,
+"perdu",
+0.31,
+95
+],
+[
+"2026-10-13T22:43:07.869Z",
+"Down",
+0.2219,
+-52.84,
+"perdu",
+0.412,
+112
+]
+],
+"n_sauves": 3,
+"maj": "2026-10-14 00:00 UTC"
+}
