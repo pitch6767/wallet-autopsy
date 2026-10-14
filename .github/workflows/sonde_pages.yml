@@ -1,0 +1,19 @@
+name: Sonde pages bot95 (lecture seule)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [bot95/sonde_pages_go.txt]
+permissions:
+  contents: write
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set +e
+          U=https://bot95.pitch67.workers.dev
+          { for p in / /nouveaux /zero /api/nouveaux /api/zero /api/etat /api/classement; do echo "== $p"; curl -sS -m 60 -o /tmp/b -w "code %{http_code} taille %{size_download} temps %{time_total}s\n" "$U$p"; head -c 300 /tmp/b; echo; done; } > bot95/sonde_pages.txt 2>&1
+          git config user.name sonde; git config user.email bot@users.noreply.github.com
+          git add bot95/sonde_pages.txt && git commit -qm "sonde pages [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
