@@ -1,7 +1,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const {compare}=require('./recorded-comparison.cjs');
 const file=process.env.OFFICIAL_SOURCE;
-test('recorded official inputs -> partial fills -> official requote -> settlement',{skip:!file},()=>{
+test('recorded official inputs -> partial fills -> official requote -> settlement',{skip:!file},(t)=>{
  const source=fs.readFileSync(file,'utf8'),version=source.match(/const VERSION = "([^"]+)"/)[1];
  const input={mk:{start:0,end:300,up:'u',down:'d'},t:10000,tleft:290-1,
   ua:[.55],da:[.5],P:{pu:.52},TOX:{},bids:{u:.5,d:.45}};
@@ -34,6 +34,17 @@ test('recorded official inputs -> partial fills -> official requote -> settlemen
  const dictionary={...compressed,validation:{...compressed.validation,schema:3,tokens:['u','d'],
   market:input.mk,chunks:[require('node:zlib').gzipSync(JSON.stringify(packed)).toString('base64')]}};
  assert.equal(compare(dictionary,source,100).sim.snapshot().cost,7);
+ const dir=fs.mkdtempSync(require('node:os').tmpdir()+'/disk-replay-');
+ t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+ const bytes=Buffer.from(dictionary.validation.chunks[0],'base64');
+ fs.writeFileSync(dir+'/test.blocks',bytes);
+ const disk={...dictionary,validation:{...dictionary.validation,schema:4,file:'test.blocks',
+  chunks:[{offset:0,length:bytes.length}]}};
+ assert.equal(compare(disk,source,100,dir).sim.snapshot().cost,7);
+ assert.equal(compare(disk,source,100,dir,{stepTimeoutMs:0}).sim.snapshot().cost,7);
+ assert.throws(()=>compare({...disk,validation:{...disk.validation,file:'../test.blocks'}},source,100,dir),/Invalid/);
+ fs.truncateSync(dir+'/test.blocks',bytes.length-1);
+ assert.throws(()=>compare(disk,source,100,dir),/Truncated/);
  const buyDuplicates={...record,validation:{...record.validation,events:[...record.validation.events,
   {type:'raw',token:'u',row:['T',10300,10299,1,.5,12]},
   {type:'raw',token:'u',row:['T',10300,10299,1,.5,12]}]}};

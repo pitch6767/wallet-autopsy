@@ -15,11 +15,18 @@ Its returns must not be used to approve or reject official M10 for live executio
   filters, plus the probability, toxicity, prices and timing passed to M10.
   Recording uses fast asynchronous 512-KiB gzip blocks, with at most sixteen
   in flight (8 MiB of queued raw text) to absorb bursts before callbacks run.
-  Bounds are 128 MiB raw and 8 MiB compressed per cycle; overflow, compression
-  backpressure and unfinished blocks are explicit and excluded.
+  Schema 4 writes compressed blocks to private disk files and keeps only offsets
+  in the cycle manifest. Pending memory remains bounded; replay reads one block
+  at a time. Limits are 1 GiB raw and 128 MiB compressed per cycle; unfinished
+  blocks, disk errors and a disk-space reserve below 512 MiB exclude the cycle.
+  Only generated validation block files older than 72 hours are removed.
+  Accounting summaries are retained. Existing official archives are untouched.
   Schema 3 stores token identifiers and constant market metadata once, then
   losslessly encodes events as tuples. No event sampling or signal fields are
   removed. The decoder remains compatible with schemas 1 and 2.
+  The dedicated replay service enforces its 180-second process deadline, 512-MiB
+  memory cap and 25% CPU quota instead of spawning a watchdog thread per
+  decision. Other callers retain the per-decision timeout by default.
 - `recorded-comparison.cjs` converts that recording to execution events and
   invokes the matching official decision code. A bounded timer on the VPS runs
   `comparison-service.cjs`, with 100/250/500-ms latency assumptions.

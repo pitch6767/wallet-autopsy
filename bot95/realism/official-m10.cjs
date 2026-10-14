@@ -17,7 +17,7 @@ function extract(source) {
   return {quote,decision,sha256:crypto.createHash('sha256').update(source).digest('hex'),
     version:source.match(/const VERSION = "([^"]+)"/)?.[1] || null};
 }
-function create(source, execution) {
+function create(source, execution, {stepTimeoutMs=100}={}) {
   const spec = extract(source);
   // execution must feed the official order objects with simulated fills and
   // cancellation acknowledgements; source decisions are never rewritten.
@@ -35,7 +35,7 @@ function create(source, execution) {
       if (![t,tleft,ua?.[0],da?.[0],P?.pu,bids?.[mk?.up],bids?.[mk?.down]].every(Number.isFinite) || !TOX)
         throw Error('Complete official market and toxicity inputs required');
       Object.assign(context,{mk,t,tleft,ua,da,P,TOX,meilleurAcheteur:id=>bids[id]});
-      script.runInContext(context,{timeout:100});
+      script.runInContext(context,stepTimeoutMs?{timeout:stepTimeoutMs}:undefined);
     }
   };
 }

@@ -2,12 +2,12 @@
 // Isolated deterministic replay adapter; no network or real order capability.
 const {create}=require('./official-m10.cjs');
 class OfficialExecution {
-  constructor(source,{latencyMs,makerFeePerShare}){
+  constructor(source,{latencyMs,makerFeePerShare,stepTimeoutMs=100}){
     if(![latencyMs,makerFeePerShare].every(x=>Number.isFinite(x)&&x>=0))throw Error('Explicit execution assumptions required');
     Object.assign(this,{latencyMs,makerFeePerShare,at:0,orders:[],active:new Set(),cancelled:[],events:[],seen:new Map(),books:{},
       qty:{Up:0,Down:0},cost:0,fees:0,exposureMs:0,peakUnmatched:0,
       peakCommitted:{Up:0,Down:0},lastAt:null,winner:null,issues:[]});
-    this.strategy=create(source,{poser:(v,m,u,p,b)=>this.place(m,u,p,b),annuler:(o,r)=>this.cancel(o,r)});
+    this.strategy=create(source,{poser:(v,m,u,p,b)=>this.place(m,u,p,b),annuler:(o,r)=>this.cancel(o,r)},{stepTimeoutMs});
   }
   event(type,fields={}){this.events.push({at:this.at,type,...fields});}
   place(mk,up,prix,budget){

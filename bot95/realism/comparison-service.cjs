@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),zlib=require('node:zlib');
 const {compare}=require('./recorded-comparison.cjs');
 const engineKey=require('node:crypto').createHash('sha256').update(
-  ['official-m10.cjs','official-execution.cjs','recorded-comparison.cjs']
+  ['official-m10.cjs','official-execution.cjs','recorded-comparison.cjs','recording-events.cjs','comparison-service.cjs']
     .map(file=>fs.readFileSync(__dirname+'/'+file,'utf8')).join('\n')).digest('hex');
 const HOME='/opt/bot95-comparison',OFFICIAL='/opt/bot95-rapide';
 const atomic=(p,v)=>{fs.writeFileSync(p+'.tmp',JSON.stringify(v),{mode:0o644});fs.renameSync(p+'.tmp',p);};
@@ -30,7 +30,10 @@ async function main(){
     try{record=JSON.parse(zlib.gunzipSync(fs.readFileSync(file),{maxOutputLength:128*1024*1024}));}
     catch{state.cycles[file]={stamp,excluded:true,reason:'Unreadable recording'};continue;}
     if(!record.validation){state.cycles[file]={stamp,excluded:true,reason:'Before recorder installation',legacy:true};continue;}
-    const result={stamp,start:record.start,version:record.version,settled:false,scenarios:[]};
+    const result={stamp,start:record.start,version:record.version,settled:false,scenarios:[],
+      recording:{schema:record.validation.schema,rawBytes:record.validation.bytes,
+        diskBytes:record.validation.diskBytes,maxDiskWriteMs:record.validation.maxDiskWriteMs,
+        complete:record.validation.complete}};
     try{
       const historical=HOME+'/data/'+record.version+'.js';
       if(!fs.existsSync(historical))throw Error('Reference source for this version unavailable');
@@ -42,7 +45,9 @@ async function main(){
       const prices=JSON.parse(m.outcomePrices||'[]').map(Number),outcomes=JSON.parse(m.outcomes||'[]');
       const winner=m.closed===true&&m.umaResolutionStatus==='resolved'?outcomes[prices.indexOf(1)]:null;
       for(const delay of [100,250,500]){
-        const replay=compare(record,code,delay);
+        // The dedicated systemd process has a 180s hard deadline and CPU/memory
+        // limits. Avoid starting a watchdog thread for every recorded decision.
+        const replay=compare(record,code,delay,OFFICIAL+'/validation',{stepTimeoutMs:0});
         const before=replay.sim.snapshot();
         if(before.issues.length)throw Error(before.issues.join('; '));
         const snapshot=winner?replay.sim.settle({at:Math.max(Date.now(),replay.sim.at),winner,closed:true,resolved:true,evidence:{source:'Gamma',slug:m.slug}}):before;
