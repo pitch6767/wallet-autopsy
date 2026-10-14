@@ -1,32 +1,3 @@
-A. BTC 1 m
-  ok NQ=F 27284
-  ok ES=F 27285
-  ok YM=F 26965
-  ok RTY=F 26915
-  ok CL=F 27297
-  ok BZ=F 22977
-  ok NG=F 25193
-  ok GC=F 27417
-  ok SI=F 26507
-  ok HG=F 25499
-  ok PL=F 23463
-  ok ZN=F 25582
-  ok ZB=F 24216
-  ok ZF=F 25058
-  ok 6E=F 26660
-  ok 6J=F 26417
-  ok 6B=F 24223
-  ok 6A=F 25718
-  ok DX-Y.NYB 26677
-  ok EURUSD=X 28357
-  ok USDJPY=X 28290
-  ok GBPUSD=X 28356
-  ok AUDUSD=X 14190
-  ok USDCHF=X 28284
-  ok USDCNH=X 28288
-  ok USDMXN=X 28167
-  ok ^VIX 15501
-  ok ^TNX 7999
   ok ^IRX 7999
   ok ^GSPC 7801
   ok ^NDX 7801
@@ -76,7 +47,7 @@ A. BTC 1 m
   ok SLV 7800
   ok USO 7774
   ok UUP 4153
-  ok FXE 1715
+  ok FXE 1716
   ok FXY 2747
   ok XLK 7801
   ok XLF 7801
@@ -99,13 +70,51 @@ A. BTC 1 m
   ok CONL 7759
   ok MSTU 7729
   ok BITX 7775
-A fini 269 s
+liste spot fixe (ticker indisponible)
+A fini 745 s
 B. BTC 1 s
+  ok 1s ETHUSDT
+  ok 1s SOLUSDT
+  ok 1s XRPUSDT
+  ok 1s BNBUSDT
+  ok 1s DOGEUSDT
+  ok 1s ADAUSDT
+  ok 1s TRXUSDT
+  ok 1s LINKUSDT
+  ok 1s AVAXUSDT
+  ok 1s SUIUSDT
+  ok 1s LTCUSDT
+  ok 1s BCHUSDT
+  ok 1s DOTUSDT
+  ok 1s NEARUSDT
+  ok 1s APTUSDT
+  ok 1s UNIUSDT
+  ok 1s PEPEUSDT
+  ok 1s SHIBUSDT
+  ok 1s WIFUSDT
+  ok 1s ARBUSDT
+  ok 1s OPUSDT
+  ok 1s AAVEUSDT
+  ok 1s ETCUSDT
+  ok 1s FILUSDT
+  ok 1s ATOMUSDT
+  ok 1s INJUSDT
+  ok 1s SEIUSDT
+  ok 1s TIAUSDT
+  ok 1s RENDERUSDT
+  ok 1s FETUSDT
+  ok 1s HBARUSDT
+  ok 1s ICPUSDT
+  ok 1s XLMUSDT
+  ok 1s ENAUSDT
+  ok 1s WLDUSDT
+  ok 1s BONKUSDT
+  ok 1s FLOKIUSDT
+  ok 1s JUPUSDT
+  ok 1s ONDOUSDT
   ok 1s PAXGUSDT
   ok 1s EURUSDT
   ok 1s XAUTUSDT
-  ok 1s PAXGUSDT
-  ok 1s EURUSDT
-/home/runner/work/wallet-autopsy/wallet-autopsy/etude/bot5min/sousjacents_h1081.py:147: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+/home/runner/work/wallet-autopsy/wallet-autopsy/etude/bot5min/sousjacents_h1081.py:151: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
   f"Généré le {datetime.datetime.utcnow():%d.%m.%Y %H:%M} UTC dans GitHub Actions. Période minute {J0:%d.%m}–{J1:%d.%m}, seconde {S0:%d.%m}–{S1:%d.%m} (13.10 réservé, non utilisé).",
-FIN 307 s
+FIN 1050 s
