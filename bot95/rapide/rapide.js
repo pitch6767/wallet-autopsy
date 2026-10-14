@@ -269,8 +269,11 @@ const REC = {};
 const VALIDATION_BOOT = Math.floor(Date.now() / 300000) * 300;
 function validationRecord(start, event) {
   try {
+    const eventTime = event.type === "raw" ? event.row[1] : event.input.t;
+    if (eventTime >= (start + 300) * 1000) return;
     const R = recDe(start);
-    const V = R.validation || (R.validation = { schema: 3, tokens: [], version: VERSION,
+    const V = R.validation || (R.validation = { schema: 4, tokens: [], version: VERSION,
+      file: VERSION + "-" + start + "-" + Date.now() + ".blocks", diskBytes: 0,
       partialStartup: start === VALIDATION_BOOT, complete: true, bytes: 0,
       bufferBytes: 0, compressedBytes: 0, pending: 0, chunks: [], events: [] });
     if (!V.complete) return;
@@ -289,7 +292,7 @@ function validationRecord(start, event) {
         i.TOX[i.mk.up], i.TOX[i.mk.down], i.bids[i.mk.up], i.bids[i.mk.down]];
     } else { V.complete = false; V.reason = "unknown validation event"; return; }
     const serialized = JSON.stringify(packed);
-    if (V.bytes + serialized.length > 128 * 1024 * 1024) {
+    if (V.bytes + serialized.length > 1024 * 1024 * 1024) {
       V.complete = false; V.reason = "validation recording size limit"; return;
     }
     V.bytes += serialized.length;
@@ -304,10 +307,28 @@ function validationRecord(start, event) {
         if (!V.complete) return;
         if (error) { V.complete = false; V.reason = "validation compression error"; return; }
         V.compressedBytes += buffer.length;
-        if (V.compressedBytes > 8 * 1024 * 1024) {
+        if (V.compressedBytes > 128 * 1024 * 1024) {
           V.complete = false; V.reason = "validation compressed size limit"; V.chunks = []; V.events = []; return;
         }
-        V.chunks[index] = buffer.toString("base64");
+        try {
+          const folder = DIR + "/validation";
+          fs.mkdirSync(folder, { recursive: true, mode: 0o700 });
+          if (!V.diskInitialized) {
+            V.diskInitialized = true;
+            for (const name of fs.readdirSync(folder)) {
+              if (!/^[a-f0-9]{12}-[0-9]+-[0-9]+\.blocks$/.test(name)) continue;
+              const old = folder + "/" + name, stat = fs.lstatSync(old);
+              if (stat.isFile() && stat.mtimeMs < Date.now() - 3 * 86400000) fs.unlinkSync(old);
+            }
+          }
+          const disk = fs.statfsSync(folder);
+          if (disk.bavail * disk.bsize < 512 * 1024 * 1024) throw Error("low disk space");
+          const before = Date.now(), offset = V.diskBytes;
+          fs.appendFileSync(folder + "/" + V.file, buffer, { mode: 0o600 });
+          V.diskBytes += buffer.length;
+          V.chunks[index] = { offset, length: buffer.length };
+          V.maxDiskWriteMs = Math.max(V.maxDiskWriteMs || 0, Date.now() - before);
+        } catch (error) { V.complete = false; V.reason = "validation disk: " + error.message; }
       });
     }
   } catch (e) {
