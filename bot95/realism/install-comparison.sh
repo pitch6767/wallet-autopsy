@@ -7,7 +7,7 @@ id bot95 >/dev/null
 install -d -m 755 /opt/bot95-comparison
 install -d -m 700 -o bot95 -g bot95 /opt/bot95-comparison/data
 install -d -m 755 -o bot95 -g bot95 /opt/bot95-comparison/public
-for file in official-m10.cjs official-execution.cjs recorded-comparison.cjs recording-events.cjs comparison-service.cjs; do
+for file in official-m10.cjs official-execution.cjs recorded-comparison.cjs recording-events.cjs settle-recorded.cjs comparison-service.cjs; do
   install -m 644 "$STAGE/$file" "/opt/bot95-comparison/$file"
 done
 install -m 644 "$STAGE/bot95-comparison.service" /etc/systemd/system/

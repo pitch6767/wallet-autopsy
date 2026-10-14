@@ -202,10 +202,12 @@ function renderReadiness(){
 function renderComparison(){
  var box=$("comparison");clear(box);var c=state.data&&state.data.comparison;
  if(!c){box.appendChild(el("p",null,"Comparateur indisponible — aucun résultat à interpréter."));return;}
- var stale=age(c.at)>180;
+ var stale=age(c.at)>300;
  box.appendChild(el("strong",stale?"neg":null,(stale?"DONNÉES PÉRIMÉES · ":"")+"Pas de feu vert live"));
  box.appendChild(el("p",null,"Version officielle observée : "+c.officialVersion+" · relevé "+fmtTime(c.at)));
- box.appendChild(el("p",null,c.cycles+" cycles enregistrés · "+c.settled+" réglés exploitables · "+c.excluded+" exclus."));
+ box.appendChild(el("p",null,c.cycles+" cycles enregistrés · "+(c.analyzed||0)+" analysés · "+
+  (c.settledScenarios||0)+" scénarios réglés sans anomalie · "+c.excluded+" cycles exclus."));
+ box.appendChild(el("p","note","Les exclusions incluent les anciennes versions du collecteur. Un scénario indéterminé n’est compté ni comme gain ni comme perte."));
  if(!c.latestRecordedCycle||Date.now()-(c.latestRecordedCycle+300)*1000>600000)
   box.appendChild(el("p","neg","Aucun fichier de cycle récent : collecte absente, en démarrage ou interrompue."));
  box.appendChild(el("p",null,c.assumptions));
@@ -215,11 +217,18 @@ function renderComparison(){
   var item=el("div","cycle");
   item.appendChild(el("strong",null,fmtTime(r.start*1000)+" · "+r.version));
   if(r.reason)item.appendChild(el("p","neg",(r.excluded?"Exclu : ":"En attente : ")+r.reason));
-  (r.scenarios||[]).forEach(function(s){item.appendChild(el("p",null,
+  if(r.recording)item.appendChild(el("p","note","Capture "+(r.recording.complete?"complète":"incomplète")+
+    " · "+fmtN(r.recording.rawBytes/1048576)+" Mio bruts · "+fmtN(r.recording.diskBytes/1048576)+" Mio sur disque"));
+  (r.scenarios||[]).forEach(function(s){
+   if(s.error){item.appendChild(el("p","neg",s.latencyMs+" ms : résultat indéterminé — "+s.error));return;}
+   item.appendChild(el("p",null,
    s.latencyMs+" ms : PnL "+(fmtUsd(s.settlementPnl)||"en attente de règlement")+
    " · déséquilibre avant règlement "+fmtN(s.unmatched)+" parts · pic "+fmtN(s.peakUnmatched)+
    " parts · exposition "+fmtN(s.exposureMs/1000)+" s · "+s.decisions+" décisions officielles"+
    (s.sideSpendOver50?" · DÉPASSEMENT DE 50 $ PAR CÔTÉ":"")));
+   if(s.peakCommitted)item.appendChild(el("p","note","Engagement maximal simulé : Up "+
+    fmtUsd(s.peakCommitted.Up)+" · Down "+fmtUsd(s.peakCommitted.Down)+
+    (s.peakCommitted.Up>50.01||s.peakCommitted.Down>50.01?" — supérieur à la cible de 50 $ par côté":"")));
   });box.appendChild(item);
  });
 }

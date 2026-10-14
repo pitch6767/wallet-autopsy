@@ -9,8 +9,8 @@ function assess(source) {
     scope:'M10 officiel — aucun ordre réel',
     evidence:[
       {name:'Identification de la copie de référence officielle',status:identity?'verifie':'bloquant',detail:error||'Référence initiale vérifiée ; le relevé de comparaison indique la version courante et archive les sources observées. Tout cycle sans sa version exacte est exclu.'},
-      {name:'Même stratégie et mêmes entrées',status:'a_verifier',detail:'Le rejeu utilise les signaux enregistrés par M10 et le code de la même version. Consulter les cycles exploitables ci-dessous ; l’ancien essai reste hors validation.'},
-      {name:'Décisions officielles avec exécutions simulées et règlement',status:'tests_reussis',detail:'Boucle raccordée et testée sur scénarios synthétiques. Les données réelles et les hypothèses de file/latence doivent encore être évaluées ; aucune couverture inventée.'},
+      {name:'Même stratégie et mêmes entrées',status:'raccorde',detail:'Le rejeu utilise les signaux enregistrés par M10 et le code de la même version. Les captures incomplètes sont exclues ; l’ancien essai reste hors validation.'},
+      {name:'Décisions officielles avec exécutions simulées et règlement',status:'raccorde',detail:'Les enregistrements officiels sont rejoués séparément à 100, 250 et 500 ms. Les scénarios calculables sont réglés après confirmation Gamma ; les cas indéterminés restent signalés. Cela ne vérifie pas les exécutions privées.'},
       {name:'Exécution et annulation calibrées',status:'non_verifie',detail:'100 ms est une hypothèse, pas une latence de passage d’ordre mesurée.'},
       {name:'Règlements et réconciliation de compte',status:'non_verifie',detail:'Aucun rapprochement avec des exécutions privées et un compte non vide.'},
     ],

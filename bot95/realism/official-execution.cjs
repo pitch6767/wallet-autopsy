@@ -90,6 +90,7 @@ class OfficialExecution {
   }
   expire(at){
     this.advance(at);
+    this.expiredAt=at;
     for(const o of this.orders)if(['envoi','posee'].includes(o.etat))o.etat='fin du cycle';
     this.active.clear();
     this.event('expiry');
@@ -97,7 +98,7 @@ class OfficialExecution {
   snapshot(){
     const spent={Up:0,Down:0};
     for(const o of this.orders)spent[o.side]+=o.remplR*o.prix;
-    return {identity:this.strategy.identity,quantities:{...this.qty},cost:this.cost,fees:this.fees,spent,
+    return {identity:this.strategy.identity,quantities:{...this.qty},cost:this.cost,fees:this.fees,spent,expiredAt:this.expiredAt??null,
       peakCommitted:{...this.peakCommitted},peakUnmatched:this.peakUnmatched,
       sideSpendOver50:spent.Up>50.01||spent.Down>50.01,
       exposureMs:this.exposureMs,unmatched:Math.abs(this.qty.Up-this.qty.Down),

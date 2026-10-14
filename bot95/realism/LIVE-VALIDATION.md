@@ -24,9 +24,13 @@ Its returns must not be used to approve or reject official M10 for live executio
   Schema 3 stores token identifiers and constant market metadata once, then
   losslessly encodes events as tuples. No event sampling or signal fields are
   removed. The decoder remains compatible with schemas 1 and 2.
-  The dedicated replay service enforces its 180-second process deadline, 512-MiB
-  memory cap and 25% CPU quota instead of spawning a watchdog thread per
+  The dedicated replay service enforces its 240-second process deadline, 512-MiB
+  memory cap and 40% CPU quota instead of spawning a watchdog thread per
   decision. Other callers retain the per-decision timeout by default.
+  Scenarios are evaluated independently. An ambiguous scenario never invalidates
+  other latency cases, but its own PnL is not presented as valid. Finished replay
+  snapshots are cached while waiting for Gamma confirmation; confirmed settlement
+  is idempotent and needs no rerun of the recorded event stream.
 - `recorded-comparison.cjs` converts that recording to execution events and
   invokes the matching official decision code. A bounded timer on the VPS runs
   `comparison-service.cjs`, with 100/250/500-ms latency assumptions.

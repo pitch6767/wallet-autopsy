@@ -19,6 +19,13 @@ test('official decisions react to partial and cancellation-window fills, then se
   sim.decision({...input,t:10260,tleft:5});
   assert.equal(sim.orders[0].etat,'annulee');
   sim.expire(10400);
+  const before=sim.snapshot(),{settleRecorded}=require('./settle-recorded.cjs');
+  const confirmation={at:10401,winner:'Up',closed:true,resolved:true,evidence:'fixture'};
+  const cached=settleRecorded(before,confirmation);
+  assert.equal(cached.settlementPnl,7);
+  assert.equal(settleRecorded(cached,{...confirmation,at:10500}).exposureMs,cached.exposureMs);
+  assert.throws(()=>settleRecorded(before,{...confirmation,resolved:false}),/Confirmed/);
+  assert.throws(()=>settleRecorded({...before,error:'uncertain'},confirmation),/Confirmed/);
   assert.throws(()=>sim.settle({at:10400,winner:'Up',closed:true,resolved:false,evidence:'test'}),/Confirmed/);
   assert.equal(sim.settle({at:10401,winner:'Up',closed:true,resolved:true,evidence:'synthetic fixture'}).settlementPnl,7);
 });
