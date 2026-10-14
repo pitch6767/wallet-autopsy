@@ -528,7 +528,7 @@ export class Bot {
     }
     if (u.pathname === "/api/zero") { const Z = { ...(this.N.zero || {}) };
       for (const k of Object.keys(this.N.strats)) { const base = k.slice(0, k.lastIndexOf(" ")); const v = this.N.strats[k]; if (!Z[k] && !STOPPEES.has(base + "|" + k.slice(k.lastIndexOf(" ") + 1)) && ((v.n || 0) > 0 || (v.trades || []).length > 0)) Z[k] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 }; }
-      const L = Object.entries(Z).map(([nom, z]) => ({ nom, ...z, pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
+      const L = Object.entries(Z).map(([nom, z]) => ({ nom, ...z, parJour: Object.fromEntries(Object.entries(z.parJour || (z.n > 0 ? { "2026-10-14": z.pnl } : {})).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
       return json({ depuis: ZERO_DEPUIS, strats: L, total: +L.reduce((a, b) => a + b.pnl, 0).toFixed(2) }); }
     if (u.pathname === "/zero") return new Response(PAGE_ZERO, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/nouveaux") return new Response(PAGE_N.replace("__PV__", PAGE_N_V), { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -1631,6 +1631,7 @@ export class Bot {
     S2.trades.unshift(P); S2.trades.length = Math.min(S2.trades.length, 60);
     // 14.10.2026 (Pitch : « 2e onglet tout à 0 ») : compteurs repartis de zéro pour les trades ouverts depuis ZERO_DEPUIS (calcul au fil de l'eau, rien n'est relu)
     try { if (P.heure && Date.parse(P.heure) >= Date.parse(ZERO_DEPUIS)) { const Z = (this.N.zero = this.N.zero || {}), k = P.strat + " " + P.actif, z = (Z[k] = Z[k] || { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 });
+      const jz = new Date(Date.parse(P.heure) + 2 * 3600e3).toISOString().slice(0, 10); z.parJour = z.parJour || (z.n > 0 ? { "2026-10-14": z.pnl } : {}); z.parJour[jz] = (z.parJour[jz] || 0) + P.net;
       z.n++; z.pnl += P.net; z.cum += P.net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, P.net);
       if (P.net >= 0) { z.gains++; z.serie = 0; } else { z.pertes++; z.pertesTot += P.net; z.serie++; z.serieMax = Math.max(z.serieMax, z.serie); } } } catch (_) {}
     // archive compacte de TOUS les trades (09.10.2026) : [heure, côté, prix, net, issue, modèle, secondes restantes]
@@ -3003,11 +3004,11 @@ const PAGE_ZERO = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><m
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
-async function maj(){try{const d=await (await fetch("/api/zero",{cache:"no-store"})).json();const S=d.strats;
+async function maj(){try{const d=await (await fetch("/api/zero",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" · "+S.length+" stratégies (" + S.filter(x=>x.n>0).length + " ont déjà un trade réglé) · total : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b></div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade réglé depuis la remise à 0 pour l'instant.</div>";
-else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:760px'><tr><th>Rang</th><th>Stratégie</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td><td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td></tr>").join("")+"</table></div></div>";
+else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Stratégie</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 </script></body></html>`;
