@@ -1261,6 +1261,13 @@ setInterval(() => {
         }
       }
     }
+    // H1083 X2 (accord de Pitch 14.10.2026 11:55 « go ») : à 10 s du début, BTC Binance en baisse sur 30 min (≤ −1,018 σ) ET sur 5 min (< 0) → Up, 10 $.
+    // σ = écart-type des variations 1 s sur 1 h ; prix de référence = prix Binance à l'ouverture du cycle. Une fois par cycle. AUCUN ORDRE RÉEL.
+    if (el >= 10 && el < 12 && !fait("X2") && BN1H.length >= 3600) {
+      marque("X2"); const n = BN1H.length, k0 = n - 1 - Math.round(el), s1h = sdDiff(BN1H);
+      if (s1h && k0 - 1800 >= 0) { const p0 = BN1H[k0], r30 = (p0 - BN1H[k0 - 1800]) / (s1h * Math.sqrt(1800)), r5 = (p0 - BN1H[k0 - 300]) / (s1h * Math.sqrt(300));
+        if (r30 <= -1.018 && r5 < 0) fantAchat(start, "X2 baisse 30 min et 5 min Up", "Up", 10, { r30: +r30.toFixed(3), r5: +r5.toFixed(3) }); }
+    }
     const inst = [60, 90, 120, 150, 180, 210, 240, 260].find((x) => el >= x && el < x + 1);
     if (inst != null && BN1H.length >= 1800) {
       const s1h = sdDiff(BN1H), s300 = sdDiff(BN1H.slice(-301)), n = BN1H.length, m10 = s1h ? sg * (BN1H[n - 1] - BN1H[n - 11]) / (s1h * Math.sqrt(10)) : null;
