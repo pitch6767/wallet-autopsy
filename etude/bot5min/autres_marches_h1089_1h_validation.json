@@ -1,0 +1,1083 @@
+{
+ "type": "1h",
+ "marches": {
+  "exploration": 192,
+  "validation": 119
+ },
+ "liquidite": {
+  "exploration": {
+   "transactions_med": 2277.5,
+   "transactions_fenetre_med": 2229.0,
+   "usd_fenetre_med": 26930.21022393783,
+   "usd_total_med": 28958.85194097066,
+   "transactions_10pct_fin_med": 134.5,
+   "portefeuilles_fenetre_med": 225.5,
+   "tronques": 0,
+   "binance_bon_gagnant": 1.0,
+   "up_gagne": 0.5208333333333334,
+   "couverture_prix": 0.42224702380952384,
+   "couverture_prix_derniers_10pct": 0.33394607843137253
+  },
+  "validation": {
+   "transactions_med": 2136.0,
+   "transactions_fenetre_med": 2056.0,
+   "usd_fenetre_med": 23359.29789799531,
+   "usd_total_med": 26123.6657479361,
+   "transactions_10pct_fin_med": 118.0,
+   "portefeuilles_fenetre_med": 232.0,
+   "tronques": 0,
+   "binance_bon_gagnant": 0.9915966386554622,
+   "up_gagne": 0.48739495798319327,
+   "couverture_prix": 0.3836734693877551,
+   "couverture_prix_derniers_10pct": 0.2768166089965398
+  }
+ },
+ "calib": {
+  "exploration": [
+   {
+    "reste": "(0.0, 0.05]",
+    "tranche": "(0.5, 0.6]",
+    "lignes": 61,
+    "marches": 21,
+    "prix": 0.552,
+    "freq": 0.4754,
+    "ecart": -0.0766,
+    "ic90": [
+     -0.1784,
+     0.0284
+    ],
+    "phi": 0.5165
+   },
+   {
+    "reste": "(0.0, 0.05]",
+    "tranche": "(0.6, 0.7]",
+    "lignes": 57,
+    "marches": 23,
+    "prix": 0.6603,
+    "freq": 0.6491,
+    "ecart": -0.0112,
+    "ic90": [
+     -0.1797,
+     0.1241
+    ],
+    "phi": 0.6278
+   },
+   {
+    "reste": "(0.0, 0.05]",
+    "tranche": "(0.7, 0.8]",
+    "lignes": 78,
+    "marches": 29,
+    "prix": 0.7513,
+    "freq": 0.8077,
+    "ecart": 0.0564,
+    "ic90": [
+     -0.0473,
+     0.1488
+    ],
+    "phi": 0.746
+   },
+   {
+    "reste": "(0.0, 0.05]",
+    "tranche": "(0.8, 0.9]",
+    "lignes": 78,
+    "marches": 37,
+    "prix": 0.8567,
+    "freq": 0.8718,
+    "ecart": 0.0151,
+    "ic90": [
+     -0.1223,
+     0.129
+    ],
+    "phi": 0.8808
+   },
+   {
+    "reste": "(0.0, 0.05]",
+    "tranche": "(0.9, 0.95]",
+    "lignes": 99,
+    "marches": 45,
+    "prix": 0.9322,
+    "freq": 0.899,
+    "ecart": -0.0332,
+    "ic90": [
+     -0.1579,
+     0.0682
+    ],
+    "phi": 0.9504
+   },
+   {
+    "reste": "(0.0, 0.05]",
+    "tranche": "(0.95, 0.98]",
+    "lignes": 128,
+    "marches": 51,
+    "prix": 0.9693,
+    "freq": 0.9922,
+    "ecart": 0.0229,
+    "ic90": [
+     0.0072,
+     0.0315
+    ],
+    "phi": 0.9791
+   },
+   {
+    "reste": "(0.0, 0.05]",
+    "tranche": "(0.98, 0.995]",
+    "lignes": 181,
+    "marches": 75,
+    "prix": 0.9899,
+    "freq": 1.0,
+    "ecart": 0.0101,
+    "ic90": [
+     0.0099,
+     0.0103
+    ],
+    "phi": 0.9979
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.5, 0.6]",
+    "lignes": 59,
+    "marches": 36,
+    "prix": 0.5538,
+    "freq": 0.5254,
+    "ecart": -0.0284,
+    "ic90": [
+     -0.1289,
+     0.0731
+    ],
+    "phi": 0.5653
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.6, 0.7]",
+    "lignes": 66,
+    "marches": 41,
+    "prix": 0.6543,
+    "freq": 0.7273,
+    "ecart": 0.073,
+    "ic90": [
+     -0.0518,
+     0.1913
+    ],
+    "phi": 0.6694
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.7, 0.8]",
+    "lignes": 68,
+    "marches": 41,
+    "prix": 0.7541,
+    "freq": 0.7206,
+    "ecart": -0.0335,
+    "ic90": [
+     -0.1458,
+     0.0778
+    ],
+    "phi": 0.798
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.8, 0.9]",
+    "lignes": 75,
+    "marches": 52,
+    "prix": 0.8634,
+    "freq": 0.84,
+    "ecart": -0.0234,
+    "ic90": [
+     -0.1321,
+     0.076
+    ],
+    "phi": 0.9076
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.9, 0.95]",
+    "lignes": 53,
+    "marches": 40,
+    "prix": 0.9297,
+    "freq": 1.0,
+    "ecart": 0.0703,
+    "ic90": [
+     0.0674,
+     0.0733
+    ],
+    "phi": 0.9661
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.95, 0.98]",
+    "lignes": 74,
+    "marches": 53,
+    "prix": 0.9687,
+    "freq": 0.9865,
+    "ecart": 0.0178,
+    "ic90": [
+     -0.0099,
+     0.0322
+    ],
+    "phi": 0.993
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.98, 0.995]",
+    "lignes": 67,
+    "marches": 43,
+    "prix": 0.9889,
+    "freq": 1.0,
+    "ecart": 0.0111,
+    "ic90": [
+     0.0105,
+     0.0117
+    ],
+    "phi": 0.9977
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.5, 0.6]",
+    "lignes": 201,
+    "marches": 73,
+    "prix": 0.554,
+    "freq": 0.5075,
+    "ecart": -0.0465,
+    "ic90": [
+     -0.0994,
+     0.0093
+    ],
+    "phi": 0.5691
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.6, 0.7]",
+    "lignes": 186,
+    "marches": 90,
+    "prix": 0.6548,
+    "freq": 0.543,
+    "ecart": -0.1118,
+    "ic90": [
+     -0.1936,
+     -0.0232
+    ],
+    "phi": 0.7028
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.7, 0.8]",
+    "lignes": 193,
+    "marches": 91,
+    "prix": 0.7535,
+    "freq": 0.772,
+    "ecart": 0.0185,
+    "ic90": [
+     -0.048,
+     0.0916
+    ],
+    "phi": 0.8108
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.8, 0.9]",
+    "lignes": 217,
+    "marches": 95,
+    "prix": 0.858,
+    "freq": 0.8986,
+    "ecart": 0.0407,
+    "ic90": [
+     -0.0176,
+     0.0925
+    ],
+    "phi": 0.9202
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.9, 0.95]",
+    "lignes": 97,
+    "marches": 60,
+    "prix": 0.9321,
+    "freq": 0.9175,
+    "ecart": -0.0146,
+    "ic90": [
+     -0.0929,
+     0.0481
+    ],
+    "phi": 0.9775
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.95, 0.98]",
+    "lignes": 97,
+    "marches": 59,
+    "prix": 0.969,
+    "freq": 0.9794,
+    "ecart": 0.0104,
+    "ic90": [
+     -0.0285,
+     0.0321
+    ],
+    "phi": 0.9919
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.98, 0.995]",
+    "lignes": 43,
+    "marches": 29,
+    "prix": 0.9888,
+    "freq": 1.0,
+    "ecart": 0.0112,
+    "ic90": [
+     0.0102,
+     0.0123
+    ],
+    "phi": 0.9989
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "tranche": "(0.5, 0.6]",
+    "lignes": 376,
+    "marches": 114,
+    "prix": 0.555,
+    "freq": 0.5346,
+    "ecart": -0.0204,
+    "ic90": [
+     -0.0675,
+     0.0284
+    ],
+    "phi": 0.5712
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "tranche": "(0.6, 0.7]",
+    "lignes": 368,
+    "marches": 137,
+    "prix": 0.6564,
+    "freq": 0.7065,
+    "ecart": 0.0501,
+    "ic90": [
+     -0.0044,
+     0.1042
+    ],
+    "phi": 0.7183
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "tranche": "(0.7, 0.8]",
+    "lignes": 331,
+    "marches": 139,
+    "prix": 0.7503,
+    "freq": 0.7734,
+    "ecart": 0.0231,
+    "ic90": [
+     -0.0505,
+     0.0821
+    ],
+    "phi": 0.8291
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "tranche": "(0.8, 0.9]",
+    "lignes": 249,
+    "marches": 103,
+    "prix": 0.8513,
+    "freq": 0.8635,
+    "ecart": 0.0122,
+    "ic90": [
+     -0.0516,
+     0.0651
+    ],
+    "phi": 0.9218
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "tranche": "(0.9, 0.95]",
+    "lignes": 97,
+    "marches": 50,
+    "prix": 0.9301,
+    "freq": 0.9794,
+    "ecart": 0.0493,
+    "ic90": [
+     0.0252,
+     0.0703
+    ],
+    "phi": 0.9823
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "tranche": "(0.95, 0.98]",
+    "lignes": 35,
+    "marches": 18,
+    "prix": 0.9686,
+    "freq": 1.0,
+    "ecart": 0.0314,
+    "ic90": [
+     0.0293,
+     0.0339
+    ],
+    "phi": 0.9949
+   },
+   {
+    "reste": "(0.65, 1.0]",
+    "tranche": "(0.5, 0.6]",
+    "lignes": 906,
+    "marches": 182,
+    "prix": 0.5523,
+    "freq": 0.5188,
+    "ecart": -0.0336,
+    "ic90": [
+     -0.0698,
+     0.0052
+    ],
+    "phi": 0.5676
+   },
+   {
+    "reste": "(0.65, 1.0]",
+    "tranche": "(0.6, 0.7]",
+    "lignes": 523,
+    "marches": 169,
+    "prix": 0.6501,
+    "freq": 0.6233,
+    "ecart": -0.0268,
+    "ic90": [
+     -0.0963,
+     0.033
+    ],
+    "phi": 0.707
+   },
+   {
+    "reste": "(0.65, 1.0]",
+    "tranche": "(0.7, 0.8]",
+    "lignes": 236,
+    "marches": 97,
+    "prix": 0.7456,
+    "freq": 0.7373,
+    "ecart": -0.0083,
+    "ic90": [
+     -0.0934,
+     0.0746
+    ],
+    "phi": 0.8325
+   },
+   {
+    "reste": "(0.65, 1.0]",
+    "tranche": "(0.8, 0.9]",
+    "lignes": 82,
+    "marches": 34,
+    "prix": 0.8464,
+    "freq": 0.9512,
+    "ecart": 0.1048,
+    "ic90": [
+     0.0448,
+     0.1455
+    ],
+    "phi": 0.9386
+   }
+  ],
+  "validation": [
+   {
+    "reste": "(0.0, 0.05]",
+    "tranche": "(0.8, 0.9]",
+    "lignes": 49,
+    "marches": 16,
+    "prix": 0.8548,
+    "freq": 0.9796,
+    "ecart": 0.1248,
+    "ic90": [
+     0.0912,
+     0.1477
+    ],
+    "phi": 0.8561
+   },
+   {
+    "reste": "(0.0, 0.05]",
+    "tranche": "(0.9, 0.95]",
+    "lignes": 39,
+    "marches": 17,
+    "prix": 0.9277,
+    "freq": 1.0,
+    "ecart": 0.0723,
+    "ic90": [
+     0.0688,
+     0.0762
+    ],
+    "phi": 0.9496
+   },
+   {
+    "reste": "(0.0, 0.05]",
+    "tranche": "(0.95, 0.98]",
+    "lignes": 53,
+    "marches": 28,
+    "prix": 0.9719,
+    "freq": 0.9811,
+    "ecart": 0.0093,
+    "ic90": [
+     -0.0297,
+     0.0298
+    ],
+    "phi": 0.9795
+   },
+   {
+    "reste": "(0.0, 0.05]",
+    "tranche": "(0.98, 0.995]",
+    "lignes": 96,
+    "marches": 43,
+    "prix": 0.99,
+    "freq": 0.9896,
+    "ecart": -0.0004,
+    "ic90": [
+     -0.0217,
+     0.0103
+    ],
+    "phi": 0.9971
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.5, 0.6]",
+    "lignes": 30,
+    "marches": 17,
+    "prix": 0.5525,
+    "freq": 0.6333,
+    "ecart": 0.0809,
+    "ic90": [
+     -0.0341,
+     0.1723
+    ],
+    "phi": 0.5531
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.6, 0.7]",
+    "lignes": 27,
+    "marches": 18,
+    "prix": 0.6546,
+    "freq": 0.7407,
+    "ecart": 0.0861,
+    "ic90": [
+     -0.1057,
+     0.2663
+    ],
+    "phi": 0.6864
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.7, 0.8]",
+    "lignes": 33,
+    "marches": 22,
+    "prix": 0.7521,
+    "freq": 0.8485,
+    "ecart": 0.0964,
+    "ic90": [
+     -0.0417,
+     0.2189
+    ],
+    "phi": 0.7957
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.8, 0.9]",
+    "lignes": 49,
+    "marches": 31,
+    "prix": 0.8597,
+    "freq": 0.898,
+    "ecart": 0.0382,
+    "ic90": [
+     -0.0465,
+     0.0997
+    ],
+    "phi": 0.8974
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.9, 0.95]",
+    "lignes": 37,
+    "marches": 33,
+    "prix": 0.9304,
+    "freq": 0.973,
+    "ecart": 0.0426,
+    "ic90": [
+     -0.0133,
+     0.072
+    ],
+    "phi": 0.9728
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.95, 0.98]",
+    "lignes": 45,
+    "marches": 30,
+    "prix": 0.9688,
+    "freq": 1.0,
+    "ecart": 0.0312,
+    "ic90": [
+     0.0292,
+     0.0331
+    ],
+    "phi": 0.9902
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "tranche": "(0.98, 0.995]",
+    "lignes": 35,
+    "marches": 26,
+    "prix": 0.9887,
+    "freq": 1.0,
+    "ecart": 0.0113,
+    "ic90": [
+     0.0102,
+     0.0124
+    ],
+    "phi": 0.9978
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.5, 0.6]",
+    "lignes": 72,
+    "marches": 33,
+    "prix": 0.5546,
+    "freq": 0.5972,
+    "ecart": 0.0426,
+    "ic90": [
+     -0.0505,
+     0.1268
+    ],
+    "phi": 0.5628
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.6, 0.7]",
+    "lignes": 83,
+    "marches": 38,
+    "prix": 0.6614,
+    "freq": 0.747,
+    "ecart": 0.0856,
+    "ic90": [
+     -0.0419,
+     0.1978
+    ],
+    "phi": 0.707
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.7, 0.8]",
+    "lignes": 112,
+    "marches": 56,
+    "prix": 0.7565,
+    "freq": 0.7857,
+    "ecart": 0.0292,
+    "ic90": [
+     -0.0761,
+     0.1215
+    ],
+    "phi": 0.8156
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.8, 0.9]",
+    "lignes": 144,
+    "marches": 66,
+    "prix": 0.859,
+    "freq": 0.9097,
+    "ecart": 0.0507,
+    "ic90": [
+     -0.0143,
+     0.1056
+    ],
+    "phi": 0.9089
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.9, 0.95]",
+    "lignes": 91,
+    "marches": 51,
+    "prix": 0.9308,
+    "freq": 0.967,
+    "ecart": 0.0362,
+    "ic90": [
+     -0.0072,
+     0.0693
+    ],
+    "phi": 0.9756
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "tranche": "(0.95, 0.98]",
+    "lignes": 56,
+    "marches": 34,
+    "prix": 0.9673,
+    "freq": 1.0,
+    "ecart": 0.0327,
+    "ic90": [
+     0.031,
+     0.0345
+    ],
+    "phi": 0.9936
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "tranche": "(0.5, 0.6]",
+    "lignes": 203,
+    "marches": 61,
+    "prix": 0.5599,
+    "freq": 0.6256,
+    "ecart": 0.0657,
+    "ic90": [
+     -0.0006,
+     0.1329
+    ],
+    "phi": 0.5852
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "tranche": "(0.6, 0.7]",
+    "lignes": 205,
+    "marches": 74,
+    "prix": 0.654,
+    "freq": 0.6732,
+    "ecart": 0.0192,
+    "ic90": [
+     -0.0845,
+     0.1225
+    ],
+    "phi": 0.7082
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "tranche": "(0.7, 0.8]",
+    "lignes": 206,
+    "marches": 81,
+    "prix": 0.7519,
+    "freq": 0.8058,
+    "ecart": 0.0539,
+    "ic90": [
+     -0.0277,
+     0.1257
+    ],
+    "phi": 0.818
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "tranche": "(0.8, 0.9]",
+    "lignes": 166,
+    "marches": 65,
+    "prix": 0.8557,
+    "freq": 0.9398,
+    "ecart": 0.0841,
+    "ic90": [
+     0.0431,
+     0.1179
+    ],
+    "phi": 0.9252
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "tranche": "(0.9, 0.95]",
+    "lignes": 52,
+    "marches": 25,
+    "prix": 0.9306,
+    "freq": 0.9038,
+    "ecart": -0.0268,
+    "ic90": [
+     -0.1479,
+     0.0683
+    ],
+    "phi": 0.969
+   },
+   {
+    "reste": "(0.65, 1.0]",
+    "tranche": "(0.5, 0.6]",
+    "lignes": 509,
+    "marches": 113,
+    "prix": 0.555,
+    "freq": 0.5658,
+    "ecart": 0.0108,
+    "ic90": [
+     -0.0389,
+     0.0609
+    ],
+    "phi": 0.578
+   },
+   {
+    "reste": "(0.65, 1.0]",
+    "tranche": "(0.6, 0.7]",
+    "lignes": 321,
+    "marches": 106,
+    "prix": 0.6512,
+    "freq": 0.6604,
+    "ecart": 0.0092,
+    "ic90": [
+     -0.0787,
+     0.0825
+    ],
+    "phi": 0.7075
+   },
+   {
+    "reste": "(0.65, 1.0]",
+    "tranche": "(0.7, 0.8]",
+    "lignes": 129,
+    "marches": 61,
+    "prix": 0.7473,
+    "freq": 0.7597,
+    "ecart": 0.0124,
+    "ic90": [
+     -0.0918,
+     0.0985
+    ],
+    "phi": 0.8142
+   },
+   {
+    "reste": "(0.65, 1.0]",
+    "tranche": "(0.8, 0.9]",
+    "lignes": 45,
+    "marches": 19,
+    "prix": 0.8431,
+    "freq": 0.9778,
+    "ecart": 0.1346,
+    "ic90": [
+     0.0894,
+     0.1623
+    ],
+    "phi": 0.9234
+   }
+  ]
+ },
+ "efficacite": {
+  "exploration": [
+   {
+    "reste": "(0.0, 0.05]",
+    "lignes": 840,
+    "marches": 133,
+    "brier_marche": 0.071,
+    "brier_modele_binance": 0.0606,
+    "pente_prix_seul": 1.144,
+    "pente_prix": 0.187,
+    "poids_modele": 0.876
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "lignes": 501,
+    "marches": 161,
+    "brier_marche": 0.107,
+    "brier_modele_binance": 0.1085,
+    "pente_prix_seul": 1.156,
+    "pente_prix": 0.398,
+    "poids_modele": 0.598
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "lignes": 1053,
+    "marches": 187,
+    "brier_marche": 0.1572,
+    "brier_modele_binance": 0.1611,
+    "pente_prix_seul": 1.041,
+    "pente_prix": 0.683,
+    "poids_modele": 0.255
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "lignes": 1469,
+    "marches": 192,
+    "brier_marche": 0.1784,
+    "brier_modele_binance": 0.1808,
+    "pente_prix_seul": 1.165,
+    "pente_prix": 0.967,
+    "poids_modele": 0.13
+   },
+   {
+    "reste": "(0.65, 1.0]",
+    "lignes": 1812,
+    "marches": 192,
+    "brier_marche": 0.2288,
+    "brier_modele_binance": 0.2353,
+    "pente_prix_seul": 0.983,
+    "pente_prix": 0.667,
+    "poids_modele": 0.206
+   }
+  ],
+  "validation": [
+   {
+    "reste": "(0.0, 0.05]",
+    "lignes": 426,
+    "marches": 80,
+    "brier_marche": 0.0563,
+    "brier_modele_binance": 0.0573,
+    "pente_prix_seul": 1.312,
+    "pente_prix": 0.554,
+    "poids_modele": 0.691
+   },
+   {
+    "reste": "(0.05, 0.15]",
+    "lignes": 271,
+    "marches": 103,
+    "brier_marche": 0.0856,
+    "brier_modele_binance": 0.0829,
+    "pente_prix_seul": 1.422,
+    "pente_prix": 1.241,
+    "poids_modele": 0.14
+   },
+   {
+    "reste": "(0.15, 0.35]",
+    "lignes": 586,
+    "marches": 117,
+    "brier_marche": 0.1166,
+    "brier_modele_binance": 0.1149,
+    "pente_prix_seul": 1.306,
+    "pente_prix": 0.546,
+    "poids_modele": 0.565
+   },
+   {
+    "reste": "(0.35, 0.65]",
+    "lignes": 868,
+    "marches": 119,
+    "brier_marche": 0.167,
+    "brier_modele_binance": 0.1613,
+    "pente_prix_seul": 1.277,
+    "pente_prix": 0.004,
+    "poids_modele": 0.913
+   },
+   {
+    "reste": "(0.65, 1.0]",
+    "lignes": 1045,
+    "marches": 119,
+    "brier_marche": 0.2193,
+    "brier_modele_binance": 0.219,
+    "pente_prix_seul": 1.254,
+    "pente_prix": 0.541,
+    "poids_modele": 0.495
+   }
+  ]
+ },
+ "regles": {
+  "R2 horaire favori 0,90–0,98, ≤ 10 % restant → favori|exploration|observe": {
+   "marches": 192,
+   "achats": 82,
+   "gagnants": 80,
+   "taux": 0.975609756097561,
+   "prix": 0.9470614295969513,
+   "roi": 0.026510480647323278,
+   "pnl10": 21.738594130805097,
+   "ic90": [
+    -4.965138628407289,
+    43.786706396749175
+   ],
+   "ic_bonf": [
+    -17.04662222319723,
+    48.449320316878286
+   ]
+  },
+  "R2 horaire favori 0,90–0,98, ≤ 10 % restant → favori|exploration|pessimiste": {
+   "marches": 192,
+   "achats": 82,
+   "gagnants": 80,
+   "taux": 0.975609756097561,
+   "prix": 0.9524102963006098,
+   "roi": 0.021379452815752223,
+   "pnl10": 17.53115130891682,
+   "ic90": [
+    -9.660742822077328,
+    39.498744851696465
+   ],
+   "ic_bonf": [
+    -21.329496598075693,
+    43.372535953836895
+   ]
+  },
+  "R3 horaire |modèle − prix| ≥ 0,15 → côté du modèle|exploration|observe": {
+   "marches": 192,
+   "achats": 53,
+   "gagnants": 38,
+   "taux": 0.7169811320754716,
+   "prix": 0.6374022662556603,
+   "roi": 0.13982586845677966,
+   "pnl10": 74.10771028209322,
+   "ic90": [
+    -20.160022202148443,
+    165.6250767423931
+   ],
+   "ic_bonf": [
+    -53.56075749433071,
+    197.7021422924878
+   ]
+  },
+  "R3 horaire |modèle − prix| ≥ 0,15 → côté du modèle|exploration|pessimiste": {
+   "marches": 192,
+   "achats": 53,
+   "gagnants": 38,
+   "taux": 0.7169811320754716,
+   "prix": 0.639123964368868,
+   "roi": 0.1351151864421813,
+   "pnl10": 71.6110488143561,
+   "ic90": [
+    -19.86165068625631,
+    165.05979554250052
+   ],
+   "ic_bonf": [
+    -53.51214459200246,
+    196.67832095291288
+   ]
+  },
+  "R2 horaire favori 0,90–0,98, ≤ 10 % restant → favori|validation|observe": {
+   "marches": 119,
+   "achats": 48,
+   "gagnants": 48,
+   "taux": 1.0,
+   "prix": 0.9240503435239583,
+   "roi": 0.10453374928842803,
+   "pnl10": 50.176199658445455,
+   "ic90": [
+    24.86604620634214,
+    83.4470747225261
+   ],
+   "ic_bonf": [
+    20.93302916497248,
+    100.22903510922275
+   ]
+  },
+  "R2 horaire favori 0,90–0,98, ≤ 10 % restant → favori|validation|pessimiste": {
+   "marches": 119,
+   "achats": 48,
+   "gagnants": 48,
+   "taux": 1.0,
+   "prix": 0.9482899367385418,
+   "roi": 0.0515097528751208,
+   "pnl10": 24.724681380057984,
+   "ic90": [
+    19.33678323467896,
+    30.3492479912641
+   ],
+   "ic_bonf": [
+    17.411679216365716,
+    32.457129423902
+   ]
+  },
+  "R3 horaire |modèle − prix| ≥ 0,15 → côté du modèle|validation|observe": {
+   "marches": 119,
+   "achats": 31,
+   "gagnants": 23,
+   "taux": 0.7419354838709677,
+   "prix": 0.6829616253516129,
+   "roi": 0.07787012388050159,
+   "pnl10": 24.139738402955494,
+   "ic90": [
+    -38.736495728780945,
+    84.52157358742808
+   ],
+   "ic_bonf": [
+    -63.254364943629106,
+    105.5667332079958
+   ]
+  },
+  "R3 horaire |modèle − prix| ≥ 0,15 → côté du modèle|validation|pessimiste": {
+   "marches": 119,
+   "achats": 31,
+   "gagnants": 23,
+   "taux": 0.7419354838709677,
+   "prix": 0.683768076964516,
+   "roi": 0.07633043011256861,
+   "pnl10": 23.66243333489627,
+   "ic90": [
+    -38.451571538774765,
+    83.28381318060393
+   ],
+   "ic_bonf": [
+    -62.767445317385445,
+    104.08544732932964
+   ]
+  }
+ }
+}
