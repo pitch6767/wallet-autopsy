@@ -91,6 +91,9 @@ jobs:
                       print("REQ", q, "->", [(x.get("slug"), x.get("endDate")) for x in rr] if isinstance(rr, list) else str(rr)[:300])
               for s in ["bitcoin-up-or-down-october-10-2026-3pm-et", "btc-up-or-down-october-10-3pm-et", "bitcoin-up-or-down-oct-10-3pm-et", "bitcoin-up-or-down-october-10-2026-3pm-et-1"]:
                   ev = get(f"{G}/events?slug={s}"); print("ESSAI", s, "->", (ev[0].get("title"), ev[0].get("startDate")) if ev else None)
+                  if ev:
+                      e, m, out, px, meta = info(ev); print("   frais:", m.get("feesEnabled"), m.get("makerBaseFee"), m.get("takerBaseFee"), m.get("feeSchedule"), "| volume:", m.get("volume"), "| meta:", meta, "| resultat:", dict(zip(out, px)))
+                      print("   description:", (m.get("description") or "")[:900].replace("\n", " ")); print("   resolutionSource:", m.get("resolutionSource"))
               rr = get(f"{G}/events?tag_slug=up-or-down&closed=true&limit=100&order=endDate&ascending=false&end_date_min=2026-10-10T00:00:00Z&end_date_max=2026-10-10T23:59:59Z")
               print("JOUR", sorted(set((x.get("slug") or "") for x in rr if "5m" not in (x.get("slug") or "")))[:200] if isinstance(rr, list) else rr)
               rr = get(f"{G}/markets?closed=true&limit=100&order=endDate&ascending=false&end_date_min=2026-10-10T19:30:00Z&end_date_max=2026-10-10T20:30:00Z")
