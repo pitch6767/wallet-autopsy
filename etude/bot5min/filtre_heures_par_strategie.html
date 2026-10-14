@@ -1,0 +1,521 @@
+<!doctype html><html lang=fr><head><meta charset=utf-8><title>Filtre heures par strategie</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:'DejaVu Sans',Arial;font-size:7.6pt}h1{font-size:14pt;margin:0}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:1.5px 3px;text-align:right}td:first-child,th:first-child,td:last-child{text-align:left}th{background:#eee}tr{page-break-inside:avoid}.p{color:#2f6a1d;font-weight:bold}.m{color:#a23b2a;font-weight:bold}.ok{background:#eef6e8}</style></head><body>
+<h1>Bot95 — filtre « pas de trade 02 h – 10 h » : effet stratégie par stratégie</h1>
+<p>Trades fantômes sauvegardés, heure suisse d'entrée. <b>Avant 13.10</b> = jours où le filtre a été trouvé (le résultat y est forcément flatteur). <b>13–14.10</b> = jours nouveaux (14.10 jusqu'à ~13:30). « Effet du filtre » = ce qu'on gagne (+) ou perd (−) en supprimant les trades de 02 h à 10 h. Attention : certaines sauvegardes ne gardent que les trades récents. Classement par effet sur les jours nouveaux.<br>Bilan : <b>25</b> stratégies où le filtre aide sur les deux périodes · <b>7</b> où la nuit gagne sur les deux · <b>20</b> instables · 464 avec une seule période. Lignes vertes = le filtre aide sur les deux périodes.</p>
+<table><tr><th>Stratégie</th><th>Trades avant 13.10</th><th>Résultat avant</th><th>Effet filtre avant</th><th>Trades 13–14.10</th><th>Résultat 13–14.10</th><th>Effet filtre 13–14.10</th><th>Lecture</th></tr>
+<tr class='ok'><td>V2-E persistant BTC</td><td>905</td><td>−7 520</td><td class=p>+2 255</td><td>99</td><td>−465</td><td class=p>+1 236</td><td>aide les 2 périodes</td></tr>
+<tr class='ok'><td>V2-C perp BTC</td><td>935</td><td>−300</td><td class=p>+1 500</td><td>326</td><td>−1 667</td><td class=p>+817</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>V2-C perp + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>68</td><td>−2 489</td><td class=p>+777</td><td>une seule période</td></tr>
+<tr class='ok'><td>desaccord 20 60-180 s BTC</td><td>531</td><td>−1 309</td><td class=p>+877</td><td>107</td><td>−426</td><td class=p>+625</td><td>aide les 2 périodes</td></tr>
+<tr class='ok'><td>corrige marge mesuree V2-F BTC</td><td>557</td><td>−65</td><td class=p>+821</td><td>208</td><td>+820</td><td class=p>+481</td><td>aide les 2 périodes</td></tr>
+<tr class='ok'><td>V2-F + pas les deux baissent BTC</td><td>865</td><td>−2 748</td><td class=p>+2 673</td><td>120</td><td>−416</td><td class=p>+477</td><td>aide les 2 périodes</td></tr>
+<tr class='ok'><td>V2-H veto complet BTC</td><td>927</td><td>−4 084</td><td class=p>+2 281</td><td>102</td><td>−756</td><td class=p>+442</td><td>aide les 2 périodes</td></tr>
+<tr class='ok'><td>V2-F ecart qui grandit BTC</td><td>932</td><td>−2 431</td><td class=p>+1 833</td><td>122</td><td>−350</td><td class=p>+426</td><td>aide les 2 périodes</td></tr>
+<tr class='ok'><td>desaccord 20 sans nuit BTC</td><td>692</td><td>−440</td><td class=p>+942</td><td>62</td><td>−491</td><td class=p>+390</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>V2-C perp + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>68</td><td>−1 207</td><td class=p>+381</td><td>une seule période</td></tr>
+<tr class=''><td>V2-G jury des bourses + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>65</td><td>−1 257</td><td class=p>+287</td><td>une seule période</td></tr>
+<tr class='ok'><td>corrige marge mesuree V2-F ETH</td><td>450</td><td>−1 007</td><td class=p>+738</td><td>79</td><td>−320</td><td class=p>+287</td><td>aide les 2 périodes</td></tr>
+<tr class='ok'><td>desaccord 30 0,15-0,60 + perp + ecart qui grandit BTC</td><td>421</td><td>+1 450</td><td class=p>+233</td><td>44</td><td>+124</td><td class=p>+280</td><td>aide les 2 périodes</td></tr>
+<tr class='ok'><td>desaccord 30 zone 0,15-0,35 + Binance et perp BTC</td><td>411</td><td>+1 166</td><td class=p>+245</td><td>12</td><td>−453</td><td class=p>+279</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>desaccord 30 zone 0,15-0,35 BTC</td><td>479</td><td>+1 313</td><td class=m>−280</td><td>51</td><td>+67</td><td class=p>+267</td><td>instable</td></tr>
+<tr class='ok'><td>desaccord 30 zone + Binance et perp + sortie modele -10 BTC</td><td>411</td><td>+1 358</td><td class=p>+154</td><td>12</td><td>−402</td><td class=p>+243</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>20</td><td>−491</td><td class=p>+242</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F miroir 1 s + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>41</td><td>−290</td><td class=p>+231</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>25</td><td>−389</td><td class=p>+227</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K2 + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>28</td><td>−497</td><td class=p>+218</td><td>une seule période</td></tr>
+<tr class=''><td>V2-C perp + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>96</td><td>−962</td><td class=p>+213</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 BTC</td><td>457</td><td>+1 742</td><td class=m>−158</td><td>205</td><td>+446</td><td class=p>+211</td><td>instable</td></tr>
+<tr class=''><td>TWAP fin confirme Chainlink 0,5 s + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>4</td><td>+94</td><td class=p>+211</td><td>une seule période</td></tr>
+<tr class='ok'><td>desaccord 20 Poly rejoint 10 s sans nuit BTC</td><td>227</td><td>−260</td><td class=p>+75</td><td>14</td><td>−659</td><td class=p>+209</td><td>aide les 2 périodes</td></tr>
+<tr class='ok'><td>corrige desaccord 20 ETH</td><td>462</td><td>−1 719</td><td class=p>+1 071</td><td>63</td><td>−250</td><td class=p>+206</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>V2-C perp + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>57</td><td>−626</td><td class=p>+205</td><td>une seule période</td></tr>
+<tr class='ok'><td>V2-F pause memoire BTC</td><td>473</td><td>−265</td><td class=p>+510</td><td>115</td><td>−539</td><td class=p>+199</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>V2-C perp + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>84</td><td>−464</td><td class=p>+178</td><td>une seule période</td></tr>
+<tr class=''><td>V2-D perp 120-269 s + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>37</td><td>−381</td><td class=p>+162</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + modele monte + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>+37</td><td class=p>+161</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + modele monte + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>+37</td><td class=p>+161</td><td>une seule période</td></tr>
+<tr class=''><td>V2-C perp + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>92</td><td>−621</td><td class=p>+159</td><td>une seule période</td></tr>
+<tr class=''><td>V2-C perp + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>49</td><td>−735</td><td class=p>+157</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + modele monte BTC</td><td>249</td><td>+3 939</td><td class=m>−873</td><td>39</td><td>+471</td><td class=p>+152</td><td>instable</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>19</td><td>−192</td><td class=p>+146</td><td>une seule période</td></tr>
+<tr class=''><td>corrige marge mesuree V2-F + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>34</td><td>−162</td><td class=p>+141</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>20</td><td>−232</td><td class=p>+126</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone 0,15-0,35 + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>8</td><td>+18</td><td class=p>+125</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 0,15-0,60 + perp + ecart qui grandit + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>+73</td><td class=p>+125</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone 0,15-0,35 + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>18</td><td>−39</td><td class=p>+118</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + modele monte + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>15</td><td>−3</td><td class=p>+111</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>20</td><td>−425</td><td class=p>+109</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous sans nuit + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>2</td><td>−220</td><td class=p>+107</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 0,15-0,60 + perp + ecart qui grandit + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>6</td><td>+93</td><td class=p>+106</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone 0,15-0,35 + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>5</td><td>+146</td><td class=p>+106</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin confirme Chainlink 0,5 s + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>4</td><td>+48</td><td class=p>+106</td><td>une seule période</td></tr>
+<tr class=''><td>CP5 couverture posee BTC</td><td>0</td><td>+0</td><td class=>—</td><td>451</td><td>−201</td><td class=p>+100</td><td>une seule période</td></tr>
+<tr class='ok'><td>V2-B hors 60-89 s BTC</td><td>938</td><td>−1 811</td><td class=p>+1 410</td><td>120</td><td>−404</td><td class=p>+99</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>desaccord 30 zone + modele monte + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+69</td><td class=p>+99</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 0,15-0,60 + perp + ecart qui grandit + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+69</td><td class=p>+98</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone 0,15-0,35 + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>13</td><td>+65</td><td class=p>+85</td><td>une seule période</td></tr>
+<tr class=''><td>V2-G jury des bourses + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>65</td><td>−566</td><td class=p>+79</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>11</td><td>−145</td><td class=p>+78</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>−131</td><td class=p>+78</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 0,15-0,60 + perp + ecart qui grandit + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>13</td><td>+91</td><td class=p>+75</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F miroir 1 s + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>57</td><td>−126</td><td class=p>+71</td><td>une seule période</td></tr>
+<tr class=''><td>E3 volatilite haute favori BTC</td><td>0</td><td>+0</td><td class=>—</td><td>45</td><td>−21</td><td class=p>+69</td><td>une seule période</td></tr>
+<tr class=''><td>JC5 couverture preneur BTC</td><td>0</td><td>+0</td><td class=>—</td><td>451</td><td>−128</td><td class=p>+66</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone 0,15-0,35 + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>14</td><td>+94</td><td class=p>+64</td><td>une seule période</td></tr>
+<tr class=''><td>V2-G jury des bourses + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>63</td><td>−106</td><td class=p>+63</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F miroir 1 s + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>64</td><td>−237</td><td class=p>+59</td><td>une seule période</td></tr>
+<tr class=''><td>E1 elan frais favori BTC</td><td>0</td><td>+0</td><td class=>—</td><td>122</td><td>−4</td><td class=p>+59</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + modele monte + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+157</td><td class=p>+58</td><td>une seule période</td></tr>
+<tr class=''><td>corrige marge mesuree V2-F + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>28</td><td>+1</td><td class=p>+55</td><td>une seule période</td></tr>
+<tr class='ok'><td>desaccord 20 Binance ou perp avec nous sans nuit BTC</td><td>186</td><td>+1 229</td><td class=p>+239</td><td>61</td><td>−1 215</td><td class=p>+54</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous sans nuit + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>2</td><td>−106</td><td class=p>+53</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous sans nuit + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>2</td><td>−106</td><td class=p>+53</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K9 + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>1</td><td>−53</td><td class=p>+53</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K9 + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>1</td><td>−53</td><td class=p>+53</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K9 + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>1</td><td>−53</td><td class=p>+53</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K9 + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>1</td><td>−53</td><td class=p>+53</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K9 + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>1</td><td>−53</td><td class=p>+53</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K9 + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>1</td><td>−53</td><td class=p>+53</td><td>une seule période</td></tr>
+<tr class=''><td>corrige marge mesuree V2-F + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>41</td><td>−322</td><td class=p>+52</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 0,15-0,60 + perp + ecart qui grandit + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>14</td><td>+131</td><td class=p>+51</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + sortie modele -10 BTC</td><td>479</td><td>+1 863</td><td class=m>−547</td><td>51</td><td>+320</td><td class=p>+51</td><td>instable</td></tr>
+<tr class='ok'><td>V2-F miroir 1 s BTC</td><td>210</td><td>+183</td><td class=p>+113</td><td>197</td><td>−594</td><td class=p>+50</td><td>aide les 2 périodes</td></tr>
+<tr class='ok'><td>corrige V2-F ecart qui grandit ETH</td><td>453</td><td>−1 516</td><td class=p>+1 002</td><td>57</td><td>−49</td><td class=p>+46</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>corrige marge mesuree V2-F + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>44</td><td>+401</td><td class=p>+43</td><td>une seule période</td></tr>
+<tr class=''><td>petit a petit selon le saut BTC</td><td>0</td><td>+0</td><td class=>—</td><td>332</td><td>−28</td><td class=p>+42</td><td>une seule période</td></tr>
+<tr class='ok'><td>corrige V2-F + pas les deux baissent ETH</td><td>440</td><td>−1 334</td><td class=p>+1 109</td><td>59</td><td>−41</td><td class=p>+39</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>BY1 Bybit premier 100 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>121</td><td>+1 023</td><td class=p>+39</td><td>une seule période</td></tr>
+<tr class=''><td>corrige marge mesuree V2-F + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>15</td><td>+105</td><td class=p>+37</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous sans nuit + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>8</td><td>−484</td><td class=p>+37</td><td>une seule période</td></tr>
+<tr class=''><td>corrige marge mesuree V2-F + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>24</td><td>−132</td><td class=p>+26</td><td>une seule période</td></tr>
+<tr class='ok'><td>corrige zone + Binance et perp + sortie -10 ETH</td><td>67</td><td>−139</td><td class=p>+113</td><td>23</td><td>+60</td><td class=p>+26</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>−91</td><td class=p>+25</td><td>une seule période</td></tr>
+<tr class=''><td>petit a petit 10 puis 5 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>329</td><td>+26</td><td class=p>+25</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>8</td><td>−78</td><td class=p>+25</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 0,15-0,60 + perp + ecart qui grandit + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+144</td><td class=p>+22</td><td>une seule période</td></tr>
+<tr class=''><td>V2-G jury des bourses + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>100</td><td>+271</td><td class=p>+22</td><td>une seule période</td></tr>
+<tr class=''><td>JC10 couverture preneur BTC</td><td>0</td><td>+0</td><td class=>—</td><td>19</td><td>−25</td><td class=p>+21</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>26</td><td>−135</td><td class=p>+18</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>29</td><td>−202</td><td class=p>+18</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous sans nuit + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>8</td><td>−223</td><td class=p>+17</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous sans nuit + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>−266</td><td class=p>+17</td><td>une seule période</td></tr>
+<tr class='ok'><td>corrige V2-F + garde-fou ETH</td><td>433</td><td>−1 124</td><td class=p>+944</td><td>64</td><td>−67</td><td class=p>+17</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>PB seul + Poly immobile BTC</td><td>0</td><td>+0</td><td class=>—</td><td>61</td><td>+72</td><td class=p>+15</td><td>une seule période</td></tr>
+<tr class='ok'><td>desaccord 20 jeton 0,35-0,65 BTC</td><td>34</td><td>+305</td><td class=p>+5</td><td>34</td><td>+144</td><td class=p>+13</td><td>aide les 2 périodes</td></tr>
+<tr class='ok'><td>desaccord confirme perp BTC</td><td>206</td><td>−580</td><td class=p>+1 084</td><td>51</td><td>−464</td><td class=p>+13</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>PB seul BTC</td><td>0</td><td>+0</td><td class=>—</td><td>181</td><td>+39</td><td class=p>+13</td><td>une seule période</td></tr>
+<tr class='ok'><td>TWAP fin confirme Chainlink 0,5 s BTC</td><td>84</td><td>−346</td><td class=p>+110</td><td>20</td><td>−33</td><td class=p>+9</td><td>aide les 2 périodes</td></tr>
+<tr class=''><td>V2-G jury des bourses + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>82</td><td>+264</td><td class=p>+4</td><td>une seule période</td></tr>
+<tr class=''><td>E4 fenetre 00 et 30 billet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>23</td><td>−25</td><td class=p>+1</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +demi BTC</td><td>60</td><td>−681</td><td class=p>+681</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +convergence ETH</td><td>60</td><td>−566</td><td class=p>+566</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>assurance 6 9 12 ETH</td><td>69</td><td>−171</td><td class=m>−67</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord maker 10 +validation+inversion ETH</td><td>3</td><td>−18</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>mm prudent ETH</td><td>60</td><td>−41</td><td class=p>+41</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +validation+inversion ETH</td><td>60</td><td>−226</td><td class=p>+226</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V2-H veto complet ETH</td><td>11</td><td>−292</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +convergence BTC</td><td>60</td><td>−1 144</td><td class=p>+1 128</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord croise 10 +verrou BTC</td><td>60</td><td>−496</td><td class=p>+496</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 4 +validation+inversion BTC</td><td>60</td><td>−681</td><td class=p>+875</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 BTC</td><td>60</td><td>−963</td><td class=p>+963</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V2-G jury des bourses ETH</td><td>10</td><td>−133</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 ETH</td><td>60</td><td>−429</td><td class=p>+429</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V5 gain attendu BTC</td><td>60</td><td>+77</td><td class=m>−77</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +freeroll BTC</td><td>60</td><td>−1 099</td><td class=p>+1 099</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 4 ETH</td><td>60</td><td>−461</td><td class=p>+461</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 2.5 +convergence ETH</td><td>60</td><td>−576</td><td class=p>+576</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F + pas les deux baissent + volatilite 2 BTC</td><td>55</td><td>−843</td><td class=p>+333</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord maker 10 +validation+inversion BTC</td><td>60</td><td>−825</td><td class=p>+606</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V2-B hors 60-89 s ETH</td><td>11</td><td>−184</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>mm prudent BTC</td><td>60</td><td>−59</td><td class=p>+59</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 4 BTC</td><td>60</td><td>−681</td><td class=p>+875</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>inverse desaccord 15 BTC</td><td>60</td><td>+198</td><td class=m>−198</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +demi ETH</td><td>60</td><td>−309</td><td class=p>+177</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>inverse desaccord 10 ETH</td><td>60</td><td>+60</td><td class=m>−60</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 anti-bete + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>1</td><td>−108</td><td class=>+-0</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +validation BTC</td><td>60</td><td>−773</td><td class=p>+773</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 2.5 ETH</td><td>60</td><td>−598</td><td class=p>+598</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>inverse desaccord 20 BTC</td><td>60</td><td>+360</td><td class=m>−381</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 ETH</td><td>60</td><td>−278</td><td class=p>+20</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +validation ETH</td><td>60</td><td>−226</td><td class=p>+226</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +verrou BTC</td><td>60</td><td>−513</td><td class=p>+513</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +validation+inversion ETH</td><td>60</td><td>−500</td><td class=p>+346</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +freeroll ETH</td><td>60</td><td>−483</td><td class=p>+483</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord maker 10 BTC</td><td>60</td><td>−839</td><td class=p>+620</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 4 +verrou ETH</td><td>60</td><td>−416</td><td class=p>+416</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>inverse desaccord 15 ETH</td><td>60</td><td>−60</td><td class=p>+60</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +demi BTC</td><td>60</td><td>−1 045</td><td class=p>+1 080</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 BTC</td><td>60</td><td>−810</td><td class=p>+810</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V2-E persistant ETH</td><td>10</td><td>−329</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord croise 10 +convergence ETH</td><td>60</td><td>−466</td><td class=p>+466</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord croise 10 +freeroll ETH</td><td>60</td><td>−610</td><td class=p>+610</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>assurance 4 7 10 ETH</td><td>69</td><td>−221</td><td class=m>−5</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 4 +freeroll ETH</td><td>60</td><td>−395</td><td class=p>+395</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +convergence ETH</td><td>60</td><td>−722</td><td class=p>+722</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 aucune bourse contre + sortie 10 s sans nuit BTC</td><td>92</td><td>+123</td><td class=p>+39</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +demi ETH</td><td>60</td><td>−177</td><td class=p>+177</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 2.5 +convergence BTC</td><td>60</td><td>−579</td><td class=p>+579</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +verrou ETH</td><td>60</td><td>−400</td><td class=p>+474</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>mm pencher BTC</td><td>42</td><td>−125</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 4 +convergence BTC</td><td>60</td><td>−565</td><td class=p>+606</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 4 +freeroll BTC</td><td>60</td><td>−777</td><td class=p>+881</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>inverse V1 ETH</td><td>11</td><td>−12</td><td class=p>+1</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Poly rejoint 10 s BTC</td><td>82</td><td>−540</td><td class=p>+462</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +demi ETH</td><td>60</td><td>−74</td><td class=p>+74</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Poly rejoint 3 s BTC</td><td>60</td><td>−643</td><td class=p>+192</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 4 +verrou BTC</td><td>60</td><td>−313</td><td class=p>+334</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Poly rejoint 3 s sans nuit BTC</td><td>60</td><td>−1 128</td><td class=p>+280</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>mm actuel ETH</td><td>42</td><td>−147</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 anti-bete + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>1</td><td>−53</td><td class=>+-0</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +validation BTC</td><td>60</td><td>−919</td><td class=p>+919</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord croise 10 +validation+inversion BTC</td><td>60</td><td>−748</td><td class=p>+748</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 ETH</td><td>60</td><td>−237</td><td class=p>+237</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>assurance 6 9 12 BTC</td><td>59</td><td>+82</td><td class=m>−111</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 aucune bourse contre + sortie 10 s BTC</td><td>92</td><td>−626</td><td class=p>+300</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 BTC</td><td>178</td><td>−166</td><td class=m>−206</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>mm pencher ETH</td><td>42</td><td>−37</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V2-C perp ETH</td><td>11</td><td>−239</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord croise 10 BTC</td><td>60</td><td>−750</td><td class=p>+750</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord maker 10 +freeroll ETH</td><td>3</td><td>−36</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F ecart qui grandit ETH</td><td>11</td><td>−103</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>inverse desaccord 10 BTC</td><td>60</td><td>+218</td><td class=m>−218</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord croise 10 +freeroll BTC</td><td>60</td><td>−806</td><td class=p>+806</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>inverse desaccord 20 ETH</td><td>60</td><td>−43</td><td class=p>+78</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 2.5 +verrou ETH</td><td>60</td><td>−454</td><td class=p>+454</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +freeroll ETH</td><td>60</td><td>−419</td><td class=p>+271</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +validation BTC</td><td>60</td><td>−1 414</td><td class=p>+1 485</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 4 +validation+inversion ETH</td><td>60</td><td>−388</td><td class=p>+388</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 4 +convergence ETH</td><td>60</td><td>−577</td><td class=p>+577</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 2.5 +freeroll ETH</td><td>60</td><td>−493</td><td class=p>+493</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 2.5 +verrou BTC</td><td>60</td><td>−454</td><td class=p>+454</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>inverse V1 BTC</td><td>12</td><td>−78</td><td class=p>+41</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord maker 10 +convergence BTC</td><td>60</td><td>−1 847</td><td class=p>+951</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +validation ETH</td><td>60</td><td>−500</td><td class=p>+346</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord maker 10 +verrou BTC</td><td>60</td><td>−1 580</td><td class=p>+909</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord confirme ETH</td><td>7</td><td>+107</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +demi BTC</td><td>60</td><td>−835</td><td class=p>+835</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord confirme perp ETH</td><td>5</td><td>+120</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord croise 10 +verrou ETH</td><td>60</td><td>−289</td><td class=p>+289</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +freeroll BTC</td><td>60</td><td>−1 064</td><td class=p>+1 064</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V6 loterie ETH</td><td>8</td><td>−436</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +convergence ETH</td><td>60</td><td>−584</td><td class=p>+457</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord maker 10 +convergence ETH</td><td>3</td><td>−80</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord croise 10 +convergence BTC</td><td>60</td><td>−709</td><td class=p>+709</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 2.5 +validation+inversion ETH</td><td>60</td><td>−510</td><td class=p>+510</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>FG300 contre les gros BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>−1</td><td class=>+-0</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +verrou ETH</td><td>60</td><td>−400</td><td class=p>+400</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +verrou BTC</td><td>60</td><td>−893</td><td class=p>+893</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +verrou BTC</td><td>60</td><td>−566</td><td class=p>+532</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +convergence BTC</td><td>60</td><td>−1 061</td><td class=p>+1 061</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>assurance 4 7 10 BTC</td><td>59</td><td>+84</td><td class=m>−89</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord croise 10 +validation+inversion ETH</td><td>60</td><td>−688</td><td class=p>+688</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +freeroll BTC</td><td>60</td><td>−1 295</td><td class=p>+1 351</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 2.5 BTC</td><td>60</td><td>−743</td><td class=p>+743</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord maker 10 ETH</td><td>3</td><td>−18</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +freeroll ETH</td><td>60</td><td>−398</td><td class=p>+398</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +validation+inversion ETH</td><td>60</td><td>−467</td><td class=p>+467</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 15 +validation+inversion BTC</td><td>60</td><td>−773</td><td class=p>+773</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +verrou ETH</td><td>60</td><td>−389</td><td class=p>+389</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +convergence BTC</td><td>60</td><td>−672</td><td class=p>+672</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 2.5 +freeroll BTC</td><td>60</td><td>−910</td><td class=p>+910</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin confirme Chainlink BTC</td><td>13</td><td>−319</td><td class=p>+313</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V6 loterie BTC</td><td>60</td><td>−567</td><td class=p>+567</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V5 gain attendu ETH</td><td>10</td><td>−82</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord maker 10 +freeroll BTC</td><td>60</td><td>−1 139</td><td class=p>+774</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>FG150 contre les gros BTC</td><td>0</td><td>+0</td><td class=>—</td><td>48</td><td>+79</td><td class=>+-0</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord confirme BTC</td><td>60</td><td>−192</td><td class=p>+227</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord croise 10 ETH</td><td>60</td><td>−649</td><td class=p>+649</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 +validation+inversion BTC</td><td>60</td><td>−1 414</td><td class=p>+1 485</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +validation+inversion BTC</td><td>60</td><td>−919</td><td class=p>+919</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 10 +validation ETH</td><td>60</td><td>−467</td><td class=p>+467</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord combine 2.5 +validation+inversion BTC</td><td>60</td><td>−743</td><td class=p>+743</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>mm actuel BTC</td><td>47</td><td>−160</td><td class=p>+58</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord maker 10 +verrou ETH</td><td>3</td><td>−96</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>V2-D perp 120-269 s ETH</td><td>2</td><td>−11</td><td class=>+-0</td><td>0</td><td>+0</td><td class=>—</td><td>une seule période</td></tr>
+<tr class=''><td>CP10 couverture posee BTC</td><td>0</td><td>+0</td><td class=>—</td><td>219</td><td>+75</td><td class=m>−0</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin prevision Chainlink + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>14</td><td>+194</td><td class=m>−0</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin prevision Chainlink + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>18</td><td>+186</td><td class=m>−2</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 jeton 0,35-0,65 + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>4</td><td>+14</td><td class=m>−3</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 jeton 0,35-0,65 + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>3</td><td>+168</td><td class=m>−3</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone 0,15-0,35 + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>14</td><td>+134</td><td class=m>−4</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>10</td><td>−61</td><td class=m>−4</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse BTC</td><td>342</td><td>+904</td><td class=m>−144</td><td>37</td><td>+654</td><td class=m>−5</td><td>nuit gagnante les 2 périodes</td></tr>
+<tr class=''><td>V2-F miroir 1 s + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>45</td><td>+18</td><td class=m>−5</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 jeton 0,35-0,65 + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>4</td><td>+4</td><td class=m>−6</td><td>une seule période</td></tr>
+<tr class=''><td>OI monte Up BTC</td><td>0</td><td>+0</td><td class=>—</td><td>4</td><td>+4</td><td class=m>−14</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K9 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>15</td><td>+9</td><td class=m>−14</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin confirme Chainlink 0,5 s + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>5</td><td>+174</td><td class=m>−21</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin confirme Chainlink 0,5 s + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>+205</td><td class=m>−21</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 0,15-0,60 + perp + ecart qui grandit + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+339</td><td class=m>−21</td><td>une seule période</td></tr>
+<tr class=''><td>petit a petit 10 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>274</td><td>+104</td><td class=m>−22</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + modele monte + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>11</td><td>+262</td><td class=m>−24</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 jeton 0,35-0,65 + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>5</td><td>+38</td><td class=m>−27</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 jeton 0,35-0,65 + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>3</td><td>+31</td><td class=m>−27</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 jeton 0,35-0,65 + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>3</td><td>+31</td><td class=m>−27</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>13</td><td>+216</td><td class=m>−28</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + sortie modele -10 + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>14</td><td>+209</td><td class=m>−28</td><td>une seule période</td></tr>
+<tr class=''><td>BY1 contre-elan calme 10 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>37</td><td>+44</td><td class=m>−29</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord confirme perp + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>6</td><td>−76</td><td class=m>−31</td><td>une seule période</td></tr>
+<tr class=''><td>BY1 pression contre 10 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>47</td><td>+78</td><td class=m>−34</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone 0,15-0,35 + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+439</td><td class=m>−34</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous sans nuit BTC</td><td>81</td><td>+934</td><td class=p>+153</td><td>23</td><td>−335</td><td class=m>−42</td><td>instable</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25 50 + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>13</td><td>+232</td><td class=m>−43</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25 50 BTC</td><td>341</td><td>+2 408</td><td class=m>−609</td><td>37</td><td>+724</td><td class=m>−47</td><td>nuit gagnante les 2 périodes</td></tr>
+<tr class=''><td>desaccord 30 0,15-0,60 + perp + ecart qui grandit + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>16</td><td>+390</td><td class=m>−48</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 jeton 0,35-0,65 + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>3</td><td>+58</td><td class=m>−50</td><td>une seule période</td></tr>
+<tr class=''><td>corrige zone + Binance et perp + sortie -10 + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>5</td><td>+80</td><td class=m>−51</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>−1</td><td class=m>−52</td><td>une seule période</td></tr>
+<tr class=''><td>BY1 Bybit premier 10 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>202</td><td>+187</td><td class=m>−53</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25 50 + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>+267</td><td class=m>−55</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>+267</td><td class=m>−55</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + sortie modele -10 + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>8</td><td>+212</td><td class=m>−55</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous sans nuit + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>5</td><td>−50</td><td class=m>−57</td><td>une seule période</td></tr>
+<tr class=''><td>corrige zone + Binance et perp + sortie -10 + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>2</td><td>+89</td><td class=m>−59</td><td>une seule période</td></tr>
+<tr class=''><td>corrige zone + Binance et perp + sortie -10 + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>2</td><td>+89</td><td class=m>−59</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone 0,15-0,35 + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>17</td><td>+434</td><td class=m>−61</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>15</td><td>+241</td><td class=m>−63</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + sortie modele -10 + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>18</td><td>+163</td><td class=m>−63</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>6</td><td>+278</td><td class=m>−66</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + sortie modele -10 + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>5</td><td>+332</td><td class=m>−66</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25 50 + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>6</td><td>+278</td><td class=m>−66</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 0,15-0,60 + perp + ecart qui grandit + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+698</td><td class=m>−68</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord confirme perp + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>−143</td><td class=m>−70</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord confirme perp + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>−143</td><td class=m>−70</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin prevision Chainlink + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>5</td><td>+299</td><td class=m>−72</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin prevision Chainlink + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>10</td><td>+296</td><td class=m>−75</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + modele monte + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>10</td><td>+502</td><td class=m>−77</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25 50 + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>15</td><td>+257</td><td class=m>−78</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + sortie modele -10 + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>13</td><td>+250</td><td class=m>−86</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+268</td><td class=m>−86</td><td>une seule période</td></tr>
+<tr class=''><td>corrige zone + Binance et perp + sortie -10 + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>+117</td><td class=m>−87</td><td>une seule période</td></tr>
+<tr class=''><td>corrige zone + Binance et perp + sortie -10 + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>4</td><td>+87</td><td class=m>−87</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>24</td><td>−141</td><td class=m>−88</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F + plus de 120 s + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>34</td><td>+152</td><td class=m>−91</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone 0,15-0,35 + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+900</td><td class=m>−91</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous sans nuit + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>17</td><td>−239</td><td class=m>−92</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>58</td><td>+81</td><td class=m>−94</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin BTC</td><td>225</td><td>+1 951</td><td class=p>+201</td><td>99</td><td>+649</td><td class=m>−98</td><td>instable</td></tr>
+<tr class=''><td>V2-F miroir 1 s + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>53</td><td>+41</td><td class=m>−100</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25 50 + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+284</td><td class=m>−102</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + modele monte + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>14</td><td>+554</td><td class=m>−104</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin quantiles BTC</td><td>182</td><td>+1 345</td><td class=p>+154</td><td>89</td><td>+326</td><td class=m>−107</td><td>instable</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous sans nuit + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>3</td><td>+56</td><td class=m>−110</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous sans nuit + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>4</td><td>+55</td><td class=m>−110</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous sans nuit + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>3</td><td>+56</td><td class=m>−110</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous sans nuit + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>3</td><td>+56</td><td class=m>−110</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous sans nuit + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>3</td><td>+56</td><td class=m>−110</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>21</td><td>+246</td><td class=m>−111</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>29</td><td>+239</td><td class=m>−111</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord confirme perp + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+113</td><td class=m>−113</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord confirme perp + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>11</td><td>+166</td><td class=m>−113</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin sauts BTC</td><td>204</td><td>+1 343</td><td class=p>+370</td><td>89</td><td>+482</td><td class=m>−120</td><td>instable</td></tr>
+<tr class=''><td>corrige marge mesuree V2-F + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>29</td><td>+6</td><td class=m>−122</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + sortie modele -10 + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+541</td><td class=m>−122</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord confirme perp + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>10</td><td>−37</td><td class=m>−123</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>50</td><td>+189</td><td class=m>−123</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin confirme Chainlink 0,5 s + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>3</td><td>+123</td><td class=m>−127</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin confirme Chainlink 0,5 s + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>2</td><td>+83</td><td class=m>−127</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin confirme Chainlink 0,5 s + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>5</td><td>+276</td><td class=m>−127</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin confirme Chainlink 0,5 s + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>2</td><td>+83</td><td class=m>−127</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin confirme Chainlink 0,5 s + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>5</td><td>+276</td><td class=m>−127</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F incertitude 0,01 + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>24</td><td>+258</td><td class=m>−130</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin prevision Chainlink + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>8</td><td>+360</td><td class=m>−131</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F miroir 1 s + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>36</td><td>−1</td><td class=m>−132</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F incertitude 0,01 + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>32</td><td>+307</td><td class=m>−133</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin quantiles + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>11</td><td>+337</td><td class=m>−143</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous sans nuit + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>8</td><td>+0</td><td class=m>−145</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous sans nuit + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>11</td><td>−19</td><td class=m>−145</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous sans nuit + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>11</td><td>−19</td><td class=m>−145</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous sans nuit + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>13</td><td>−73</td><td class=m>−145</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous sans nuit + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>−33</td><td class=m>−145</td><td>une seule période</td></tr>
+<tr class=''><td>V2-G jury des bourses + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>94</td><td>−390</td><td class=m>−147</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F incertitude 0,01 + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>26</td><td>+349</td><td class=m>−147</td><td>une seule période</td></tr>
+<tr class=''><td>corrige marge mesuree V2-F + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>62</td><td>+191</td><td class=m>−148</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + sortie modele -10 + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>17</td><td>+489</td><td class=m>−149</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>18</td><td>+5</td><td class=m>−153</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>+40</td><td class=m>−153</td><td>une seule période</td></tr>
+<tr class=''><td>corrige desaccord 20 BTC</td><td>679</td><td>−117</td><td class=p>+1 620</td><td>192</td><td>+2 326</td><td class=m>−158</td><td>instable</td></tr>
+<tr class=''><td>desaccord confirme perp + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>20</td><td>+52</td><td class=m>−158</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F ecart qui grandit BTC</td><td>674</td><td>+346</td><td class=p>+1 244</td><td>191</td><td>+2 334</td><td class=m>−159</td><td>instable</td></tr>
+<tr class=''><td>TWAP fin correction spot-perp + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>8</td><td>+93</td><td class=m>−159</td><td>une seule période</td></tr>
+<tr class=''><td>billet elan retourne BTC</td><td>0</td><td>+0</td><td class=>—</td><td>102</td><td>+7</td><td class=m>−160</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F incertitude 0,01 + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>41</td><td>+629</td><td class=m>−160</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin sauts + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>+397</td><td class=m>−160</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin quantiles + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>6</td><td>+398</td><td class=m>−161</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F incertitude 0,01 + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+333</td><td class=m>−161</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 anti-bete + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>3</td><td>+107</td><td class=m>−162</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord confirme perp + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>+162</td><td class=m>−166</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin sauts + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>10</td><td>+405</td><td class=m>−168</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>+410</td><td class=m>−168</td><td>une seule période</td></tr>
+<tr class=''><td>V2-D perp 120-269 s + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>36</td><td>−193</td><td class=m>−168</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>22</td><td>+37</td><td class=m>−172</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+394</td><td class=m>−173</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F miroir 1 s + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>53</td><td>−25</td><td class=m>−176</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>+622</td><td class=m>−178</td><td>une seule période</td></tr>
+<tr class=''><td>V2-C perp + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>140</td><td>−337</td><td class=m>−180</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + modele monte + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>10</td><td>+1 025</td><td class=m>−180</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin prevision Chainlink + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>10</td><td>+436</td><td class=m>−182</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + sortie modele -10 + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>14</td><td>+281</td><td class=m>−184</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin sauts + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>20</td><td>+433</td><td class=m>−187</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin quantiles + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>22</td><td>+339</td><td class=m>−189</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin sauts + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>28</td><td>+458</td><td class=m>−189</td><td>une seule période</td></tr>
+<tr class=''><td>E2 elan contraire billet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>103</td><td>+15</td><td class=m>−190</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin quantiles + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>27</td><td>+347</td><td class=m>−191</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25 50 + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>+638</td><td class=m>−194</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>26</td><td>+285</td><td class=m>−194</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin correction spot-perp + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+124</td><td class=m>−202</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>16</td><td>+344</td><td class=m>−204</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+631</td><td class=m>−205</td><td>une seule période</td></tr>
+<tr class=''><td>corrige zone + Binance et perp + sortie -10 + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>4</td><td>+235</td><td class=m>−206</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>28</td><td>−79</td><td class=m>−207</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>31</td><td>−148</td><td class=m>−207</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + sortie modele -10 + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+1 039</td><td class=m>−211</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin correction spot-perp + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>1</td><td>+214</td><td class=m>−214</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>41</td><td>+32</td><td class=m>−217</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin correction spot-perp + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>5</td><td>+151</td><td class=m>−219</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin sauts + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>17</td><td>+426</td><td class=m>−221</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin quantiles + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>20</td><td>+361</td><td class=m>−221</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25 50 + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+646</td><td class=m>−221</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous BTC</td><td>218</td><td>+2 343</td><td class=m>−848</td><td>111</td><td>−1 143</td><td class=m>−222</td><td>nuit gagnante les 2 périodes</td></tr>
+<tr class=''><td>V2-F miroir 1 s + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>36</td><td>−89</td><td class=m>−224</td><td>une seule période</td></tr>
+<tr class=''><td>corrige zone + Binance et perp + sortie -10 + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>6</td><td>+261</td><td class=m>−233</td><td>une seule période</td></tr>
+<tr class=''><td>corrige marge mesuree V2-F + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>29</td><td>+11</td><td class=m>−233</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord confirme perp + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>10</td><td>−89</td><td class=m>−236</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>10</td><td>+450</td><td class=m>−240</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25 50 + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>10</td><td>+450</td><td class=m>−240</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin anti-saut + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>17</td><td>+575</td><td class=m>−241</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin anti-saut + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>21</td><td>+376</td><td class=m>−241</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin anti-saut + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>29</td><td>+369</td><td class=m>−241</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>28</td><td>+380</td><td class=m>−255</td><td>une seule période</td></tr>
+<tr class=''><td>billet + favori si recul 20 c BTC</td><td>0</td><td>+0</td><td class=>—</td><td>397</td><td>−397</td><td class=m>−259</td><td>une seule période</td></tr>
+<tr class=''><td>corrige zone + Binance et perp + sortie -10 + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>5</td><td>+274</td><td class=m>−265</td><td>une seule période</td></tr>
+<tr class=''><td>corrige zone + Binance et perp + sortie -10 BTC</td><td>199</td><td>+1 057</td><td class=m>−446</td><td>32</td><td>+712</td><td class=m>−269</td><td>nuit gagnante les 2 périodes</td></tr>
+<tr class=''><td>V2-F miroir 1 s + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>78</td><td>+343</td><td class=m>−270</td><td>une seule période</td></tr>
+<tr class=''><td>V2-D perp 120-269 s + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>51</td><td>+178</td><td class=m>−271</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + garde-fou BTC</td><td>566</td><td>−543</td><td class=p>+1 507</td><td>190</td><td>+1 452</td><td class=m>−272</td><td>instable</td></tr>
+<tr class=''><td>TWAP fin correction spot-perp + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>+236</td><td class=m>−273</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin anti-saut BTC</td><td>189</td><td>+1 905</td><td class=m>−23</td><td>98</td><td>+832</td><td class=m>−281</td><td>nuit gagnante les 2 périodes</td></tr>
+<tr class=''><td>V2-F + plus de 120 s + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>36</td><td>+42</td><td class=m>−288</td><td>une seule période</td></tr>
+<tr class=''><td>V2-D perp 120-269 s + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>56</td><td>+75</td><td class=m>−290</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>18</td><td>−41</td><td class=m>−291</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + pas les deux baissent BTC</td><td>665</td><td>−253</td><td class=p>+1 474</td><td>190</td><td>+2 323</td><td class=m>−291</td><td>instable</td></tr>
+<tr class=''><td>corrige V2-F + pas les deux baissent + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>33</td><td>+301</td><td class=m>−296</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin anti-saut + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>+540</td><td class=m>−298</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F + plus de 120 s + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>36</td><td>+191</td><td class=m>−301</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin anti-saut + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+524</td><td class=m>−303</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin prevision Chainlink + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>16</td><td>+537</td><td class=m>−308</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>71</td><td>+218</td><td class=m>−317</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>+1 199</td><td class=m>−324</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 anti-bete + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>3</td><td>+272</td><td class=m>−328</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin anti-saut + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>16</td><td>+474</td><td class=m>−334</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin quantiles + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>37</td><td>+563</td><td class=m>−343</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25 50 + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>9</td><td>+1 233</td><td class=m>−359</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin prevision Chainlink + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>10</td><td>+864</td><td class=m>−361</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>25</td><td>+271</td><td class=m>−362</td><td>une seule période</td></tr>
+<tr class=''><td>BY1 contre-elan calme 100 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>22</td><td>+579</td><td class=m>−364</td><td>une seule période</td></tr>
+<tr class=''><td>corrige desaccord 20 + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>34</td><td>+347</td><td class=m>−366</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F + plus de 120 s + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>47</td><td>+354</td><td class=m>−367</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K2 + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>44</td><td>+386</td><td class=m>−368</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + garde-fou + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>33</td><td>+348</td><td class=m>−368</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F incertitude 0,01 + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>34</td><td>+530</td><td class=m>−368</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F ecart qui grandit + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>33</td><td>+351</td><td class=m>−371</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K2 + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>39</td><td>+516</td><td class=m>−376</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance ou perp avec nous + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>38</td><td>+45</td><td class=m>−382</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 anti-bete + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>+276</td><td class=m>−384</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F + plus de 120 s + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>55</td><td>+232</td><td class=m>−390</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F incertitude 0,01 + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>24</td><td>+534</td><td class=m>−395</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>40</td><td>+855</td><td class=m>−396</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + garde-fou + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>13</td><td>+596</td><td class=m>−398</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F ecart qui grandit + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>13</td><td>+599</td><td class=m>−401</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + pas les deux baissent + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>13</td><td>+599</td><td class=m>−401</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin prevision Chainlink + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>26</td><td>+555</td><td class=m>−402</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + pas les deux baissent + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>24</td><td>+413</td><td class=m>−404</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin quantiles + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>20</td><td>+661</td><td class=m>−408</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin quantiles + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>17</td><td>+717</td><td class=m>−408</td><td>une seule période</td></tr>
+<tr class=''><td>corrige zone + Binance et perp + sortie -10 + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>4</td><td>+468</td><td class=m>−409</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin sauts + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>35</td><td>+633</td><td class=m>−418</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>54</td><td>+376</td><td class=m>−421</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>14</td><td>+316</td><td class=m>−423</td><td>une seule période</td></tr>
+<tr class=''><td>V2-G jury des bourses + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>117</td><td>+220</td><td class=m>−426</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + garde-fou + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>21</td><td>+491</td><td class=m>−430</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F ecart qui grandit + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>21</td><td>+494</td><td class=m>−433</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 anti-bete BTC</td><td>6</td><td>−51</td><td class=>+-0</td><td>33</td><td>+61</td><td class=m>−436</td><td>instable</td></tr>
+<tr class=''><td>corrige V2-F + pas les deux baissent + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>31</td><td>+843</td><td class=m>−436</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 anti-bete + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>7</td><td>+274</td><td class=m>−437</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin correction spot-perp + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>8</td><td>+436</td><td class=m>−438</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin correction spot-perp + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+281</td><td class=m>−438</td><td>une seule période</td></tr>
+<tr class=''><td>corrige desaccord 20 + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+639</td><td class=m>−441</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + pas les deux baissent + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>44</td><td>+947</td><td class=m>−441</td><td>une seule période</td></tr>
+<tr class=''><td>V2-G jury des bourses + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>43</td><td>+272</td><td class=m>−442</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>23</td><td>+720</td><td class=m>−445</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + garde-fou + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>27</td><td>+1 017</td><td class=m>−447</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F ecart qui grandit + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>27</td><td>+1 020</td><td class=m>−450</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K2 + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>26</td><td>+417</td><td class=m>−453</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>18</td><td>+789</td><td class=m>−455</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + pas les deux baissent + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>37</td><td>+423</td><td class=m>−457</td><td>une seule période</td></tr>
+<tr class=''><td>V2-D perp 120-269 s + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>42</td><td>−45</td><td class=m>−461</td><td>une seule période</td></tr>
+<tr class=''><td>corrige desaccord 20 + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>39</td><td>+1 190</td><td class=m>−465</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + garde-fou + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>36</td><td>+484</td><td class=m>−466</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + garde-fou + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>39</td><td>+1 388</td><td class=m>−466</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F ecart qui grandit + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>36</td><td>+487</td><td class=m>−469</td><td>une seule période</td></tr>
+<tr class=''><td>corrige desaccord 20 + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>36</td><td>+487</td><td class=m>−469</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F ecart qui grandit + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>38</td><td>+1 194</td><td class=m>−469</td><td>une seule période</td></tr>
+<tr class=''><td>corrige desaccord 20 + carnet pression BTC</td><td>0</td><td>+0</td><td class=>—</td><td>20</td><td>+534</td><td class=m>−472</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin anti-saut + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>17</td><td>+1 162</td><td class=m>−478</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin sauts + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>20</td><td>+661</td><td class=m>−482</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin sauts + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>17</td><td>+670</td><td class=m>−483</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F + plus de 120 s + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>53</td><td>+196</td><td class=m>−484</td><td>une seule période</td></tr>
+<tr class=''><td>corrige desaccord 20 + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>26</td><td>+1 060</td><td class=m>−490</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 anti-bete + ecart carnet calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>4</td><td>+434</td><td class=m>−490</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 anti-bete + carnet ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>4</td><td>+434</td><td class=m>−490</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 anti-bete + carnet BTC</td><td>0</td><td>+0</td><td class=>—</td><td>6</td><td>+419</td><td class=m>−490</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>96</td><td>+572</td><td class=m>−502</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin prevision Chainlink BTC</td><td>164</td><td>−439</td><td class=p>+205</td><td>76</td><td>+832</td><td class=m>−506</td><td>instable</td></tr>
+<tr class=''><td>V2-F incertitude 0,01 + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>58</td><td>+601</td><td class=m>−511</td><td>une seule période</td></tr>
+<tr class=''><td>V2-C perp + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>77</td><td>−141</td><td class=m>−522</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin anti-saut + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>40</td><td>+985</td><td class=m>−526</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>12</td><td>+463</td><td class=m>−529</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F + plus de 120 s + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>36</td><td>+5</td><td class=m>−531</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin correction spot-perp + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>26</td><td>+952</td><td class=m>−547</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin anti-saut + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>23</td><td>+850</td><td class=m>−575</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + pas les deux baissent + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>27</td><td>+609</td><td class=m>−587</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + garde-fou + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>25</td><td>+669</td><td class=m>−598</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F ecart qui grandit + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>25</td><td>+672</td><td class=m>−601</td><td>une seule période</td></tr>
+<tr class=''><td>corrige desaccord 20 + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>25</td><td>+672</td><td class=m>−601</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin correction spot-perp BTC</td><td>199</td><td>+247</td><td class=m>−297</td><td>70</td><td>+1 317</td><td class=m>−672</td><td>nuit gagnante les 2 périodes</td></tr>
+<tr class=''><td>corrige V2-F + garde-fou + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>60</td><td>+852</td><td class=m>−688</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F ecart qui grandit + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>60</td><td>+855</td><td class=m>−691</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 20 Binance avec nous BTC</td><td>106</td><td>+2 234</td><td class=m>−1 047</td><td>52</td><td>+154</td><td class=m>−727</td><td>nuit gagnante les 2 périodes</td></tr>
+<tr class=''><td>consensus K5 + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>25</td><td>+465</td><td class=m>−728</td><td>une seule période</td></tr>
+<tr class=''><td>corrige desaccord 20 + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>59</td><td>+894</td><td class=m>−731</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F incertitude 0,01 BTC</td><td>425</td><td>+1 167</td><td class=p>+338</td><td>185</td><td>+1 168</td><td class=m>−746</td><td>instable</td></tr>
+<tr class=''><td>consensus K2 + foule bybit BTC</td><td>0</td><td>+0</td><td class=>—</td><td>33</td><td>+452</td><td class=m>−761</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F incertitude 0,01 + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>24</td><td>+1 052</td><td class=m>−778</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin quantiles + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>17</td><td>+1 438</td><td class=m>−805</td><td>une seule période</td></tr>
+<tr class=''><td>V2-D perp 120-269 s + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>58</td><td>+403</td><td class=m>−806</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F + plus de 120 s + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>59</td><td>+426</td><td class=m>−806</td><td>une seule période</td></tr>
+<tr class=''><td>desaccord 30 + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>54</td><td>+729</td><td class=m>−846</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + pas les deux baissent + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>60</td><td>+998</td><td class=m>−862</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin correction spot-perp + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>8</td><td>+869</td><td class=m>−873</td><td>une seule période</td></tr>
+<tr class=''><td>V2-D perp 120-269 s + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>42</td><td>−173</td><td class=m>−879</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>18</td><td>+1 588</td><td class=m>−904</td><td>une seule période</td></tr>
+<tr class=''><td>V2-F + plus de 120 s BTC</td><td>741</td><td>−95</td><td class=p>+1 391</td><td>195</td><td>+578</td><td class=m>−904</td><td>instable</td></tr>
+<tr class=''><td>consensus K5 + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>41</td><td>+357</td><td class=m>−942</td><td>une seule période</td></tr>
+<tr class=''><td>TWAP fin sauts + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>17</td><td>+1 351</td><td class=m>−959</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>31</td><td>+684</td><td class=m>−960</td><td>une seule période</td></tr>
+<tr class=''><td>V2-D perp 120-269 s BTC</td><td>795</td><td>+2 375</td><td class=p>+783</td><td>174</td><td>+520</td><td class=m>−1 028</td><td>instable</td></tr>
+<tr class=''><td>V2-F + plus de 120 s + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>89</td><td>+1 169</td><td class=m>−1 083</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K5 BTC</td><td>14</td><td>+260</td><td class=>+-0</td><td>103</td><td>+105</td><td class=m>−1 085</td><td>instable</td></tr>
+<tr class=''><td>corrige V2-F + pas les deux baissent + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>27</td><td>+1 186</td><td class=m>−1 151</td><td>une seule période</td></tr>
+<tr class=''><td>V2-D perp 120-269 s + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>89</td><td>+989</td><td class=m>−1 172</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F + garde-fou + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>25</td><td>+1 311</td><td class=m>−1 176</td><td>une seule période</td></tr>
+<tr class=''><td>V2-D perp 120-269 s + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>60</td><td>+811</td><td class=m>−1 184</td><td>une seule période</td></tr>
+<tr class=''><td>corrige V2-F ecart qui grandit + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>25</td><td>+1 319</td><td class=m>−1 184</td><td>une seule période</td></tr>
+<tr class=''><td>corrige desaccord 20 + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>25</td><td>+1 319</td><td class=m>−1 184</td><td>une seule période</td></tr>
+<tr class=''><td>V2-G jury des bourses + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>67</td><td>+444</td><td class=m>−1 212</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K2 + contre foule BTC</td><td>0</td><td>+0</td><td class=>—</td><td>45</td><td>+1 136</td><td class=m>−1 278</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K2 + calme BTC</td><td>0</td><td>+0</td><td class=>—</td><td>48</td><td>+1 326</td><td class=m>−1 469</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K2 + foule bybit x2 BTC</td><td>0</td><td>+0</td><td class=>—</td><td>33</td><td>+816</td><td class=m>−1 471</td><td>une seule période</td></tr>
+<tr class=''><td>V2-G jury des bourses BTC</td><td>879</td><td>−528</td><td class=p>+2 158</td><td>289</td><td>+1 626</td><td class=m>−1 585</td><td>instable</td></tr>
+<tr class=''><td>consensus K2 + ecart serre BTC</td><td>0</td><td>+0</td><td class=>—</td><td>75</td><td>+1 744</td><td class=m>−1 709</td><td>une seule période</td></tr>
+<tr class=''><td>consensus K2 BTC</td><td>35</td><td>+1 105</td><td class=>+-0</td><td>166</td><td>+1 131</td><td class=m>−1 797</td><td>instable</td></tr>
+</table></body></html>
