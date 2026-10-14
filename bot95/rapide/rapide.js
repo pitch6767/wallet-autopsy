@@ -282,10 +282,10 @@ function validationRecord(start, event) {
     V.bufferBytes += serialized.length;
     V.events.push(JSON.parse(serialized)); // immutable snapshot, not live references
     if (V.bufferBytes >= 512 * 1024) {
-      if (V.pending >= 2) { V.complete = false; V.reason = "validation compression backpressure"; return; }
+      if (V.pending >= 16) { V.complete = false; V.reason = "validation compression backpressure"; return; }
       const payload = JSON.stringify(V.events), index = V.chunks.length;
       V.events = []; V.bufferBytes = 0; V.chunks.push(null); V.pending++;
-      zlib.gzip(payload, (error, buffer) => {
+      zlib.gzip(payload, { level: 1 }, (error, buffer) => {
         V.pending--;
         if (!V.complete) return;
         if (error) { V.complete = false; V.reason = "validation compression error"; return; }
