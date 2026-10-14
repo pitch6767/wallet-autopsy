@@ -1,0 +1,977 @@
+{
+ "cycles": {
+  "exploration": 5459,
+  "validation": 2304
+ },
+ "strategies": {
+  "E1|exploration|observe": {
+   "cycles": 5459,
+   "cycles_actifs": 5289,
+   "achats": 5289,
+   "gagnants": 1946,
+   "taux": 0.3679334467763282,
+   "prix": 0.3718986081153337,
+   "mise": 52890.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -2907.096825849454,
+   "roi": -0.054964961729049994,
+   "ic90": [
+    -4461.7,
+    -1379.4
+   ],
+   "ic90_roi": [
+    -0.0844,
+    -0.0261
+   ],
+   "dd_max": 2959.2891426410797,
+   "serie_pertes": 15
+  },
+  "E1|validation|observe": {
+   "cycles": 2304,
+   "cycles_actifs": 2279,
+   "achats": 2279,
+   "gagnants": 814,
+   "taux": 0.3571741992101799,
+   "prix": 0.3729917929266564,
+   "mise": 22790.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -1719.5045528659982,
+   "roi": -0.07544995844080729,
+   "ic90": [
+    -2736.9,
+    -700.8
+   ],
+   "ic90_roi": [
+    -0.1201,
+    -0.0307
+   ],
+   "dd_max": 2045.5740701335344,
+   "serie_pertes": 20
+  },
+  "E1|total|observe": {
+   "cycles": 7763,
+   "cycles_actifs": 7568,
+   "achats": 7568,
+   "gagnants": 2760,
+   "taux": 0.36469344608879495,
+   "prix": 0.372227805814198,
+   "mise": 75680.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -4626.6013787154525,
+   "roi": -0.06113373914793145,
+   "ic90": [
+    -6480.8,
+    -2763.2
+   ],
+   "ic90_roi": [
+    -0.0856,
+    -0.0365
+   ],
+   "dd_max": 4851.577311294882,
+   "serie_pertes": 20
+  },
+  "E2|exploration|observe": {
+   "cycles": 5459,
+   "cycles_actifs": 4872,
+   "achats": 4872,
+   "gagnants": 1621,
+   "taux": 0.3327175697865353,
+   "prix": 0.338206888663321,
+   "mise": 48720.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -2832.274163196534,
+   "roi": -0.058133706141143965,
+   "ic90": [
+    -4401.6,
+    -1247.8
+   ],
+   "ic90_roi": [
+    -0.0903,
+    -0.0256
+   ],
+   "dd_max": 2966.171329710921,
+   "serie_pertes": 21
+  },
+  "E2|validation|observe": {
+   "cycles": 2304,
+   "cycles_actifs": 2116,
+   "achats": 2116,
+   "gagnants": 707,
+   "taux": 0.3341209829867675,
+   "prix": 0.34101244613901227,
+   "mise": 21160.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -1124.8980809382895,
+   "roi": -0.053161535015987214,
+   "ic90": [
+    -2173.1,
+    -69.9
+   ],
+   "ic90_roi": [
+    -0.1027,
+    -0.0033
+   ],
+   "dd_max": 1467.6302488732588,
+   "serie_pertes": 17
+  },
+  "E2|total|observe": {
+   "cycles": 7763,
+   "cycles_actifs": 6988,
+   "achats": 6988,
+   "gagnants": 2328,
+   "taux": 0.3331425300515169,
+   "prix": 0.3390564249567616,
+   "mise": 69880.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -3957.1722441348234,
+   "roi": -0.05662810881704097,
+   "ic90": [
+    -5864.3,
+    -2029.2
+   ],
+   "ic90_roi": [
+    -0.0839,
+    -0.029
+   ],
+   "dd_max": 4204.653426875607,
+   "serie_pertes": 21
+  },
+  "E3|exploration|observe": {
+   "cycles": 5459,
+   "cycles_actifs": 5289,
+   "achats": 5767,
+   "gagnants": 2416,
+   "taux": 0.41893532165770764,
+   "prix": 0.42135225024730366,
+   "mise": 57670.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -2844.7768389618686,
+   "roi": -0.049328538910384405,
+   "ic90": [
+    -4390.0,
+    -1325.7
+   ],
+   "ic90_roi": [
+    -0.0761,
+    -0.023
+   ],
+   "dd_max": 2899.405032612472,
+   "serie_pertes": 15
+  },
+  "E3|validation|observe": {
+   "cycles": 2304,
+   "cycles_actifs": 2279,
+   "achats": 2445,
+   "gagnants": 979,
+   "taux": 0.4004089979550102,
+   "prix": 0.4134469975110634,
+   "mise": 24450.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -1678.851960102831,
+   "roi": -0.06866470184469657,
+   "ic90": [
+    -2717.4,
+    -651.7
+   ],
+   "ic90_roi": [
+    -0.1111,
+    -0.0267
+   ],
+   "dd_max": 2008.493599121893,
+   "serie_pertes": 20
+  },
+  "E3|total|observe": {
+   "cycles": 7763,
+   "cycles_actifs": 7568,
+   "achats": 8212,
+   "gagnants": 3395,
+   "taux": 0.4134193862640039,
+   "prix": 0.4189985796506028,
+   "mise": 82120.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -4523.6287990647,
+   "roi": -0.05508559180546395,
+   "ic90": [
+    -6383.1,
+    -2616.1
+   ],
+   "ic90_roi": [
+    -0.0777,
+    -0.0319
+   ],
+   "dd_max": 4753.413604848831,
+   "serie_pertes": 20
+  },
+  "B3|exploration|observe": {
+   "cycles": 5459,
+   "cycles_actifs": 506,
+   "achats": 506,
+   "gagnants": 498,
+   "taux": 0.9841897233201581,
+   "prix": 0.967890791194664,
+   "mise": 5060.0,
+   "mise_max_cycle": 10.0,
+   "pnl": 74.94038283681539,
+   "roi": 0.014810352339291578,
+   "ic90": [
+    23.8,
+    120.8
+   ],
+   "ic90_roi": [
+    0.0047,
+    0.0239
+   ],
+   "dd_max": 31.334572916921914,
+   "serie_pertes": 1
+  },
+  "B3|validation|observe": {
+   "cycles": 2304,
+   "cycles_actifs": 169,
+   "achats": 169,
+   "gagnants": 168,
+   "taux": 0.9940828402366864,
+   "prix": 0.9688142771284023,
+   "mise": 1690.0,
+   "mise_max_cycle": 10.0,
+   "pnl": 41.61968507003384,
+   "roi": 0.024627032585818838,
+   "ic90": [
+    21.2,
+    57.7
+   ],
+   "ic90_roi": [
+    0.0125,
+    0.0341
+   ],
+   "dd_max": 10.0,
+   "serie_pertes": 1
+  },
+  "B3|total|observe": {
+   "cycles": 7763,
+   "cycles_actifs": 675,
+   "achats": 675,
+   "gagnants": 666,
+   "taux": 0.9866666666666667,
+   "prix": 0.9681220047099262,
+   "mise": 6750.0,
+   "mise_max_cycle": 10.0,
+   "pnl": 116.56006790684923,
+   "roi": 0.017268158208422108,
+   "ic90": [
+    61.6,
+    166.2
+   ],
+   "ic90_roi": [
+    0.0091,
+    0.0246
+   ],
+   "dd_max": 31.334572916921914,
+   "serie_pertes": 1
+  },
+  "E1+B3|exploration|observe": {
+   "cycles": 5459,
+   "cycles_actifs": 5317,
+   "achats": 5795,
+   "gagnants": 2444,
+   "taux": 0.4217428817946506,
+   "prix": 0.42393865033071615,
+   "mise": 57950.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -2832.156443012639,
+   "roi": -0.04887241489236651,
+   "ic90": [
+    -4400.3,
+    -1284.5
+   ],
+   "ic90_roi": [
+    -0.0759,
+    -0.0222
+   ],
+   "dd_max": 2886.7846366632434,
+   "serie_pertes": 15
+  },
+  "E1+B3|validation|observe": {
+   "cycles": 2304,
+   "cycles_actifs": 2282,
+   "achats": 2448,
+   "gagnants": 982,
+   "taux": 0.4011437908496732,
+   "prix": 0.4141249627918913,
+   "mise": 24480.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -1677.8848677959645,
+   "roi": -0.06854104852107698,
+   "ic90": [
+    -2726.8,
+    -637.7
+   ],
+   "ic90_roi": [
+    -0.1114,
+    -0.0261
+   ],
+   "dd_max": 2007.5265068150266,
+   "serie_pertes": 20
+  },
+  "E1+B3|total|observe": {
+   "cycles": 7763,
+   "cycles_actifs": 7599,
+   "achats": 8243,
+   "gagnants": 3426,
+   "taux": 0.4156253791095475,
+   "prix": 0.421024188715401,
+   "mise": 82430.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -4510.041310808603,
+   "roi": -0.0547135910567585,
+   "ic90": [
+    -6357.7,
+    -2664.9
+   ],
+   "ic90_roi": [
+    -0.0771,
+    -0.0323
+   ],
+   "dd_max": 4739.826116592733,
+   "serie_pertes": 20
+  },
+  "E1|exploration|pessimiste": {
+   "cycles": 5459,
+   "cycles_actifs": 5289,
+   "achats": 5289,
+   "gagnants": 1946,
+   "taux": 0.3679334467763282,
+   "prix": 0.3718986081153337,
+   "mise": 52890.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -5944.986947624891,
+   "roi": -0.11240285399177333,
+   "ic90": [
+    -7352.9,
+    -4503.5
+   ],
+   "ic90_roi": [
+    -0.139,
+    -0.0851
+   ],
+   "dd_max": 5972.506209020544,
+   "serie_pertes": 15
+  },
+  "E1|validation|pessimiste": {
+   "cycles": 2304,
+   "cycles_actifs": 2279,
+   "achats": 2279,
+   "gagnants": 814,
+   "taux": 0.3571741992101799,
+   "prix": 0.3729917929266564,
+   "mise": 22790.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -2967.9963341653847,
+   "roi": -0.13023239728676544,
+   "ic90": [
+    -3913.9,
+    -1992.7
+   ],
+   "ic90_roi": [
+    -0.1717,
+    -0.0874
+   ],
+   "dd_max": 3159.7616021198055,
+   "serie_pertes": 20
+  },
+  "E1|total|pessimiste": {
+   "cycles": 7763,
+   "cycles_actifs": 7568,
+   "achats": 7568,
+   "gagnants": 2760,
+   "taux": 0.36469344608879495,
+   "prix": 0.372227805814198,
+   "mise": 75680.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -8912.983281790275,
+   "roi": -0.11777197782492435,
+   "ic90": [
+    -10632.4,
+    -7227.3
+   ],
+   "ic90_roi": [
+    -0.1405,
+    -0.0955
+   ],
+   "dd_max": 9010.833407509137,
+   "serie_pertes": 20
+  },
+  "E2|exploration|pessimiste": {
+   "cycles": 5459,
+   "cycles_actifs": 4872,
+   "achats": 4872,
+   "gagnants": 1621,
+   "taux": 0.3327175697865353,
+   "prix": 0.338206888663321,
+   "mise": 48720.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -5991.486019311358,
+   "roi": -0.12297795606139898,
+   "ic90": [
+    -7431.4,
+    -4543.0
+   ],
+   "ic90_roi": [
+    -0.1525,
+    -0.0932
+   ],
+   "dd_max": 6103.6414792891455,
+   "serie_pertes": 21
+  },
+  "E2|validation|pessimiste": {
+   "cycles": 2304,
+   "cycles_actifs": 2116,
+   "achats": 2116,
+   "gagnants": 707,
+   "taux": 0.3341209829867675,
+   "prix": 0.34101244613901227,
+   "mise": 21160.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -2558.5458575591374,
+   "roi": -0.12091426548011046,
+   "ic90": [
+    -3528.5,
+    -1615.9
+   ],
+   "ic90_roi": [
+    -0.1668,
+    -0.0764
+   ],
+   "dd_max": 2725.2664467611785,
+   "serie_pertes": 17
+  },
+  "E2|total|pessimiste": {
+   "cycles": 7763,
+   "cycles_actifs": 6988,
+   "achats": 6988,
+   "gagnants": 2328,
+   "taux": 0.3331425300515169,
+   "prix": 0.3390564249567616,
+   "mise": 69880.0,
+   "mise_max_cycle": 10.0,
+   "pnl": -8550.031876870495,
+   "roi": -0.12235306063065962,
+   "ic90": [
+    -10283.0,
+    -6788.1
+   ],
+   "ic90_roi": [
+    -0.1472,
+    -0.0971
+   ],
+   "dd_max": 8631.071893870552,
+   "serie_pertes": 21
+  },
+  "E3|exploration|pessimiste": {
+   "cycles": 5459,
+   "cycles_actifs": 5289,
+   "achats": 5767,
+   "gagnants": 2416,
+   "taux": 0.41893532165770764,
+   "prix": 0.42135225024730366,
+   "mise": 57670.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -5901.853435084649,
+   "roi": -0.10233836370876798,
+   "ic90": [
+    -7332.0,
+    -4459.4
+   ],
+   "ic90_roi": [
+    -0.1271,
+    -0.0773
+   ],
+   "dd_max": 5930.961983319223,
+   "serie_pertes": 15
+  },
+  "E3|validation|pessimiste": {
+   "cycles": 2304,
+   "cycles_actifs": 2279,
+   "achats": 2445,
+   "gagnants": 979,
+   "taux": 0.4004089979550102,
+   "prix": 0.4134469975110634,
+   "mise": 24450.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -2935.9009445715983,
+   "roi": -0.12007774824423714,
+   "ic90": [
+    -3886.8,
+    -1983.7
+   ],
+   "ic90_roi": [
+    -0.159,
+    -0.0811
+   ],
+   "dd_max": 3128.449834545878,
+   "serie_pertes": 20
+  },
+  "E3|total|pessimiste": {
+   "cycles": 7763,
+   "cycles_actifs": 7568,
+   "achats": 8212,
+   "gagnants": 3395,
+   "taux": 0.4134193862640039,
+   "prix": 0.4189985796506028,
+   "mise": 82120.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -8837.754379656248,
+   "roi": -0.10761999975226799,
+   "ic90": [
+    -10523.7,
+    -7126.0
+   ],
+   "ic90_roi": [
+    -0.1282,
+    -0.0868
+   ],
+   "dd_max": 8936.884741845292,
+   "serie_pertes": 20
+  },
+  "B3|exploration|pessimiste": {
+   "cycles": 5459,
+   "cycles_actifs": 506,
+   "achats": 506,
+   "gagnants": 498,
+   "taux": 0.9841897233201581,
+   "prix": 0.967890791194664,
+   "mise": 5060.0,
+   "mise_max_cycle": 10.0,
+   "pnl": 51.36168102079633,
+   "roi": 0.010150529846007181,
+   "ic90": [
+    0.5,
+    96.3
+   ],
+   "ic90_roi": [
+    0.0001,
+    0.019
+   ],
+   "dd_max": 33.514663840264454,
+   "serie_pertes": 1
+  },
+  "B3|validation|pessimiste": {
+   "cycles": 2304,
+   "cycles_actifs": 169,
+   "achats": 169,
+   "gagnants": 168,
+   "taux": 0.9940828402366864,
+   "prix": 0.9688142771284023,
+   "mise": 1690.0,
+   "mise_max_cycle": 10.0,
+   "pnl": 33.06248190065272,
+   "roi": 0.019563598757782675,
+   "ic90": [
+    12.7,
+    46.8
+   ],
+   "ic90_roi": [
+    0.0075,
+    0.0277
+   ],
+   "dd_max": 10.0,
+   "serie_pertes": 1
+  },
+  "B3|total|pessimiste": {
+   "cycles": 7763,
+   "cycles_actifs": 675,
+   "achats": 675,
+   "gagnants": 666,
+   "taux": 0.9866666666666667,
+   "prix": 0.9681220047099262,
+   "mise": 6750.0,
+   "mise_max_cycle": 10.0,
+   "pnl": 84.42416292144904,
+   "roi": 0.012507283395770228,
+   "ic90": [
+    31.4,
+    131.8
+   ],
+   "ic90_roi": [
+    0.0046,
+    0.0195
+   ],
+   "dd_max": 33.514663840264454,
+   "serie_pertes": 1
+  },
+  "E1+B3|exploration|pessimiste": {
+   "cycles": 5459,
+   "cycles_actifs": 5317,
+   "achats": 5795,
+   "gagnants": 2444,
+   "taux": 0.4217428817946506,
+   "prix": 0.42393865033071615,
+   "mise": 57950.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -5893.625266604095,
+   "roi": -0.10170190278868153,
+   "ic90": [
+    -7309.0,
+    -4478.9
+   ],
+   "ic90_roi": [
+    -0.1261,
+    -0.0773
+   ],
+   "dd_max": 5922.733814838667,
+   "serie_pertes": 15
+  },
+  "E1+B3|validation|pessimiste": {
+   "cycles": 2304,
+   "cycles_actifs": 2282,
+   "achats": 2448,
+   "gagnants": 982,
+   "taux": 0.4011437908496732,
+   "prix": 0.4141249627918913,
+   "mise": 24480.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -2934.933852264732,
+   "roi": -0.11989108873630441,
+   "ic90": [
+    -3874.2,
+    -1959.6
+   ],
+   "ic90_roi": [
+    -0.1583,
+    -0.0801
+   ],
+   "dd_max": 3127.4827422390117,
+   "serie_pertes": 20
+  },
+  "E1+B3|total|pessimiste": {
+   "cycles": 7763,
+   "cycles_actifs": 7599,
+   "achats": 8243,
+   "gagnants": 3426,
+   "taux": 0.4156253791095475,
+   "prix": 0.421024188715401,
+   "mise": 82430.0,
+   "mise_max_cycle": 20.0,
+   "pnl": -8828.559118868827,
+   "roi": -0.1071037136827469,
+   "ic90": [
+    -10601.6,
+    -7096.9
+   ],
+   "ic90_roi": [
+    -0.1286,
+    -0.0861
+   ],
+   "dd_max": 8927.689481057863,
+   "serie_pertes": 20
+  }
+ },
+ "e3": {
+  "exploration|observe": {
+   "achats_e1": 5289,
+   "b3_dans_cycles_e1": 478,
+   "renforts": 236,
+   "renforts_gagnes": 232,
+   "pnl_renforts": 32.216888611420245,
+   "couvertures": 242,
+   "couvertures_gagnees": 238,
+   "pnl_couvertures": 30.103098276165117,
+   "pertes_e1_couvertes": 238,
+   "perte_e1_moyenne_couverte": -10.0,
+   "perte_cycle_moyenne_apres_couverture": -9.70544916690687,
+   "couvertures_qui_annulent_la_perte": 0,
+   "couvertures_perdues": 4,
+   "prix_moyen_couverture": 0.9693875925163226
+  },
+  "validation|observe": {
+   "achats_e1": 2279,
+   "b3_dans_cycles_e1": 166,
+   "renforts": 77,
+   "renforts_gagnes": 77,
+   "pnl_renforts": 21.215202844504354,
+   "couvertures": 89,
+   "couvertures_gagnees": 88,
+   "pnl_couvertures": 19.43738991866298,
+   "pertes_e1_couvertes": 88,
+   "perte_e1_moyenne_couverte": -10.0,
+   "perte_cycle_moyenne_apres_couverture": -9.66548420546974,
+   "couvertures_qui_annulent_la_perte": 0,
+   "couvertures_perdues": 1,
+   "prix_moyen_couverture": 0.9662752063123595
+  },
+  "total|observe": {
+   "achats_e1": 7568,
+   "b3_dans_cycles_e1": 644,
+   "renforts": 313,
+   "renforts_gagnes": 309,
+   "pnl_renforts": 53.432091455924606,
+   "couvertures": 331,
+   "couvertures_gagnees": 326,
+   "pnl_couvertures": 49.5404881948281,
+   "pertes_e1_couvertes": 326,
+   "perte_e1_moyenne_couverte": -10.0,
+   "perte_cycle_moyenne_apres_couverture": -9.694661079156969,
+   "couvertures_qui_annulent_la_perte": 0,
+   "couvertures_perdues": 5,
+   "prix_moyen_couverture": 0.9685507273436555
+  },
+  "exploration|pessimiste": {
+   "achats_e1": 5289,
+   "b3_dans_cycles_e1": 478,
+   "renforts": 236,
+   "renforts_gagnes": 232,
+   "pnl_renforts": 21.798493151190357,
+   "couvertures": 242,
+   "couvertures_gagnees": 238,
+   "pnl_couvertures": 21.33501938905102,
+   "pertes_e1_couvertes": 238,
+   "perte_e1_moyenne_couverte": -10.0,
+   "perte_cycle_moyenne_apres_couverture": -9.742289834499788,
+   "couvertures_qui_annulent_la_perte": 0,
+   "couvertures_perdues": 4,
+   "prix_moyen_couverture": 0.9693875925163226
+  },
+  "validation|pessimiste": {
+   "achats_e1": 2279,
+   "b3_dans_cycles_e1": 166,
+   "renforts": 77,
+   "renforts_gagnes": 77,
+   "pnl_renforts": 18.879969077136813,
+   "couvertures": 89,
+   "couvertures_gagnees": 88,
+   "pnl_couvertures": 13.215420516649406,
+   "pertes_e1_couvertes": 88,
+   "perte_e1_moyenne_couverte": -10.0,
+   "perte_cycle_moyenne_apres_couverture": -9.736188403219892,
+   "couvertures_qui_annulent_la_perte": 0,
+   "couvertures_perdues": 1,
+   "prix_moyen_couverture": 0.9662752063123595
+  },
+  "total|pessimiste": {
+   "achats_e1": 7568,
+   "b3_dans_cycles_e1": 644,
+   "renforts": 313,
+   "renforts_gagnes": 309,
+   "pnl_renforts": 40.67846222832716,
+   "couvertures": 331,
+   "couvertures_gagnees": 326,
+   "pnl_couvertures": 34.55043990570043,
+   "pertes_e1_couvertes": 326,
+   "perte_e1_moyenne_couverte": -10.0,
+   "perte_cycle_moyenne_apres_couverture": -9.74064282237515,
+   "couvertures_qui_annulent_la_perte": 0,
+   "couvertures_perdues": 5,
+   "prix_moyen_couverture": 0.9685507273436555
+  }
+ },
+ "controle_B3_validation": {
+  "achats": 169,
+  "gagnants": 168,
+  "pnl": 41.61968507003384
+ },
+ "e1_par_instant": {
+  "exploration": [
+   {
+    "t": 10,
+    "n": 3706,
+    "taux": 0.365,
+    "prix": 0.36
+   },
+   {
+    "t": 15,
+    "n": 579,
+    "taux": 0.371,
+    "prix": 0.401
+   },
+   {
+    "t": 20,
+    "n": 300,
+    "taux": 0.373,
+    "prix": 0.4
+   },
+   {
+    "t": 25,
+    "n": 226,
+    "taux": 0.394,
+    "prix": 0.407
+   },
+   {
+    "t": 30,
+    "n": 149,
+    "taux": 0.376,
+    "prix": 0.401
+   },
+   {
+    "t": 35,
+    "n": 102,
+    "taux": 0.382,
+    "prix": 0.397
+   },
+   {
+    "t": 40,
+    "n": 84,
+    "taux": 0.31,
+    "prix": 0.385
+   },
+   {
+    "t": 45,
+    "n": 56,
+    "taux": 0.429,
+    "prix": 0.389
+   },
+   {
+    "t": 50,
+    "n": 35,
+    "taux": 0.314,
+    "prix": 0.392
+   },
+   {
+    "t": 55,
+    "n": 35,
+    "taux": 0.4,
+    "prix": 0.376
+   },
+   {
+    "t": 60,
+    "n": 17,
+    "taux": 0.353,
+    "prix": 0.374
+   }
+  ],
+  "validation": [
+   {
+    "t": 10,
+    "n": 1641,
+    "taux": 0.353,
+    "prix": 0.361
+   },
+   {
+    "t": 15,
+    "n": 247,
+    "taux": 0.368,
+    "prix": 0.398
+   },
+   {
+    "t": 20,
+    "n": 123,
+    "taux": 0.341,
+    "prix": 0.407
+   },
+   {
+    "t": 25,
+    "n": 79,
+    "taux": 0.405,
+    "prix": 0.413
+   },
+   {
+    "t": 30,
+    "n": 73,
+    "taux": 0.342,
+    "prix": 0.416
+   },
+   {
+    "t": 35,
+    "n": 45,
+    "taux": 0.333,
+    "prix": 0.392
+   },
+   {
+    "t": 40,
+    "n": 29,
+    "taux": 0.379,
+    "prix": 0.411
+   },
+   {
+    "t": 45,
+    "n": 13,
+    "taux": 0.154,
+    "prix": 0.397
+   },
+   {
+    "t": 50,
+    "n": 11,
+    "taux": 0.636,
+    "prix": 0.385
+   },
+   {
+    "t": 55,
+    "n": 13,
+    "taux": 0.385,
+    "prix": 0.415
+   },
+   {
+    "t": 60,
+    "n": 5,
+    "taux": 0.8,
+    "prix": 0.343
+   }
+  ],
+  "total": [
+   {
+    "t": 10,
+    "n": 5347,
+    "taux": 0.362,
+    "prix": 0.361
+   },
+   {
+    "t": 15,
+    "n": 826,
+    "taux": 0.37,
+    "prix": 0.4
+   },
+   {
+    "t": 20,
+    "n": 423,
+    "taux": 0.364,
+    "prix": 0.402
+   },
+   {
+    "t": 25,
+    "n": 305,
+    "taux": 0.397,
+    "prix": 0.409
+   },
+   {
+    "t": 30,
+    "n": 222,
+    "taux": 0.365,
+    "prix": 0.406
+   },
+   {
+    "t": 35,
+    "n": 147,
+    "taux": 0.367,
+    "prix": 0.396
+   },
+   {
+    "t": 40,
+    "n": 113,
+    "taux": 0.327,
+    "prix": 0.392
+   },
+   {
+    "t": 45,
+    "n": 69,
+    "taux": 0.377,
+    "prix": 0.391
+   },
+   {
+    "t": 50,
+    "n": 46,
+    "taux": 0.391,
+    "prix": 0.39
+   },
+   {
+    "t": 55,
+    "n": 48,
+    "taux": 0.396,
+    "prix": 0.386
+   },
+   {
+    "t": 60,
+    "n": 22,
+    "taux": 0.455,
+    "prix": 0.367
+   }
+  ]
+ }
+}
