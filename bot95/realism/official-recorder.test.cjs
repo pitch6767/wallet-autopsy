@@ -8,8 +8,9 @@ test('recorder absorbs synchronous bursts losslessly within bounded storage',
   const context=vm.createContext({VERSION:'test',zlib});
   vm.runInContext('const REC={};'+source.slice(begin,end)+';globalThis.records=REC;',context);
   vm.runInContext(`
-    for(let i=0;i<20000;i++)
-      validationRecord(1,{type:"raw",row:["P",i,i,0,.5,2],payload:"x".repeat(230)});
+    for(let i=0;i<5000;i++)
+      validationRecord(1,{type:"raw",token:"u",row:["B",i,i,
+        Array.from({length:50},()=>[.5,2]),Array.from({length:50},()=>[.6,3])]});
   `,context);
   const recorded=context.records[1].validation;
   assert.ok(recorded.pending>2&&recorded.pending<=16);
@@ -19,7 +20,7 @@ test('recorder absorbs synchronous bursts losslessly within bounded storage',
   assert.equal(recorded.complete,true);
   const rows=recorded.chunks.flatMap(x=>JSON.parse(zlib.gunzipSync(Buffer.from(x,'base64'))))
     .concat(recorded.events);
-  assert.equal(rows.length,20000);
-  for(let i=0;i<rows.length;i++)assert.equal(rows[i].row[1],i);
+  assert.equal(rows.length,5000);
+  for(let i=0;i<rows.length;i++)assert.equal((recorded.schema===3?rows[i][2]:rows[i].row)[1],i);
   assert.ok(recorded.compressedBytes<=8*1024*1024);
 });

@@ -1,6 +1,9 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),zlib=require('node:zlib');
 const {compare}=require('./recorded-comparison.cjs');
+const engineKey=require('node:crypto').createHash('sha256').update(
+  ['official-m10.cjs','official-execution.cjs','recorded-comparison.cjs']
+    .map(file=>fs.readFileSync(__dirname+'/'+file,'utf8')).join('\n')).digest('hex');
 const HOME='/opt/bot95-comparison',OFFICIAL='/opt/bot95-rapide';
 const atomic=(p,v)=>{fs.writeFileSync(p+'.tmp',JSON.stringify(v),{mode:0o644});fs.renameSync(p+'.tmp',p);};
 async function main(){
@@ -19,7 +22,7 @@ async function main(){
   }
   let checked=0;
   for(const file of files.sort().slice(-36).reverse()){
-    const stat=fs.statSync(file),stamp=stat.mtimeMs+':'+stat.size;
+    const stat=fs.statSync(file),stamp=stat.mtimeMs+':'+stat.size+':'+engineKey;
     const old=state.cycles[file];
     if(old?.stamp===stamp&&(old.settled||old.excluded))continue;
     if(++checked>6)break; // bounded work; subsequent timer runs continue backlog

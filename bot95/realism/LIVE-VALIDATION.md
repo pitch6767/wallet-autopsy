@@ -17,6 +17,9 @@ Its returns must not be used to approve or reject official M10 for live executio
   in flight (8 MiB of queued raw text) to absorb bursts before callbacks run.
   Bounds are 128 MiB raw and 8 MiB compressed per cycle; overflow, compression
   backpressure and unfinished blocks are explicit and excluded.
+  Schema 3 stores token identifiers and constant market metadata once, then
+  losslessly encodes events as tuples. No event sampling or signal fields are
+  removed. The decoder remains compatible with schemas 1 and 2.
 - `recorded-comparison.cjs` converts that recording to execution events and
   invokes the matching official decision code. A bounded timer on the VPS runs
   `comparison-service.cjs`, with 100/250/500-ms latency assumptions.

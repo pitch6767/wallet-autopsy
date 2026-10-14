@@ -10,6 +10,8 @@ test('recorded official inputs -> partial fills -> official requote -> settlemen
   {type:'raw',token:'u',row:['B',10000,9999,[[.5,2]],[[.55,200]]]},
   {type:'raw',token:'d',row:['B',10000,9999,[[.45,2]],[[.5,200]]]},
   {type:'decision',input},
+   {type:'raw',token:'u',row:['P',10050,10049,0,.5,2]},
+   {type:'raw',token:'u',row:['P',10050,10049,1,.55,200]},
   {type:'raw',token:'u',row:['T',10120,10110,0,.5,12]},
   {type:'decision',input:{...input,t:10150,bids:{u:.51,d:.45}}},
   {type:'raw',token:'u',row:['T',10200,10190,0,.5,4]},
@@ -25,5 +27,16 @@ test('recorded official inputs -> partial fills -> official requote -> settlemen
  const compressed={...record,validation:{...record.validation,schema:2,pending:0,
   chunks:[require('node:zlib').gzipSync(JSON.stringify(record.validation.events)).toString('base64')],events:[]}};
  assert.equal(compare(compressed,source,100).sim.snapshot().cost,7);
+ const packed=record.validation.events.map(e=>{
+  if(e.type==='raw')return ['R',e.token==='u'?0:1,e.row];
+  const i=e.input;return ['D',i.t,i.tleft,i.ua,i.da,i.P,i.TOX.u,i.TOX.d,i.bids.u,i.bids.d];
+ });
+ const dictionary={...compressed,validation:{...compressed.validation,schema:3,tokens:['u','d'],
+  market:input.mk,chunks:[require('node:zlib').gzipSync(JSON.stringify(packed)).toString('base64')]}};
+ assert.equal(compare(dictionary,source,100).sim.snapshot().cost,7);
+ const buyDuplicates={...record,validation:{...record.validation,events:[...record.validation.events,
+  {type:'raw',token:'u',row:['T',10300,10299,1,.5,12]},
+  {type:'raw',token:'u',row:['T',10300,10299,1,.5,12]}]}};
+ assert.equal(compare(buyDuplicates,source,100).sim.snapshot().cost,7);
  assert.throws(()=>compare({...compressed,validation:{...compressed.validation,pending:1}},source,100),/unfinished/);
 });
