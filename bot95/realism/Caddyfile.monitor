@@ -1,0 +1,26 @@
+# Existing application remains at its original upstream.
+107.174.203.201.sslip.io {
+    encode gzip
+    redir /bot95-protected /bot95-protected/ 308
+    handle_path /bot95-protected/* {
+        root * /opt/bot95-monitor/public
+        header {
+            Cache-Control "no-store"
+            X-Content-Type-Options "nosniff"
+            X-Frame-Options "DENY"
+            Referrer-Policy "no-referrer"
+            X-Robots-Tag "noindex, nofollow"
+            Content-Security-Policy "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'"
+        }
+        @allowed path / /index.html /status.json
+        handle @allowed {
+            file_server
+        }
+        handle {
+            respond 404
+        }
+    }
+    handle {
+        reverse_proxy 127.0.0.1:8080
+    }
+}

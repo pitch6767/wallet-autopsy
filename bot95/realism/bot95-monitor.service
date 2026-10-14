@@ -1,0 +1,18 @@
+[Unit]
+Description=Bot95 read-only monitoring snapshot
+
+[Service]
+Type=oneshot
+User=bot95-protected
+Group=bot95-protected
+ExecStart=/opt/bot95-protected/node /opt/bot95-monitor/monitor-publish.cjs
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ReadWritePaths=/opt/bot95-monitor/public
+RestrictAddressFamilies=AF_UNIX
+CapabilityBoundingSet=
+MemoryMax=96M
+CPUQuota=10%

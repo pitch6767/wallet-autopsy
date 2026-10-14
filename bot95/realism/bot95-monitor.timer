@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh Bot95 public monitoring every 15 seconds
+
+[Timer]
+OnBootSec=5s
+OnUnitActiveSec=15s
+AccuracySec=1s
+Unit=bot95-monitor.service
+
+[Install]
+WantedBy=timers.target

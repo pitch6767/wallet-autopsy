@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Bot95 Protected — Surveillance</title>
+<style>
+:root{--bg:#f3efe6;--card:#fbf8f1;--ink:#1d2a2b;--mute:#66706b;--line:#d9d1c1;--ok:#1f7a5a;--okbg:#dcefe5;--warn:#a5620b;--warnbg:#f8e8cc;--bad:#a8322b;--badbg:#f6dcd8;--acc:#2d4f7c;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--sans:"Avenir Next","Segoe UI Variable","Segoe UI",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);min-height:100dvh}
+.wrap{max-width:860px;margin:0 auto;padding:18px 14px 48px}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:12px}
+h1{margin:0;font-size:26px;letter-spacing:-.02em}
+h1 small{display:block;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:26px 0 10px}
+button{font:600 14px var(--sans);background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:10px 16px;cursor:pointer;min-height:44px}
+button:disabled{opacity:.55}
+.notice{margin-top:14px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:8px;padding:12px 14px;font-size:14px}
+.notice ul{margin:6px 0 0;padding-left:18px}
+.notice a{color:var(--acc);font-weight:600}
+.lights{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.light{border-radius:8px;padding:10px 12px;border:1px solid var(--line);background:var(--card)}
+.light b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
+.light span{font:600 15px var(--sans)}
+.light em{display:block;font:12px var(--mono);color:var(--mute);font-style:normal}
+.ok{background:var(--okbg);border-color:#b5d9c6}.ok span{color:var(--ok)}
+.warn{background:var(--warnbg);border-color:#ebcf9e}.warn span{color:var(--warn)}
+.bad{background:var(--badbg);border-color:#e7b5ae}.bad span{color:var(--bad)}
+#errors{display:none;margin-top:10px;background:var(--badbg);border:1px solid #e7b5ae;color:var(--bad);border-radius:8px;padding:10px 14px;font-size:14px}
+#errors ul{margin:4px 0 0;padding-left:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.kv{background:var(--card);padding:10px 12px}
+.kv b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:600}
+.kv span{font:600 17px var(--mono);word-break:break-word}
+.na{color:var(--mute)!important;font-weight:400!important;font-style:italic}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+.note{font-size:13px;color:var(--mute);margin:8px 0 0}
+.cycle{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.cycle .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.cycle .t{font:600 14px var(--mono)}
+.tag{font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:99px;margin-left:4px}
+.tag.ok{color:var(--ok)}.tag.warn{color:var(--warn)}.tag.bad{color:var(--bad)}
+.cycle .row{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:6px;font:13px var(--mono)}
+.cycle .why{font-size:12px;color:var(--bad);margin-top:4px}
+footer{margin-top:30px;font-size:12px;color:var(--mute);border-top:1px solid var(--line);padding-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <h1><small>Paper trading expérimental · VPS externe</small>Bot95 Protected</h1>
+ <button id="refresh" type="button">Actualiser</button>
+</header>
+
+<div class="notice">
+ <strong>Résumé public en lecture seule.</strong> Aucune action possible, aucune notification push.
+ <ul>
+  <li>Simulation <strong>NON validée en réel</strong> : exécution non calibrée.</li>
+  <li>Aucun ordre réel n'est envoyé.</li>
+  <li>Une seule paire d'entrées par cycle : ce n'est <strong>pas</strong> la même stratégie que le bot officiel.</li>
+ </ul>
+ <p style="margin:8px 0 0">Bot officiel : <a href="https://bot95.pitch67.workers.dev/rapide" target="_blank" rel="noopener">bot95.pitch67.workers.dev/rapide</a></p>
+</div>
+
+<h2>État</h2>
+<div class="lights">
+ <div class="light bad" id="l-net"><b>Requête</b><span>En attente</span><em></em></div>
+ <div class="light bad" id="l-pub"><b>Publication</b><span>Inconnue</span><em></em></div>
+ <div class="light bad" id="l-latest"><b>Cycle courant</b><span>Inconnu</span><em></em></div>
+ <div class="light bad" id="l-report"><b>Rapport</b><span>Inconnu</span><em></em></div>
+</div>
+<div id="errors"><strong>Erreurs signalées</strong><ul id="errlist"></ul></div>
+
+<h2>Cycle en cours</h2>
+<div class="grid" id="latest"></div>
+<p class="note" id="reasons"></p>
+
+<h2>Rapport cumulé</h2>
+<div class="grid" id="report"></div>
+<p class="note">Les compteurs se chevauchent : « en attente » inclut des cycles exclus. PnL et frais ne portent que sur les cycles complets et réglés.</p>
+
+<h2>Cycles récents</h2>
+<div id="cycles"><p class="note">Aucune donnée.</p></div>
+
+<footer>Actualisation automatique toutes les 15 s · seuils : publication &gt; 45 s, données &gt; 120 s = périmées.</footer>
+</div>
+<script>
+(function(){
+"use strict";
+var state={data:null,lastOk:null,lastErr:null,lastTry:null,busy:false};
+function $(id){return document.getElementById(id);}
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=String(text);return e;}
+function num(v){return typeof v==="number"&&isFinite(v);}
+function age(ms){if(!num(ms))return null;return Math.max(0,Math.round((Date.now()-ms)/1000));}
+function fmtAge(s){if(s==null)return "—";if(s<120)return "il y a "+s+" s";if(s<7200)return "il y a "+Math.round(s/60)+" min";return "il y a "+Math.round(s/3600)+" h";}
+function fmtTime(ms){if(!num(ms))return "—";try{return new Date(ms).toLocaleString("fr-FR",{hour:"2-digit",minute:"2-digit",second:"2-digit",day:"2-digit",month:"2-digit"});}catch(e){return "—";}}
+function fmtN(v,d){return num(v)?v.toLocaleString("fr-FR",{maximumFractionDigits:d==null?4:d}):null;}
+function fmtUsd(v){return num(v)?(v>0?"+":"")+v.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:4})+" $":null;}
+function light(id,cls,label,detail){var n=$(id);n.className="light "+cls;n.querySelector("span").textContent=label;n.querySelector("em").textContent=detail||"";}
+function kv(parent,label,value,cls){var d=el("div","kv");d.appendChild(el("b",null,label));var s=el("span",value==null?"na":(cls||""),value==null?"indisponible":value);d.appendChild(s);parent.appendChild(d);}
+function clear(n){while(n.firstChild)n.removeChild(n.firstChild);}
+function pnlCls(v){return num(v)?(v>0?"pos":v<0?"neg":""):"";}
+
+function evaluate(){
+ var d=state.data;
+ var netFail=state.lastErr&&(!state.lastOk||state.lastErr.at>=state.lastOk);
+ if(netFail)light("l-net","bad","Échec",state.lastErr.msg);
+ else if(state.lastOk)light("l-net","ok","OK",fmtAge(age(state.lastOk)));
+ else light("l-net","warn","En attente","");
+ var pa=d?age(d.generatedAt):null;
+ if(pa==null)light("l-pub","bad","Inconnue","");
+ else light("l-pub",(pa>45||netFail)?"bad":"ok",pa>45?"Périmée":(netFail?"Non vérifiable":"À jour"),fmtAge(pa));
+ var L=d&&d.latest,la=L?age(L.at):null;
+ if(la==null)light("l-latest","bad","Indisponible","");
+ else{var lok=la<=120&&!netFail&&L.connected===true;
+  light("l-latest",lok?"ok":(la>120||netFail?"bad":"warn"),la>120?"Périmé":(netFail?"Non vérifiable":(L.connected===true?"Connecté":"Déconnecté")),fmtAge(la));}
+ var R=d&&d.report,ra=R?age(R.at):null;
+ if(ra==null)light("l-report","bad","Indisponible","");
+ else light("l-report",(ra>120||netFail)?"bad":"ok",ra>120?"Périmé":(netFail?"Non vérifiable":"À jour"),fmtAge(ra));
+}
+
+function renderErrors(){
+ var list=[];if(state.lastErr&&(!state.lastOk||state.lastErr.at>=state.lastOk))list.push("Réseau : "+state.lastErr.msg);
+ var d=state.data;if(d&&Array.isArray(d.errors))d.errors.forEach(function(e){list.push(String(e));});
+ var ul=$("errlist");clear(ul);list.forEach(function(t){ul.appendChild(el("li",null,t));});
+ $("errors").style.display=list.length?"block":"none";
+}
+
+function renderLatest(){
+ var g=$("latest");clear(g);var L=state.data&&state.data.latest;var r=$("reasons");
+ if(!L){kv(g,"Cycle",null);r.textContent="";return;}
+ var p=L.position||{},q=p.quantities||{},a=L.assumptions||{};
+ kv(g,"Marché",L.slug!=null?String(L.slug):null);
+ kv(g,"Horodatage",num(L.at)?fmtTime(L.at):null);
+ kv(g,"Connexion",typeof L.connected==="boolean"?(L.connected?"connecté":"déconnecté"):null,L.connected===false?"neg":"");
+ kv(g,"Complet",typeof L.complete==="boolean"?(L.complete?"oui":"non (exclu)"):null,L.complete===false?"neg":"");
+ kv(g,"Qté Up",fmtN(q.Up));kv(g,"Qté Down",fmtN(q.Down));
+ kv(g,"Non apparié",fmtN(p.unmatched));kv(g,"Ordres ouverts",fmtN(p.openOrders,0));
+ kv(g,"Fills simulés",fmtN(p.simulatedFills,0));kv(g,"Frais",fmtUsd(p.fees));
+ kv(g,"Exposition",num(p.exposureMs)?fmtN(p.exposureMs/1000,1)+" s":null);
+ kv(g,"Latence supposée",num(a.latencyMs)?a.latencyMs+" ms":null);
+ kv(g,"Frais maker",fmtN(a.makerFee));kv(g,"Taux taker",fmtN(a.takerRate));
+ kv(g,"Exécution calibrée",typeof a.executionCalibrated==="boolean"?(a.executionCalibrated?"oui":"non"):null,a.executionCalibrated===false?"neg":"");
+ kv(g,"Version",L.version!=null?String(L.version):null);
+ var rs=Array.isArray(L.reasons)?L.reasons:[];r.textContent=rs.length?"Raisons d'exclusion : "+rs.map(String).join(" · "):"";
+}
+
+function renderReport(){
+ var g=$("report");clear(g);var R=state.data&&state.data.report;
+ if(!R){kv(g,"Rapport",null);return;}
+ kv(g,"PnL simulé net",fmtUsd(R.simulatedNetPnl),pnlCls(R.simulatedNetPnl));
+ kv(g,"Cycles total",fmtN(R.cycles,0));kv(g,"Réglés éligibles",fmtN(R.eligibleSettledCycles,0));
+ kv(g,"Exclus incomplets",fmtN(R.excludedIncomplete,0));kv(g,"En attente",fmtN(R.pending,0));
+ kv(g,"Cycles avec fills",fmtN(R.filledCycles,0));kv(g,"Frais (éligibles)",fmtUsd(R.fees));
+ kv(g,"Généré",num(R.at)?fmtTime(R.at):null);
+}
+
+function renderCycles(){
+ var box=$("cycles");clear(box);var R=state.data&&state.data.report;
+ var rec=R&&Array.isArray(R.recent)?R.recent.slice():[];
+ if(!rec.length){box.appendChild(el("p","note",R?"Aucun cycle récent.":"Rapport indisponible."));return;}
+ rec.sort(function(a,b){return (num(b&&b.start)?b.start:0)-(num(a&&a.start)?a.start:0);});
+ rec.forEach(function(c){
+  if(!c||typeof c!=="object")return;var p=c.position||{};
+  var card=el("div","cycle"),top=el("div","top");
+  top.appendChild(el("span","t",num(c.start)?fmtTime(c.start*1000):(c.slug!=null?String(c.slug):"cycle ?")));
+  var tags=el("span");
+  if(c.complete===false)tags.appendChild(el("span","tag bad","Exclu"));
+  if(p.winner)tags.appendChild(el("span","tag ok","Réglé · "+String(p.winner)));
+  else tags.appendChild(el("span","tag warn","En cours / en attente"));
+  top.appendChild(tags);card.appendChild(top);
+  var row=el("div","row");
+  function it(l,v,cls){var s=el("span");s.appendChild(document.createTextNode(l+" "));s.appendChild(el("strong",v==null?"na":(cls||""),v==null?"indisp.":v));row.appendChild(s);}
+  it("PnL",p.winner?fmtUsd(p.settlementPnl):null,pnlCls(p.settlementPnl));
+  it("Expo",num(p.exposureMs)?fmtN(p.exposureMs/1000,1)+" s":null);
+  it("Fills",fmtN(p.simulatedFills,0));it("Frais",fmtUsd(p.fees));
+  var qq=p.quantities||{};it("Up/Down",(num(qq.Up)||num(qq.Down))?(fmtN(qq.Up)||"?")+" / "+(fmtN(qq.Down)||"?"):null);
+  card.appendChild(row);
+  if(c.complete===false&&Array.isArray(c.reasons)&&c.reasons.length)card.appendChild(el("div","why",c.reasons.map(String).join(" · ")));
+  box.appendChild(card);
+ });
+}
+
+function render(){evaluate();renderErrors();renderLatest();renderReport();renderCycles();}
+
+function load(){
+ if(state.busy)return;state.busy=true;var b=$("refresh");b.disabled=true;b.textContent="Chargement…";
+ var ctl=typeof AbortController!=="undefined"?new AbortController():null;var to=setTimeout(function(){if(ctl)ctl.abort();},10000);
+ fetch("./status.json",{cache:"no-store",signal:ctl?ctl.signal:undefined}).then(function(r){
+  if(!r.ok)throw new Error("HTTP "+r.status);return r.json();
+ }).then(function(j){
+  if(!j||typeof j!=="object")throw new Error("réponse invalide");
+  state.data=j;state.lastOk=Date.now();
+ }).catch(function(e){
+  state.lastErr={at:Date.now(),msg:(e&&e.name==="AbortError")?"délai dépassé":String(e&&e.message||e)};
+ }).then(function(){clearTimeout(to);state.busy=false;b.disabled=false;b.textContent="Actualiser";render();});
+}
+
+$("refresh").addEventListener("click",load);
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")load();});
+setInterval(load,15000);
+setInterval(function(){evaluate();renderErrors();},5000);
+render();load();
+})();
+</script>
+</body>
+</html>
