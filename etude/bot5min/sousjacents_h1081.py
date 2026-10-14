@@ -75,18 +75,19 @@ def mesure(btc, X, horizons, lags_in):
         if len(G) < 2000: return None
         n = len(G) * 2 // 3; tr, te = G.iloc[:n], G.iloc[n:]
         cb = ["b1"] + [f"b{k}" for k in lags_in]; cx = cb + ["x1"] + [f"x{k}" for k in lags_in]
-        def r2(cols):
+        def err(cols):
             A = np.column_stack([np.ones(len(tr))] + [tr[c].values for c in cols]); b = np.linalg.lstsq(A, tr.y.values, rcond=None)[0]
-            Ae = np.column_stack([np.ones(len(te))] + [te[c].values for c in cols]); e = te.y.values - Ae @ b; return 1 - e.var() / te.y.values.var()
-        a, b2 = r2(cb), r2(cx)
-        res[h] = (a, b2, np.corrcoef(G.x1, G.y)[0, 1], len(G))
+            Ae = np.column_stack([np.ones(len(te))] + [te[c].values for c in cols]); return te.y.values - Ae @ b
+        ea, ex = err(cb), err(cx); v = te.y.values.var(); a, b2 = 1 - ea.var() / v, 1 - ex.var() / v
+        jr = np.asarray(te.index) // 86400; dd = pd.DataFrame({"j": jr, "d": ea ** 2 - ex ** 2}).groupby("j").d.sum()
+        res[h] = (a, b2, np.corrcoef(G.x1, G.y)[0, 1], len(G), f"{int((dd > 0).sum())}/{len(dd)}")
     return res
 
 rows = []
 def ajoute(nom, source, res, horizons):
     if not res: log("  pas assez de données", nom); return
     d = {"nom": nom, "source": source, "n": res[horizons[0]][3]}
-    for h in horizons: a, b, c, n = res[h]; d[f"gain_{h}"] = 100 * (b - a); d[f"r2btc_{h}"] = 100 * a; d[f"corr_{h}"] = c
+    for h in horizons: a, b, c, n, jp = res[h]; d[f"gain_{h}"] = 100 * (b - a); d[f"r2btc_{h}"] = 100 * a; d[f"corr_{h}"] = c; d[f"jours_{h}"] = jp
     rows.append(d)
 
 t_go = time.time()
@@ -106,6 +107,9 @@ try:
     info = json.loads(get("https://api.binance.com/api/v3/ticker/24hr") or b"[]")
     spot = [x["symbol"] for x in sorted(info, key=lambda x: -float(x.get("quoteVolume", 0))) if x["symbol"].endswith("USDT") and x["symbol"] != "BTCUSDT"][:150]
 except Exception as e: spot = []; log("ticker spot", e)
+if len(spot) < 20:   # api.binance.com refusé depuis les serveurs GitHub (US) : liste fixe des plus échangées
+    log("liste spot fixe (ticker indisponible)")
+    spot = "ETHUSDT SOLUSDT XRPUSDT BNBUSDT DOGEUSDT ADAUSDT TRXUSDT LINKUSDT AVAXUSDT SUIUSDT LTCUSDT BCHUSDT DOTUSDT TONUSDT NEARUSDT APTUSDT UNIUSDT PEPEUSDT SHIBUSDT WIFUSDT ARBUSDT OPUSDT AAVEUSDT ETCUSDT FILUSDT ATOMUSDT INJUSDT SEIUSDT TIAUSDT RENDERUSDT FETUSDT HBARUSDT ICPUSDT XLMUSDT ENAUSDT WLDUSDT BONKUSDT FLOKIUSDT JUPUSDT ONDOUSDT TAOUSDT CRVUSDT LDOUSDT MKRUSDT ALGOUSDT VETUSDT GALAUSDT SANDUSDT FDUSDUSDT USDCUSDT".split()
 for extra in ("PAXGUSDT", "EURUSDT", "XAUTUSDT"):
     if extra not in spot: spot.append(extra)
 for sym in spot:
@@ -133,7 +137,7 @@ log("A fini", round(time.time() - t_go), "s")
 log("B. BTC 1 s"); Bs = binance_klines("BTCUSDT", "1s", S0, S1)
 idx2 = pd.RangeIndex(int(Bs.index.min()), int(Bs.index.max()) + 1, 1); Bs = Bs.reindex(idx2).ffill()
 HB = (10, 30, 60)
-top = [s for s in spot[:40]] + ["PAXGUSDT", "EURUSDT"]
+top = list(dict.fromkeys([x for x in spot if x not in ("PAXGUSDT", "EURUSDT", "XAUTUSDT")][:40] + ["PAXGUSDT", "EURUSDT", "XAUTUSDT"]))
 for sym in top:
     try:
         s = binance_klines(sym, "1s", S0, S1)
@@ -146,15 +150,15 @@ Bd = pd.DataFrame(rows); Bd.to_csv(os.path.join(ICI, "resultat_sousjacents_h1081
 o = ["# Bot95 — H1081 : quels sous-jacents mènent le BTC ? (balayage large, lecture seule)\n",
      f"Généré le {datetime.datetime.utcnow():%d.%m.%Y %H:%M} UTC dans GitHub Actions. Période minute {J0:%d.%m}–{J1:%d.%m}, seconde {S0:%d.%m}–{S1:%d.%m} (13.10 réservé, non utilisé).",
      "« Gain » = points de % de variance du BTC FUTUR expliqués EN PLUS du passé du BTC, mesuré sur le dernier tiers (appris sur les deux premiers).",
-     "Un gain ≤ 0 = rien de plus que le BTC lui-même. Aucun ordre.\n"]
+     "Un gain ≤ 0 = rien de plus que le BTC lui-même. « jours » = nombre de jours du test où la série améliore la prévision (contrôle anti-artefact). Aucun ordre.\n"]
 if len(A):
     o.append(f"## A. Minute — {len(A)} séries testées, classées par gain sur la minute suivante\n")
     A2 = A.sort_values("gain_1", ascending=False)
-    o.append(A2[["nom", "source", "n", "gain_1", "gain_5", "corr_1", "corr_5"]].head(40).round(4).to_markdown(index=False))
+    o.append(A2[["nom", "source", "n", "gain_1", "jours_1", "gain_5", "jours_5", "corr_1"]].head(40).round(4).to_markdown(index=False))
     o.append(f"\nSéries avec un gain > 0 à 1 min ET à 5 min : {int(((A.gain_1 > 0) & (A.gain_5 > 0)).sum())} sur {len(A)}.\n")
 if len(Bd):
     o.append(f"## B. Seconde — {len(Bd)} séries testées, classées par gain à 30 s\n")
-    o.append(Bd.sort_values("gain_30", ascending=False)[["nom", "n", "gain_10", "gain_30", "gain_60", "corr_10", "corr_30"]].head(40).round(4).to_markdown(index=False))
+    o.append(Bd.sort_values("gain_30", ascending=False)[["nom", "n", "gain_10", "jours_10", "gain_30", "jours_30", "gain_60", "corr_10"]].head(40).round(4).to_markdown(index=False))
 o.append("\n## Journal\n\n```\n" + "\n".join(LOG[-80:]) + "\n```\n")
 open(os.path.join(ICI, "resultat_sousjacents_h1081.md"), "w").write("\n".join(o))
 log("FIN", round(time.time() - t_go), "s")
