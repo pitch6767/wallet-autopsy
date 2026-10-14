@@ -16,5 +16,6 @@ jobs:
           U=https://bot95.pitch67.workers.dev
           { for p in / /nouveaux /zero /api/nouveaux /api/zero /api/etat /api/classement; do echo "== $p"; curl -sS -m 60 -o /tmp/b -w "code %{http_code} taille %{size_download} temps %{time_total}s\n" "$U$p"; head -c 300 /tmp/b; echo; done; } > bot95/sonde_pages.txt 2>&1
           curl -sS -m 90 "$U/api/classement" -o bot95/classement.json
+          { echo "== version"; curl -sS -m 30 "$U/api/rapide/version"; echo; echo "== cycles depuis 3 h"; curl -sS -m 60 "$U/api/rapidecycles?apres=$(( $(date +%s) - 10800 ))" | head -c 1500; echo; echo "== sante"; curl -sS -m 30 "$U/api/sante" | head -c 1500; } > bot95/sonde_dublin.txt 2>&1
           git config user.name sonde; git config user.email bot@users.noreply.github.com
-          git add bot95/sonde_pages.txt bot95/classement.json && git commit -qm "sonde pages [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
+          git add bot95/sonde_pages.txt bot95/classement.json bot95/sonde_dublin.txt && git commit -qm "sonde pages [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
