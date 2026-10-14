@@ -270,15 +270,32 @@ const VALIDATION_BOOT = Math.floor(Date.now() / 300000) * 300;
 function validationRecord(start, event) {
   try {
     const R = recDe(start);
-    const V = R.validation || (R.validation = { schema: 1, version: VERSION,
-      partialStartup: start === VALIDATION_BOOT, complete: true, bytes: 0, events: [] });
+    const V = R.validation || (R.validation = { schema: 2, version: VERSION,
+      partialStartup: start === VALIDATION_BOOT, complete: true, bytes: 0,
+      bufferBytes: 0, compressedBytes: 0, pending: 0, chunks: [], events: [] });
     if (!V.complete) return;
     const serialized = JSON.stringify(event);
-    if (V.bytes + serialized.length > 16 * 1024 * 1024) {
+    if (V.bytes + serialized.length > 128 * 1024 * 1024) {
       V.complete = false; V.reason = "validation recording size limit"; return;
     }
     V.bytes += serialized.length;
+    V.bufferBytes += serialized.length;
     V.events.push(JSON.parse(serialized)); // immutable snapshot, not live references
+    if (V.bufferBytes >= 512 * 1024) {
+      if (V.pending >= 2) { V.complete = false; V.reason = "validation compression backpressure"; return; }
+      const payload = JSON.stringify(V.events), index = V.chunks.length;
+      V.events = []; V.bufferBytes = 0; V.chunks.push(null); V.pending++;
+      zlib.gzip(payload, (error, buffer) => {
+        V.pending--;
+        if (!V.complete) return;
+        if (error) { V.complete = false; V.reason = "validation compression error"; return; }
+        V.compressedBytes += buffer.length;
+        if (V.compressedBytes > 8 * 1024 * 1024) {
+          V.complete = false; V.reason = "validation compressed size limit"; V.chunks = []; V.events = []; return;
+        }
+        V.chunks[index] = buffer.toString("base64");
+      });
+    }
   } catch (e) {
     try { const R = recDe(start); R.validation = { schema: 1, version: VERSION,
       complete: false, reason: "validation recorder error", events: [] }; } catch (_) {}
