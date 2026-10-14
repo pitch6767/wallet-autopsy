@@ -1,0 +1,5595 @@
+{
+ "periode": "exploration",
+ "cycles": 405,
+ "cycles_totaux_periode": 469,
+ "accord_gagnant_officiel_vs_cycle_suivant": [
+  709,
+  709
+ ],
+ "k_ajuste": 1.8,
+ "k_n": 405,
+ "descriptif_k1": {
+  "t0": {
+   "n": 275,
+   "d_q": [
+    -21.76,
+    -5.89,
+    0.34,
+    7.28,
+    27.08
+   ],
+   "d_abs_moy": 10.66298643238779,
+   "z_q": [
+    -0.61,
+    -0.255,
+    0.015,
+    0.222,
+    0.794
+   ],
+   "z_abs_moy": 0.3299103560306389,
+   "part_p_hors_045_055": 0.6618181818181819,
+   "part_p_hors_040_060": 0.49454545454545457,
+   "mid_moy_abs_ecart": 0.08541818181818182,
+   "p_moy_abs_ecart": 0.12007114240726659,
+   "pente_mid_sur_modele": 0.6091632638964137,
+   "corr": 0.8789734150875922,
+   "brier_modele": 0.2461128612205924,
+   "brier_carnet": 0.2407950909090909,
+   "brier_05": 0.25,
+   "brier_cb": 0.24755481868343515,
+   "freq_up": 0.48,
+   "age_cl_med": 1.616,
+   "k_connu_med": 1.24
+  },
+  "t10": {
+   "n": 405,
+   "d_q": [
+    -36.61,
+    -10.94,
+    -0.72,
+    7.28,
+    30.46
+   ],
+   "d_abs_moy": 14.745065350952864,
+   "z_q": [
+    -1.134,
+    -0.419,
+    -0.033,
+    0.225,
+    0.877
+   ],
+   "z_abs_moy": 0.4762996207346281,
+   "part_p_hors_045_055": 0.7283950617283951,
+   "part_p_hors_040_060": 0.5604938271604938,
+   "mid_moy_abs_ecart": 0.11651851851851851,
+   "p_moy_abs_ecart": 0.15512072668351243,
+   "pente_mid_sur_modele": 0.685119175299971,
+   "corr": 0.936121936378201,
+   "brier_modele": 0.2324992063568779,
+   "brier_carnet": 0.2265051851851852,
+   "brier_05": 0.25,
+   "brier_cb": 0.23846884841323548,
+   "freq_up": 0.4839506172839506,
+   "age_cl_med": 1.7639999999999993,
+   "k_connu_med": 1.255
+  },
+  "t30": {
+   "n": 405,
+   "d_q": [
+    -50.55,
+    -15.33,
+    -1.1,
+    12.38,
+    38.4
+   ],
+   "d_abs_moy": 20.268456747618117,
+   "z_q": [
+    -1.767,
+    -0.458,
+    -0.041,
+    0.442,
+    1.442
+   ],
+   "z_abs_moy": 0.6952699326680863,
+   "part_p_hors_045_055": 0.8148148148148148,
+   "part_p_hors_040_060": 0.6962962962962963,
+   "mid_moy_abs_ecart": 0.15409876543209877,
+   "p_moy_abs_ecart": 0.2045177915292773,
+   "pente_mid_sur_modele": 0.6949824916826081,
+   "corr": 0.9432356527879588,
+   "brier_modele": 0.21996122066805382,
+   "brier_carnet": 0.21739197530864202,
+   "brier_05": 0.25,
+   "brier_cb": 0.22657811434478733,
+   "freq_up": 0.4839506172839506,
+   "age_cl_med": 1.7560000000000002,
+   "k_connu_med": 1.255
+  },
+  "calibration": [
+   {
+    "tranche": "0.0–0.1",
+    "n": 116,
+    "cycles": 38,
+    "modele": 0.04600144044566276,
+    "carnet": 0.20693965517241378,
+    "freq_up": 0.21551724137931033
+   },
+   {
+    "tranche": "0.1–0.2",
+    "n": 110,
+    "cycles": 55,
+    "modele": 0.15095930175470132,
+    "carnet": 0.2767727272727273,
+    "freq_up": 0.22727272727272727
+   },
+   {
+    "tranche": "0.2–0.3",
+    "n": 195,
+    "cycles": 82,
+    "modele": 0.2504825813788441,
+    "carnet": 0.3335641025641025,
+    "freq_up": 0.4
+   },
+   {
+    "tranche": "0.3–0.4",
+    "n": 276,
+    "cycles": 113,
+    "modele": 0.35459291768058515,
+    "carnet": 0.3873731884057971,
+    "freq_up": 0.358695652173913
+   },
+   {
+    "tranche": "0.4–0.5",
+    "n": 404,
+    "cycles": 158,
+    "modele": 0.4555847370609415,
+    "carnet": 0.464269801980198,
+    "freq_up": 0.452970297029703
+   },
+   {
+    "tranche": "0.5–0.6",
+    "n": 401,
+    "cycles": 156,
+    "modele": 0.5413836624252432,
+    "carnet": 0.5344014962593516,
+    "freq_up": 0.47880299251870323
+   },
+   {
+    "tranche": "0.6–0.7",
+    "n": 232,
+    "cycles": 103,
+    "modele": 0.6468147908667552,
+    "carnet": 0.620948275862069,
+    "freq_up": 0.6594827586206896
+   },
+   {
+    "tranche": "0.7–0.8",
+    "n": 141,
+    "cycles": 66,
+    "modele": 0.7459749603788954,
+    "carnet": 0.676241134751773,
+    "freq_up": 0.6808510638297872
+   },
+   {
+    "tranche": "0.8–0.9",
+    "n": 75,
+    "cycles": 39,
+    "modele": 0.8418385976159807,
+    "carnet": 0.7307999999999999,
+    "freq_up": 0.88
+   },
+   {
+    "tranche": "0.9–1.0",
+    "n": 75,
+    "cycles": 26,
+    "modele": 0.9539356826681821,
+    "carnet": 0.8064,
+    "freq_up": 0.84
+   }
+  ],
+  "carnet": [
+   {
+    "t": 0,
+    "n": 275,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9672727272727273,
+    "taille_meilleur_vendeur_usd_med": 45.900000000000006,
+    "profondeur_5_niveaux_usd_med": 759.7497,
+    "mid_abs_ecart_05": 0.08541818181818182,
+    "p_abs_ecart_05": 0.12007114240726659,
+    "avantage_max_moy": 0.05564187263167106
+   },
+   {
+    "t": 1,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9679012345679012,
+    "taille_meilleur_vendeur_usd_med": 69.30040000000001,
+    "profondeur_5_niveaux_usd_med": 962.35,
+    "mid_abs_ecart_05": 0.08604938271604938,
+    "p_abs_ecart_05": 0.11999966015949508,
+    "avantage_max_moy": 0.05448940646372097
+   },
+   {
+    "t": 2,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9703703703703703,
+    "taille_meilleur_vendeur_usd_med": 98.10360000000001,
+    "profondeur_5_niveaux_usd_med": 1022.7212,
+    "mid_abs_ecart_05": 0.0932222222222222,
+    "p_abs_ecart_05": 0.12520736166890328,
+    "avantage_max_moy": 0.05287024512173317
+   },
+   {
+    "t": 3,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9702970297029703,
+    "taille_meilleur_vendeur_usd_med": 152.10025000000002,
+    "profondeur_5_niveaux_usd_med": 1086.1862999999998,
+    "mid_abs_ecart_05": 0.09959158415841585,
+    "p_abs_ecart_05": 0.12674078457953009,
+    "avantage_max_moy": 0.05418115779295935
+   },
+   {
+    "t": 4,
+    "n": 403,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9751861042183623,
+    "taille_meilleur_vendeur_usd_med": 138.7722,
+    "profondeur_5_niveaux_usd_med": 1091.2958,
+    "mid_abs_ecart_05": 0.10364764267990073,
+    "p_abs_ecart_05": 0.13058457065321963,
+    "avantage_max_moy": 0.055418924901183934
+   },
+   {
+    "t": 5,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9876237623762376,
+    "taille_meilleur_vendeur_usd_med": 148.027,
+    "profondeur_5_niveaux_usd_med": 1094.5047,
+    "mid_abs_ecart_05": 0.10595297029702971,
+    "p_abs_ecart_05": 0.13715903144896568,
+    "avantage_max_moy": 0.05408512845483914
+   },
+   {
+    "t": 6,
+    "n": 402,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9601990049751243,
+    "taille_meilleur_vendeur_usd_med": 106.5356,
+    "profondeur_5_niveaux_usd_med": 1023.0663499999998,
+    "mid_abs_ecart_05": 0.11044776119402987,
+    "p_abs_ecart_05": 0.14106814921760738,
+    "avantage_max_moy": 0.053701168917302644
+   },
+   {
+    "t": 7,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9826732673267327,
+    "taille_meilleur_vendeur_usd_med": 163.2964,
+    "profondeur_5_niveaux_usd_med": 1203.5937,
+    "mid_abs_ecart_05": 0.11195544554455447,
+    "p_abs_ecart_05": 0.14488335976357636,
+    "avantage_max_moy": 0.055200403721001955
+   },
+   {
+    "t": 8,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9678217821782178,
+    "taille_meilleur_vendeur_usd_med": 156.8179,
+    "profondeur_5_niveaux_usd_med": 1161.16935,
+    "mid_abs_ecart_05": 0.11407178217821781,
+    "p_abs_ecart_05": 0.15013252181889788,
+    "avantage_max_moy": 0.05571592513124038
+   },
+   {
+    "t": 9,
+    "n": 382,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9790575916230366,
+    "taille_meilleur_vendeur_usd_med": 143.7909,
+    "profondeur_5_niveaux_usd_med": 1080.18725,
+    "mid_abs_ecart_05": 0.11575916230366493,
+    "p_abs_ecart_05": 0.1513335083813,
+    "avantage_max_moy": 0.056771877310208725
+   },
+   {
+    "t": 10,
+    "n": 389,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.974293059125964,
+    "taille_meilleur_vendeur_usd_med": 153.06209999999996,
+    "profondeur_5_niveaux_usd_med": 1154.362,
+    "mid_abs_ecart_05": 0.11817480719794346,
+    "p_abs_ecart_05": 0.1550555111761432,
+    "avantage_max_moy": 0.05963724690968619
+   },
+   {
+    "t": 11,
+    "n": 379,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9656992084432717,
+    "taille_meilleur_vendeur_usd_med": 121.2744,
+    "profondeur_5_niveaux_usd_med": 1113.736,
+    "mid_abs_ecart_05": 0.12084432717678101,
+    "p_abs_ecart_05": 0.1604317844847927,
+    "avantage_max_moy": 0.062114592004065335
+   },
+   {
+    "t": 12,
+    "n": 381,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9658792650918635,
+    "taille_meilleur_vendeur_usd_med": 133.98059999999998,
+    "profondeur_5_niveaux_usd_med": 1028.8162,
+    "mid_abs_ecart_05": 0.12246719160104988,
+    "p_abs_ecart_05": 0.16277183142958043,
+    "avantage_max_moy": 0.06473138544109665
+   },
+   {
+    "t": 13,
+    "n": 385,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.961038961038961,
+    "taille_meilleur_vendeur_usd_med": 129.426,
+    "profondeur_5_niveaux_usd_med": 1046.2722,
+    "mid_abs_ecart_05": 0.12561038961038962,
+    "p_abs_ecart_05": 0.16408251174163765,
+    "avantage_max_moy": 0.06550461833224219
+   },
+   {
+    "t": 14,
+    "n": 369,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9701897018970189,
+    "taille_meilleur_vendeur_usd_med": 135.5,
+    "profondeur_5_niveaux_usd_med": 1097.9462,
+    "mid_abs_ecart_05": 0.12787262872628724,
+    "p_abs_ecart_05": 0.16864337623494927,
+    "avantage_max_moy": 0.065134977229363
+   },
+   {
+    "t": 15,
+    "n": 398,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.964824120603015,
+    "taille_meilleur_vendeur_usd_med": 150.1797,
+    "profondeur_5_niveaux_usd_med": 1056.83,
+    "mid_abs_ecart_05": 0.12829145728643215,
+    "p_abs_ecart_05": 0.1723363553197042,
+    "avantage_max_moy": 0.0653286944724642
+   },
+   {
+    "t": 16,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9801980198019802,
+    "taille_meilleur_vendeur_usd_med": 146.3832,
+    "profondeur_5_niveaux_usd_med": 1130.64085,
+    "mid_abs_ecart_05": 0.12933168316831684,
+    "p_abs_ecart_05": 0.1729893369802864,
+    "avantage_max_moy": 0.06601865184590335
+   },
+   {
+    "t": 17,
+    "n": 403,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9851116625310173,
+    "taille_meilleur_vendeur_usd_med": 129.84029999999998,
+    "profondeur_5_niveaux_usd_med": 1087.3183999999999,
+    "mid_abs_ecart_05": 0.1336228287841191,
+    "p_abs_ecart_05": 0.17453184926407436,
+    "avantage_max_moy": 0.06629340886641125
+   },
+   {
+    "t": 18,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9703703703703703,
+    "taille_meilleur_vendeur_usd_med": 133.6925,
+    "profondeur_5_niveaux_usd_med": 1135.4248,
+    "mid_abs_ecart_05": 0.13614814814814816,
+    "p_abs_ecart_05": 0.17799024285727155,
+    "avantage_max_moy": 0.06568977677694467
+   },
+   {
+    "t": 19,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9702970297029703,
+    "taille_meilleur_vendeur_usd_med": 160.4792,
+    "profondeur_5_niveaux_usd_med": 1109.8458,
+    "mid_abs_ecart_05": 0.1360272277227723,
+    "p_abs_ecart_05": 0.17989434713984032,
+    "avantage_max_moy": 0.06528428547867726
+   },
+   {
+    "t": 20,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9727722772277227,
+    "taille_meilleur_vendeur_usd_med": 130.798,
+    "profondeur_5_niveaux_usd_med": 1116.65645,
+    "mid_abs_ecart_05": 0.13778465346534655,
+    "p_abs_ecart_05": 0.1830248060862424,
+    "avantage_max_moy": 0.06704882905118471
+   },
+   {
+    "t": 21,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.980246913580247,
+    "taille_meilleur_vendeur_usd_med": 136.32,
+    "profondeur_5_niveaux_usd_med": 1079.1666,
+    "mid_abs_ecart_05": 0.14166666666666666,
+    "p_abs_ecart_05": 0.18487181555036963,
+    "avantage_max_moy": 0.06547392311033923
+   },
+   {
+    "t": 22,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9827160493827161,
+    "taille_meilleur_vendeur_usd_med": 164.6022,
+    "profondeur_5_niveaux_usd_med": 1121.8787000000002,
+    "mid_abs_ecart_05": 0.14465432098765432,
+    "p_abs_ecart_05": 0.18904789305149025,
+    "avantage_max_moy": 0.066043210888826
+   },
+   {
+    "t": 23,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9777777777777777,
+    "taille_meilleur_vendeur_usd_med": 166.315,
+    "profondeur_5_niveaux_usd_med": 1114.7195,
+    "mid_abs_ecart_05": 0.14664197530864198,
+    "p_abs_ecart_05": 0.1919894903004741,
+    "avantage_max_moy": 0.06572456921277305
+   },
+   {
+    "t": 24,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9827160493827161,
+    "taille_meilleur_vendeur_usd_med": 123.75,
+    "profondeur_5_niveaux_usd_med": 1038.0405,
+    "mid_abs_ecart_05": 0.1480493827160494,
+    "p_abs_ecart_05": 0.19471640364468518,
+    "avantage_max_moy": 0.06655034478817397
+   },
+   {
+    "t": 25,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9876543209876543,
+    "taille_meilleur_vendeur_usd_med": 130.38,
+    "profondeur_5_niveaux_usd_med": 1101.2314999999999,
+    "mid_abs_ecart_05": 0.14853086419753087,
+    "p_abs_ecart_05": 0.19681747444070136,
+    "avantage_max_moy": 0.06668067564692237
+   },
+   {
+    "t": 26,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9900990099009901,
+    "taille_meilleur_vendeur_usd_med": 126.7993,
+    "profondeur_5_niveaux_usd_med": 1020.3542500000001,
+    "mid_abs_ecart_05": 0.1499009900990099,
+    "p_abs_ecart_05": 0.1993853322697662,
+    "avantage_max_moy": 0.06640066319847508
+   },
+   {
+    "t": 27,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9753086419753086,
+    "taille_meilleur_vendeur_usd_med": 130.0,
+    "profondeur_5_niveaux_usd_med": 1034.8495,
+    "mid_abs_ecart_05": 0.15124691358024694,
+    "p_abs_ecart_05": 0.19994786669872142,
+    "avantage_max_moy": 0.06855819149195916
+   },
+   {
+    "t": 28,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9801980198019802,
+    "taille_meilleur_vendeur_usd_med": 143.26670000000001,
+    "profondeur_5_niveaux_usd_med": 1038.3817000000001,
+    "mid_abs_ecart_05": 0.1508539603960396,
+    "p_abs_ecart_05": 0.20272335934669658,
+    "avantage_max_moy": 0.07124760793986427
+   },
+   {
+    "t": 29,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9703703703703703,
+    "taille_meilleur_vendeur_usd_med": 143.7619,
+    "profondeur_5_niveaux_usd_med": 1047.4775,
+    "mid_abs_ecart_05": 0.15222222222222223,
+    "p_abs_ecart_05": 0.2034191111747143,
+    "avantage_max_moy": 0.07112227308344758
+   },
+   {
+    "t": 30,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9827160493827161,
+    "taille_meilleur_vendeur_usd_med": 146.19719999999998,
+    "profondeur_5_niveaux_usd_med": 1074.18,
+    "mid_abs_ecart_05": 0.15708641975308643,
+    "p_abs_ecart_05": 0.2050084729325325,
+    "avantage_max_moy": 0.06956517676703317
+   }
+  ]
+ },
+ "descriptif_kfit": {
+  "t0": {
+   "n": 275,
+   "d_q": [
+    -21.76,
+    -5.89,
+    0.34,
+    7.28,
+    27.08
+   ],
+   "d_abs_moy": 10.66298643238779,
+   "z_q": [
+    -0.339,
+    -0.142,
+    0.008,
+    0.123,
+    0.441
+   ],
+   "z_abs_moy": 0.18328353112813273,
+   "part_p_hors_045_055": 0.5236363636363637,
+   "part_p_hors_040_060": 0.2690909090909091,
+   "mid_moy_abs_ecart": 0.08541818181818182,
+   "p_moy_abs_ecart": 0.07070189502607781,
+   "pente_mid_sur_modele": 0.9877039480039006,
+   "corr": 0.8779745312333589,
+   "brier_modele": 0.24199985686707998,
+   "brier_carnet": 0.2407950909090909,
+   "brier_05": 0.25,
+   "brier_cb": 0.2402129757181807,
+   "freq_up": 0.48,
+   "age_cl_med": 1.616,
+   "k_connu_med": 1.24
+  },
+  "t10": {
+   "n": 405,
+   "d_q": [
+    -36.61,
+    -10.94,
+    -0.72,
+    7.28,
+    30.46
+   ],
+   "d_abs_moy": 14.745065350952864,
+   "z_q": [
+    -0.63,
+    -0.233,
+    -0.018,
+    0.125,
+    0.487
+   ],
+   "z_abs_moy": 0.26461090040812674,
+   "part_p_hors_045_055": 0.5876543209876544,
+   "part_p_hors_040_060": 0.37777777777777777,
+   "mid_moy_abs_ecart": 0.11651851851851851,
+   "p_moy_abs_ecart": 0.09603479170632756,
+   "pente_mid_sur_modele": 1.0223835713555505,
+   "corr": 0.9252157585128932,
+   "brier_modele": 0.2300701564159365,
+   "brier_carnet": 0.2265051851851852,
+   "brier_05": 0.25,
+   "brier_cb": 0.23131333117923455,
+   "freq_up": 0.4839506172839506,
+   "age_cl_med": 1.7639999999999993,
+   "k_connu_med": 1.255
+  },
+  "t30": {
+   "n": 405,
+   "d_q": [
+    -50.55,
+    -15.33,
+    -1.1,
+    12.38,
+    38.4
+   ],
+   "d_abs_moy": 20.268456747618117,
+   "z_q": [
+    -0.981,
+    -0.254,
+    -0.023,
+    0.246,
+    0.801
+   ],
+   "z_abs_moy": 0.3862610737044924,
+   "part_p_hors_045_055": 0.7160493827160493,
+   "part_p_hors_040_060": 0.4888888888888889,
+   "mid_moy_abs_ecart": 0.15409876543209877,
+   "p_moy_abs_ecart": 0.13363238657191912,
+   "pente_mid_sur_modele": 0.9794516358984421,
+   "corr": 0.9321931832023257,
+   "brier_modele": 0.2154254470859924,
+   "brier_carnet": 0.21739197530864202,
+   "brier_05": 0.25,
+   "brier_cb": 0.21774763312099027,
+   "freq_up": 0.4839506172839506,
+   "age_cl_med": 1.7560000000000002,
+   "k_connu_med": 1.255
+  },
+  "calibration": [
+   {
+    "tranche": "0.0–0.1",
+    "n": 20,
+    "cycles": 6,
+    "modele": 0.04963237187104841,
+    "carnet": 0.13024999999999998,
+    "freq_up": 0.15
+   },
+   {
+    "tranche": "0.1–0.2",
+    "n": 55,
+    "cycles": 22,
+    "modele": 0.15033797940887664,
+    "carnet": 0.2020909090909091,
+    "freq_up": 0.16363636363636364
+   },
+   {
+    "tranche": "0.2–0.3",
+    "n": 117,
+    "cycles": 46,
+    "modele": 0.25203033965434046,
+    "carnet": 0.26085470085470086,
+    "freq_up": 0.28205128205128205
+   },
+   {
+    "tranche": "0.3–0.4",
+    "n": 290,
+    "cycles": 105,
+    "modele": 0.35711176633315916,
+    "carnet": 0.3373965517241379,
+    "freq_up": 0.38620689655172413
+   },
+   {
+    "tranche": "0.4–0.5",
+    "n": 619,
+    "cycles": 206,
+    "modele": 0.45773649941634204,
+    "carnet": 0.43924071082390953,
+    "freq_up": 0.4087237479806139
+   },
+   {
+    "tranche": "0.5–0.6",
+    "n": 578,
+    "cycles": 182,
+    "modele": 0.5392139174160717,
+    "carnet": 0.5591003460207612,
+    "freq_up": 0.532871972318339
+   },
+   {
+    "tranche": "0.6–0.7",
+    "n": 222,
+    "cycles": 86,
+    "modele": 0.6398105194095464,
+    "carnet": 0.6725900900900901,
+    "freq_up": 0.7027027027027027
+   },
+   {
+    "tranche": "0.7–0.8",
+    "n": 75,
+    "cycles": 32,
+    "modele": 0.7424615973847564,
+    "carnet": 0.7461333333333333,
+    "freq_up": 0.8933333333333333
+   },
+   {
+    "tranche": "0.8–0.9",
+    "n": 31,
+    "cycles": 14,
+    "modele": 0.8413742275068926,
+    "carnet": 0.7909677419354836,
+    "freq_up": 0.8387096774193549
+   },
+   {
+    "tranche": "0.9–1.0",
+    "n": 18,
+    "cycles": 6,
+    "modele": 0.9543076581834558,
+    "carnet": 0.8911111111111111,
+    "freq_up": 0.7222222222222222
+   }
+  ],
+  "carnet": [
+   {
+    "t": 0,
+    "n": 275,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9672727272727273,
+    "taille_meilleur_vendeur_usd_med": 45.900000000000006,
+    "profondeur_5_niveaux_usd_med": 759.7497,
+    "mid_abs_ecart_05": 0.08541818181818182,
+    "p_abs_ecart_05": 0.07070189502607781,
+    "avantage_max_moy": 0.03134440465316212
+   },
+   {
+    "t": 1,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9679012345679012,
+    "taille_meilleur_vendeur_usd_med": 69.30040000000001,
+    "profondeur_5_niveaux_usd_med": 962.35,
+    "mid_abs_ecart_05": 0.08604938271604938,
+    "p_abs_ecart_05": 0.07100987234932701,
+    "avantage_max_moy": 0.033303366734057
+   },
+   {
+    "t": 2,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9703703703703703,
+    "taille_meilleur_vendeur_usd_med": 98.10360000000001,
+    "profondeur_5_niveaux_usd_med": 1022.7212,
+    "mid_abs_ecart_05": 0.0932222222222222,
+    "p_abs_ecart_05": 0.07469233608179243,
+    "avantage_max_moy": 0.035660504581220206
+   },
+   {
+    "t": 3,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9702970297029703,
+    "taille_meilleur_vendeur_usd_med": 152.10025000000002,
+    "profondeur_5_niveaux_usd_med": 1086.1862999999998,
+    "mid_abs_ecart_05": 0.09959158415841585,
+    "p_abs_ecart_05": 0.07608029880063796,
+    "avantage_max_moy": 0.038875434366087876
+   },
+   {
+    "t": 4,
+    "n": 403,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9751861042183623,
+    "taille_meilleur_vendeur_usd_med": 138.7722,
+    "profondeur_5_niveaux_usd_med": 1091.2958,
+    "mid_abs_ecart_05": 0.10364764267990073,
+    "p_abs_ecart_05": 0.07886332952095305,
+    "avantage_max_moy": 0.04014950111536543
+   },
+   {
+    "t": 5,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9876237623762376,
+    "taille_meilleur_vendeur_usd_med": 148.027,
+    "profondeur_5_niveaux_usd_med": 1094.5047,
+    "mid_abs_ecart_05": 0.10595297029702971,
+    "p_abs_ecart_05": 0.08347984485503532,
+    "avantage_max_moy": 0.03827053375683459
+   },
+   {
+    "t": 6,
+    "n": 402,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9601990049751243,
+    "taille_meilleur_vendeur_usd_med": 106.5356,
+    "profondeur_5_niveaux_usd_med": 1023.0663499999998,
+    "mid_abs_ecart_05": 0.11044776119402987,
+    "p_abs_ecart_05": 0.08635953844908346,
+    "avantage_max_moy": 0.03854926805732788
+   },
+   {
+    "t": 7,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9826732673267327,
+    "taille_meilleur_vendeur_usd_med": 163.2964,
+    "profondeur_5_niveaux_usd_med": 1203.5937,
+    "mid_abs_ecart_05": 0.11195544554455447,
+    "p_abs_ecart_05": 0.08880457528581416,
+    "avantage_max_moy": 0.03946125532332794
+   },
+   {
+    "t": 8,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9678217821782178,
+    "taille_meilleur_vendeur_usd_med": 156.8179,
+    "profondeur_5_niveaux_usd_med": 1161.16935,
+    "mid_abs_ecart_05": 0.11407178217821781,
+    "p_abs_ecart_05": 0.092297796811667,
+    "avantage_max_moy": 0.036948469853242086
+   },
+   {
+    "t": 9,
+    "n": 382,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9790575916230366,
+    "taille_meilleur_vendeur_usd_med": 143.7909,
+    "profondeur_5_niveaux_usd_med": 1080.18725,
+    "mid_abs_ecart_05": 0.11575916230366493,
+    "p_abs_ecart_05": 0.09338359418877125,
+    "avantage_max_moy": 0.03765812910814978
+   },
+   {
+    "t": 10,
+    "n": 389,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.974293059125964,
+    "taille_meilleur_vendeur_usd_med": 153.06209999999996,
+    "profondeur_5_niveaux_usd_med": 1154.362,
+    "mid_abs_ecart_05": 0.11817480719794346,
+    "p_abs_ecart_05": 0.09594650741445346,
+    "avantage_max_moy": 0.0394657986637736
+   },
+   {
+    "t": 11,
+    "n": 379,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9656992084432717,
+    "taille_meilleur_vendeur_usd_med": 121.2744,
+    "profondeur_5_niveaux_usd_med": 1113.736,
+    "mid_abs_ecart_05": 0.12084432717678101,
+    "p_abs_ecart_05": 0.09991684423569312,
+    "avantage_max_moy": 0.04062386829273508
+   },
+   {
+    "t": 12,
+    "n": 381,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9658792650918635,
+    "taille_meilleur_vendeur_usd_med": 133.98059999999998,
+    "profondeur_5_niveaux_usd_med": 1028.8162,
+    "mid_abs_ecart_05": 0.12246719160104988,
+    "p_abs_ecart_05": 0.10172803024096154,
+    "avantage_max_moy": 0.04142606308528755
+   },
+   {
+    "t": 13,
+    "n": 385,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.961038961038961,
+    "taille_meilleur_vendeur_usd_med": 129.426,
+    "profondeur_5_niveaux_usd_med": 1046.2722,
+    "mid_abs_ecart_05": 0.12561038961038962,
+    "p_abs_ecart_05": 0.10265963016702127,
+    "avantage_max_moy": 0.04405348229039729
+   },
+   {
+    "t": 14,
+    "n": 369,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9701897018970189,
+    "taille_meilleur_vendeur_usd_med": 135.5,
+    "profondeur_5_niveaux_usd_med": 1097.9462,
+    "mid_abs_ecart_05": 0.12787262872628724,
+    "p_abs_ecart_05": 0.10586773555638727,
+    "avantage_max_moy": 0.0449595031116894
+   },
+   {
+    "t": 15,
+    "n": 398,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.964824120603015,
+    "taille_meilleur_vendeur_usd_med": 150.1797,
+    "profondeur_5_niveaux_usd_med": 1056.83,
+    "mid_abs_ecart_05": 0.12829145728643215,
+    "p_abs_ecart_05": 0.10816604129228409,
+    "avantage_max_moy": 0.04208321337578745
+   },
+   {
+    "t": 16,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9801980198019802,
+    "taille_meilleur_vendeur_usd_med": 146.3832,
+    "profondeur_5_niveaux_usd_med": 1130.64085,
+    "mid_abs_ecart_05": 0.12933168316831684,
+    "p_abs_ecart_05": 0.10865170804115479,
+    "avantage_max_moy": 0.043801463482683343
+   },
+   {
+    "t": 17,
+    "n": 403,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9851116625310173,
+    "taille_meilleur_vendeur_usd_med": 129.84029999999998,
+    "profondeur_5_niveaux_usd_med": 1087.3183999999999,
+    "mid_abs_ecart_05": 0.1336228287841191,
+    "p_abs_ecart_05": 0.1098934991493593,
+    "avantage_max_moy": 0.046198219009116394
+   },
+   {
+    "t": 18,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9703703703703703,
+    "taille_meilleur_vendeur_usd_med": 133.6925,
+    "profondeur_5_niveaux_usd_med": 1135.4248,
+    "mid_abs_ecart_05": 0.13614814814814816,
+    "p_abs_ecart_05": 0.11226147477685078,
+    "avantage_max_moy": 0.045989444067386684
+   },
+   {
+    "t": 19,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9702970297029703,
+    "taille_meilleur_vendeur_usd_med": 160.4792,
+    "profondeur_5_niveaux_usd_med": 1109.8458,
+    "mid_abs_ecart_05": 0.1360272277227723,
+    "p_abs_ecart_05": 0.11390779173719684,
+    "avantage_max_moy": 0.04441762521661694
+   },
+   {
+    "t": 20,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9727722772277227,
+    "taille_meilleur_vendeur_usd_med": 130.798,
+    "profondeur_5_niveaux_usd_med": 1116.65645,
+    "mid_abs_ecart_05": 0.13778465346534655,
+    "p_abs_ecart_05": 0.11618451003777158,
+    "avantage_max_moy": 0.04430740782856267
+   },
+   {
+    "t": 21,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.980246913580247,
+    "taille_meilleur_vendeur_usd_med": 136.32,
+    "profondeur_5_niveaux_usd_med": 1079.1666,
+    "mid_abs_ecart_05": 0.14166666666666666,
+    "p_abs_ecart_05": 0.11766258919386686,
+    "avantage_max_moy": 0.0444608799290727
+   },
+   {
+    "t": 22,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9827160493827161,
+    "taille_meilleur_vendeur_usd_med": 164.6022,
+    "profondeur_5_niveaux_usd_med": 1121.8787000000002,
+    "mid_abs_ecart_05": 0.14465432098765432,
+    "p_abs_ecart_05": 0.12078281237465362,
+    "avantage_max_moy": 0.046118482529120285
+   },
+   {
+    "t": 23,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9777777777777777,
+    "taille_meilleur_vendeur_usd_med": 166.315,
+    "profondeur_5_niveaux_usd_med": 1114.7195,
+    "mid_abs_ecart_05": 0.14664197530864198,
+    "p_abs_ecart_05": 0.12263993114206635,
+    "avantage_max_moy": 0.04663077672280637
+   },
+   {
+    "t": 24,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9827160493827161,
+    "taille_meilleur_vendeur_usd_med": 123.75,
+    "profondeur_5_niveaux_usd_med": 1038.0405,
+    "mid_abs_ecart_05": 0.1480493827160494,
+    "p_abs_ecart_05": 0.12507013767588587,
+    "avantage_max_moy": 0.0453972307885236
+   },
+   {
+    "t": 25,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9876543209876543,
+    "taille_meilleur_vendeur_usd_med": 130.38,
+    "profondeur_5_niveaux_usd_med": 1101.2314999999999,
+    "mid_abs_ecart_05": 0.14853086419753087,
+    "p_abs_ecart_05": 0.12678100812820706,
+    "avantage_max_moy": 0.045049687695629795
+   },
+   {
+    "t": 26,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9900990099009901,
+    "taille_meilleur_vendeur_usd_med": 126.7993,
+    "profondeur_5_niveaux_usd_med": 1020.3542500000001,
+    "mid_abs_ecart_05": 0.1499009900990099,
+    "p_abs_ecart_05": 0.12876252613195374,
+    "avantage_max_moy": 0.0443681700646505
+   },
+   {
+    "t": 27,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9753086419753086,
+    "taille_meilleur_vendeur_usd_med": 130.0,
+    "profondeur_5_niveaux_usd_med": 1034.8495,
+    "mid_abs_ecart_05": 0.15124691358024694,
+    "p_abs_ecart_05": 0.12959186718880997,
+    "avantage_max_moy": 0.045368956109404016
+   },
+   {
+    "t": 28,
+    "n": 404,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9801980198019802,
+    "taille_meilleur_vendeur_usd_med": 143.26670000000001,
+    "profondeur_5_niveaux_usd_med": 1038.3817000000001,
+    "mid_abs_ecart_05": 0.1508539603960396,
+    "p_abs_ecart_05": 0.13187190929356085,
+    "avantage_max_moy": 0.045457172310203
+   },
+   {
+    "t": 29,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9703703703703703,
+    "taille_meilleur_vendeur_usd_med": 143.7619,
+    "profondeur_5_niveaux_usd_med": 1047.4775,
+    "mid_abs_ecart_05": 0.15222222222222223,
+    "p_abs_ecart_05": 0.13263347478504459,
+    "avantage_max_moy": 0.04738311993613408
+   },
+   {
+    "t": 30,
+    "n": 405,
+    "ecart_med": 0.010000000000000009,
+    "part_ecart_1c": 0.9827160493827161,
+    "taille_meilleur_vendeur_usd_med": 146.19719999999998,
+    "profondeur_5_niveaux_usd_med": 1074.18,
+    "mid_abs_ecart_05": 0.15708641975308643,
+    "p_abs_ecart_05": 0.13402795338988027,
+    "avantage_max_moy": 0.048704883271177044
+   }
+  ]
+ },
+ "balayage": [
+  {
+   "achats": 359,
+   "gagnes": 185,
+   "prix": 0.5329247910863509,
+   "proba_modele": 0.600565063237694,
+   "mise": 3365.7063,
+   "pnl": -228.0715933494564,
+   "roi": -0.06776336763236186,
+   "part_up": 0.5069637883008357,
+   "taille_moy": 9.375226462395542,
+   "ic90": [
+    -519.9492081191011,
+    70.93792140531917
+   ],
+   "ic_bonf": [
+    -597.3775476751943,
+    149.74616499781268
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.0,
+   "pnl_pess": -261.27160337852985,
+   "achats_pess": 359
+  },
+  {
+   "achats": 301,
+   "gagnes": 158,
+   "prix": 0.5353820598006644,
+   "proba_modele": 0.6196623559024264,
+   "mise": 2868.4489,
+   "pnl": -170.2637363550134,
+   "roi": -0.05935742357307234,
+   "part_up": 0.53156146179402,
+   "taille_moy": 9.529730564784053,
+   "ic90": [
+    -438.5923280487561,
+    93.9337056691689
+   ],
+   "ic_bonf": [
+    -515.5530478808467,
+    176.2829791195603
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.02,
+   "pnl_pess": -182.76201192441096,
+   "achats_pess": 301
+  },
+  {
+   "achats": 238,
+   "gagnes": 126,
+   "prix": 0.5409243697478991,
+   "proba_modele": 0.6420812106884065,
+   "mise": 2264.3201,
+   "pnl": -171.32535463511374,
+   "roi": -0.07566304544799728,
+   "part_up": 0.5084033613445378,
+   "taille_moy": 9.51395,
+   "ic90": [
+    -408.0681301731285,
+    61.96590811282027
+   ],
+   "ic_bonf": [
+    -481.9459139173545,
+    129.24366003776117
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.04,
+   "pnl_pess": -149.49241248451767,
+   "achats_pess": 238
+  },
+  {
+   "achats": 176,
+   "gagnes": 98,
+   "prix": 0.5480681818181818,
+   "proba_modele": 0.6652476751889003,
+   "mise": 1667.497,
+   "pnl": -65.02436355362086,
+   "roi": -0.038995190728151746,
+   "part_up": 0.5284090909090909,
+   "taille_moy": 9.474414772727272,
+   "ic90": [
+    -261.8236913561526,
+    126.87803765735342
+   ],
+   "ic_bonf": [
+    -314.49479345222085,
+    186.81217873067106
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.06,
+   "pnl_pess": -59.78806469399433,
+   "achats_pess": 176
+  },
+  {
+   "achats": 139,
+   "gagnes": 74,
+   "prix": 0.5359712230215827,
+   "proba_modele": 0.6721747161581973,
+   "mise": 1293.1837,
+   "pnl": -85.99665950550073,
+   "roi": -0.06649995627496753,
+   "part_up": 0.5683453237410072,
+   "taille_moy": 9.303479856115109,
+   "ic90": [
+    -261.6419969999578,
+    92.17130423425782
+   ],
+   "ic_bonf": [
+    -321.6859805156918,
+    142.81152831982823
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.08,
+   "pnl_pess": -110.0487316848422,
+   "achats_pess": 139
+  },
+  {
+   "achats": 105,
+   "gagnes": 59,
+   "prix": 0.5416190476190476,
+   "proba_modele": 0.6959809529816456,
+   "mise": 975.4167,
+   "pnl": -50.077312054922885,
+   "roi": -0.05133940402591312,
+   "part_up": 0.6095238095238096,
+   "taille_moy": 9.289682857142857,
+   "ic90": [
+    -199.06411434317727,
+    99.89985210520993
+   ],
+   "ic_bonf": [
+    -243.68996470710917,
+    142.42610667451106
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.1,
+   "pnl_pess": -54.05359150457127,
+   "achats_pess": 105
+  },
+  {
+   "achats": 43,
+   "gagnes": 21,
+   "prix": 0.5239534883720931,
+   "proba_modele": 0.7304541098232156,
+   "mise": 409.6567,
+   "pnl": -57.61045976927372,
+   "roi": -0.14063106930577168,
+   "part_up": 0.5348837209302325,
+   "taille_moy": 9.5269,
+   "ic90": [
+    -166.11415808903524,
+    55.98644266581648
+   ],
+   "ic_bonf": [
+    -196.38833777468489,
+    93.73684200971984
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.15,
+   "pnl_pess": -58.8710882498041,
+   "achats_pess": 43
+  },
+  {
+   "achats": 385,
+   "gagnes": 202,
+   "prix": 0.5333246753246753,
+   "proba_modele": 0.5987432681867165,
+   "mise": 3731.0458,
+   "pnl": -209.20656522929022,
+   "roi": -0.05607182984172701,
+   "part_up": 0.4701298701298701,
+   "taille_moy": 9.691028051948052,
+   "ic90": [
+    -517.994648301178,
+    102.89895922437518
+   ],
+   "ic_bonf": [
+    -612.3693458157568,
+    199.03595355414419
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.0,
+   "pnl_pess": -190.4083673141316,
+   "achats_pess": 385
+  },
+  {
+   "achats": 332,
+   "gagnes": 174,
+   "prix": 0.5360542168674699,
+   "proba_modele": 0.6161803736711164,
+   "mise": 3233.9446,
+   "pnl": -204.11933599975796,
+   "roi": -0.0631177590363663,
+   "part_up": 0.4819277108433735,
+   "taille_moy": 9.740796987951807,
+   "ic90": [
+    -497.37340195890437,
+    86.09960536503495
+   ],
+   "ic_bonf": [
+    -584.37770676069,
+    175.05859476683298
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.02,
+   "pnl_pess": -189.74154648713693,
+   "achats_pess": 332
+  },
+  {
+   "achats": 273,
+   "gagnes": 141,
+   "prix": 0.5404761904761906,
+   "proba_modele": 0.6380561457247117,
+   "mise": 2652.3298,
+   "pnl": -275.5167428908252,
+   "roi": -0.10387725647497728,
+   "part_up": 0.48717948717948717,
+   "taille_moy": 9.715493772893772,
+   "ic90": [
+    -537.6115252003428,
+    -10.614942498013923
+   ],
+   "ic_bonf": [
+    -615.8558932325261,
+    62.468556822355986
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.04,
+   "pnl_pess": -186.13564349235466,
+   "achats_pess": 273
+  },
+  {
+   "achats": 216,
+   "gagnes": 118,
+   "prix": 0.5586574074074074,
+   "proba_modele": 0.6717702609540348,
+   "mise": 2061.8989,
+   "pnl": -118.92305891030921,
+   "roi": -0.0576764742977016,
+   "part_up": 0.4675925925925926,
+   "taille_moy": 9.545828240740741,
+   "ic90": [
+    -346.4286775967042,
+    101.63693672942716
+   ],
+   "ic_bonf": [
+    -410.7438720439032,
+    168.76946769447844
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.06,
+   "pnl_pess": -85.99214082210965,
+   "achats_pess": 216
+  },
+  {
+   "achats": 164,
+   "gagnes": 91,
+   "prix": 0.5567682926829268,
+   "proba_modele": 0.691275941844181,
+   "mise": 1561.9616,
+   "pnl": -63.829956460184,
+   "roi": -0.040865253320045765,
+   "part_up": 0.4695121951219512,
+   "taille_moy": 9.524156097560976,
+   "ic90": [
+    -259.46804406280614,
+    133.61468416096224
+   ],
+   "ic_bonf": [
+    -316.99170643810686,
+    197.00020499090425
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.08,
+   "pnl_pess": -64.2293852719433,
+   "achats_pess": 164
+  },
+  {
+   "achats": 129,
+   "gagnes": 70,
+   "prix": 0.5541085271317829,
+   "proba_modele": 0.7051750840858736,
+   "mise": 1244.4476,
+   "pnl": -65.38290081666736,
+   "roi": -0.05253969778773117,
+   "part_up": 0.5426356589147286,
+   "taille_moy": 9.646880620155038,
+   "ic90": [
+    -252.26402981692019,
+    121.56297301888284
+   ],
+   "ic_bonf": [
+    -303.72480331070255,
+    180.1212338004582
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.1,
+   "pnl_pess": -39.56299749051959,
+   "achats_pess": 129
+  },
+  {
+   "achats": 54,
+   "gagnes": 29,
+   "prix": 0.562037037037037,
+   "proba_modele": 0.7594416335862263,
+   "mise": 535.512,
+   "pnl": -34.00867097891165,
+   "roi": -0.06350683267398612,
+   "part_up": 0.5,
+   "taille_moy": 9.916888888888888,
+   "ic90": [
+    -158.65290067655337,
+    93.44165523922771
+   ],
+   "ic_bonf": [
+    -195.22567172301552,
+    136.44357274612295
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.15,
+   "pnl_pess": -32.9113019646755,
+   "achats_pess": 54
+  },
+  {
+   "achats": 393,
+   "gagnes": 203,
+   "prix": 0.5405852417302799,
+   "proba_modele": 0.6051197547299857,
+   "mise": 3837.9452,
+   "pnl": -335.485154530838,
+   "roi": -0.08741270055936129,
+   "part_up": 0.4351145038167939,
+   "taille_moy": 9.765763867684479,
+   "ic90": [
+    -644.8896674877933,
+    -26.05733776848864
+   ],
+   "ic_bonf": [
+    -731.4182722394867,
+    58.209120816532355
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.0,
+   "pnl_pess": -332.0214765481483,
+   "achats_pess": 393
+  },
+  {
+   "achats": 357,
+   "gagnes": 188,
+   "prix": 0.5444257703081233,
+   "proba_modele": 0.624286846105085,
+   "mise": 3494.2456,
+   "pnl": -271.53809655396844,
+   "roi": -0.07771007754977739,
+   "part_up": 0.4341736694677871,
+   "taille_moy": 9.78780280112045,
+   "ic90": [
+    -566.0582705946522,
+    18.035529302019572
+   ],
+   "ic_bonf": [
+    -648.9817365745752,
+    112.67152733097679
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.02,
+   "pnl_pess": -263.7433034386651,
+   "achats_pess": 357
+  },
+  {
+   "achats": 306,
+   "gagnes": 159,
+   "prix": 0.545686274509804,
+   "proba_modele": 0.6411549286215008,
+   "mise": 2962.3341,
+   "pnl": -305.1706083517467,
+   "roi": -0.10301694476384236,
+   "part_up": 0.42810457516339867,
+   "taille_moy": 9.680830392156864,
+   "ic90": [
+    -571.9356312975804,
+    -40.18410965776585
+   ],
+   "ic_bonf": [
+    -651.7318351454975,
+    36.35656298472739
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.04,
+   "pnl_pess": -264.41821332089944,
+   "achats_pess": 306
+  },
+  {
+   "achats": 240,
+   "gagnes": 132,
+   "prix": 0.5566666666666668,
+   "proba_modele": 0.6697859150658995,
+   "mise": 2314.695,
+   "pnl": -100.2333364085588,
+   "roi": -0.043303042693987236,
+   "part_up": 0.425,
+   "taille_moy": 9.6445625,
+   "ic90": [
+    -344.6466366767593,
+    145.09700311457553
+   ],
+   "ic_bonf": [
+    -422.2290233497513,
+    214.67859202991198
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.06,
+   "pnl_pess": -78.6631069404319,
+   "achats_pess": 240
+  },
+  {
+   "achats": 193,
+   "gagnes": 109,
+   "prix": 0.5696373056994819,
+   "proba_modele": 0.7020424508497805,
+   "mise": 1876.7986,
+   "pnl": -125.30273670121801,
+   "roi": -0.06676408257189557,
+   "part_up": 0.41968911917098445,
+   "taille_moy": 9.724345077720209,
+   "ic90": [
+    -330.4363181354757,
+    80.81512246002262
+   ],
+   "ic_bonf": [
+    -398.01693125629464,
+    138.3734540873312
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.08,
+   "pnl_pess": -81.7870754202897,
+   "achats_pess": 193
+  },
+  {
+   "achats": 150,
+   "gagnes": 80,
+   "prix": 0.5731999999999999,
+   "proba_modele": 0.722805948338098,
+   "mise": 1468.4563,
+   "pnl": -161.58330091620232,
+   "roi": -0.11003616581317559,
+   "part_up": 0.44,
+   "taille_moy": 9.789708666666668,
+   "ic90": [
+    -353.92855020370473,
+    30.121231835442252
+   ],
+   "ic_bonf": [
+    -409.3770612680239,
+    100.78080766316722
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.1,
+   "pnl_pess": -144.91691045767578,
+   "achats_pess": 150
+  },
+  {
+   "achats": 62,
+   "gagnes": 37,
+   "prix": 0.6024193548387098,
+   "proba_modele": 0.7977027503032922,
+   "mise": 618.302,
+   "pnl": -22.41691350221504,
+   "roi": -0.036255605678479186,
+   "part_up": 0.46774193548387094,
+   "taille_moy": 9.972612903225807,
+   "ic90": [
+    -136.90797884446175,
+    88.30543008853991
+   ],
+   "ic_bonf": [
+    -174.45181968117998,
+    120.00496911377826
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.15,
+   "pnl_pess": -22.648963350916382,
+   "achats_pess": 62
+  },
+  {
+   "achats": 405,
+   "gagnes": 209,
+   "prix": 0.5371851851851852,
+   "proba_modele": 0.6011564492840147,
+   "mise": 3957.9452,
+   "pnl": -333.75661778685907,
+   "roi": -0.08432572987287926,
+   "part_up": 0.4345679012345679,
+   "taille_moy": 9.772704197530864,
+   "ic90": [
+    -645.9229491953627,
+    -14.50953341087452
+   ],
+   "ic_bonf": [
+    -738.2765635091414,
+    84.78375909499732
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": -322.2904861800713,
+   "achats_pess": 405
+  },
+  {
+   "achats": 396,
+   "gagnes": 210,
+   "prix": 0.536060606060606,
+   "proba_modele": 0.6142924100907808,
+   "mise": 3875.5569,
+   "pnl": -193.94758605030918,
+   "roi": -0.050043797847558164,
+   "part_up": 0.43686868686868685,
+   "taille_moy": 9.786759848484849,
+   "ic90": [
+    -516.1496755353779,
+    134.7214067759214
+   ],
+   "ic_bonf": [
+    -612.5356963530778,
+    231.8541636359719
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": -177.6266307758555,
+   "achats_pess": 396
+  },
+  {
+   "achats": 370,
+   "gagnes": 190,
+   "prix": 0.5351891891891891,
+   "proba_modele": 0.6286236722754974,
+   "mise": 3586.7215,
+   "pnl": -312.8268822363037,
+   "roi": -0.0872180575593348,
+   "part_up": 0.43243243243243246,
+   "taille_moy": 9.693841891891893,
+   "ic90": [
+    -617.9696188450238,
+    4.886698187687017
+   ],
+   "ic_bonf": [
+    -712.7719618636648,
+    101.90749824881604
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -277.0759606654716,
+   "achats_pess": 370
+  },
+  {
+   "achats": 325,
+   "gagnes": 173,
+   "prix": 0.5344923076923077,
+   "proba_modele": 0.6454634512033566,
+   "mise": 3118.4871,
+   "pnl": -84.13476934484953,
+   "roi": -0.026979354618734686,
+   "part_up": 0.4307692307692308,
+   "taille_moy": 9.595344923076922,
+   "ic90": [
+    -390.45921883349996,
+    211.50226498017543
+   ],
+   "ic_bonf": [
+    -482.5540200848753,
+    303.3740569297462
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": -122.02429000947387,
+   "achats_pess": 325
+  },
+  {
+   "achats": 278,
+   "gagnes": 151,
+   "prix": 0.5530935251798561,
+   "proba_modele": 0.6832544448005737,
+   "mise": 2685.2362,
+   "pnl": -213.0979565816562,
+   "roi": -0.07935911059952798,
+   "part_up": 0.4460431654676259,
+   "taille_moy": 9.659123021582735,
+   "ic90": [
+    -479.53044180278226,
+    51.07441534523893
+   ],
+   "ic_bonf": [
+    -548.7293151392216,
+    123.21409713242325
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": -151.17768743883664,
+   "achats_pess": 278
+  },
+  {
+   "achats": 228,
+   "gagnes": 128,
+   "prix": 0.5684210526315788,
+   "proba_modele": 0.715645784804665,
+   "mise": 2217.5563,
+   "pnl": -119.31509222714901,
+   "roi": -0.05380476348093124,
+   "part_up": 0.43859649122807015,
+   "taille_moy": 9.726124122807018,
+   "ic90": [
+    -362.2941624310301,
+    116.33347656030246
+   ],
+   "ic_bonf": [
+    -426.96620592820807,
+    183.31481927173488
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": -99.02302191472164,
+   "achats_pess": 228
+  },
+  {
+   "achats": 106,
+   "gagnes": 68,
+   "prix": 0.5968867924528302,
+   "proba_modele": 0.7935848670147447,
+   "mise": 1047.472,
+   "pnl": 66.81417671205692,
+   "roi": 0.06378612193171457,
+   "part_up": 0.44339622641509435,
+   "taille_moy": 9.881811320754716,
+   "ic90": [
+    -94.63318645969721,
+    227.2034419642121
+   ],
+   "ic_bonf": [
+    -141.58342915543903,
+    279.1619571127096
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": 60.69231665083621,
+   "achats_pess": 106
+  },
+  {
+   "achats": 404,
+   "gagnes": 225,
+   "prix": 0.54990099009901,
+   "proba_modele": 0.6199277402896615,
+   "mise": 3956.6308,
+   "pnl": -69.25302851020643,
+   "roi": -0.01750303023223861,
+   "part_up": 0.44554455445544555,
+   "taille_moy": 9.793640594059406,
+   "ic90": [
+    -387.95955324781033,
+    254.97335982164265
+   ],
+   "ic_bonf": [
+    -473.5601816989747,
+    351.05876789236635
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": -82.94220739090466,
+   "achats_pess": 404
+  },
+  {
+   "achats": 392,
+   "gagnes": 217,
+   "prix": 0.5481122448979592,
+   "proba_modele": 0.6296494105491838,
+   "mise": 3840.5697,
+   "pnl": -73.70472061420173,
+   "roi": -0.019191090481758925,
+   "part_up": 0.4260204081632653,
+   "taille_moy": 9.79737168367347,
+   "ic90": [
+    -392.030655016161,
+    251.66119599002263
+   ],
+   "ic_bonf": [
+    -484.28355294557025,
+    352.52184440460195
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": -77.69237327792291,
+   "achats_pess": 392
+  },
+  {
+   "achats": 360,
+   "gagnes": 196,
+   "prix": 0.5476666666666666,
+   "proba_modele": 0.6436640876964087,
+   "mise": 3511.8079,
+   "pnl": -138.0803297992887,
+   "roi": -0.03931887327871456,
+   "part_up": 0.4361111111111111,
+   "taille_moy": 9.755021944444444,
+   "ic90": [
+    -449.4459285547633,
+    184.29628881831346
+   ],
+   "ic_bonf": [
+    -542.1016410038346,
+    273.73201154731
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -119.37491136281426,
+   "achats_pess": 360
+  },
+  {
+   "achats": 314,
+   "gagnes": 182,
+   "prix": 0.5549044585987262,
+   "proba_modele": 0.6669619300836752,
+   "mise": 3030.669,
+   "pnl": 94.95922654799706,
+   "roi": 0.03133276070332889,
+   "part_up": 0.4267515923566879,
+   "taille_moy": 9.651812101910828,
+   "ic90": [
+    -207.98261435171275,
+    396.2569111305251
+   ],
+   "ic_bonf": [
+    -293.7134231966347,
+    485.189885892867
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": 67.62907614222804,
+   "achats_pess": 314
+  },
+  {
+   "achats": 258,
+   "gagnes": 146,
+   "prix": 0.5710077519379845,
+   "proba_modele": 0.7013181583722824,
+   "mise": 2490.3646,
+   "pnl": -172.5814376435155,
+   "roi": -0.06929966706221069,
+   "part_up": 0.4263565891472868,
+   "taille_moy": 9.652575968992247,
+   "ic90": [
+    -419.05359332914816,
+    78.59517516122828
+   ],
+   "ic_bonf": [
+    -491.5521956168888,
+    155.24705821829687
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": -137.0803836833286,
+   "achats_pess": 258
+  },
+  {
+   "achats": 210,
+   "gagnes": 126,
+   "prix": 0.5897142857142857,
+   "proba_modele": 0.7362451246344609,
+   "mise": 2046.0977,
+   "pnl": -42.452556669349036,
+   "roi": -0.020748059425192176,
+   "part_up": 0.41904761904761906,
+   "taille_moy": 9.743322380952382,
+   "ic90": [
+    -259.976941393216,
+    176.11857378861822
+   ],
+   "ic_bonf": [
+    -324.46924672821626,
+    238.76796663426842
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": -41.135996166449324,
+   "achats_pess": 210
+  },
+  {
+   "achats": 98,
+   "gagnes": 63,
+   "prix": 0.5973469387755102,
+   "proba_modele": 0.7964016989083098,
+   "mise": 956.9634,
+   "pnl": 64.81833265369754,
+   "roi": 0.06773334555292035,
+   "part_up": 0.42857142857142855,
+   "taille_moy": 9.764932653061225,
+   "ic90": [
+    -82.99355963225126,
+    216.65770163771333
+   ],
+   "ic_bonf": [
+    -120.87876247409496,
+    261.5345946552687
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": 44.18294173612155,
+   "achats_pess": 98
+  },
+  {
+   "achats": 401,
+   "gagnes": 232,
+   "prix": 0.5551620947630923,
+   "proba_modele": 0.6303820753610518,
+   "mise": 3928.2436,
+   "pnl": 132.91765237612515,
+   "roi": 0.03383640779714505,
+   "part_up": 0.4513715710723192,
+   "taille_moy": 9.796118703241895,
+   "ic90": [
+    -193.97949028956842,
+    464.6197197834453
+   ],
+   "ic_bonf": [
+    -292.51398179256387,
+    570.7133024629042
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": 118.83224184966812,
+   "achats_pess": 401
+  },
+  {
+   "achats": 384,
+   "gagnes": 221,
+   "prix": 0.5576822916666666,
+   "proba_modele": 0.6440243966781612,
+   "mise": 3745.288,
+   "pnl": 68.16163968535037,
+   "roi": 0.01819930528315856,
+   "part_up": 0.4453125,
+   "taille_moy": 9.753354166666666,
+   "ic90": [
+    -256.3674955884647,
+    389.9140678080998
+   ],
+   "ic_bonf": [
+    -346.145852578395,
+    482.2968791152317
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": 32.99618772444924,
+   "achats_pess": 384
+  },
+  {
+   "achats": 339,
+   "gagnes": 194,
+   "prix": 0.5651327433628318,
+   "proba_modele": 0.6649073383780197,
+   "mise": 3273.1565,
+   "pnl": -17.372748860621243,
+   "roi": -0.005307643817404161,
+   "part_up": 0.43952802359882004,
+   "taille_moy": 9.655328908554573,
+   "ic90": [
+    -319.74820592511617,
+    285.4109025830302
+   ],
+   "ic_bonf": [
+    -411.37668633440643,
+    370.42811118703213
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -72.81019666319636,
+   "achats_pess": 339
+  },
+  {
+   "achats": 286,
+   "gagnes": 171,
+   "prix": 0.577902097902098,
+   "proba_modele": 0.6942211574281427,
+   "mise": 2747.3035,
+   "pnl": 52.633747237024664,
+   "roi": 0.01915833006328739,
+   "part_up": 0.4230769230769231,
+   "taille_moy": 9.605956293706294,
+   "ic90": [
+    -215.3984775503388,
+    327.2506682249987
+   ],
+   "ic_bonf": [
+    -292.26754679133876,
+    417.728943434128
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": -15.042616803609548,
+   "achats_pess": 286
+  },
+  {
+   "achats": 235,
+   "gagnes": 146,
+   "prix": 0.5924255319148937,
+   "proba_modele": 0.7272239392274671,
+   "mise": 2266.0411,
+   "pnl": 24.077934359229342,
+   "roi": 0.010625550595366228,
+   "part_up": 0.4340425531914894,
+   "taille_moy": 9.642728085106382,
+   "ic90": [
+    -206.2364981523908,
+    262.59531022139277
+   ],
+   "ic_bonf": [
+    -269.6357205685952,
+    327.286560380242
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": 39.22806315502385,
+   "achats_pess": 235
+  },
+  {
+   "achats": 186,
+   "gagnes": 121,
+   "prix": 0.6144623655913978,
+   "proba_modele": 0.7663567937363954,
+   "mise": 1797.449,
+   "pnl": 36.27062483414264,
+   "roi": 0.020178945179608786,
+   "part_up": 0.4032258064516129,
+   "taille_moy": 9.663704301075269,
+   "ic90": [
+    -155.95604902687302,
+    227.72390497235918
+   ],
+   "ic_bonf": [
+    -211.78215153868982,
+    284.2168316441926
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": 46.87155305668369,
+   "achats_pess": 186
+  },
+  {
+   "achats": 84,
+   "gagnes": 57,
+   "prix": 0.6130952380952381,
+   "proba_modele": 0.8158656009347185,
+   "mise": 817.8188,
+   "pnl": 107.12424789537562,
+   "roi": 0.13098775412765715,
+   "part_up": 0.4166666666666667,
+   "taille_moy": 9.735938095238096,
+   "ic90": [
+    -30.240347910359265,
+    249.79995563929705
+   ],
+   "ic_bonf": [
+    -67.04278529487162,
+    294.0535122438471
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": 100.76633992688029,
+   "achats_pess": 84
+  },
+  {
+   "achats": 352,
+   "gagnes": 154,
+   "prix": 0.44829545454545455,
+   "proba_modele": 0.49696779968263644,
+   "mise": 3292.2243,
+   "pnl": -200.53761336698412,
+   "roi": -0.0609125002105671,
+   "part_up": 0.5454545454545454,
+   "taille_moy": 9.352909943181817,
+   "ic90": [
+    -540.3917201430387,
+    143.00431057908565
+   ],
+   "ic_bonf": [
+    -642.0339879656162,
+    235.99779375566737
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.0,
+   "pnl_pess": -252.18929252268128,
+   "achats_pess": 352
+  },
+  {
+   "achats": 259,
+   "gagnes": 113,
+   "prix": 0.4297683397683398,
+   "proba_modele": 0.49888810634315583,
+   "mise": 2434.4857,
+   "pnl": -35.10059016321051,
+   "roi": -0.014418072023676504,
+   "part_up": 0.6023166023166023,
+   "taille_moy": 9.399558687258688,
+   "ic90": [
+    -346.9059081997968,
+    273.41935663143505
+   ],
+   "ic_bonf": [
+    -431.13133946731637,
+    372.04488301483553
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.02,
+   "pnl_pess": -37.1198567764293,
+   "achats_pess": 259
+  },
+  {
+   "achats": 176,
+   "gagnes": 71,
+   "prix": 0.40647727272727274,
+   "proba_modele": 0.500388451588261,
+   "mise": 1639.0648,
+   "pnl": -72.8992764045286,
+   "roi": -0.04447614054339316,
+   "part_up": 0.6306818181818182,
+   "taille_moy": 9.312868181818182,
+   "ic90": [
+    -342.1692498548024,
+    195.3071110716089
+   ],
+   "ic_bonf": [
+    -424.26020258637857,
+    279.63363480748905
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.04,
+   "pnl_pess": -66.52623091390096,
+   "achats_pess": 176
+  },
+  {
+   "achats": 121,
+   "gagnes": 50,
+   "prix": 0.38727272727272727,
+   "proba_modele": 0.5019517587173032,
+   "mise": 1112.4628,
+   "pnl": 46.691096351272165,
+   "roi": 0.041970928242519356,
+   "part_up": 0.6033057851239669,
+   "taille_moy": 9.193907438016529,
+   "ic90": [
+    -189.08456169809145,
+    292.80352332905557
+   ],
+   "ic_bonf": [
+    -262.8020754364446,
+    361.9141261290987
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.06,
+   "pnl_pess": 51.60347863699715,
+   "achats_pess": 121
+  },
+  {
+   "achats": 81,
+   "gagnes": 31,
+   "prix": 0.37765432098765433,
+   "proba_modele": 0.511427834247873,
+   "mise": 753.1348,
+   "pnl": 10.627105349475215,
+   "roi": 0.01411049569011446,
+   "part_up": 0.5802469135802469,
+   "taille_moy": 9.29796049382716,
+   "ic90": [
+    -190.17911230522586,
+    220.65079711850987
+   ],
+   "ic_bonf": [
+    -242.72510052531808,
+    287.15828606475867
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.08,
+   "pnl_pess": -6.324917305722522,
+   "achats_pess": 81
+  },
+  {
+   "achats": 53,
+   "gagnes": 14,
+   "prix": 0.35018867924528313,
+   "proba_modele": 0.5072757360493552,
+   "mise": 483.8848,
+   "pnl": -138.42441559887038,
+   "roi": -0.28606894781334397,
+   "part_up": 0.5849056603773585,
+   "taille_moy": 9.129901886792453,
+   "ic90": [
+    -295.9122404443652,
+    20.360172075994512
+   ],
+   "ic_bonf": [
+    -340.43817494160925,
+    66.62943839267311
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.1,
+   "pnl_pess": -131.48629119359052,
+   "achats_pess": 53
+  },
+  {
+   "achats": 15,
+   "gagnes": 4,
+   "prix": 0.2673333333333333,
+   "proba_modele": 0.48608132253293584,
+   "mise": 126.7548,
+   "pnl": -0.932655259047614,
+   "roi": -0.007357948251645019,
+   "part_up": 0.8,
+   "taille_moy": 8.45032,
+   "ic90": [
+    -100.91068201399997,
+    111.30909265780936
+   ],
+   "ic_bonf": [
+    -125.28932624066667,
+    145.85413656257157
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.15,
+   "pnl_pess": 8.56574919323868,
+   "achats_pess": 15
+  },
+  {
+   "achats": 374,
+   "gagnes": 160,
+   "prix": 0.44112299465240645,
+   "proba_modele": 0.4903587509990166,
+   "mise": 3640.4108,
+   "pnl": -225.6999936150347,
+   "roi": -0.061998495778288185,
+   "part_up": 0.5427807486631016,
+   "taille_moy": 9.73371871657754,
+   "ic90": [
+    -607.0114129789247,
+    144.24191076530494
+   ],
+   "ic_bonf": [
+    -721.1402920871443,
+    265.28953672444464
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.0,
+   "pnl_pess": -177.04747110329993,
+   "achats_pess": 374
+  },
+  {
+   "achats": 317,
+   "gagnes": 132,
+   "prix": 0.4264984227129338,
+   "proba_modele": 0.49283050755047936,
+   "mise": 3054.986,
+   "pnl": -123.5164563331382,
+   "roi": -0.04043110388497302,
+   "part_up": 0.555205047318612,
+   "taille_moy": 9.637179810725552,
+   "ic90": [
+    -480.0981956075019,
+    234.92794836858073
+   ],
+   "ic_bonf": [
+    -577.6802289194584,
+    339.8992661621173
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.02,
+   "pnl_pess": -173.38950732338333,
+   "achats_pess": 317
+  },
+  {
+   "achats": 222,
+   "gagnes": 92,
+   "prix": 0.41180180180180187,
+   "proba_modele": 0.5001609645967853,
+   "mise": 2131.1766,
+   "pnl": -45.4717065608797,
+   "roi": -0.021336432917328254,
+   "part_up": 0.5315315315315315,
+   "taille_moy": 9.599894594594593,
+   "ic90": [
+    -347.2056136426815,
+    265.6766341319826
+   ],
+   "ic_bonf": [
+    -440.82643341218903,
+    356.31516735103656
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.04,
+   "pnl_pess": -64.6598026254108,
+   "achats_pess": 222
+  },
+  {
+   "achats": 170,
+   "gagnes": 68,
+   "prix": 0.39564705882352946,
+   "proba_modele": 0.5024131224051167,
+   "mise": 1631.8542,
+   "pnl": 4.256255188856329,
+   "roi": 0.002608232517866075,
+   "part_up": 0.5235294117647059,
+   "taille_moy": 9.599142352941177,
+   "ic90": [
+    -273.8717249927676,
+    289.9808670637131
+   ],
+   "ic_bonf": [
+    -358.4957616399458,
+    368.8401597798464
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.06,
+   "pnl_pess": -33.63279653394366,
+   "achats_pess": 170
+  },
+  {
+   "achats": 109,
+   "gagnes": 41,
+   "prix": 0.3774311926605505,
+   "proba_modele": 0.5035584397460486,
+   "mise": 1033.7215,
+   "pnl": 8.010864412978194,
+   "roi": 0.007749538355328967,
+   "part_up": 0.4954128440366973,
+   "taille_moy": 9.483683486238533,
+   "ic90": [
+    -220.23555967910718,
+    250.84564425262428
+   ],
+   "ic_bonf": [
+    -289.64447139819833,
+    323.3043035640003
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.08,
+   "pnl_pess": -70.91164039476014,
+   "achats_pess": 109
+  },
+  {
+   "achats": 74,
+   "gagnes": 23,
+   "prix": 0.35513513513513517,
+   "proba_modele": 0.49936163294941277,
+   "mise": 687.1263,
+   "pnl": -104.3361236032294,
+   "roi": -0.1518441713018835,
+   "part_up": 0.47297297297297297,
+   "taille_moy": 9.285490540540541,
+   "ic90": [
+    -293.8854841767627,
+    95.31296476289627
+   ],
+   "ic_bonf": [
+    -343.9300378239097,
+    154.25494551172
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.1,
+   "pnl_pess": -122.8766251073251,
+   "achats_pess": 74
+  },
+  {
+   "achats": 18,
+   "gagnes": 6,
+   "prix": 0.3038888888888888,
+   "proba_modele": 0.5040256807345462,
+   "mise": 157.375,
+   "pnl": 41.8131425475388,
+   "roi": 0.2656911361241544,
+   "part_up": 0.6111111111111112,
+   "taille_moy": 8.743055555555557,
+   "ic90": [
+    -69.36501465238324,
+    166.33575530591054
+   ],
+   "ic_bonf": [
+    -99.19612693204138,
+    206.0073415184963
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.15,
+   "pnl_pess": 28.55075547114705,
+   "achats_pess": 18
+  },
+  {
+   "achats": 390,
+   "gagnes": 163,
+   "prix": 0.441025641025641,
+   "proba_modele": 0.4926308939354541,
+   "mise": 3772.1096000000002,
+   "pnl": -366.0565986598782,
+   "roi": -0.09704293816380048,
+   "part_up": 0.5333333333333333,
+   "taille_moy": 9.672075897435898,
+   "ic90": [
+    -741.1641755776324,
+    11.925365170347803
+   ],
+   "ic_bonf": [
+    -849.4673112144116,
+    121.34763188391777
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.0,
+   "pnl_pess": -405.09410426094576,
+   "achats_pess": 390
+  },
+  {
+   "achats": 339,
+   "gagnes": 137,
+   "prix": 0.428259587020649,
+   "proba_modele": 0.4955588377554253,
+   "mise": 3265.8101,
+   "pnl": -366.5892751070428,
+   "roi": -0.11225064038691128,
+   "part_up": 0.4896755162241888,
+   "taille_moy": 9.633658112094395,
+   "ic90": [
+    -724.2101726893619,
+    -8.562306349423515
+   ],
+   "ic_bonf": [
+    -830.7052710799873,
+    96.21103099612978
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.02,
+   "pnl_pess": -342.8205091462496,
+   "achats_pess": 339
+  },
+  {
+   "achats": 256,
+   "gagnes": 96,
+   "prix": 0.41605468749999996,
+   "proba_modele": 0.5020803805098001,
+   "mise": 2443.7658,
+   "pnl": -375.3297006304539,
+   "roi": -0.1535866082709128,
+   "part_up": 0.45703125,
+   "taille_moy": 9.54596015625,
+   "ic90": [
+    -681.9631656586711,
+    -65.43163244237512
+   ],
+   "ic_bonf": [
+    -760.9462191539136,
+    21.224050126861243
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.04,
+   "pnl_pess": -323.7646447163919,
+   "achats_pess": 256
+  },
+  {
+   "achats": 185,
+   "gagnes": 68,
+   "prix": 0.4,
+   "proba_modele": 0.5049316839555911,
+   "mise": 1774.0562,
+   "pnl": -238.4005653738854,
+   "roi": -0.13438163084905957,
+   "part_up": 0.4756756756756757,
+   "taille_moy": 9.589492972972973,
+   "ic90": [
+    -516.0195611985353,
+    46.97574111213243
+   ],
+   "ic_bonf": [
+    -598.5773164073271,
+    129.51864911523856
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.06,
+   "pnl_pess": -184.85479679953812,
+   "achats_pess": 185
+  },
+  {
+   "achats": 121,
+   "gagnes": 43,
+   "prix": 0.37702479338842976,
+   "proba_modele": 0.501174888315197,
+   "mise": 1144.3884,
+   "pnl": -129.21973344159542,
+   "roi": -0.11291597629056307,
+   "part_up": 0.4380165289256198,
+   "taille_moy": 9.457755371900827,
+   "ic90": [
+    -357.116170117669,
+    105.35259920467665
+   ],
+   "ic_bonf": [
+    -421.49291221356305,
+    178.50177201554698
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.08,
+   "pnl_pess": -123.34307953704857,
+   "achats_pess": 121
+  },
+  {
+   "achats": 90,
+   "gagnes": 29,
+   "prix": 0.3692222222222222,
+   "proba_modele": 0.5064234430412551,
+   "mise": 850.2013,
+   "pnl": -174.4723997405081,
+   "roi": -0.20521304747535452,
+   "part_up": 0.43333333333333335,
+   "taille_moy": 9.446681111111111,
+   "ic90": [
+    -366.5349412634389,
+    27.058146883751824
+   ],
+   "ic_bonf": [
+    -422.81297081848504,
+    85.91109354163552
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.1,
+   "pnl_pess": -163.4853986573252,
+   "achats_pess": 90
+  },
+  {
+   "achats": 16,
+   "gagnes": 5,
+   "prix": 0.343125,
+   "proba_modele": 0.5302345903043577,
+   "mise": 138.065,
+   "pnl": -7.668031826862066,
+   "roi": -0.05553928821107497,
+   "part_up": 0.4375,
+   "taille_moy": 8.6290625,
+   "ic90": [
+    -92.27777101615212,
+    85.97833823066546
+   ],
+   "ic_bonf": [
+    -114.04591908372521,
+    118.0743274799408
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.15,
+   "pnl_pess": -20.048935783126577,
+   "achats_pess": 16
+  },
+  {
+   "achats": 403,
+   "gagnes": 173,
+   "prix": 0.440272952853598,
+   "proba_modele": 0.49145704019165887,
+   "mise": 3902.1096000000002,
+   "pnl": -246.9292352025479,
+   "roi": -0.06328095838275477,
+   "part_up": 0.533498759305211,
+   "taille_moy": 9.682654094292804,
+   "ic90": [
+    -627.4444663444531,
+    147.21644858250932
+   ],
+   "ic_bonf": [
+    -730.4349245617451,
+    255.6837503952715
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": -304.9041832181758,
+   "achats_pess": 403
+  },
+  {
+   "achats": 389,
+   "gagnes": 164,
+   "prix": 0.4290488431876607,
+   "proba_modele": 0.4954198038371813,
+   "mise": 3761.1037,
+   "pnl": -237.95781138980664,
+   "roi": -0.06326808042804208,
+   "part_up": 0.48586118251928023,
+   "taille_moy": 9.6686470437018,
+   "ic90": [
+    -628.5437923201781,
+    159.48754355449987
+   ],
+   "ic_bonf": [
+    -735.3053335706253,
+    273.54226069965125
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": -216.61065267038347,
+   "achats_pess": 389
+  },
+  {
+   "achats": 350,
+   "gagnes": 135,
+   "prix": 0.41871428571428576,
+   "proba_modele": 0.5050392616616713,
+   "mise": 3363.1441,
+   "pnl": -450.93418377846274,
+   "roi": -0.1340811366894635,
+   "part_up": 0.4514285714285714,
+   "taille_moy": 9.608983142857143,
+   "ic90": [
+    -814.4318896334719,
+    -85.58380489888674
+   ],
+   "ic_bonf": [
+    -924.4644466841279,
+    26.966291175790445
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -357.2300188385958,
+   "achats_pess": 350
+  },
+  {
+   "achats": 291,
+   "gagnes": 110,
+   "prix": 0.4024054982817869,
+   "proba_modele": 0.5075625388312772,
+   "mise": 2794.2151,
+   "pnl": -296.0061565953884,
+   "roi": -0.10593535071633835,
+   "part_up": 0.4742268041237113,
+   "taille_moy": 9.602113745704466,
+   "ic90": [
+    -641.8599909170011,
+    58.38279351659228
+   ],
+   "ic_bonf": [
+    -732.8599944553489,
+    170.87494163778447
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": -196.4045772352717,
+   "achats_pess": 291
+  },
+  {
+   "achats": 231,
+   "gagnes": 83,
+   "prix": 0.37727272727272715,
+   "proba_modele": 0.5013164121229718,
+   "mise": 2196.0735,
+   "pnl": -203.05407186148364,
+   "roi": -0.09246232963581758,
+   "part_up": 0.47186147186147187,
+   "taille_moy": 9.506811688311686,
+   "ic90": [
+    -517.5960760743043,
+    126.71239683409436
+   ],
+   "ic_bonf": [
+    -604.1864436149948,
+    235.86541705580092
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": -214.95099081942303,
+   "achats_pess": 231
+  },
+  {
+   "achats": 168,
+   "gagnes": 61,
+   "prix": 0.3740476190476191,
+   "proba_modele": 0.5128130740582972,
+   "mise": 1609.7489,
+   "pnl": -96.79676084376956,
+   "roi": -0.06013158999131452,
+   "part_up": 0.44047619047619047,
+   "taille_moy": 9.581838690476191,
+   "ic90": [
+    -383.3792369318811,
+    191.97469442334105
+   ],
+   "ic_bonf": [
+    -462.78308364039435,
+    286.2672660870697
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": -126.31770155013672,
+   "achats_pess": 168
+  },
+  {
+   "achats": 44,
+   "gagnes": 18,
+   "prix": 0.3640909090909091,
+   "proba_modele": 0.559074599405085,
+   "mise": 409.285,
+   "pnl": 62.57213025712974,
+   "roi": 0.15288156237616757,
+   "part_up": 0.4772727272727273,
+   "taille_moy": 9.301931818181819,
+   "ic90": [
+    -96.45257626864905,
+    233.4339332707244
+   ],
+   "ic_bonf": [
+    -141.73597759134046,
+    297.26207765448294
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": 25.63665121376998,
+   "achats_pess": 44
+  },
+  {
+   "achats": 402,
+   "gagnes": 182,
+   "prix": 0.44253731343283575,
+   "proba_modele": 0.4942957106869698,
+   "mise": 3934.4721,
+   "pnl": -151.36038945626237,
+   "roi": -0.03847031713765676,
+   "part_up": 0.5049751243781094,
+   "taille_moy": 9.787244029850747,
+   "ic90": [
+    -541.1589788118023,
+    239.79018279200267
+   ],
+   "ic_bonf": [
+    -659.8039913410565,
+    358.2741193217781
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": -151.45326381787658,
+   "achats_pess": 402
+  },
+  {
+   "achats": 386,
+   "gagnes": 162,
+   "prix": 0.43383419689119174,
+   "proba_modele": 0.500941318214387,
+   "mise": 3764.5221,
+   "pnl": -321.13602461346653,
+   "roi": -0.0853059209330891,
+   "part_up": 0.47668393782383417,
+   "taille_moy": 9.752647927461139,
+   "ic90": [
+    -697.6486357824032,
+    68.83301996730424
+   ],
+   "ic_bonf": [
+    -816.5156288835396,
+    180.1239850682139
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": -332.76828029593526,
+   "achats_pess": 386
+  },
+  {
+   "achats": 338,
+   "gagnes": 132,
+   "prix": 0.4203550295857988,
+   "proba_modele": 0.5070630497870224,
+   "mise": 3273.6854,
+   "pnl": -415.57645463993595,
+   "roi": -0.12694453005164638,
+   "part_up": 0.45857988165680474,
+   "taille_moy": 9.68545976331361,
+   "ic90": [
+    -781.2483478217522,
+    -42.50956871363512
+   ],
+   "ic_bonf": [
+    -891.3668680898514,
+    63.452790646577554
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -341.3999131942023,
+   "achats_pess": 338
+  },
+  {
+   "achats": 273,
+   "gagnes": 110,
+   "prix": 0.4035164835164835,
+   "proba_modele": 0.5085131084720854,
+   "mise": 2632.4909000000002,
+   "pnl": -107.52129298660151,
+   "roi": -0.04084393719522506,
+   "part_up": 0.4432234432234432,
+   "taille_moy": 9.642823809523808,
+   "ic90": [
+    -456.70657090246334,
+    249.4223043277985
+   ],
+   "ic_bonf": [
+    -552.7507960154749,
+    355.761046829308
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": -31.019994001162388,
+   "achats_pess": 273
+  },
+  {
+   "achats": 208,
+   "gagnes": 81,
+   "prix": 0.38274038461538457,
+   "proba_modele": 0.5062489778883945,
+   "mise": 1992.2259,
+   "pnl": -64.42092649882699,
+   "roi": -0.032336155502660106,
+   "part_up": 0.46153846153846156,
+   "taille_moy": 9.578009134615384,
+   "ic90": [
+    -377.25157787147936,
+    251.99044884879473
+   ],
+   "ic_bonf": [
+    -472.2239269812856,
+    347.1679782557204
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": -48.84621272539377,
+   "achats_pess": 208
+  },
+  {
+   "achats": 147,
+   "gagnes": 58,
+   "prix": 0.38510204081632654,
+   "proba_modele": 0.5238421663766362,
+   "mise": 1433.5263,
+   "pnl": 15.386356015577775,
+   "roi": 0.010733221996399908,
+   "part_up": 0.42857142857142855,
+   "taille_moy": 9.751879591836735,
+   "ic90": [
+    -268.2802951027175,
+    299.02106228324135
+   ],
+   "ic_bonf": [
+    -345.1624044829685,
+    384.2009088831478
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": -25.469967372932643,
+   "achats_pess": 147
+  },
+  {
+   "achats": 39,
+   "gagnes": 17,
+   "prix": 0.3728205128205128,
+   "proba_modele": 0.5694869222716709,
+   "mise": 375.12,
+   "pnl": 84.4042393724005,
+   "roi": 0.22500596974941484,
+   "part_up": 0.46153846153846156,
+   "taille_moy": 9.618461538461538,
+   "ic90": [
+    -76.17117620704144,
+    260.0266924849562
+   ],
+   "ic_bonf": [
+    -120.98863083185735,
+    316.74625372891694
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": 51.18951568678047,
+   "achats_pess": 39
+  },
+  {
+   "achats": 398,
+   "gagnes": 177,
+   "prix": 0.4417839195979899,
+   "proba_modele": 0.4960156235842853,
+   "mise": 3872.9549,
+   "pnl": -131.73157151717072,
+   "roi": -0.034013195329790885,
+   "part_up": 0.46733668341708545,
+   "taille_moy": 9.731042462311557,
+   "ic90": [
+    -528.9375844334958,
+    262.8868936756739
+   ],
+   "ic_bonf": [
+    -652.9243624719845,
+    379.4141681490035
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": -132.2701873200821,
+   "achats_pess": 398
+  },
+  {
+   "achats": 370,
+   "gagnes": 154,
+   "prix": 0.4272702702702702,
+   "proba_modele": 0.49494010687578377,
+   "mise": 3627.5998,
+   "pnl": -251.02376370686676,
+   "roi": -0.06919830674454959,
+   "part_up": 0.4594594594594595,
+   "taille_moy": 9.804323783783783,
+   "ic90": [
+    -640.3254464754984,
+    145.6240028779709
+   ],
+   "ic_bonf": [
+    -757.3988585114984,
+    261.10236921962
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": -229.83053809813256,
+   "achats_pess": 370
+  },
+  {
+   "achats": 313,
+   "gagnes": 128,
+   "prix": 0.416261980830671,
+   "proba_modele": 0.5027866013732828,
+   "mise": 3042.078,
+   "pnl": -156.3345926095809,
+   "roi": -0.05139072456708241,
+   "part_up": 0.46006389776357826,
+   "taille_moy": 9.719099041533548,
+   "ic90": [
+    -518.6693854360716,
+    220.53772424686622
+   ],
+   "ic_bonf": [
+    -626.9066411859179,
+    327.4130875076336
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -109.98258521128994,
+   "achats_pess": 313
+  },
+  {
+   "achats": 246,
+   "gagnes": 95,
+   "prix": 0.39890243902439015,
+   "proba_modele": 0.5022741281549856,
+   "mise": 2365.0592,
+   "pnl": -100.67292485432479,
+   "roi": -0.042566767400293734,
+   "part_up": 0.45121951219512196,
+   "taille_moy": 9.614061788617887,
+   "ic90": [
+    -443.8547762543014,
+    249.415697263271
+   ],
+   "ic_bonf": [
+    -537.9552808695879,
+    353.10339789876247
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": -69.45949601898639,
+   "achats_pess": 246
+  },
+  {
+   "achats": 180,
+   "gagnes": 69,
+   "prix": 0.37600000000000006,
+   "proba_modele": 0.4994117826044514,
+   "mise": 1718.7386,
+   "pnl": -2.871890761809567,
+   "roi": -0.0016709293442351077,
+   "part_up": 0.48333333333333334,
+   "taille_moy": 9.54854777777778,
+   "ic90": [
+    -303.8911866239376,
+    301.78065942233775
+   ],
+   "ic_bonf": [
+    -389.77962234582867,
+    405.64958779581
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": -3.485584081547273,
+   "achats_pess": 180
+  },
+  {
+   "achats": 120,
+   "gagnes": 52,
+   "prix": 0.38699999999999996,
+   "proba_modele": 0.5283449687104148,
+   "mise": 1175.6676,
+   "pnl": 154.92901545352322,
+   "roi": 0.13177960798913163,
+   "part_up": 0.43333333333333335,
+   "taille_moy": 9.79723,
+   "ic90": [
+    -107.59446697324104,
+    422.05750000615114
+   ],
+   "ic_bonf": [
+    -182.82970578915288,
+    506.3997381148791
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": 124.99242615927872,
+   "achats_pess": 120
+  },
+  {
+   "achats": 33,
+   "gagnes": 15,
+   "prix": 0.386969696969697,
+   "proba_modele": 0.586949358692804,
+   "mise": 321.22,
+   "pnl": 47.939417571261345,
+   "roi": 0.14924169594440365,
+   "part_up": 0.45454545454545453,
+   "taille_moy": 9.733939393939394,
+   "ic90": [
+    -88.06766560032096,
+    197.46822827203195
+   ],
+   "ic_bonf": [
+    -123.89873541451321,
+    244.13688898657463
+   ],
+   "cycles": 405,
+   "src": "cl",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": 24.49050160790225,
+   "achats_pess": 33
+  },
+  {
+   "achats": 379,
+   "gagnes": 203,
+   "prix": 0.5572823218997361,
+   "proba_modele": 0.6396408274901495,
+   "mise": 3548.9028,
+   "pnl": -286.02977849418795,
+   "roi": -0.08059667863943412,
+   "part_up": 0.47493403693931396,
+   "taille_moy": 9.363859630606859,
+   "ic90": [
+    -563.9854814141408,
+    -7.393482395366257
+   ],
+   "ic_bonf": [
+    -647.5320939920726,
+    76.81080706842522
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.0,
+   "pnl_pess": -268.8040364720216,
+   "achats_pess": 379
+  },
+  {
+   "achats": 328,
+   "gagnes": 186,
+   "prix": 0.5657317073170732,
+   "proba_modele": 0.6653505596227178,
+   "mise": 3079.9074,
+   "pnl": -108.40354056251314,
+   "roi": -0.03519701292399672,
+   "part_up": 0.4603658536585366,
+   "taille_moy": 9.389961585365853,
+   "ic90": [
+    -369.5398189550722,
+    154.48873374800644
+   ],
+   "ic_bonf": [
+    -446.00220069025517,
+    221.59655003466167
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.02,
+   "pnl_pess": -107.79467447393498,
+   "achats_pess": 328
+  },
+  {
+   "achats": 276,
+   "gagnes": 157,
+   "prix": 0.5755434782608695,
+   "proba_modele": 0.691323376559202,
+   "mise": 2624.6063,
+   "pnl": -153.60949797024506,
+   "roi": -0.058526681876152266,
+   "part_up": 0.4528985507246377,
+   "taille_moy": 9.50944311594203,
+   "ic90": [
+    -399.12811878752865,
+    88.31498438616235
+   ],
+   "ic_bonf": [
+    -468.856970578283,
+    148.1691317945273
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.04,
+   "pnl_pess": -133.3109372024993,
+   "achats_pess": 276
+  },
+  {
+   "achats": 226,
+   "gagnes": 137,
+   "prix": 0.5900884955752213,
+   "proba_modele": 0.7241170870770877,
+   "mise": 2176.9606,
+   "pnl": -15.822639204567153,
+   "roi": -0.007268224884073306,
+   "part_up": 0.4557522123893805,
+   "taille_moy": 9.632569026548673,
+   "ic90": [
+    -219.47648902423714,
+    193.8063928836059
+   ],
+   "ic_bonf": [
+    -289.0499924997137,
+    256.1894468745516
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.06,
+   "pnl_pess": 1.5915911998931946,
+   "achats_pess": 226
+  },
+  {
+   "achats": 184,
+   "gagnes": 116,
+   "prix": 0.5960326086956522,
+   "proba_modele": 0.746012178756942,
+   "mise": 1772.0162,
+   "pnl": 60.832339777181716,
+   "roi": 0.034329449006832845,
+   "part_up": 0.46195652173913043,
+   "taille_moy": 9.630522826086956,
+   "ic90": [
+    -137.80869636844125,
+    253.8903643213555
+   ],
+   "ic_bonf": [
+    -197.64495164173582,
+    309.38175969201194
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.08,
+   "pnl_pess": 80.25322960035678,
+   "achats_pess": 184
+  },
+  {
+   "achats": 145,
+   "gagnes": 91,
+   "prix": 0.609448275862069,
+   "proba_modele": 0.7764891184254604,
+   "mise": 1384.4472,
+   "pnl": -27.098667674253164,
+   "roi": -0.019573637531466105,
+   "part_up": 0.4482758620689655,
+   "taille_moy": 9.547911724137931,
+   "ic90": [
+    -187.55901748297157,
+    129.49252113991315
+   ],
+   "ic_bonf": [
+    -232.3937786235941,
+    173.58762963756467
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.1,
+   "pnl_pess": -18.271912816668674,
+   "achats_pess": 145
+  },
+  {
+   "achats": 62,
+   "gagnes": 40,
+   "prix": 0.605,
+   "proba_modele": 0.830630573858265,
+   "mise": 578.568,
+   "pnl": 23.884950149791095,
+   "roi": 0.04128287452778428,
+   "part_up": 0.5161290322580645,
+   "taille_moy": 9.33174193548387,
+   "ic90": [
+    -80.53464179879657,
+    129.27416313045782
+   ],
+   "ic_bonf": [
+    -112.70779184517163,
+    157.92883205832229
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.15,
+   "pnl_pess": 18.66020735940011,
+   "achats_pess": 62
+  },
+  {
+   "achats": 387,
+   "gagnes": 214,
+   "prix": 0.5596382428940568,
+   "proba_modele": 0.6417037641699364,
+   "mise": 3734.0848,
+   "pnl": -172.00519996533262,
+   "roi": -0.04606354948482493,
+   "part_up": 0.4754521963824289,
+   "taille_moy": 9.648797932816537,
+   "ic90": [
+    -469.3003671722535,
+    123.0443074091264
+   ],
+   "ic_bonf": [
+    -553.1783783871485,
+    210.65965190827774
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.0,
+   "pnl_pess": -184.1221785805734,
+   "achats_pess": 387
+  },
+  {
+   "achats": 350,
+   "gagnes": 200,
+   "prix": 0.5652285714285714,
+   "proba_modele": 0.6619834550696572,
+   "mise": 3374.9305,
+   "pnl": -59.29120611171075,
+   "roi": -0.017568126547112824,
+   "part_up": 0.47714285714285715,
+   "taille_moy": 9.642658571428571,
+   "ic90": [
+    -348.9025942112219,
+    215.95215087888573
+   ],
+   "ic_bonf": [
+    -422.9802060843701,
+    304.818880713922
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.02,
+   "pnl_pess": -70.38483562498398,
+   "achats_pess": 350
+  },
+  {
+   "achats": 298,
+   "gagnes": 171,
+   "prix": 0.5785906040268457,
+   "proba_modele": 0.6922777503871392,
+   "mise": 2875.678,
+   "pnl": -118.12107699104948,
+   "roi": -0.04107590522688892,
+   "part_up": 0.46308724832214765,
+   "taille_moy": 9.649926174496644,
+   "ic90": [
+    -371.069879754957,
+    135.79547445183064
+   ],
+   "ic_bonf": [
+    -441.8182903306922,
+    203.30185913325533
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.04,
+   "pnl_pess": -122.54609778556556,
+   "achats_pess": 298
+  },
+  {
+   "achats": 252,
+   "gagnes": 146,
+   "prix": 0.5904365079365079,
+   "proba_modele": 0.7191170571903253,
+   "mise": 2430.2769,
+   "pnl": -124.54474732207333,
+   "roi": -0.05124714279351186,
+   "part_up": 0.4722222222222222,
+   "taille_moy": 9.643955952380953,
+   "ic90": [
+    -354.3373753141786,
+    105.93016091617547
+   ],
+   "ic_bonf": [
+    -419.38049643924916,
+    168.9764972608065
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.06,
+   "pnl_pess": -115.65647842202762,
+   "achats_pess": 252
+  },
+  {
+   "achats": 209,
+   "gagnes": 124,
+   "prix": 0.598468899521531,
+   "proba_modele": 0.7439855520629904,
+   "mise": 2024.4771,
+   "pnl": -87.24091801485395,
+   "roi": -0.04309306240848758,
+   "part_up": 0.45933014354066987,
+   "taille_moy": 9.686493301435407,
+   "ic90": [
+    -287.69393343902834,
+    118.15677081357931
+   ],
+   "ic_bonf": [
+    -345.24495597185523,
+    176.0465276114675
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.08,
+   "pnl_pess": -76.54761279482764,
+   "achats_pess": 209
+  },
+  {
+   "achats": 168,
+   "gagnes": 101,
+   "prix": 0.6086309523809523,
+   "proba_modele": 0.7698988749301373,
+   "mise": 1627.6882,
+   "pnl": -92.83326778775309,
+   "roi": -0.05703381506836081,
+   "part_up": 0.4642857142857143,
+   "taille_moy": 9.688620238095238,
+   "ic90": [
+    -271.64096478622304,
+    82.01781702683694
+   ],
+   "ic_bonf": [
+    -317.2508774747791,
+    132.42578393922844
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.1,
+   "pnl_pess": -83.24661425032753,
+   "achats_pess": 168
+  },
+  {
+   "achats": 75,
+   "gagnes": 46,
+   "prix": 0.6125333333333334,
+   "proba_modele": 0.8285825883791794,
+   "mise": 717.8624,
+   "pnl": -13.647171222340852,
+   "roi": -0.019010845563635668,
+   "part_up": 0.5866666666666667,
+   "taille_moy": 9.571498666666667,
+   "ic90": [
+    -135.8533577040374,
+    103.00714962620448
+   ],
+   "ic_bonf": [
+    -168.66970185473488,
+    138.9453322372117
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.15,
+   "pnl_pess": -29.49469985104153,
+   "achats_pess": 75
+  },
+  {
+   "achats": 389,
+   "gagnes": 211,
+   "prix": 0.5707197943444731,
+   "proba_modele": 0.6494668424815718,
+   "mise": 3790.2368,
+   "pnl": -386.3235281107751,
+   "roi": -0.10192596096127163,
+   "part_up": 0.44473007712082263,
+   "taille_moy": 9.743539331619537,
+   "ic90": [
+    -665.8498306107527,
+    -100.56199994028336
+   ],
+   "ic_bonf": [
+    -754.9755834848302,
+    -15.958402230622161
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.0,
+   "pnl_pess": -392.06869419961396,
+   "achats_pess": 389
+  },
+  {
+   "achats": 363,
+   "gagnes": 206,
+   "prix": 0.5804958677685951,
+   "proba_modele": 0.6726776619837457,
+   "mise": 3543.0751999999998,
+   "pnl": -226.65396126241032,
+   "roi": -0.06397097111074874,
+   "part_up": 0.43526170798898073,
+   "taille_moy": 9.760537741046832,
+   "ic90": [
+    -498.4636867319065,
+    48.54238540056861
+   ],
+   "ic_bonf": [
+    -587.4503209081538,
+    131.82382687183753
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.02,
+   "pnl_pess": -216.3896859778179,
+   "achats_pess": 363
+  },
+  {
+   "achats": 325,
+   "gagnes": 196,
+   "prix": 0.5867384615384615,
+   "proba_modele": 0.6925603830484673,
+   "mise": 3190.6019,
+   "pnl": -18.39462181559867,
+   "roi": -0.005765251320009139,
+   "part_up": 0.4123076923076923,
+   "taille_moy": 9.817236615384616,
+   "ic90": [
+    -277.8271083262543,
+    243.5234197324604
+   ],
+   "ic_bonf": [
+    -363.6208015885571,
+    327.1931202228842
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.04,
+   "pnl_pess": -9.757606128742935,
+   "achats_pess": 325
+  },
+  {
+   "achats": 275,
+   "gagnes": 168,
+   "prix": 0.5953090909090908,
+   "proba_modele": 0.7142015892245552,
+   "mise": 2698.5295,
+   "pnl": -26.44296156914507,
+   "roi": -0.009799026310123743,
+   "part_up": 0.41454545454545455,
+   "taille_moy": 9.812834545454544,
+   "ic90": [
+    -263.3111004220548,
+    214.63763942194836
+   ],
+   "ic_bonf": [
+    -331.82669796374984,
+    284.4626562451674
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.06,
+   "pnl_pess": 22.673231578389917,
+   "achats_pess": 275
+  },
+  {
+   "achats": 224,
+   "gagnes": 142,
+   "prix": 0.6098660714285715,
+   "proba_modele": 0.7456568666647101,
+   "mise": 2198.0395,
+   "pnl": 21.822956105295347,
+   "roi": 0.009928373036651684,
+   "part_up": 0.42857142857142855,
+   "taille_moy": 9.812676339285714,
+   "ic90": [
+    -184.9923419097662,
+    231.90774853794423
+   ],
+   "ic_bonf": [
+    -246.04043575056627,
+    293.5864739994783
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.08,
+   "pnl_pess": 52.50867114551428,
+   "achats_pess": 224
+  },
+  {
+   "achats": 169,
+   "gagnes": 103,
+   "prix": 0.6231952662721894,
+   "proba_modele": 0.7777815198949289,
+   "mise": 1658.5928,
+   "pnl": -82.06224654004691,
+   "roi": -0.049477030492383015,
+   "part_up": 0.44970414201183434,
+   "taille_moy": 9.814158579881656,
+   "ic90": [
+    -260.88459603356506,
+    89.72102419024927
+   ],
+   "ic_bonf": [
+    -312.74575865441943,
+    141.68036144103854
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.1,
+   "pnl_pess": -80.47140239599295,
+   "achats_pess": 169
+  },
+  {
+   "achats": 87,
+   "gagnes": 56,
+   "prix": 0.6206896551724139,
+   "proba_modele": 0.823571765305367,
+   "mise": 848.2835,
+   "pnl": 4.728155808586386,
+   "roi": 0.005573792026588265,
+   "part_up": 0.4942528735632184,
+   "taille_moy": 9.750385057471263,
+   "ic90": [
+    -122.74281740109458,
+    136.92294555631548
+   ],
+   "ic_bonf": [
+    -155.09792518458656,
+    172.56388646155247
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.15,
+   "pnl_pess": 25.371380220246813,
+   "achats_pess": 87
+  },
+  {
+   "achats": 397,
+   "gagnes": 212,
+   "prix": 0.5690428211586902,
+   "proba_modele": 0.6474751827146659,
+   "mise": 3860.471,
+   "pnl": -444.11893753077504,
+   "roi": -0.11504268197605293,
+   "part_up": 0.4433249370277078,
+   "taille_moy": 9.724108312342569,
+   "ic90": [
+    -734.9278303580166,
+    -147.27488625230998
+   ],
+   "ic_bonf": [
+    -816.3716425945231,
+    -62.33433720007111
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": -454.4045309343078,
+   "achats_pess": 397
+  },
+  {
+   "achats": 388,
+   "gagnes": 219,
+   "prix": 0.5765721649484535,
+   "proba_modele": 0.6673351417191038,
+   "mise": 3772.9094,
+   "pnl": -225.44615421575756,
+   "roi": -0.059753927357958175,
+   "part_up": 0.44072164948453607,
+   "taille_moy": 9.723993298969072,
+   "ic90": [
+    -512.381798754308,
+    65.08501216861264
+   ],
+   "ic_bonf": [
+    -594.3253119988075,
+    146.45014630313165
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": -225.51665703463917,
+   "achats_pess": 388
+  },
+  {
+   "achats": 376,
+   "gagnes": 222,
+   "prix": 0.5759574468085107,
+   "proba_modele": 0.6795438105671466,
+   "mise": 3677.9581,
+   "pnl": -22.88750989709223,
+   "roi": -0.006222884892868201,
+   "part_up": 0.425531914893617,
+   "taille_moy": 9.781803457446808,
+   "ic90": [
+    -313.09133569519054,
+    266.288555581744
+   ],
+   "ic_bonf": [
+    -394.1239073494083,
+    361.9232539630154
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -22.777938513569808,
+   "achats_pess": 376
+  },
+  {
+   "achats": 334,
+   "gagnes": 194,
+   "prix": 0.584311377245509,
+   "proba_modele": 0.7011846851512761,
+   "mise": 3274.2657,
+   "pnl": -159.5826904948572,
+   "roi": -0.048738466916370654,
+   "part_up": 0.44011976047904194,
+   "taille_moy": 9.803190718562874,
+   "ic90": [
+    -430.30067274603897,
+    111.6219886823422
+   ],
+   "ic_bonf": [
+    -504.30779301988036,
+    191.92418413772407
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": -113.54145860348234,
+   "achats_pess": 334
+  },
+  {
+   "achats": 293,
+   "gagnes": 173,
+   "prix": 0.5947440273037543,
+   "proba_modele": 0.7315323274044992,
+   "mise": 2857.245,
+   "pnl": -134.62350642198157,
+   "roi": -0.047116542831287335,
+   "part_up": 0.46757679180887374,
+   "taille_moy": 9.751689419795222,
+   "ic90": [
+    -378.4876513798354,
+    111.56873085225952
+   ],
+   "ic_bonf": [
+    -450.69196327692663,
+    184.86002415890326
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": -91.48419813683144,
+   "achats_pess": 293
+  },
+  {
+   "achats": 244,
+   "gagnes": 148,
+   "prix": 0.6193442622950819,
+   "proba_modele": 0.7735884936787631,
+   "mise": 2372.4048,
+   "pnl": -139.72133464781712,
+   "roi": -0.05889439047156587,
+   "part_up": 0.45491803278688525,
+   "taille_moy": 9.722970491803279,
+   "ic90": [
+    -350.1051736816843,
+    70.40958713143357
+   ],
+   "ic_bonf": [
+    -410.59814711637875,
+    133.44784886267004
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": -139.3635783031188,
+   "achats_pess": 244
+  },
+  {
+   "achats": 141,
+   "gagnes": 84,
+   "prix": 0.605531914893617,
+   "proba_modele": 0.8110887063579202,
+   "mise": 1380.2541,
+   "pnl": -96.9193527524691,
+   "roi": -0.07021848567772346,
+   "part_up": 0.49645390070921985,
+   "taille_moy": 9.789036170212766,
+   "ic90": [
+    -259.4138016823282,
+    63.183716336051354
+   ],
+   "ic_bonf": [
+    -309.61311278874456,
+    109.41563669077364
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": -87.7283926772815,
+   "achats_pess": 141
+  },
+  {
+   "achats": 397,
+   "gagnes": 219,
+   "prix": 0.5775314861460957,
+   "proba_modele": 0.6606394402088166,
+   "mise": 3878.6583,
+   "pnl": -335.44048096947995,
+   "roi": -0.08648363816154672,
+   "part_up": 0.44080604534005036,
+   "taille_moy": 9.769920151133501,
+   "ic90": [
+    -631.7059211663151,
+    -38.634191438640855
+   ],
+   "ic_bonf": [
+    -719.2296929699144,
+    48.04119455676896
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": -340.4584103854654,
+   "achats_pess": 397
+  },
+  {
+   "achats": 385,
+   "gagnes": 215,
+   "prix": 0.5842077922077923,
+   "proba_modele": 0.6782049472150005,
+   "mise": 3746.8677,
+   "pnl": -320.6759105003945,
+   "roi": -0.08558506362538354,
+   "part_up": 0.44675324675324674,
+   "taille_moy": 9.732123896103895,
+   "ic90": [
+    -608.7149888478157,
+    -36.47828547268172
+   ],
+   "ic_bonf": [
+    -700.5540440530439,
+    46.69074914895402
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": -319.65358347179114,
+   "achats_pess": 385
+  },
+  {
+   "achats": 369,
+   "gagnes": 210,
+   "prix": 0.5808943089430895,
+   "proba_modele": 0.685578001622668,
+   "mise": 3591.3381,
+   "pnl": -208.423368458454,
+   "roi": -0.05803501721501911,
+   "part_up": 0.44986449864498645,
+   "taille_moy": 9.732623577235772,
+   "ic90": [
+    -495.87641897956627,
+    82.1124129174981
+   ],
+   "ic_bonf": [
+    -575.9037266143183,
+    172.48739951633246
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -226.65511007767662,
+   "achats_pess": 369
+  },
+  {
+   "achats": 322,
+   "gagnes": 184,
+   "prix": 0.5957763975155279,
+   "proba_modele": 0.7166367774934733,
+   "mise": 3155.1387,
+   "pnl": -254.87677590414626,
+   "roi": -0.08078148066966002,
+   "part_up": 0.453416149068323,
+   "taille_moy": 9.798567391304347,
+   "ic90": [
+    -505.46250667987186,
+    6.871875223732904
+   ],
+   "ic_bonf": [
+    -581.6395315070113,
+    79.30778486355794
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": -271.87649931927785,
+   "achats_pess": 322
+  },
+  {
+   "achats": 280,
+   "gagnes": 168,
+   "prix": 0.6051071428571428,
+   "proba_modele": 0.7423952478892133,
+   "mise": 2706.0126999999998,
+   "pnl": -153.7539207469258,
+   "roi": -0.05681936405802005,
+   "part_up": 0.46785714285714286,
+   "taille_moy": 9.664331071428572,
+   "ic90": [
+    -382.3399855507049,
+    70.42793367887784
+   ],
+   "ic_bonf": [
+    -448.8434736121321,
+    134.81864909155672
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": -144.2503877614276,
+   "achats_pess": 280
+  },
+  {
+   "achats": 233,
+   "gagnes": 147,
+   "prix": 0.6249356223175966,
+   "proba_modele": 0.7823645716206816,
+   "mise": 2253.1442,
+   "pnl": -45.674791449815444,
+   "roi": -0.020271579355558088,
+   "part_up": 0.463519313304721,
+   "taille_moy": 9.670146781115879,
+   "ic90": [
+    -257.770236557748,
+    166.7617891399344
+   ],
+   "ic_bonf": [
+    -318.13197873040684,
+    235.81160215709656
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": -30.137741026430703,
+   "achats_pess": 233
+  },
+  {
+   "achats": 130,
+   "gagnes": 78,
+   "prix": 0.6103076923076923,
+   "proba_modele": 0.819167075951632,
+   "mise": 1270.9585,
+   "pnl": -84.85842284278827,
+   "roi": -0.06676726489715304,
+   "part_up": 0.47692307692307695,
+   "taille_moy": 9.776603846153845,
+   "ic90": [
+    -240.55263476073583,
+    71.2662965983374
+   ],
+   "ic_bonf": [
+    -285.4421804484237,
+    123.37563328011962
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": -75.89664546839043,
+   "achats_pess": 130
+  },
+  {
+   "achats": 397,
+   "gagnes": 238,
+   "prix": 0.5826448362720403,
+   "proba_modele": 0.6675183525499149,
+   "mise": 3865.2749,
+   "pnl": 58.47724317624942,
+   "roi": 0.015128870439784094,
+   "part_up": 0.46851385390428213,
+   "taille_moy": 9.736208816120905,
+   "ic90": [
+    -241.3419478659579,
+    358.99114135230195
+   ],
+   "ic_bonf": [
+    -324.7393866364776,
+    443.5073051336686
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": 72.13986185865426,
+   "achats_pess": 397
+  },
+  {
+   "achats": 377,
+   "gagnes": 220,
+   "prix": 0.5928381962864722,
+   "proba_modele": 0.6898761423581364,
+   "mise": 3653.2522,
+   "pnl": -155.59791961796526,
+   "roi": -0.0425916173041558,
+   "part_up": 0.47214854111405835,
+   "taille_moy": 9.690324137931034,
+   "ic90": [
+    -448.55716720040704,
+    132.80086753894284
+   ],
+   "ic_bonf": [
+    -528.3531253476923,
+    226.3103271185685
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": -160.2637852128879,
+   "achats_pess": 377
+  },
+  {
+   "achats": 351,
+   "gagnes": 208,
+   "prix": 0.5978632478632478,
+   "proba_modele": 0.7091999897280538,
+   "mise": 3407.2124,
+   "pnl": -140.1716779131682,
+   "roi": -0.04113969469973994,
+   "part_up": 0.47863247863247865,
+   "taille_moy": 9.707157834757835,
+   "ic90": [
+    -410.0122198866985,
+    126.46122360312839
+   ],
+   "ic_bonf": [
+    -489.26521260569587,
+    201.69491337089661
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -114.79702850846508,
+   "achats_pess": 351
+  },
+  {
+   "achats": 306,
+   "gagnes": 183,
+   "prix": 0.6095751633986928,
+   "proba_modele": 0.7361209432779882,
+   "mise": 2972.4969,
+   "pnl": -155.84827894962987,
+   "roi": -0.0524300896494223,
+   "part_up": 0.4673202614379085,
+   "taille_moy": 9.714042156862746,
+   "ic90": [
+    -403.4169707510629,
+    95.57676465467001
+   ],
+   "ic_bonf": [
+    -476.88625673493993,
+    173.16634374390836
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": -127.73779123082807,
+   "achats_pess": 306
+  },
+  {
+   "achats": 264,
+   "gagnes": 167,
+   "prix": 0.620189393939394,
+   "proba_modele": 0.7662025640636088,
+   "mise": 2553.8898,
+   "pnl": -32.0268687464946,
+   "roi": -0.012540427056208376,
+   "part_up": 0.4772727272727273,
+   "taille_moy": 9.673824999999999,
+   "ic90": [
+    -251.3434000144272,
+    189.0909509540764
+   ],
+   "ic_bonf": [
+    -320.260581817947,
+    263.078851353707
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": 0.14487696315441667,
+   "achats_pess": 264
+  },
+  {
+   "achats": 212,
+   "gagnes": 141,
+   "prix": 0.6396226415094339,
+   "proba_modele": 0.8028795965096256,
+   "mise": 2062.5337,
+   "pnl": 26.599965142177467,
+   "roi": 0.01289674207125802,
+   "part_up": 0.4528301886792453,
+   "taille_moy": 9.72893254716981,
+   "ic90": [
+    -165.99613866272037,
+    223.4859938740309
+   ],
+   "ic_bonf": [
+    -227.08328079284885,
+    279.8012248126649
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": 31.622846869473953,
+   "achats_pess": 212
+  },
+  {
+   "achats": 115,
+   "gagnes": 71,
+   "prix": 0.6198260869565217,
+   "proba_modele": 0.8297200523785366,
+   "mise": 1120.6923,
+   "pnl": -47.86753168188423,
+   "roi": -0.04271246593010788,
+   "part_up": 0.48695652173913045,
+   "taille_moy": 9.74515043478261,
+   "ic90": [
+    -198.516798797712,
+    100.90004385482605
+   ],
+   "ic_bonf": [
+    -234.80910502340615,
+    145.15094948884632
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.0,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": -56.44432513490171,
+   "achats_pess": 115
+  },
+  {
+   "achats": 345,
+   "gagnes": 164,
+   "prix": 0.47872463768115947,
+   "proba_modele": 0.5268676777108162,
+   "mise": 3250.7448,
+   "pnl": -153.68949324682993,
+   "roi": -0.04727824012725635,
+   "part_up": 0.518840579710145,
+   "taille_moy": 9.422448695652175,
+   "ic90": [
+    -475.40578109157707,
+    167.22156362696288
+   ],
+   "ic_bonf": [
+    -563.3713484402516,
+    270.275023326523
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.0,
+   "pnl_pess": -187.21287494122694,
+   "achats_pess": 345
+  },
+  {
+   "achats": 250,
+   "gagnes": 111,
+   "prix": 0.46064,
+   "proba_modele": 0.5305005623604495,
+   "mise": 2314.4413,
+   "pnl": -228.569582875668,
+   "roi": -0.0987579952343868,
+   "part_up": 0.544,
+   "taille_moy": 9.2577652,
+   "ic90": [
+    -505.8411423749365,
+    60.34945823071416
+   ],
+   "ic_bonf": [
+    -582.6995998760345,
+    147.74220303727725
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.02,
+   "pnl_pess": -218.85093748024676,
+   "achats_pess": 250
+  },
+  {
+   "achats": 165,
+   "gagnes": 74,
+   "prix": 0.4573939393939394,
+   "proba_modele": 0.5487193879562537,
+   "mise": 1534.6731,
+   "pnl": -101.93602709210494,
+   "roi": -0.0664219807411135,
+   "part_up": 0.5454545454545454,
+   "taille_moy": 9.30104909090909,
+   "ic90": [
+    -340.9589992149148,
+    140.99693550695108
+   ],
+   "ic_bonf": [
+    -405.7477511614198,
+    216.1098141597787
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.04,
+   "pnl_pess": -125.33423231204256,
+   "achats_pess": 165
+  },
+  {
+   "achats": 91,
+   "gagnes": 43,
+   "prix": 0.45659340659340664,
+   "proba_modele": 0.5770577673653187,
+   "mise": 838.9201,
+   "pnl": -67.90848845243096,
+   "roi": -0.08094750435998727,
+   "part_up": 0.5164835164835165,
+   "taille_moy": 9.218902197802198,
+   "ic90": [
+    -234.03743618879855,
+    103.34612539635411
+   ],
+   "ic_bonf": [
+    -281.4883334887487,
+    152.16375053779075
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.06,
+   "pnl_pess": -48.036044829062654,
+   "achats_pess": 91
+  },
+  {
+   "achats": 60,
+   "gagnes": 27,
+   "prix": 0.44400000000000006,
+   "proba_modele": 0.5927227019521093,
+   "mise": 548.1923,
+   "pnl": -55.02235775723692,
+   "roi": -0.10037054106239164,
+   "part_up": 0.6166666666666667,
+   "taille_moy": 9.136538333333332,
+   "ic90": [
+    -191.45103633598,
+    82.94549525267742
+   ],
+   "ic_bonf": [
+    -230.55743885027078,
+    125.88044441672432
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.08,
+   "pnl_pess": -55.29650160891532,
+   "achats_pess": 60
+  },
+  {
+   "achats": 40,
+   "gagnes": 18,
+   "prix": 0.44750000000000006,
+   "proba_modele": 0.6265819130808149,
+   "mise": 370.4973,
+   "pnl": -16.34087988388632,
+   "roi": -0.04410526037271073,
+   "part_up": 0.7,
+   "taille_moy": 9.2624325,
+   "ic90": [
+    -130.4665359586837,
+    102.43644815830078
+   ],
+   "ic_bonf": [
+    -163.96510878958503,
+    139.22189911178543
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.1,
+   "pnl_pess": -17.971193196593802,
+   "achats_pess": 40
+  },
+  {
+   "achats": 19,
+   "gagnes": 11,
+   "prix": 0.45368421052631586,
+   "proba_modele": 0.6914539021421757,
+   "mise": 174.0491,
+   "pnl": 47.7701381428191,
+   "roi": 0.2744635746052068,
+   "part_up": 0.6842105263157895,
+   "taille_moy": 9.16047894736842,
+   "ic90": [
+    -37.0347373194469,
+    140.07266685684723
+   ],
+   "ic_bonf": [
+    -58.87239773419112,
+    174.62903524359885
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 0,
+   "tmax": 5,
+   "seuil": 0.15,
+   "pnl_pess": 44.68056194480098,
+   "achats_pess": 19
+  },
+  {
+   "achats": 368,
+   "gagnes": 169,
+   "prix": 0.4723913043478261,
+   "proba_modele": 0.5237603084513047,
+   "mise": 3539.4899,
+   "pnl": -194.4603918856107,
+   "roi": -0.05494023076195547,
+   "part_up": 0.5489130434782609,
+   "taille_moy": 9.618179076086957,
+   "ic90": [
+    -545.0618351242592,
+    164.34915738353652
+   ],
+   "ic_bonf": [
+    -645.9435933987625,
+    274.6152219991096
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.0,
+   "pnl_pess": -306.6563888223555,
+   "achats_pess": 368
+  },
+  {
+   "achats": 288,
+   "gagnes": 121,
+   "prix": 0.4552430555555556,
+   "proba_modele": 0.5266342644516127,
+   "mise": 2739.973,
+   "pnl": -304.4894806587462,
+   "roi": -0.11112864274894176,
+   "part_up": 0.5416666666666666,
+   "taille_moy": 9.513795138888888,
+   "ic90": [
+    -636.7206923356064,
+    16.516668636496153
+   ],
+   "ic_bonf": [
+    -728.8993784040283,
+    115.2661689335626
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.02,
+   "pnl_pess": -331.23342874874083,
+   "achats_pess": 288
+  },
+  {
+   "achats": 200,
+   "gagnes": 82,
+   "prix": 0.44770000000000004,
+   "proba_modele": 0.5389855052954657,
+   "mise": 1904.763,
+   "pnl": -195.0747831090875,
+   "roi": -0.10241420224410465,
+   "part_up": 0.54,
+   "taille_moy": 9.523815,
+   "ic90": [
+    -475.32588507688575,
+    90.26773482829748
+   ],
+   "ic_bonf": [
+    -545.2628268617024,
+    180.57632826243815
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.04,
+   "pnl_pess": -231.68625509876625,
+   "achats_pess": 200
+  },
+  {
+   "achats": 131,
+   "gagnes": 54,
+   "prix": 0.4420610687022901,
+   "proba_modele": 0.5564115035269275,
+   "mise": 1244.3271,
+   "pnl": -148.81479320488637,
+   "roi": -0.11959459309765605,
+   "part_up": 0.5343511450381679,
+   "taille_moy": 9.498680152671756,
+   "ic90": [
+    -369.8829359637806,
+    75.53372854197609
+   ],
+   "ic_bonf": [
+    -430.6700413503881,
+    136.87811361113117
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.06,
+   "pnl_pess": -157.46982463215187,
+   "achats_pess": 131
+  },
+  {
+   "achats": 82,
+   "gagnes": 37,
+   "prix": 0.42951219512195127,
+   "proba_modele": 0.5671309896877366,
+   "mise": 781.7039,
+   "pnl": 41.586056170344364,
+   "roi": 0.05319924356312456,
+   "part_up": 0.573170731707317,
+   "taille_moy": 9.532974390243902,
+   "ic90": [
+    -152.98557451227697,
+    243.33599889909476
+   ],
+   "ic_bonf": [
+    -204.89083582271468,
+    299.3958463252746
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.08,
+   "pnl_pess": 1.9196410177685124,
+   "achats_pess": 82
+  },
+  {
+   "achats": 48,
+   "gagnes": 22,
+   "prix": 0.4291666666666667,
+   "proba_modele": 0.5963793927908689,
+   "mise": 445.9539,
+   "pnl": 12.916180036817593,
+   "roi": 0.02896303863878664,
+   "part_up": 0.6041666666666666,
+   "taille_moy": 9.29070625,
+   "ic90": [
+    -127.19083335895988,
+    157.4378724865928
+   ],
+   "ic_bonf": [
+    -169.66750718262617,
+    202.1681174821995
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.1,
+   "pnl_pess": 11.798844597425916,
+   "achats_pess": 48
+  },
+  {
+   "achats": 20,
+   "gagnes": 12,
+   "prix": 0.437,
+   "proba_modele": 0.6566311305100738,
+   "mise": 192.65,
+   "pnl": 63.19041822835908,
+   "roi": 0.328006323531581,
+   "part_up": 0.55,
+   "taille_moy": 9.6325,
+   "ic90": [
+    -33.16512522303681,
+    166.3239976948595
+   ],
+   "ic_bonf": [
+    -58.68338475027563,
+    201.51392333783872
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 2,
+   "tmax": 10,
+   "seuil": 0.15,
+   "pnl_pess": 67.10846909990852,
+   "achats_pess": 20
+  },
+  {
+   "achats": 379,
+   "gagnes": 177,
+   "prix": 0.4686543535620053,
+   "proba_modele": 0.5153763842879436,
+   "mise": 3653.3038,
+   "pnl": -190.31465312767793,
+   "roi": -0.05209384807463259,
+   "part_up": 0.49868073878627966,
+   "taille_moy": 9.63932401055409,
+   "ic90": [
+    -544.8652667550581,
+    175.03241551597264
+   ],
+   "ic_bonf": [
+    -647.8224597629568,
+    270.63169736316
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.0,
+   "pnl_pess": -182.97628052730266,
+   "achats_pess": 379
+  },
+  {
+   "achats": 306,
+   "gagnes": 132,
+   "prix": 0.4555228758169935,
+   "proba_modele": 0.5214518419540973,
+   "mise": 2962.5075,
+   "pnl": -329.00054491263086,
+   "roi": -0.11105475510614939,
+   "part_up": 0.4738562091503268,
+   "taille_moy": 9.68139705882353,
+   "ic90": [
+    -650.8360208648024,
+    6.5830172341015
+   ],
+   "ic_bonf": [
+    -743.2110438875217,
+    105.25090540254621
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.02,
+   "pnl_pess": -254.00106309880016,
+   "achats_pess": 306
+  },
+  {
+   "achats": 226,
+   "gagnes": 95,
+   "prix": 0.4498672566371681,
+   "proba_modele": 0.5355930282215836,
+   "mise": 2180.5936,
+   "pnl": -261.5339137696599,
+   "roi": -0.11993702713318972,
+   "part_up": 0.4823008849557522,
+   "taille_moy": 9.648644247787612,
+   "ic90": [
+    -550.0947302320978,
+    34.980347344368546
+   ],
+   "ic_bonf": [
+    -642.7845243260352,
+    125.4744428660087
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.04,
+   "pnl_pess": -174.3988471510231,
+   "achats_pess": 226
+  },
+  {
+   "achats": 163,
+   "gagnes": 71,
+   "prix": 0.44754601226993873,
+   "proba_modele": 0.5518715782902598,
+   "mise": 1584.138,
+   "pnl": -77.05391462419061,
+   "roi": -0.04864091046625396,
+   "part_up": 0.4723926380368098,
+   "taille_moy": 9.718638036809816,
+   "ic90": [
+    -334.9509963627948,
+    180.67884537174126
+   ],
+   "ic_bonf": [
+    -402.411827863569,
+    257.6062319670039
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.06,
+   "pnl_pess": -66.83525400803495,
+   "achats_pess": 163
+  },
+  {
+   "achats": 94,
+   "gagnes": 45,
+   "prix": 0.4372340425531915,
+   "proba_modele": 0.5653276444065686,
+   "mise": 908.9849,
+   "pnl": 92.04016648486164,
+   "roi": 0.10125599059441102,
+   "part_up": 0.46808510638297873,
+   "taille_moy": 9.670052127659575,
+   "ic90": [
+    -118.20865188975459,
+    306.87004749023345
+   ],
+   "ic_bonf": [
+    -180.09186473223622,
+    369.3789761000977
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.08,
+   "pnl_pess": 70.40717620038515,
+   "achats_pess": 94
+  },
+  {
+   "achats": 54,
+   "gagnes": 24,
+   "prix": 0.43111111111111106,
+   "proba_modele": 0.5842192984510522,
+   "mise": 513.8103,
+   "pnl": -26.858765366719965,
+   "roi": -0.05227369978126162,
+   "part_up": 0.48148148148148145,
+   "taille_moy": 9.515005555555556,
+   "ic90": [
+    -175.95769160087892,
+    127.46475810709182
+   ],
+   "ic_bonf": [
+    -217.15325781883448,
+    175.56491701072665
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.1,
+   "pnl_pess": 4.664792831088263,
+   "achats_pess": 54
+  },
+  {
+   "achats": 20,
+   "gagnes": 12,
+   "prix": 0.43099999999999994,
+   "proba_modele": 0.6334261893240672,
+   "mise": 200.0,
+   "pnl": 68.69534560235277,
+   "roi": 0.3434767280117639,
+   "part_up": 0.45,
+   "taille_moy": 10.0,
+   "ic90": [
+    -27.271262282179226,
+    175.7672574571302
+   ],
+   "ic_bonf": [
+    -54.19497568706192,
+    213.46612977425397
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 15,
+   "seuil": 0.15,
+   "pnl_pess": 77.12282304396022,
+   "achats_pess": 20
+  },
+  {
+   "achats": 397,
+   "gagnes": 186,
+   "prix": 0.4678589420654912,
+   "proba_modele": 0.5144024953756396,
+   "mise": 3826.088,
+   "pnl": -144.1076597931078,
+   "roi": -0.037664491719246344,
+   "part_up": 0.4987405541561713,
+   "taille_moy": 9.637501259445845,
+   "ic90": [
+    -521.7323909695023,
+    235.4982881991054
+   ],
+   "ic_bonf": [
+    -631.9716687262231,
+    345.3365749927823
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": -147.64358256706169,
+   "achats_pess": 397
+  },
+  {
+   "achats": 384,
+   "gagnes": 162,
+   "prix": 0.45265625,
+   "proba_modele": 0.517830576565618,
+   "mise": 3731.5417,
+   "pnl": -417.25484792179105,
+   "roi": -0.11181835323501571,
+   "part_up": 0.4739583333333333,
+   "taille_moy": 9.717556510416665,
+   "ic90": [
+    -786.4396871767171,
+    -36.15745185099303
+   ],
+   "ic_bonf": [
+    -897.43427446094,
+    80.59312568252615
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": -365.6364181599124,
+   "achats_pess": 384
+  },
+  {
+   "achats": 324,
+   "gagnes": 134,
+   "prix": 0.44129629629629635,
+   "proba_modele": 0.527151881340784,
+   "mise": 3139.1998,
+   "pnl": -286.5185746739328,
+   "roi": -0.09127121334358292,
+   "part_up": 0.49691358024691357,
+   "taille_moy": 9.688888271604938,
+   "ic90": [
+    -645.5087048654588,
+    78.4283903871417
+   ],
+   "ic_bonf": [
+    -745.71586801246,
+    183.8346881083627
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -220.13390332904973,
+   "achats_pess": 324
+  },
+  {
+   "achats": 246,
+   "gagnes": 98,
+   "prix": 0.4332926829268292,
+   "proba_modele": 0.5387320427911899,
+   "mise": 2391.3942,
+   "pnl": -227.79135162468816,
+   "roi": -0.09525462243936535,
+   "part_up": 0.5203252032520326,
+   "taille_moy": 9.72111463414634,
+   "ic90": [
+    -551.9170971123948,
+    93.62461621344546
+   ],
+   "ic_bonf": [
+    -637.1011286204993,
+    195.0645216067985
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": -201.65068639799227,
+   "achats_pess": 246
+  },
+  {
+   "achats": 173,
+   "gagnes": 72,
+   "prix": 0.41624277456647396,
+   "proba_modele": 0.5429775742175267,
+   "mise": 1655.3629,
+   "pnl": -29.576226681643163,
+   "roi": -0.017866914065576292,
+   "part_up": 0.5144508670520231,
+   "taille_moy": 9.568571676300579,
+   "ic90": [
+    -311.7496435876621,
+    263.99910228103244
+   ],
+   "ic_bonf": [
+    -387.5804019826053,
+    357.99199935291927
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": -12.79014570336426,
+   "achats_pess": 173
+  },
+  {
+   "achats": 114,
+   "gagnes": 41,
+   "prix": 0.41263157894736846,
+   "proba_modele": 0.5648866674638229,
+   "mise": 1093.4945,
+   "pnl": -221.78171696764562,
+   "roi": -0.20281923408635857,
+   "part_up": 0.5350877192982456,
+   "taille_moy": 9.59205701754386,
+   "ic90": [
+    -435.51012033393243,
+    4.815022330526256
+   ],
+   "ic_bonf": [
+    -498.0227265303724,
+    69.18087897921129
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": -196.69489493207988,
+   "achats_pess": 114
+  },
+  {
+   "achats": 42,
+   "gagnes": 19,
+   "prix": 0.40904761904761905,
+   "proba_modele": 0.6121150247063654,
+   "mise": 420.0,
+   "pnl": 19.97481663686707,
+   "roi": 0.047559087230635885,
+   "part_up": 0.6190476190476191,
+   "taille_moy": 10.0,
+   "ic90": [
+    -121.68932651905016,
+    168.1676304782484
+   ],
+   "ic_bonf": [
+    -160.04591383541342,
+    215.64652785584903
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 5,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": 34.4661084538499,
+   "achats_pess": 42
+  },
+  {
+   "achats": 397,
+   "gagnes": 178,
+   "prix": 0.46435768261964744,
+   "proba_modele": 0.5149398428065388,
+   "mise": 3860.2716,
+   "pnl": -313.8828438881799,
+   "roi": -0.08131107766826041,
+   "part_up": 0.47858942065491183,
+   "taille_moy": 9.72360604534005,
+   "ic90": [
+    -679.5394919722075,
+    58.52457842242323
+   ],
+   "ic_bonf": [
+    -789.1954148945048,
+    158.56241986985015
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": -344.380334404878,
+   "achats_pess": 397
+  },
+  {
+   "achats": 380,
+   "gagnes": 163,
+   "prix": 0.4543947368421053,
+   "proba_modele": 0.5217805617166731,
+   "mise": 3692.6127,
+   "pnl": -393.09192712433736,
+   "roi": -0.10645360319654898,
+   "part_up": 0.4763157894736842,
+   "taille_moy": 9.717401842105263,
+   "ic90": [
+    -764.9832465455995,
+    -8.041445691004608
+   ],
+   "ic_bonf": [
+    -868.3646791223963,
+    104.71202929025684
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": -366.27886272370006,
+   "achats_pess": 380
+  },
+  {
+   "achats": 309,
+   "gagnes": 128,
+   "prix": 0.4501941747572815,
+   "proba_modele": 0.5370236431457472,
+   "mise": 3014.8062,
+   "pnl": -350.7147322465954,
+   "roi": -0.11633077185743992,
+   "part_up": 0.4854368932038835,
+   "taille_moy": 9.756654368932038,
+   "ic90": [
+    -694.7377311092881,
+    -0.9452137949545739
+   ],
+   "ic_bonf": [
+    -798.067839464824,
+    102.96804276306953
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -334.07772537153926,
+   "achats_pess": 309
+  },
+  {
+   "achats": 224,
+   "gagnes": 92,
+   "prix": 0.4314732142857142,
+   "proba_modele": 0.53951516651933,
+   "mise": 2171.0216,
+   "pnl": -171.26188336678433,
+   "roi": -0.07888538896470874,
+   "part_up": 0.5178571428571429,
+   "taille_moy": 9.692060714285715,
+   "ic90": [
+    -483.33411995753784,
+    147.13346097454047
+   ],
+   "ic_bonf": [
+    -573.5490635738641,
+    235.29969502464968
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": -116.3274452297807,
+   "achats_pess": 224
+  },
+  {
+   "achats": 158,
+   "gagnes": 64,
+   "prix": 0.41683544303797476,
+   "proba_modele": 0.5475033362393594,
+   "mise": 1518.8767,
+   "pnl": -99.72169792070237,
+   "roi": -0.06565490004600266,
+   "part_up": 0.5126582278481012,
+   "taille_moy": 9.613143670886076,
+   "ic90": [
+    -374.5328429377139,
+    178.65489678322942
+   ],
+   "ic_bonf": [
+    -451.39408773894047,
+    271.9653282754386
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": -49.84164964137244,
+   "achats_pess": 158
+  },
+  {
+   "achats": 102,
+   "gagnes": 35,
+   "prix": 0.4165686274509805,
+   "proba_modele": 0.5706700691465122,
+   "mise": 983.137,
+   "pnl": -240.93328025024863,
+   "roi": -0.24506582526163562,
+   "part_up": 0.5196078431372549,
+   "taille_moy": 9.638598039215687,
+   "ic90": [
+    -445.89244402248204,
+    -22.74854309265848
+   ],
+   "ic_bonf": [
+    -503.8455336345142,
+    40.800549851240355
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": -232.93204236155046,
+   "achats_pess": 102
+  },
+  {
+   "achats": 38,
+   "gagnes": 16,
+   "prix": 0.39894736842105266,
+   "proba_modele": 0.6080966793146401,
+   "mise": 379.1528,
+   "pnl": 13.708599918827161,
+   "roi": 0.03615587150833954,
+   "part_up": 0.6578947368421053,
+   "taille_moy": 9.977705263157896,
+   "ic90": [
+    -129.47029003154472,
+    171.2089795422818
+   ],
+   "ic_bonf": [
+    -165.25647948496282,
+    221.05305309639135
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 10,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": 6.256949248451743,
+   "achats_pess": 38
+  },
+  {
+   "achats": 395,
+   "gagnes": 191,
+   "prix": 0.47075949367088604,
+   "proba_modele": 0.5233990625124081,
+   "mise": 3850.8596000000002,
+   "pnl": -62.80279105501489,
+   "roi": -0.01630877195704951,
+   "part_up": 0.4936708860759494,
+   "taille_moy": 9.74901164556962,
+   "ic90": [
+    -435.64086786907717,
+    317.4434794981523
+   ],
+   "ic_bonf": [
+    -535.0139848121371,
+    423.08736981355014
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.0,
+   "pnl_pess": -1.9901941228254145,
+   "achats_pess": 395
+  },
+  {
+   "achats": 360,
+   "gagnes": 160,
+   "prix": 0.46025,
+   "proba_modele": 0.5281815682929698,
+   "mise": 3512.1185,
+   "pnl": -261.79398192299413,
+   "roi": -0.07454019046424377,
+   "part_up": 0.4861111111111111,
+   "taille_moy": 9.755884722222222,
+   "ic90": [
+    -634.5511822050348,
+    108.08266430939034
+   ],
+   "ic_bonf": [
+    -738.3131407681692,
+    230.81597948239417
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.02,
+   "pnl_pess": -268.0557211422279,
+   "achats_pess": 360
+  },
+  {
+   "achats": 280,
+   "gagnes": 121,
+   "prix": 0.4552857142857143,
+   "proba_modele": 0.5440034476485504,
+   "mise": 2729.1183,
+   "pnl": -178.1360757395842,
+   "roi": -0.06527239062505431,
+   "part_up": 0.4928571428571429,
+   "taille_moy": 9.746851071428571,
+   "ic90": [
+    -506.27641531499376,
+    160.84655694678833
+   ],
+   "ic_bonf": [
+    -593.9884788171105,
+    266.4806439781976
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.04,
+   "pnl_pess": -209.99690469625222,
+   "achats_pess": 280
+  },
+  {
+   "achats": 195,
+   "gagnes": 82,
+   "prix": 0.4358974358974359,
+   "proba_modele": 0.5447981256065625,
+   "mise": 1896.7173,
+   "pnl": -53.98104463533281,
+   "roi": -0.02846024794276554,
+   "part_up": 0.5230769230769231,
+   "taille_moy": 9.726755384615386,
+   "ic90": [
+    -348.5299428651082,
+    248.0331305992947
+   ],
+   "ic_bonf": [
+    -432.3260882998261,
+    346.2042572071908
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.06,
+   "pnl_pess": -10.524788390539086,
+   "achats_pess": 195
+  },
+  {
+   "achats": 140,
+   "gagnes": 58,
+   "prix": 0.4127857142857143,
+   "proba_modele": 0.5421992212643023,
+   "mise": 1337.2914,
+   "pnl": -28.385534270474793,
+   "roi": -0.021226139845417977,
+   "part_up": 0.5142857142857142,
+   "taille_moy": 9.552081428571428,
+   "ic90": [
+    -293.71521631012615,
+    239.80127152489987
+   ],
+   "ic_bonf": [
+    -371.0092513892872,
+    325.6220273104179
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.08,
+   "pnl_pess": 13.176048045212298,
+   "achats_pess": 140
+  },
+  {
+   "achats": 86,
+   "gagnes": 32,
+   "prix": 0.42627906976744184,
+   "proba_modele": 0.5814368236861059,
+   "mise": 839.6842,
+   "pnl": -113.11654731041773,
+   "roi": -0.13471320207099016,
+   "part_up": 0.5348837209302325,
+   "taille_moy": 9.76376976744186,
+   "ic90": [
+    -308.5097589176136,
+    87.29876049120836
+   ],
+   "ic_bonf": [
+    -365.67971950266934,
+    145.26564007641676
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.1,
+   "pnl_pess": -119.53914453451979,
+   "achats_pess": 86
+  },
+  {
+   "achats": 32,
+   "gagnes": 14,
+   "prix": 0.4190625,
+   "proba_modele": 0.6303125097220452,
+   "mise": 320.0,
+   "pnl": 7.869449980150193,
+   "roi": 0.024592031187969356,
+   "part_up": 0.6875,
+   "taille_moy": 10.0,
+   "ic90": [
+    -119.01453349371494,
+    143.3458413065742
+   ],
+   "ic_bonf": [
+    -151.58117814217113,
+    189.70586130049048
+   ],
+   "cycles": 405,
+   "src": "cb",
+   "k": 1.8,
+   "tmin": 15,
+   "tmax": 30,
+   "seuil": 0.15,
+   "pnl_pess": 13.041826305104054,
+   "achats_pess": 32
+  }
+ ]
+}
