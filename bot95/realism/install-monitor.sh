@@ -16,6 +16,9 @@ PY
 install -d -m 755 /opt/bot95-monitor
 install -d -o bot95-protected -g bot95-protected -m 755 /opt/bot95-monitor/public
 install -m 644 "$STAGE/monitor-publish.cjs" /opt/bot95-monitor/monitor-publish.cjs
+install -m 644 "$STAGE/official-m10.cjs" /opt/bot95-monitor/official-m10.cjs
+install -m 644 "$STAGE/readiness.cjs" /opt/bot95-monitor/readiness.cjs
+install -m 644 /opt/bot95-rapide/rapide.js /opt/bot95-monitor/official-reference.js
 install -m 644 "$STAGE/monitor.html" /opt/bot95-monitor/public/index.html
 install -m 644 "$STAGE/bot95-monitor.service" /etc/systemd/system/bot95-monitor.service
 install -m 644 "$STAGE/bot95-monitor.timer" /etc/systemd/system/bot95-monitor.timer

@@ -4,11 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Bot95 Protected — Surveillance</title>
+<title>Bot95 — Validation du passage en réel</title>
 <style>
 :root{--bg:#f3efe6;--card:#fbf8f1;--ink:#1d2a2b;--mute:#66706b;--line:#d9d1c1;--ok:#1f7a5a;--okbg:#dcefe5;--warn:#a5620b;--warnbg:#f8e8cc;--bad:#a8322b;--badbg:#f6dcd8;--acc:#2d4f7c;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--sans:"Avenir Next","Segoe UI Variable","Segoe UI",system-ui,sans-serif}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);min-height:100dvh}
+.notice{padding:16px;border:2px solid var(--bad);border-radius:8px;background:var(--card);overflow-wrap:anywhere}
 .wrap{max-width:860px;margin:0 auto;padding:18px 14px 48px}
 header{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:12px}
 h1{margin:0;font-size:26px;letter-spacing:-.02em}
@@ -63,7 +64,9 @@ footer{margin-top:30px;font-size:12px;color:var(--mute);border-top:1px solid var
  <p style="margin:8px 0 0">Bot officiel : <a href="https://bot95.pitch67.workers.dev/rapide" target="_blank" rel="noopener">bot95.pitch67.workers.dev/rapide</a></p>
 </div>
 
-<h2>État</h2>
+<h2>Décision de passage en réel — stratégie officielle</h2>
+<section class="notice" id="readiness"><strong>Preuves insuffisantes — vérification en attente.</strong></section>
+<h2>État du fantôme expérimental — pas une validation de M10</h2>
 <div class="lights">
  <div class="light bad" id="l-net"><b>Requête</b><span>En attente</span><em></em></div>
  <div class="light bad" id="l-pub"><b>Publication</b><span>Inconnue</span><em></em></div>
@@ -76,7 +79,7 @@ footer{margin-top:30px;font-size:12px;color:var(--mute);border-top:1px solid var
 <div class="grid" id="latest"></div>
 <p class="note" id="reasons"></p>
 
-<h2>Rapport cumulé</h2>
+<h2>Ancien essai simplifié — résultats hors validation du live</h2>
 <div class="grid" id="report"></div>
 <p class="note">Les compteurs se chevauchent : « en attente » inclut des cycles exclus. PnL et frais ne portent que sur les cycles complets et réglés.</p>
 
@@ -182,7 +185,17 @@ function renderCycles(){
  });
 }
 
-function render(){evaluate();renderErrors();renderLatest();renderReport();renderCycles();}
+function renderReadiness(){
+ var box=$("readiness");clear(box);
+ var r=state.data&&state.data.readiness;
+ box.appendChild(el("strong","neg","PAS DE FEU VERT LIVE — PREUVES INSUFFISANTES"));
+ if(!r){box.appendChild(el("p",null,"Rapport de validation indisponible."));return;}
+ if(r.official)box.appendChild(el("p",null,"Référence officielle figée : "+r.official.version+" · SHA-256 "+r.official.sha256+" · copie du "+fmtTime(r.referenceCapturedAt)));
+ var list=el("ul");
+ (r.evidence||[]).forEach(function(x){list.appendChild(el("li",null,x.name+" — "+x.status+" : "+x.detail));});
+ box.appendChild(list);box.appendChild(el("p",null,r.conclusion));
+}
+function render(){evaluate();renderErrors();renderReadiness();renderLatest();renderReport();renderCycles();}
 
 function load(){
  if(state.busy)return;state.busy=true;var b=$("refresh");b.disabled=true;b.textContent="Chargement…";
