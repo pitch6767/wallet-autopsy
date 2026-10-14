@@ -1268,6 +1268,15 @@ setInterval(() => {
       if (s1h && k0 - 1800 >= 0) { const p0 = BN1H[k0], r30 = (p0 - BN1H[k0 - 1800]) / (s1h * Math.sqrt(1800)), r5 = (p0 - BN1H[k0 - 300]) / (s1h * Math.sqrt(300));
         if (r30 <= -1.018 && r5 < 0) fantAchat(start, "X2 baisse 30 min et 5 min Up", "Up", 10, { r30: +r30.toFixed(3), r5: +r5.toFixed(3) }); }
     }
+    // H1084 B3 (accord de Pitch 14.10.2026 13:10 « oui rajoute B3 ») : 20–60 s restantes, favori 0,90–0,98, distance au prix à battre ≥ 3 σ
+    // (moyenne Chainlink attendue des 60 dernières s = connue + prix rapide recalé × s restantes ; σ = écart-type 1 s Binance sur 1 h ;
+    // écart-type de la moyenne = σ·√(n(n+1)(2n+1)/6)/60) → favori, 10 $. Une fois par cycle. AUCUN ORDRE RÉEL.
+    if (el >= 240 && el <= 280 && !fait("B3") && mk.strike && fp >= 0.90 && fp <= 0.98 && BN1H.length >= 1800) {
+      const pr = prixRapide(), s1 = sdDiff(BN1H), deb = start + 240, ts = Math.floor(t), n = Math.max(1, start + 300 - ts);
+      if (pr && s1) { let sum = 0, k = 0; for (let s2 = deb; s2 < ts; s2++) { const x = prixA("cl", s2); if (x) { sum += x; k++; } }
+        const E = (sum + pr[1] * (60 - k)) / 60, sdE = s1 * Math.sqrt(n * (n + 1) * (2 * n + 1) / 6) / 60, zf = sg * (E - mk.strike) / sdE;
+        if (zf >= 3) { marque("B3"); fantAchat(start, "B3 favori fin de cycle 3 sigma", FAV, 10, { zf: +zf.toFixed(2), fp: +fp.toFixed(3) }); } }
+    }
     const inst = [60, 90, 120, 150, 180, 210, 240, 260].find((x) => el >= x && el < x + 1);
     if (inst != null && BN1H.length >= 1800) {
       const s1h = sdDiff(BN1H), s300 = sdDiff(BN1H.slice(-301)), n = BN1H.length, m10 = s1h ? sg * (BN1H[n - 1] - BN1H[n - 11]) / (s1h * Math.sqrt(10)) : null;
