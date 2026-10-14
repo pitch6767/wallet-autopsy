@@ -13,7 +13,8 @@ Its returns must not be used to approve or reject official M10 for live executio
   bot95/rapide/rapide.js and its generated bot95/src/rapide_code.js. The strategy
   rules are unchanged. Raw book/trade events are captured before the old sampling
   filters, plus the probability, toxicity, prices and timing passed to M10.
-  Recording uses asynchronous 512-KiB gzip blocks, with at most two in flight.
+  Recording uses fast asynchronous 512-KiB gzip blocks, with at most sixteen
+  in flight (8 MiB of queued raw text) to absorb bursts before callbacks run.
   Bounds are 128 MiB raw and 8 MiB compressed per cycle; overflow, compression
   backpressure and unfinished blocks are explicit and excluded.
 - `recorded-comparison.cjs` converts that recording to execution events and
