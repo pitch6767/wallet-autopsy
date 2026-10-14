@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       debut: { description: "debut AAAA-MM-JJTHH:MM (UTC)", default: "2026-10-09T00:00" }
-      fin: { description: "fin AAAA-MM-JJTHH:MM (UTC, au plus 13.10 00:00)", default: "2026-10-13T00:00" }
+      fin: { description: "fin AAAA-MM-JJTHH:MM (UTC, au plus 14.10 00:00)", default: "2026-10-13T00:00" }
       actif: { description: "btc, eth, sol ou xrp (13.10.2026 : autres actifs, lecture seule)", default: "btc" }
 permissions:
   contents: write
@@ -29,7 +29,7 @@ jobs:
               return None
           d0 = int(datetime.datetime.fromisoformat("${{ inputs.debut }}").replace(tzinfo=datetime.timezone.utc).timestamp())
           d1 = int(datetime.datetime.fromisoformat("${{ inputs.fin }}").replace(tzinfo=datetime.timezone.utc).timestamp())
-          assert d1 <= 1791849600, "periode reservee interdite"
+          assert d1 <= 1791936000, "periode reservee interdite"
           par_jour = collections.defaultdict(dict); n = 0; manq = 0; jours_ecrits = []
           for st in range(d0 - d0 % 300, d1, 300):
               ev = get(f"{G}/events?slug=${{ inputs.actif }}-updown-5m-{st}")
