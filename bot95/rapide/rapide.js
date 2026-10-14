@@ -265,6 +265,25 @@ function proba(mk, sdRel) {
 // signaux des cohortes A et B ; journal des décisions. Écrit sur le disque du VPS et envoyé au bot Cloudflare.
 const zlib = require("zlib");
 const REC = {};
+// Observation only: bounded, versioned inputs; never changes a trading decision.
+const VALIDATION_BOOT = Math.floor(Date.now() / 300000) * 300;
+function validationRecord(start, event) {
+  try {
+    const R = recDe(start);
+    const V = R.validation || (R.validation = { schema: 1, version: VERSION,
+      partialStartup: start === VALIDATION_BOOT, complete: true, bytes: 0, events: [] });
+    if (!V.complete) return;
+    const serialized = JSON.stringify(event);
+    if (V.bytes + serialized.length > 16 * 1024 * 1024) {
+      V.complete = false; V.reason = "validation recording size limit"; return;
+    }
+    V.bytes += serialized.length;
+    V.events.push(JSON.parse(serialized)); // immutable snapshot, not live references
+  } catch (e) {
+    try { const R = recDe(start); R.validation = { schema: 1, version: VERSION,
+      complete: false, reason: "validation recorder error", events: [] }; } catch (_) {}
+  }
+}
 const recDe = (start) => (REC[start] = REC[start] || { start, version: VERSION, ev: [], ex: [], snap: [], sig: [], dec: [], cl2: [], tw: [], mk: [], nEv: 0, coupe: false });
 const tokIdx = (id) => { for (const s of Object.keys(M)) { const m = M[s]; if (m.up === id) return [+s, 0]; if (m.down === id) return [+s, 1]; } return [null, null]; };
 // Volume mesuré le 11.10 : ~700 messages/s. Les carnets Up et Down sont miroirs (vérifié sur 100 % des lignes) : on garde le carnet Up seulement,
@@ -272,6 +291,7 @@ const tokIdx = (id) => { for (const s of Object.keys(M)) { const m = M[s]; if (m
 const PRES = 0.03;
 function recEv(id, row) {
   const [st, k] = tokIdx(id); if (st == null) return; const R = recDe(st); R.nEv++;
+  validationRecord(st, { type: "raw", token: id, row });
   if (row[0] !== "T") {
     if (k !== 0) return;
     if (row[0] === "B") { if (R.dernierB && row[1] - R.dernierB < 10000) return; R.dernierB = row[1]; }
@@ -832,6 +852,11 @@ function makerEvaluer(mk, tleft, ua, da, P) {
   }
   // M10 DOUBLE MAKER AU MEILLEUR PRIX + RETRAIT TOXIQUE (11.10.2026 15:47) : une offre au meilleur acheteur de CHAQUE côté (Up et Down : écart capturé si les
   // deux sont remplies) ; chaque côté est retiré 2 s dès qu'une des trois conditions de M4 se déclenche contre lui. 50 $ par côté et par cycle, de 290 à 10 s.
+  validationRecord(mk.start, { type: "decision", input: {
+    mk: { start: mk.start, end: mk.end, up: mk.up, down: mk.down },
+    t, tleft, ua, da, P, TOX: { [mk.up]: TOX[mk.up], [mk.down]: TOX[mk.down] },
+    bids: { [mk.up]: meilleurAcheteur(mk.up), [mk.down]: meilleurAcheteur(mk.down) }
+  } });
   for (const up of sides) {
     const id = up ? mk.up : mk.down, ask = (up ? ua : da)[0], bb = meilleurAcheteur(id), X = TOX[id] || { a: 0, b: 0, c: 0 };
     const tox = t - Math.max(X.a, X.b, X.c) <= 2000;
