@@ -3,6 +3,9 @@ import { RAPIDE_VERSION, RAPIDE_CODE, RAPIDE_LAUNCHER } from "./rapide_code.js";
 import { QTWAP } from "./quantiles_twap.js";
 import { BETES } from "./portefeuilles_betes.js";
 // 13.10.2026 13:27 (Pitch : « Tu peux enlever les stratégies à moins 1000 $ ») : résultat affiché par le bot < −1 000 $ (depuis le 10.10 11:50 UTC).
+const FILTRE_HEURES = new Set(["corrige marge mesuree : V2-F|BTC", "TWAP fin confirme Chainlink 0,5 s|BTC", "desaccord 20 Binance ou perp avec nous sans nuit|BTC",
+  "V2-C perp|BTC", "V2-F miroir 1 s|BTC", "desaccord 30 0,15-0,60 + perp + ecart qui grandit|BTC", "corrige : zone + Binance et perp + sortie -10|ETH",
+  "desaccord 20 jeton 0,35-0,65|BTC", "desaccord confirme perp|BTC"]);
 const STOPPEES = new Set(["V2-E persistant|BTC", "V2-H veto complet|BTC", "desaccord 20 60-180 s|BTC", "corrige : desaccord 20|ETH",
   "corrige marge mesuree : V2-F|ETH", "corrige : V2-F ecart qui grandit|ETH",
   // 13.10.2026 15:48 (Pitch : « tu peux enlever encore les 10 dernières du classement ») : les 10 derniers du classement à 15:50 (hors stratégies
@@ -1646,6 +1649,12 @@ export class Bot {
       try { this.nClore({ ...P, strat: P.strat + " + foule bybit", copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie foule bybit", err); }
       if (P.x2 && P.parts > 0 && P.x2.parts > 0) { try { const k2 = P.x2.parts / P.parts, sur = P.x2.cout - k2 * P.prix * P.parts;
         this.nClore({ ...P, strat: P.strat + " + foule bybit x2", copieCarnet: true, cash: k2 * P.cash - Math.max(0, sur), parts: P.x2.parts, journal: [...(P.journal || []), "mise x" + k2.toFixed(2) + ", surcoût " + sur.toFixed(2) + " $"] }, issue); } catch (err) { this.erreur("copie foule bybit x2", err); } } }
+    // 14.10.2026 15:01 (Pitch : « fantôme avec le filtre pour les 25 ») : copie « sans 02-10h » (aucun trade ouvert entre 02 h et 10 h, heure suisse)
+    // pour les stratégies où ce filtre a aidé avant ET après le 13.10 (etude/bot5min/filtre_heures_par_strategie.html), encore actives. Copie seulement.
+    if (!P.copieCarnet && FILTRE_HEURES.has(P.strat + "|" + P.actif) && P.heure) {
+      const hz = new Date(Date.parse(P.heure) + 2 * 3600e3).getUTCHours();
+      if (!(hz >= 2 && hz < 10)) { try { this.nClore({ ...P, strat: P.strat + " sans 02-10h", copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie sans 02-10h", err); } }
+    }
     if (!P.copieCarnet && P.actif === "BTC") { const cp = (suf) => { try { this.nClore({ ...P, strat: P.strat + suf, copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie" + suf, err); } };
       if (P.passages != null && P.passages <= 2) cp(" + calme");
       if (P.flux30 != null && P.flux30 <= -0.296) cp(" + contre foule");
