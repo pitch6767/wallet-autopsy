@@ -270,11 +270,25 @@ const VALIDATION_BOOT = Math.floor(Date.now() / 300000) * 300;
 function validationRecord(start, event) {
   try {
     const R = recDe(start);
-    const V = R.validation || (R.validation = { schema: 2, version: VERSION,
+    const V = R.validation || (R.validation = { schema: 3, tokens: [], version: VERSION,
       partialStartup: start === VALIDATION_BOOT, complete: true, bytes: 0,
       bufferBytes: 0, compressedBytes: 0, pending: 0, chunks: [], events: [] });
     if (!V.complete) return;
-    const serialized = JSON.stringify(event);
+    let packed;
+    if (event.type === "raw") {
+      let token = V.tokens.indexOf(event.token);
+      if (token < 0) { token = V.tokens.length; V.tokens.push(event.token); }
+      packed = ["R", token, event.row];
+    } else if (event.type === "decision") {
+      const i = event.input;
+      if (!V.market) V.market = { ...i.mk };
+      if (["start", "end", "up", "down"].some(k => V.market[k] !== i.mk[k])) {
+        V.complete = false; V.reason = "validation market changed"; return;
+      }
+      packed = ["D", i.t, i.tleft, i.ua, i.da, i.P,
+        i.TOX[i.mk.up], i.TOX[i.mk.down], i.bids[i.mk.up], i.bids[i.mk.down]];
+    } else { V.complete = false; V.reason = "unknown validation event"; return; }
+    const serialized = JSON.stringify(packed);
     if (V.bytes + serialized.length > 128 * 1024 * 1024) {
       V.complete = false; V.reason = "validation recording size limit"; return;
     }
