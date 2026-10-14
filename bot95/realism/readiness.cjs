@@ -8,7 +8,7 @@ function assess(source) {
     at:Date.now(), verdict:'PREUVES_INSUFFISANTES', official:identity,
     scope:'M10 officiel — aucun ordre réel',
     evidence:[
-      {name:'Identification de la copie de référence officielle',status:identity?'verifie':'bloquant',detail:error||'Version figée pour les tests ; les mises à jour automatiques du bot officiel ne sont pas encore suivies par ce comparateur.'},
+      {name:'Identification de la copie de référence officielle',status:identity?'verifie':'bloquant',detail:error||'Référence initiale vérifiée ; le relevé de comparaison indique la version courante et archive les sources observées. Tout cycle sans sa version exacte est exclu.'},
       {name:'Même stratégie et mêmes entrées',status:'a_verifier',detail:'Le rejeu utilise les signaux enregistrés par M10 et le code de la même version. Consulter les cycles exploitables ci-dessous ; l’ancien essai reste hors validation.'},
       {name:'Décisions officielles avec exécutions simulées et règlement',status:'tests_reussis',detail:'Boucle raccordée et testée sur scénarios synthétiques. Les données réelles et les hypothèses de file/latence doivent encore être évaluées ; aucune couverture inventée.'},
       {name:'Exécution et annulation calibrées',status:'non_verifie',detail:'100 ms est une hypothèse, pas une latence de passage d’ordre mesurée.'},
