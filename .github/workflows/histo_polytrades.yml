@@ -59,10 +59,17 @@ jobs:
           P
           ls -la | head; tail -30 /tmp/h_sortie.txt
           cd $GITHUB_WORKSPACE
-          # journal du téléchargement sur main (les journaux GitHub ne sont pas lisibles depuis la session)
           git config user.name histo; git config user.email bot@users.noreply.github.com
-          mkdir -p bot95/journaux && { ls -la /tmp/h; tail -60 /tmp/h_sortie.txt; } > bot95/journaux/histo_${{ inputs.actif }}_$(echo "${{ inputs.debut }}" | tr -d ":").txt
-          git add bot95/journaux && git commit -qm "Journal telechargement ${{ inputs.actif }} [skip ci]" && for k in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
-          git config user.name histo; git config user.email bot@users.noreply.github.com
-          git fetch -q origin donnees-btc:refs/remotes/origin/donnees-btc && git checkout -q -B donnees-btc origin/donnees-btc
-          mkdir -p polytrades && cp /tmp/h/*.json.gz polytrades/ ; git add polytrades && git commit -qm "Transactions Polymarket ${{ inputs.actif }} 5 min ${{ inputs.debut }} -> ${{ inputs.fin }}" && for k in 1 2 3 4 5 6 7 8; do git push -q origin donnees-btc && break; sleep $((RANDOM % 30 + 5)); git pull -q --rebase -X theirs origin donnees-btc || git rebase --abort; done
+          # 14.10.2026 04:35 : les envois parallèles sur donnees-btc échouaient sans trace -> chaque jour part sur SA PROPRE branche (aucun conflit possible)
+          J=bot95/journaux/histo_${{ inputs.actif }}_$(echo "${{ inputs.debut }}" | tr -d ":").txt; mkdir -p bot95/journaux
+          { ls -la /tmp/h; tail -60 /tmp/h_sortie.txt; } > /tmp/journal.txt
+          mkdir -p /tmp/w && cd /tmp/w && git init -q && git config user.name histo && git config user.email bot@users.noreply.github.com
+          git remote add origin "$(git -C $GITHUB_WORKSPACE remote get-url origin)"
+          git -C $GITHUB_WORKSPACE config --get-regexp 'http.*extraheader' | while read k v; do git config "$k" "$v"; done
+          for f in /tmp/h/*.json.gz; do
+            b=pt-$(basename $f .json.gz)
+            git checkout -q --orphan $b 2>/dev/null || git checkout -q -B $b; git rm -rqf --cached . >/dev/null 2>&1; rm -rf polytrades; mkdir -p polytrades; cp $f polytrades/
+            git add polytrades && git commit -qm "$b" && for k in 1 2 3 4; do git push -qf origin HEAD:refs/heads/$b >> /tmp/journal.txt 2>&1 && echo "envoye $b" >> /tmp/journal.txt && break; sleep 10; done
+          done
+          cd $GITHUB_WORKSPACE && cp /tmp/journal.txt $J
+          git add bot95/journaux && git commit -qm "Journal telechargement ${{ inputs.actif }} [skip ci]" && for k in 1 2 3 4 5 6; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep $((RANDOM % 20 + 5)); done
