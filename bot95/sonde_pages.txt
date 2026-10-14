@@ -1,27 +1,27 @@
 == /
-code 200 taille 10062 temps 0.293930s
+code 200 taille 10062 temps 13.798981s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media (prefers-color-
 == /nouveaux
-code 200 taille 27303 temps 0.241056s
+code 200 taille 27303 temps 0.281236s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media (prefers-col
 == /zero
-code 200 taille 4299 temps 0.232309s
+code 200 taille 4299 temps 0.311822s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes — remise à 0</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @me
 == /api/nouveaux
-code 200 taille 1788598 temps 1.067110s
+code 200 taille 1839572 temps 1.407718s
 {"depuis":1791633049.024,"typesDesaccord":{"fin (<2 min) | bon marché (<0,30) | perp avec nous | marché vers nous | autre crypto d'accord":{"simple":{"n":4,"g":0,"pnl":-130.57,"etats":{}}},"fin (<2 min) | bon marché (<0,30) | perp contre nous | marché ? | autre crypto d'accord":{"simple":{"n":6,
 == /api/zero
-code 200 taille 69127 temps 0.334506s
-{"depuis":"2026-10-14T08:45:00Z","strats":[{"nom":"desaccord 30 zone 0,15-0,35 + foule bybit x2 BTC","n":1,"gains":1,"pertes":0,"pnl":477.03,"pertesTot":0,"pire":0,"cum":477.03,"pic":477.03,"creux":0,"serie":0,"serieMax":0},{"nom":"desaccord 30 zone + sortie modele -10 + foule bybit x2 BTC","n":1,"g
+code 200 taille 72505 temps 0.350474s
+{"depuis":"2026-10-14T08:45:00Z","strats":[{"nom":"TWAP fin correction spot-perp BTC","n":7,"gains":5,"pertes":2,"pnl":555.78,"pertesTot":-55.22,"pire":-52.66,"cum":555.78,"pic":555.78,"creux":52.66,"serie":0,"serieMax":1},{"nom":"TWAP fin correction spot-perp + ecart serre BTC","n":5,"gains":3,"per
 == /api/etat
-code 200 taille 571258 temps 0.560520s
-{"mode":"fantôme","reste":268,"e":{"capital":182.61999999999998,"mise":58.64333333333333,"reserve":17.286666666666665,"pnl":-17.380000000000003,"gains":16,"pertes":1,"pause":false,"positions":[],"attente":[],"trades":[{"actif":"XRP","start":1791473700,"end":1791474000,"slug":"xrp-updown-5m-17914737
+code 200 taille 571469 temps 0.765496s
+{"mode":"fantôme","reste":250,"e":{"capital":182.61999999999998,"mise":58.64333333333333,"reserve":17.286666666666665,"pnl":-17.380000000000003,"gains":16,"pertes":1,"pause":false,"positions":[],"attente":[],"trades":[{"actif":"XRP","start":1791473700,"end":1791474000,"slug":"xrp-updown-5m-17914737
 == /api/classement
-code 200 taille 85101 temps 0.547253s
-{"jours":["2026-10-10","2026-10-11","2026-10-12","2026-10-13","2026-10-14"],"participants":{"2026-10-10":31,"2026-10-11":33,"2026-10-12":36,"2026-10-13":251,"2026-10-14":377},"strats":[{"nom":"BY1 Bybit premier 10 $ BTC","parJour":{"2026-10-13":34.35,"2026-10-14":37.06},"rang":{"2026-10-13":49,"2026
+code 200 taille 85124 temps 1.187738s
+{"jours":["2026-10-10","2026-10-11","2026-10-12","2026-10-13","2026-10-14"],"participants":{"2026-10-10":31,"2026-10-11":33,"2026-10-12":36,"2026-10-13":251,"2026-10-14":377},"strats":[{"nom":"BY1 Bybit premier 10 $ BTC","parJour":{"2026-10-13":34.35,"2026-10-14":30.95},"rang":{"2026-10-13":49,"2026
