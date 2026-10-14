@@ -95,7 +95,20 @@ const G = "https://gamma-api.polymarket.com";
 const C = "https://clob.polymarket.com";
 
 export default {
-  async fetch(req, env) { return stub(env).fetch(req); },
+  async fetch(req, env) {
+    const pathname = new URL(req.url).pathname;
+    if (req.method === "GET" && ["/api/rapide/version", "/api/rapide/code"].includes(pathname)) {
+      // Keep the existing Durable Object authorization, but serve the currently
+      // deployed bundle rather than code retained by a long-lived object.
+      const check = new Request(new URL("/api/rapide/version", req.url), req);
+      const authorization = await stub(env).fetch(check);
+      if (!authorization.ok) return authorization;
+      if (authorization.body) await authorization.body.cancel();
+      return json(pathname.endsWith("/version") ? { version: RAPIDE_VERSION } :
+        { version: RAPIDE_VERSION, code: RAPIDE_CODE });
+    }
+    return stub(env).fetch(req);
+  },
   async scheduled(_e, env, ctx) { ctx.waitUntil(stub(env).fetch("https://bot95/api/reveil")); },
 };
 const stub = (env) => env.BOT.get(env.BOT.idFromName("bot95"), { locationHint: "weur" });
