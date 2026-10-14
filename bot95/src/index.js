@@ -514,7 +514,7 @@ export class Bot {
       return json({ jours: JS, participants: Object.fromEntries(JS.map((j) => [j, rang["__n" + j]])), strats });
     }
     if (u.pathname === "/api/zero") { const Z = { ...(this.N.zero || {}) };
-      for (const k of Object.keys(this.N.strats)) { const base = k.slice(0, k.lastIndexOf(" ")); if (!Z[k] && !STOPPEES.has(base + "|" + k.slice(k.lastIndexOf(" ") + 1)) && NV.ACTIVES.includes(base)) Z[k] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 }; }
+      for (const k of Object.keys(this.N.strats)) { const base = k.slice(0, k.lastIndexOf(" ")); const v = this.N.strats[k]; if (!Z[k] && !STOPPEES.has(base + "|" + k.slice(k.lastIndexOf(" ") + 1)) && ((v.n || 0) > 0 || (v.trades || []).length > 0)) Z[k] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 }; }
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, ...z, pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
       return json({ depuis: ZERO_DEPUIS, strats: L, total: +L.reduce((a, b) => a + b.pnl, 0).toFixed(2) }); }
     if (u.pathname === "/zero") return new Response(PAGE_ZERO, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
