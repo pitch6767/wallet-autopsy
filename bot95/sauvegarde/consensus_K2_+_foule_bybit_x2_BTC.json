@@ -140,14 +140,94 @@
 ],
 "start": 1791936900,
 "slug": "btc-updown-5m-1791936900"
+},
+"2026-10-14T03:02:57.517Z|Down": {
+"heure": "2026-10-14T03:02:57.517Z",
+"cote": "Down",
+"prix": 0.1381,
+"parts": 769.24,
+"U": 0,
+"D": 384.6153846153846,
+"cash": -106.296956,
+"net": -106.3,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.335,
+"restant_s": 122,
+"journal": [
+"177.5s V2-F + pas les deux baissent achète Down avec 8 autres stratégies du même côté (première il y a 0.0 s), 122 s restantes → achat 384.6 parts à 0.1381",
+"mise x2.00, surcoût 0.03 $"
+],
+"start": 1791946800,
+"slug": "btc-updown-5m-1791946800"
+},
+"2026-10-14T02:52:45.564Z|Down": {
+"heure": "2026-10-14T02:52:45.564Z",
+"cote": "Down",
+"prix": 0.1697,
+"parts": 625,
+"U": 0,
+"D": 312.5,
+"cash": -107.1875,
+"net": -107.19,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.361,
+"restant_s": 134,
+"journal": [
+"165.6s V2-D perp 120-269 s achète Down avec 8 autres stratégies du même côté (première il y a 5.3 s), 134 s restantes → achat 312.5 parts à 0.1697",
+"mise x2.00, surcoût 1.14 $"
+],
+"start": 1791946200,
+"slug": "btc-updown-5m-1791946200"
+},
+"2026-10-14T02:37:55.199Z|Down": {
+"heure": "2026-10-14T02:37:55.199Z",
+"cote": "Down",
+"prix": 0.0515,
+"parts": 1042.8,
+"U": 0,
+"D": 521.4,
+"cash": -61.3666192,
+"net": -61.37,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.275,
+"restant_s": 125,
+"journal": [
+"175.2s V2-G jury des bourses achète Down avec 8 autres stratégies du même côté (première il y a 20.4 s), 125 s restantes → achat 521.4 parts à 0.0515",
+"mise x2.00, surcoût 7.62 $"
+],
+"start": 1791945300,
+"slug": "btc-updown-5m-1791945300"
+},
+"2026-10-14T00:51:55.498Z|Up": {
+"heure": "2026-10-14T00:51:55.498Z",
+"cote": "Up",
+"prix": 0.1784,
+"parts": 245.02,
+"U": 122.51,
+"D": 0,
+"cash": -45.226743184000014,
+"net": -45.23,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.365,
+"restant_s": 185,
+"journal": [
+"115.5s V2-H veto complet achète Up avec 9 autres stratégies du même côté (première il y a 0.0 s), 185 s restantes → achat 122.5 parts à 0.1784",
+"mise x2.00, surcoût 1.50 $"
+],
+"start": 1791939000,
+"slug": "btc-updown-5m-1791939000"
 }
 },
 "resume_bot": {
 "depuis": 1791931324.773,
-"n": 7,
+"n": 11,
 "gains": 2,
-"pertes": 5,
-"pnl": 241.32999999999993
+"pertes": 9,
+"pnl": -78.76000000000006
 },
 "archive": [
 [
@@ -212,8 +292,44 @@
 "une seule jambe",
 0.347,
 128
+],
+[
+"2026-10-14T00:51:55.498Z",
+"Up",
+0.1784,
+-45.23,
+"une seule jambe",
+0.365,
+185
+],
+[
+"2026-10-14T02:37:55.199Z",
+"Down",
+0.0515,
+-61.37,
+"une seule jambe",
+0.275,
+125
+],
+[
+"2026-10-14T02:52:45.564Z",
+"Down",
+0.1697,
+-107.19,
+"une seule jambe",
+0.361,
+134
+],
+[
+"2026-10-14T03:02:57.517Z",
+"Down",
+0.1381,
+-106.3,
+"une seule jambe",
+0.335,
+122
 ]
 ],
-"n_sauves": 7,
-"maj": "2026-10-14 00:46 UTC"
+"n_sauves": 11,
+"maj": "2026-10-14 03:31 UTC"
 }
