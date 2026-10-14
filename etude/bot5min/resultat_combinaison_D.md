@@ -1,4 +1,4 @@
-# Une hypothèse, un test : la combinaison D — BTC, 897 cycles (07.10 08:00 → 10.10 11:10)
+# Une hypothèse, un test : la combinaison D — BTC, 2005 cycles (07.10 08:00 → 14.10 07:45)
 
 Mêmes premières opportunités E pour toutes les politiques. Apprentissage < 08.10 22:00 ; validation < 09.10 23:36 ; nuit et matinée < 10.10 10:25 ; **après 10.10 10:25 : jamais utilisé dans aucune étude**.
 
@@ -40,26 +40,26 @@ Colonnes : achats | gagnés | résultat net | creux | jackpots (≥ 4 × la mise
 | propriété seule : indépendant du dernier mouvement | 32 | 34 % | **−228 $** | −324 $ | 1 | +73 $ | +5 $ (1) |
 | D attendu : acheter au premier instant où les 3 conditions sont réunies | 19 | 37 % | **+133 $** | −104 $ | 0 | — | — |
 
-## après 10.10 10:25 (jamais utilisé) — 1 premières opportunités
+## après 10.10 10:25 (jamais utilisé) — 198 premières opportunités
 
 | Politique | Achats | Gagnés | Résultat | Creux | Jackpots | Pertes évitées vs A | Gains sacrifiés vs A (dont jackpots) |
 |---|---|---|---|---|---|---|---|
-| A — tous les premiers signaux E (référence) | 1 | 0 % | **−51 $** | −51 $ | 0 | +0 $ | +0 $ (0) |
-| B — avantage 20-30 pts | 1 | 0 % | **−51 $** | −51 $ | 0 | +0 $ | +0 $ (0) |
-| C — B + ≥ 2 nouvelles valeurs Chainlink | 1 | 0 % | **−51 $** | −51 $ | 0 | +0 $ | +0 $ (0) |
-| D — C + avantage > 0 sans le dernier mouvement | 1 | 0 % | **−51 $** | −51 $ | 0 | +0 $ | +0 $ (0) |
-| propriété seule : ≥ 2 valeurs Chainlink | 1 | 0 % | **−51 $** | −51 $ | 0 | +0 $ | +0 $ (0) |
-| propriété seule : indépendant du dernier mouvement | 1 | 0 % | **−51 $** | −51 $ | 0 | +0 $ | +0 $ (0) |
-| D attendu : acheter au premier instant où les 3 conditions sont réunies | 1 | 0 % | **−51 $** | −51 $ | 0 | — | — |
+| A — tous les premiers signaux E (référence) | 198 | 41 % | **+547 $** | −662 $ | 15 | +0 $ | +0 $ (0) |
+| B — avantage 20-30 pts | 136 | 36 % | **−165 $** | −568 $ | 6 | +773 $ | +1 485 $ (9) |
+| C — B + ≥ 2 nouvelles valeurs Chainlink | 55 | 24 % | **−309 $** | −498 $ | 3 | +2 200 $ | +3 057 $ (12) |
+| D — C + avantage > 0 sans le dernier mouvement | 52 | 25 % | **−232 $** | −494 $ | 3 | +2 277 $ | +3 057 $ (12) |
+| propriété seule : ≥ 2 valeurs Chainlink | 64 | 23 % | **−257 $** | −409 $ | 4 | +1 987 $ | +2 791 $ (11) |
+| propriété seule : indépendant du dernier mouvement | 157 | 39 % | **+137 $** | −594 $ | 9 | +425 $ | +836 $ (6) |
+| D attendu : acheter au premier instant où les 3 conditions sont réunies | 118 | 36 % | **−292 $** | −472 $ | 8 | — | — |
 
 ## La baisse modérée de 10 à 30 c en 3 s apporte-t-elle une information en plus ?
 
 | Groupe (toutes périodes hors apprentissage) | Achats | Gagnés | Résultat | Creux | Jackpots |
 |---|---|---|---|---|---|
-| baisse modérée — tous | 10 | 70 % | **+373 $** | −52 $ | 0 |
-| baisse modérée ET les 3 propriétés (D) | 3 | 33 % | **+48 $** | −52 $ | 0 |
-| baisse modérée SANS les 3 propriétés | 7 | 86 % | **+325 $** | −8 $ | 0 |
-| D sans baisse modérée | 11 | 73 % | **+679 $** | −92 $ | 4 |
+| baisse modérée — tous | 42 | 43 % | **+258 $** | −612 $ | 1 |
+| baisse modérée ET les 3 propriétés (D) | 18 | 17 % | **−370 $** | −470 $ | 0 |
+| baisse modérée SANS les 3 propriétés | 24 | 62 % | **+628 $** | −340 $ | 1 |
+| D sans baisse modérée | 47 | 40 % | **+916 $** | −389 $ | 7 |
 
 Même tableau sur l'apprentissage :
 
@@ -74,7 +74,7 @@ Corrélation entre les propriétés (toutes opportunités) : 20-30 pts / ≥ 2 C
 
 | | 20-30 pts | ≥ 2 Chainlink | indépendant | baisse modérée |
 |---|---|---|---|---|
-| 20-30 pts | +1.00 | +0.04 | +0.02 | +0.10 |
-| ≥ 2 Chainlink | +0.04 | +1.00 | +0.24 | +0.04 |
-| indépendant | +0.02 | +0.24 | +1.00 | +0.20 |
-| baisse modérée | +0.10 | +0.04 | +0.20 | +1.00 |
+| 20-30 pts | +1.00 | +0.16 | +0.05 | +0.15 |
+| ≥ 2 Chainlink | +0.16 | +1.00 | +0.26 | +0.13 |
+| indépendant | +0.05 | +0.26 | +1.00 | +0.22 |
+| baisse modérée | +0.15 | +0.13 | +0.22 | +1.00 |

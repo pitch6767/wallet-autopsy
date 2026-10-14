@@ -53,7 +53,8 @@ for r in rows: C[r[1]].append(r)
 NUIT0 = 1791581760
 valides = [st for st in sorted(C) if (O.get(f"BTC:{st}") or {}).get("gagnant")]
 avant = [st for st in valides if st < NUIT0]; CUT = avant[int(len(avant) * 0.6)]
-per = lambda st: "apprentissage" if st < CUT else ("validation" if st < NUIT0 else "nuit 10.10")
+MATIN0 = 1791620700          # 14.10 : 10.10 10:25 heure suisse, fin des données des études précédentes -> après = cycles inédits
+per = lambda st: "apprentissage" if st < CUT else ("validation" if st < NUIT0 else ("nuit 10.10" if st < MATIN0 else "inédit (après 10.10 10:25)"))
 def modele(st, ti):
     end = st + 300; deb = end - 60; s = int(ti)
     K = [sec("cl", x) for x in range(st - 60, st)]; K = [x for x in K if x is not None]
@@ -111,12 +112,16 @@ RES = {}
 for d in (-1.0, -0.5, 0.0, 0.5, 1.0):
     RES[d] = rejouer(d)
     for k in ("A", "E"):
-        for g in ("apprentissage", "validation", "nuit 10.10"):
+        for g in ("apprentissage", "validation", "nuit 10.10", "inédit (après 10.10 10:25)"):
             L = [v for st, v in sorted(RES[d][k].items()) if per(st) == g]
             out.append(f"| {d:+.1f} s | {k} | {g} | {st_(L)} |")
 out += ["", "### Résumé : E − A (validation + nuit) selon le décalage", "", "| Décalage | A | E | E − A |", "|---|---|---|---|"]
 for d in RES:
     a = sum(v["pn"] for st, v in RES[d]["A"].items() if per(st) != "apprentissage"); e = sum(v["pn"] for st, v in RES[d]["E"].items() if per(st) != "apprentissage")
+    out.append(f"| {d:+.1f} s | {f0(a)} | {f0(e)} | **{f0(e - a)}** |")
+out += ["", "### Verdict limité aux cycles INÉDITS (après 10.10 10:25) : E − A selon le décalage", "", "| Décalage | A | E | E − A |", "|---|---|---|---|"]
+for d in RES:
+    a = sum(v["pn"] for st, v in RES[d]["A"].items() if per(st).startswith("inédit")); e = sum(v["pn"] for st, v in RES[d]["E"].items() if per(st).startswith("inédit"))
     out.append(f"| {d:+.1f} s | {f0(a)} | {f0(e)} | **{f0(e - a)}** |")
 # 2. decomposition (δ = 0, validation)
 R0 = RES[0.0]; VA = {st: v for st, v in R0["A"].items() if per(st) == "validation"}; VE = {st: v for st, v in R0["E"].items() if per(st) == "validation"}

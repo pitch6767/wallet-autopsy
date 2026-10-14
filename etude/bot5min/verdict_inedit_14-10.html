@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Bot95 – verdict sur les journées inédites</title>
+<style>
+@page { size: A4; margin: 16mm 14mm; }
+body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 10.2pt; color: #1b1b1b; line-height: 1.38; }
+h1 { font-size: 17pt; margin: 0 0 4px; }
+h2 { font-size: 12.5pt; margin: 18px 0 6px; border-bottom: 1.5px solid #333; padding-bottom: 2px; page-break-after: avoid; }
+.sous { color: #555; font-size: 9pt; margin-bottom: 10px; }
+table { border-collapse: collapse; width: 100%; margin: 6px 0 8px; font-size: 8.8pt; page-break-inside: avoid; }
+th, td { border: 1px solid #bbb; padding: 3px 5px; text-align: right; }
+th:first-child, td:first-child { text-align: left; }
+th { background: #eee; }
+.v { background: #f3f7ee; border-left: 4px solid #4a7a2a; padding: 6px 9px; margin: 6px 0; }
+.r { background: #fbf0ee; border-left: 4px solid #a23b2a; padding: 6px 9px; margin: 6px 0; }
+.n { background: #f5f5f5; border-left: 4px solid #888; padding: 6px 9px; margin: 6px 0; font-size: 9.3pt; }
+b.p { color: #2f6a1d; } b.m { color: #a23b2a; }
+ul { margin: 4px 0 4px 18px; padding: 0; } li { margin: 2px 0; }
+</style></head><body>
+<h1>Bot95 — verdict sur les journées inédites</h1>
+<div class="sous">14.10.2026 · Cycles BTC jamais utilisés dans une étude : après le 10.10 10:25 (heure suisse), jusqu'au 14.10 07:45. Aucun fantôme modifié, aucun argent réel, rien d'activé : ce document propose seulement.</div>
+
+<h2>En bref</h2>
+<ul>
+<li><b>Combinaison D : rejetée.</b> Sur les cycles inédits, elle fait <b class="m">−232 $</b>, contre <b class="p">+547 $</b> pour E. Ton critère n'est pas rempli.</li>
+<li><b>Baisse modérée (10–30 c) : pas de fantôme.</b> Elle n'apporte rien en plus de D.</li>
+<li><b>E contre A (TWAP fin original) : surprise.</b> Sur les cycles inédits, l'original A fait mieux que E à tous les décalages testés (<b class="p">+1 615 $</b> contre <b class="p">+547 $</b> sans décalage). E perd moins souvent et a des creux plus faibles, mais gagne moins. L'écart reste dans le bruit (~200 achats).</li>
+<li><b>Faux cadeaux : « 11 pertes sur 11 » n'est pas confirmé.</b> Sur 16 signaux, il y a 11 pertes et 5 gains. Sur 6 cycles différents : 5 perdus, 1 gagné. Résultat : −359 $ à 50 $ par signal. Le fantôme « sans faux cadeau » est préparé, mais pas activé.</li>
+<li><b>Balayer le carnet :</b> les jours normaux, balayer tant que l'avantage reste ≥ 20 pts fait mieux que le seul meilleur vendeur (<b class="p">+2 150 $</b> contre <b class="p">+1 721 $</b>). La nuit du 10.10, balayer aggrave les pertes. Ce gain est probablement surestimé (voir § 4).</li>
+<li><b>V2-F : la variante qui apporte le plus est « incertitude 0,01 % ».</b> Elle fait <b class="p">+1 167 $</b>, contre <b class="m">−320 $</b> pour l'original au seul meilleur vendeur, avec un creux plus petit (717 $ contre 1 269 $). Elle ne manque que 3 jackpots de l'original. Mais le 13.10, toutes les versions perdent. L'échantillon est trop petit pour conclure fermement.</li>
+</ul>
+
+<h2>1. Combinaison D contre E (combinaison_D.py)</h2>
+<p>Mêmes premières opportunités E pour toutes les politiques. B = avantage 20–30 pts ; C = B + au moins 2 nouvelles valeurs Chainlink ; D = C + avantage encore positif sans le dernier mouvement. Période inédite : 198 premières opportunités.</p>
+<table><tr><th>Politique (cycles inédits)</th><th>Achats</th><th>Gagnés</th><th>Bénéfice net</th><th>Creux</th><th>Jackpots</th><th>Pertes évitées vs E</th><th>Gains sacrifiés vs E</th></tr>
+<tr><td>E — tous les premiers signaux (référence)</td><td>198</td><td>41 %</td><td><b class="p">+547 $</b></td><td>−662 $</td><td>15</td><td>—</td><td>—</td></tr>
+<tr><td>B — avantage 20–30 pts</td><td>136</td><td>36 %</td><td><b class="m">−165 $</b></td><td>−568 $</td><td>6</td><td>+773 $</td><td>1 485 $ (9 jackpots)</td></tr>
+<tr><td>C — B + ≥ 2 valeurs Chainlink</td><td>55</td><td>24 %</td><td><b class="m">−309 $</b></td><td>−498 $</td><td>3</td><td>+2 200 $</td><td>3 057 $ (12)</td></tr>
+<tr><td>D — C + indépendant du dernier mouvement</td><td>52</td><td>25 %</td><td><b class="m">−232 $</b></td><td>−494 $</td><td>3</td><td>+2 277 $</td><td>3 057 $ (12)</td></tr>
+<tr><td>seule : ≥ 2 valeurs Chainlink</td><td>64</td><td>23 %</td><td><b class="m">−257 $</b></td><td>−409 $</td><td>4</td><td>+1 987 $</td><td>2 791 $ (11)</td></tr>
+<tr><td>seule : indépendant du dernier mouvement</td><td>157</td><td>39 %</td><td><b class="p">+137 $</b></td><td>−594 $</td><td>9</td><td>+425 $</td><td>836 $ (6)</td></tr>
+<tr><td>D attendu (acheter dès que les 3 conditions sont réunies)</td><td>118</td><td>36 %</td><td><b class="m">−292 $</b></td><td>−472 $</td><td>8</td><td>—</td><td>—</td></tr></table>
+<div class="r"><b>Verdict :</b> D évite 2 277 $ de pertes, mais sacrifie 3 057 $ de gains, dont 12 jackpots. Son bénéfice net est inférieur à celui de E et son creux n'est que légèrement plus faible. <b>D n'est pas retenu.</b> Avant le 10.10, D semblait bon (validation +762 $, 80 % de gagnés sur 10 achats) : c'était un tout petit échantillon.</div>
+<p><b>Baisse modérée de 10–30 c en 3 s</b> (toutes périodes hors apprentissage) : baisse ET D = 18 achats, <b class="m">−370 $</b> ; baisse SANS D = 24 achats, <b class="p">+628 $</b> ; D sans baisse = 47 achats, <b class="p">+916 $</b>. Sur l'apprentissage, c'était l'inverse. Elle n'apporte aucune information fiable en plus de D. <b>Pas de fantôme.</b></p>
+
+<h2>2. E contre A, limité aux cycles inédits (robustesse_E.py)</h2>
+<p>δ négatif : le calcul utilise des données plus vieilles de |δ|. δ positif : l'achat se fait |δ| plus tard, au prix du carnet de ce moment.</p>
+<table><tr><th>Décalage</th><th>A achats</th><th>A bénéfice</th><th>A creux</th><th>E achats</th><th>E bénéfice</th><th>E creux</th><th>E − A</th></tr>
+<tr><td>−1,0 s</td><td>276</td><td>−1 413 $</td><td>−1 813 $</td><td>254</td><td>−2 390 $</td><td>−3 064 $</td><td><b class="m">−977 $</b></td></tr>
+<tr><td>−0,5 s</td><td>264</td><td>−1 958 $</td><td>−2 328 $</td><td>246</td><td>−2 312 $</td><td>−3 014 $</td><td><b class="m">−353 $</b></td></tr>
+<tr><td><b>0 s</b></td><td>211</td><td><b>+1 615 $</b></td><td>−806 $</td><td>198</td><td><b>+547 $</b></td><td>−662 $</td><td><b class="m">−1 068 $</b></td></tr>
+<tr><td>+0,5 s</td><td>210</td><td>+993 $</td><td>−1 122 $</td><td>197</td><td>+844 $</td><td>−667 $</td><td><b class="m">−149 $</b></td></tr>
+<tr><td>+1,0 s</td><td>210</td><td>+148 $</td><td>−1 139 $</td><td>198</td><td>−195 $</td><td>−804 $</td><td><b class="m">−344 $</b></td></tr></table>
+<div class="v"><b>Ce que ça dit :</b>
+<ul><li>Sur les journées inédites, E ne bat pas A. Le gain de E observé en validation (+48 $ seulement) ne se répète pas.</li>
+<li>Les deux modèles dépendent fortement de la fraîcheur des données. Un calcul en retard de 0,5 à 1 s les fait perdre 1 400 à 2 400 $. La vitesse compte plus que le choix entre A et E.</li>
+<li>Avec ~200 achats, l'incertitude sur un total est d'environ ±800 $. L'écart de 1 068 $ entre A et E n'est donc pas une preuve.</li></ul></div>
+<div class="n"><b>Proposition (à toi de décider) :</b> ton plan disait « si D ne bat pas E, on garde E et on passe à la validation d'exécution ». La validation d'exécution est bien l'étape suivante : mesurer le retard réel du bot (calcul et achat). Pour le choix A ou E, les journées inédites ne départagent pas clairement. A a gagné plus, E a perdu moins souvent.</div>
+
+<h2>3. Faux cadeaux (bot95/twap_carnets.json)</h2>
+<table><tr><th>Groupe</th><th>Signaux</th><th>Gagnés</th><th>Prix moyen</th><th>Probabilité moyenne</th><th>Résultat (50 $ par signal)</th></tr>
+<tr><td>fauxCadeau = vrai</td><td>16</td><td>5 (31 %)</td><td>0,44</td><td>0,75</td><td><b class="m">−359 $</b></td></tr>
+<tr><td>autres signaux enregistrés</td><td>1 429</td><td>468 (33 %)</td><td>0,29</td><td>0,55</td><td><b class="p">+28 100 $</b></td></tr></table>
+<p>Les 16 signaux ne couvrent que <b>6 cycles</b> : 10.10 11:30 (perdu), 10.10 12:00 (perdu, 7 stratégies), 10.10 15:30 (perdu), 10.10 21:20 (<b>gagné</b>, 5 stratégies), 11.10 04:15 (perdu), 13.10 10:40 (perdu). Les « 11 pertes sur 11 » ne sont donc pas confirmées : c'est 11 sur 16, ou 5 cycles perdus sur 6. Le signal reste mauvais, mais 6 cycles ne suffisent pas pour conclure.</p>
+<div class="n"><b>Fantôme « sans faux cadeau » préparé, PAS activé :</b> mêmes règles que chaque stratégie TWAP fin, mais pas d'achat quand le bot marque le signal <i>fauxCadeau</i>. Il faut ton accord pour l'ajouter. Au rythme actuel (~2 cycles par jour), il faudra plusieurs semaines pour le juger.</div>
+
+<h2>4. Balayer le carnet (parties 8–10, jours normaux et nuit du 10.10 séparés)</h2>
+<table><tr><th>Politique (50 $ max par cycle)</th><th>Nuit 10.10 : cycles</th><th>Nuit : résultat</th><th>Jours normaux : cycles</th><th>Jours : capital</th><th>Jours : résultat</th><th>Jackpots</th></tr>
+<tr><td>meilleur vendeur seul (actuel)</td><td>33</td><td>−287 $</td><td>277</td><td>5 996 $</td><td><b class="p">+1 721 $</b></td><td>20</td></tr>
+<tr><td>balayer tant que l'avantage ≥ 20 pts</td><td>33</td><td>−500 $</td><td>279</td><td>8 143 $</td><td><b class="p">+2 150 $</b></td><td>20</td></tr>
+<tr><td>balayer tant que l'avantage ≥ 15 pts</td><td>34</td><td>−493 $</td><td>283</td><td>13 343 $</td><td>+1 082 $</td><td>19</td></tr>
+<tr><td>balayer tant que l'avantage ≥ 10 pts</td><td>34</td><td>−499 $</td><td>283</td><td>13 740 $</td><td>+1 498 $</td><td>18</td></tr>
+<tr><td>balayer prudent (proba − 10 pts, ≥ 10 pts)</td><td>32</td><td>−499 $</td><td>279</td><td>8 185 $</td><td>+2 100 $</td><td>19</td></tr>
+<tr><td>balayer ≥ 20 pts, jusqu'à 100 $</td><td>33</td><td>−1 122 $</td><td>279</td><td>13 244 $</td><td><b class="p">+2 707 $</b></td><td>19</td></tr>
+<tr><td>exécution patiente (0 s, puis 1 s et 2 s)</td><td>33</td><td>−660 $</td><td>280</td><td>9 459 $</td><td>+833 $</td><td>—</td></tr></table>
+<div class="r"><b>Prudence :</b> ce calcul utilise le carnet <i>au moment exact du signal</i>. Or, dans les jours normaux, le meilleur prix n'est plus disponible 0,5 s après dans 47 % des cas. La quantité médiane restante à ce prix tombe alors à 13 jetons, puis à 0 après 1 s. Avec le retard réel du bot, le gain du balayage serait plus petit. Balayer ≥ 20 pts est une piste à valider dans la validation d'exécution, pas à activer.</div>
+
+<h2>5. V2-F : trois variantes contre l'original, sur les mêmes cycles</h2>
+<p>Prospectif uniquement : achats réels du bot fantôme, depuis le 10.10 12:33. L'original et « pause mémoire » ne sont plus enregistrés après le 13.10 15:20, donc la comparaison s'arrête là. Les variantes achètent au seul meilleur vendeur. L'original achète jusqu'au vendeur + 1 c ; il est donc aussi donné ramené au seul meilleur vendeur (journal, champs partsMeilleur / coutMeilleur). Les variantes ne sont pas combinées.</p>
+<p><b>Période de verdict : 10.10 12:33 → 12.10 24:00</b></p>
+<table><tr><th>Stratégie</th><th>Achats</th><th>Gagnés</th><th>Bénéfice net</th><th>Capital</th><th>ROI</th><th>Creux max</th><th>Pertes de suite max</th><th>Jackpots</th><th>Jackpots de l'original manqués</th><th>Pertes de l'original évitées</th></tr>
+<tr><td>V2-F original (vendeur + 1 c)</td><td>559</td><td>23 %</td><td><b class="m">−680 $</b></td><td>20 023 $</td><td>−3,4 %</td><td>2 223 $</td><td>18</td><td>19 (+4 502 $)</td><td>—</td><td>—</td></tr>
+<tr><td>V2-F original, seul meilleur vendeur</td><td>564</td><td>24 %</td><td><b class="m">−320 $</b></td><td>9 684 $</td><td>−3,3 %</td><td>1 269 $</td><td>18</td><td>20 (+2 324 $)</td><td>—</td><td>—</td></tr>
+<tr><td>miroir 1 s</td><td>210</td><td>27 %</td><td><b class="p">+183 $</b></td><td>5 024 $</td><td>+3,6 %</td><td>861 $</td><td>14</td><td>11 (+1 287 $)</td><td>8</td><td>9 291 $</td></tr>
+<tr><td><b>incertitude 0,01 %</b></td><td>425</td><td>35 %</td><td><b class="p">+1 167 $</b></td><td>8 078 $</td><td><b>+14,5 %</b></td><td><b>717 $</b></td><td>19</td><td>19 (+1 196 $)</td><td><b>3</b></td><td>4 975 $</td></tr>
+<tr><td>pause mémoire</td><td>473</td><td>23 %</td><td><b class="m">−265 $</b></td><td>8 295 $</td><td>−3,2 %</td><td>1 301 $</td><td>15</td><td>17 (+2 270 $)</td><td>2</td><td>2 223 $</td></tr></table>
+<p><b>13.10 seul</b> (jour réservé : montré, mais pas utilisé pour choisir)</p>
+<table><tr><th>Stratégie</th><th>Achats</th><th>Gagnés</th><th>Bénéfice net</th><th>ROI</th><th>Creux max</th><th>Jackpots</th><th>Jackpots de l'original manqués</th></tr>
+<tr><td>V2-F original (vendeur + 1 c)</td><td>122</td><td>19 %</td><td>−350 $</td><td>−7,4 %</td><td>1 078 $</td><td>9</td><td>—</td></tr>
+<tr><td>V2-F original, seul meilleur vendeur</td><td>124</td><td>19 %</td><td>−414 $</td><td>−15,8 %</td><td>807 $</td><td>9</td><td>—</td></tr>
+<tr><td>miroir 1 s</td><td>76</td><td>16 %</td><td>−585 $</td><td>−31,9 %</td><td>736 $</td><td>3</td><td>6</td></tr>
+<tr><td>incertitude 0,01 %</td><td>65</td><td>29 %</td><td>−230 $</td><td>−15,7 %</td><td>344 $</td><td>2</td><td>1</td></tr>
+<tr><td>pause mémoire</td><td>115</td><td>19 %</td><td>−539 $</td><td>−22,0 %</td><td>933 $</td><td>8</td><td>1</td></tr></table>
+<p><b>Rappel des résultats historiques</b> (à ne pas mélanger avec ce qui précède) : pause « −2 sur 20 trades » <b>+7 233 $</b> contre <b>+6 096 $</b> sans pause (resultat_idees_v2f.md) ; incertitude 0,01 % <b>+8 820 $</b> (resultat_edge_truth.md).</p>
+<div class="v"><b>Réponse à ta question :</b> la modification qui apporte réellement le plus de bénéfice supplémentaire est <b>« incertitude 0,01 % »</b>. En prospectif, elle fait +1 487 $ de plus que l'original au seul meilleur vendeur (+1 167 $ contre −320 $), avec un creux presque deux fois plus petit, et ne manque que 3 jackpots. Le 13.10, elle perd aussi, mais moins que les autres (−230 $). Elle est aussi la meilleure dans l'historique.<br>
+<b>Miroir 1 s</b> gagne un peu (+183 $) mais sacrifie 8 jackpots et s'effondre le 13.10. <b>Pause mémoire</b> n'apporte presque rien en prospectif (−265 $ contre −320 $), alors qu'elle brillait dans l'historique.</div>
+<div class="n"><b>Taille de l'échantillon :</b> ~2,5 jours, 400 à 560 achats, mais seulement ~20 jackpots, qui font l'essentiel des gains. Un seul jackpot de plus ou de moins déplace le total de 100 à 300 $. L'avance de « incertitude 0,01 % » est cohérente avec l'historique, mais pas encore prouvée. Il faut quelques jours de plus (et que l'original reste enregistré) pour la confirmer.</div>
+
+<h2>Ce que je propose (rien n'est fait sans ton accord)</h2>
+<ul>
+<li>Ne pas adopter D, ni la baisse modérée.</li>
+<li>Passer à la validation d'exécution (retard réel du bot), car A et E dépendent tous deux de la vitesse.</li>
+<li>Garder « incertitude 0,01 % » comme variante V2-F favorite, à confirmer sur quelques jours de plus.</li>
+<li>Fantôme « sans faux cadeau » : prêt, à activer seulement si tu le veux.</li>
+<li>Balayage ≥ 20 pts : à tester dans la validation d'exécution, pas avant.</li>
+</ul>
+<div class="sous">Fichiers : etude/bot5min/resultat_combinaison_D.md · resultat_robustesse_E.md · resultat_balayage_jours.md · resultat_v2f_variantes_verdict.md</div>
+</body></html>
