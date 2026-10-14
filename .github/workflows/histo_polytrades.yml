@@ -61,8 +61,8 @@ jobs:
           cd $GITHUB_WORKSPACE
           # journal du téléchargement sur main (les journaux GitHub ne sont pas lisibles depuis la session)
           git config user.name histo; git config user.email bot@users.noreply.github.com
-          mkdir -p bot95/journaux && { ls -la /tmp/h; tail -60 /tmp/h_sortie.txt; } > bot95/journaux/histo_${{ inputs.actif }}.txt
+          mkdir -p bot95/journaux && { ls -la /tmp/h; tail -60 /tmp/h_sortie.txt; } > bot95/journaux/histo_${{ inputs.actif }}_$(echo "${{ inputs.debut }}" | tr -d ":").txt
           git add bot95/journaux && git commit -qm "Journal telechargement ${{ inputs.actif }} [skip ci]" && for k in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
           git config user.name histo; git config user.email bot@users.noreply.github.com
           git fetch -q origin donnees-btc:refs/remotes/origin/donnees-btc && git checkout -q -B donnees-btc origin/donnees-btc
-          mkdir -p polytrades && cp /tmp/h/*.json.gz /tmp/h/journal_*.txt polytrades/ ; git add polytrades && git commit -qm "Transactions Polymarket ${{ inputs.actif }} 5 min ${{ inputs.debut }} -> ${{ inputs.fin }}" && for k in 1 2 3 4 5 6 7 8; do git push -q origin donnees-btc && break; sleep $((RANDOM % 30 + 5)); git pull -q --rebase origin donnees-btc; done
+          mkdir -p polytrades && cp /tmp/h/*.json.gz polytrades/ ; git add polytrades && git commit -qm "Transactions Polymarket ${{ inputs.actif }} 5 min ${{ inputs.debut }} -> ${{ inputs.fin }}" && for k in 1 2 3 4 5 6 7 8; do git push -q origin donnees-btc && break; sleep $((RANDOM % 30 + 5)); git pull -q --rebase -X theirs origin donnees-btc || git rebase --abort; done
