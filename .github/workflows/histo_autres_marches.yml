@@ -1,0 +1,126 @@
+name: Historique autres marches crypto Up/Down Polymarket (15 min, horaires) - lecture seule, H1089
+# 14.10.2026 (H1089) : meme principe que histo_polytrades.yml, pour les marches plus longs.
+# type = btc-15m | eth-15m | sol-15m | xrp-15m | btc-1h | eth-1h | sol-1h | xrp-1h | btc-4h | sonde
+on:
+  workflow_dispatch:
+    inputs:
+      debut: { description: "debut AAAA-MM-JJTHH:MM (UTC)", default: "2026-10-10T00:00" }
+      fin: { description: "fin AAAA-MM-JJTHH:MM (UTC, au plus 13.10 00:00)", default: "2026-10-11T00:00" }
+      type: { description: "btc-15m, btc-1h, eth-15m, ... ou sonde", default: "sonde" }
+permissions:
+  contents: write
+jobs:
+  h:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 1 }
+      - run: |
+          set +e
+          mkdir -p /tmp/h && cd /tmp/h
+          python3 - > /tmp/h_sortie.txt 2>&1 <<'P'
+          import json, time, gzip, datetime, urllib.request, collections
+          from zoneinfo import ZoneInfo
+          G = "https://gamma-api.polymarket.com"; D = "https://data-api.polymarket.com"
+          def get(u):
+              for k in range(5):
+                  try: return json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "bot95-etude"}), timeout=60).read())
+                  except Exception as e:
+                      if "404" in str(e) or "400" in str(e): return None
+                      time.sleep(5 if "429" in str(e) else 1.5 * (k + 1))
+              return None
+          TY = "${{ inputs.type }}"
+          d0 = int(datetime.datetime.fromisoformat("${{ inputs.debut }}").replace(tzinfo=datetime.timezone.utc).timestamp())
+          d1 = int(datetime.datetime.fromisoformat("${{ inputs.fin }}").replace(tzinfo=datetime.timezone.utc).timestamp())
+          assert d1 <= 1791849600, "periode reservee interdite (13.10 et apres)"
+          NOMS = {"btc": "bitcoin", "eth": "ethereum", "sol": "solana", "xrp": "xrp"}
+          MOIS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
+          def slug_h(a, st):
+              e = datetime.datetime.fromtimestamp(st, ZoneInfo("America/New_York")); h = e.hour % 12 or 12
+              return f"{NOMS[a]}-up-or-down-{MOIS[e.month - 1]}-{e.day}-{h}{'am' if e.hour < 12 else 'pm'}-et"
+          def slugs(ty, st):
+              a, du = ty.split("-")
+              if du == "1h": return slug_h(a, st)
+              return f"{a}-updown-{du}-{st}"
+          PAS = {"15m": 900, "1h": 3600, "4h": 3600}
+          def trades(cid, maxoff=9500):
+              T = []; off = 0; tronque = False
+              while True:
+                  r = get(f"{D}/trades?market={cid}&limit=500&offset={off}&takerOnly=false")
+                  if not r: break
+                  T += [[x.get("timestamp"), x.get("proxyWallet"), x.get("side"), x.get("outcome"), x.get("price"), x.get("size"), x.get("transactionHash")] for x in r]
+                  if len(r) < 500: break
+                  off += 500; time.sleep(0.15)
+                  if off > maxoff: tronque = True; break
+              return T, tronque
+          def info(ev):
+              e = ev[0]; m = e["markets"][0]
+              try: out = json.loads(m["outcomes"]); px = [float(x) for x in json.loads(m["outcomePrices"])]
+              except Exception: out, px = [], []
+              meta = e.get("eventMetadata") or m.get("eventMetadata") or {}
+              if isinstance(meta, str):
+                  try: meta = json.loads(meta)
+                  except Exception: meta = {}
+              return e, m, out, px, meta
+          if TY == "sonde":
+              # recherche des formats de slug + description + volume, + test de la limite d'offset
+              st15 = d0 - d0 % 900; sth = d0 - d0 % 3600
+              cands = []
+              for a in ["btc", "eth", "sol", "xrp"]:
+                  cands += [f"{a}-updown-15m-{st15}", f"{a}-updown-1h-{sth}", f"{a}-updown-4h-{sth}", f"{a}-updown-4h-{sth - sth % 14400}",
+                            f"{a}-updown-4h-{sth - sth % 14400 + 3600}", slug_h(a, sth), f"{a}-updown-5m-{d0 - d0 % 300}"]
+              for s in cands:
+                  ev = get(f"{G}/events?slug={s}")
+                  if not ev: print("ABSENT", s); continue
+                  e, m, out, px, meta = info(ev)
+                  print("TROUVE", s, "| titre:", e.get("title"), "| debut:", m.get("eventStartTime") or e.get("startTime"), "| fin:", m.get("endDate"),
+                        "| volume:", m.get("volume"), "| liquidite:", m.get("liquidity"), "| resultat:", dict(zip(out, px)), "| meta:", meta,
+                        "| frais:", m.get("feesEnabled"), m.get("makerBaseFee"), m.get("takerBaseFee"), m.get("feeSchedule"), "| series:", (e.get("series") or [{}])[0].get("slug"))
+                  print("   description:", (m.get("description") or e.get("description") or "")[:900].replace("\n", " "))
+                  print("   resolutionSource:", m.get("resolutionSource") or e.get("resolutionSource"))
+                  T, tr = trades(m.get("conditionId"), 30000)
+                  print("   transactions:", len(T), "tronque:", tr, "premiere/derniere:", (min(x[0] for x in T), max(x[0] for x in T)) if T else None)
+              for q in ["series?slug=btc-up-or-down-hourly", "series?slug=bitcoin-up-or-down-hourly", "series?slug=btc-up-or-down-15m", "events?tag_slug=up-or-down&closed=true&limit=40&order=endDate&ascending=false",
+                        "events?tag_slug=crypto&closed=true&limit=60&order=endDate&ascending=false"]:
+                  r = get(f"{G}/{q}")
+                  if isinstance(r, list): print("REQ", q, "->", [(x.get("slug"), x.get("title")) for x in r[:60]])
+                  else: print("REQ", q, "->", str(r)[:300])
+              open(f"journal_{TY}.txt", "w").write("sonde\n")
+          else:
+              a, du = TY.split("-"); pas = {"15m": 900, "1h": 3600, "4h": 14400}[du]
+              par_jour = collections.defaultdict(dict); n = 0; manq = 0; tronq = 0; jours_ecrits = []
+              def ecrire(j_, M):
+                  with gzip.open(f"autres_{TY}_{j_}.json.gz", "wt") as f_:
+                      json.dump({"format": "[timestamp_s, portefeuille, BUY/SELL, outcome, prix, parts, transaction]", "type": TY, "marches": {str(k): v for k, v in M.items()}}, f_)
+              for st in range(d0 - d0 % pas, d1, pas):
+                  s = slugs(TY, st); ev = get(f"{G}/events?slug={s}")
+                  if not ev: manq += 1; continue
+                  e, m, out, px, meta = info(ev)
+                  T, tr = trades(m.get("conditionId"), 30000 if du != "15m" else 14500); tronq += tr
+                  jour = time.strftime("%Y-%m-%d", time.gmtime(st))
+                  for j_ in [j for j in list(par_jour) if j < jour]:
+                      ecrire(j_, par_jour[j_]); jours_ecrits.append(j_); del par_jour[j_]
+                  par_jour[jour][st] = {"slug": s, "debut": st, "fin": st + pas, "resultat": dict(zip(out, px)), "meta": meta, "volume": m.get("volume"),
+                                        "tronque": tr, "trades": T}
+                  n += len(T); time.sleep(0.1)
+              for j, M in par_jour.items(): ecrire(j, M)
+              print("transactions", n, "marches manquants", manq, "tronques", tronq)
+              open(f"journal_{TY}.txt", "w").write(f"type {TY} debut {d0} fin {d1} transactions {n} marches manquants {manq} tronques {tronq} jours {sorted(set(par_jour) | set(jours_ecrits))}\n")
+          P
+          ls -la | head; tail -30 /tmp/h_sortie.txt
+          cd $GITHUB_WORKSPACE
+          git config user.name histo; git config user.email bot@users.noreply.github.com
+          J=bot95/journaux/histo_autres_${{ inputs.type }}_$(echo "${{ inputs.debut }}" | tr -d ":").txt; mkdir -p bot95/journaux
+          { ls -la /tmp/h; tail -400 /tmp/h_sortie.txt; } > /tmp/journal.txt
+          mkdir -p /tmp/w && cd /tmp/w && git init -q && git config user.name histo && git config user.email bot@users.noreply.github.com
+          git remote add origin "$(git -C $GITHUB_WORKSPACE remote get-url origin)"
+          git -C $GITHUB_WORKSPACE config --get-regexp 'http.*extraheader' | while read k v; do git config "$k" "$v"; done
+          for f in /tmp/h/*.json.gz; do
+            [ -e "$f" ] || continue
+            b=pa-$(basename $f .json.gz | sed 's/^autres_//')
+            git checkout -q --orphan $b 2>/dev/null || git checkout -q -B $b; git rm -rqf --cached . >/dev/null 2>&1; rm -rf autres; mkdir -p autres; cp $f autres/
+            git add autres && git commit -qm "$b" && for k in 1 2 3 4; do git push -qf origin HEAD:refs/heads/$b >> /tmp/journal.txt 2>&1 && echo "envoye $b" >> /tmp/journal.txt && break; sleep 10; done
+          done
+          cd $GITHUB_WORKSPACE && cp /tmp/journal.txt $J
+          git add bot95/journaux && git commit -qm "Journal telechargement autres ${{ inputs.type }} [skip ci]" && for k in 1 2 3 4 5 6; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep $((RANDOM % 20 + 5)); done
