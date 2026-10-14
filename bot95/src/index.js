@@ -104,8 +104,8 @@ export default {
       const authorization = await stub(env).fetch(check);
       if (!authorization.ok) return authorization;
       if (authorization.body) await authorization.body.cancel();
-      return json(pathname.endsWith("/version") ? { version: RAPIDE_VERSION } :
-        { version: RAPIDE_VERSION, code: RAPIDE_CODE });
+      return Response.json(pathname.endsWith("/version") ? { version: RAPIDE_VERSION } :
+        { version: RAPIDE_VERSION, code: RAPIDE_CODE }, { headers: { "cache-control": "no-store" } });
     }
     return stub(env).fetch(req);
   },
