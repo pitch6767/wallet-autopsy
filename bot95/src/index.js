@@ -215,6 +215,7 @@ export class Bot {
         for (const [k, v] of st2) this.N.strats[k.slice(9)] = v;
         this.N.ordres = (await this.state.storage.get("nv:ordres")) || [];
         this.N.audit = { fait: base.auditFait || {}, lignes: (await this.state.storage.get("nv:audit")) || [] };
+        this.N.zero = (await this.state.storage.get("nv:zero")) || {};
       } else this.N = (await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
       for (const [ancien, neuf] of [["assurance", "assurance 6/9/12"], ["mm", "mm actuel"]]) {
         for (const k of Object.keys(this.N.strats)) if (k.startsWith(ancien + " ") && k.split(" ").length === 2) { this.N.strats[neuf + " " + k.split(" ")[1]] = this.N.strats[k]; delete this.N.strats[k]; }
@@ -512,6 +513,9 @@ export class Bot {
           jours1: vals.filter((x) => x === 1).length, jours2: vals.filter((x) => x === 2).length, jours3: vals.filter((x) => x === 3).length, joursTop3: vals.filter((x) => x <= 3).length, joursJoues: vals.length }; });
       return json({ jours: JS, participants: Object.fromEntries(JS.map((j) => [j, rang["__n" + j]])), strats });
     }
+    if (u.pathname === "/api/zero") { const Z = this.N.zero || {}; const L = Object.entries(Z).map(([nom, z]) => ({ nom, ...z, pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a, b) => b.pnl - a.pnl);
+      return json({ depuis: ZERO_DEPUIS, strats: L, total: +L.reduce((a, b) => a + b.pnl, 0).toFixed(2) }); }
+    if (u.pathname === "/zero") return new Response(PAGE_ZERO, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/nouveaux") return new Response(PAGE_N.replace("__PV__", PAGE_N_V), { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/api/rapport") return json({ refus: this.e.refus });
     if (u.pathname === "/rapport") return new Response(RAPPORT, { headers: { "content-type": "text/html; charset=utf-8" } });
@@ -1492,6 +1496,7 @@ export class Bot {
       const N = this.N, put = (k, v) => this.state.storage.put(k, v).catch((err) => this.erreur("sauvegarde " + k, err));
       put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {}, markout: N.markout || {} });
       for (const [k, v] of Object.entries(N.strats)) put("nv:strat:" + k, v);
+      if (N.zero) put("nv:zero", N.zero);
       // ordres : non réglés + 250 derniers réglés (les compteurs sont cumulés à part)
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
       N.ordres = [...regles.slice(-250), ...nonRegles];
@@ -1609,6 +1614,10 @@ export class Bot {
     (S2.issues[issue] = S2.issues[issue] || { n: 0, pnl: 0 }).n++; S2.issues[issue].pnl += P.net;
     P.journal = P.journal.slice(-6);
     S2.trades.unshift(P); S2.trades.length = Math.min(S2.trades.length, 60);
+    // 14.10.2026 (Pitch : « 2e onglet tout à 0 ») : compteurs repartis de zéro pour les trades ouverts depuis ZERO_DEPUIS (calcul au fil de l'eau, rien n'est relu)
+    try { if (P.heure && Date.parse(P.heure) >= Date.parse(ZERO_DEPUIS)) { const Z = (this.N.zero = this.N.zero || {}), k = P.strat + " " + P.actif, z = (Z[k] = Z[k] || { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 });
+      z.n++; z.pnl += P.net; z.cum += P.net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, P.net);
+      if (P.net >= 0) { z.gains++; z.serie = 0; } else { z.pertes++; z.pertesTot += P.net; z.serie++; z.serieMax = Math.max(z.serieMax, z.serie); } } } catch (_) {}
     // archive compacte de TOUS les trades (09.10.2026) : [heure, côté, prix, net, issue, modèle, secondes restantes]
     const kh = "hist:" + P.strat + " " + P.actif, ligne = [P.heure, P.cote || null, P.prix ?? null, P.net, issue, P.proba0 ?? null, P.restant_s ?? null];
     this.state.storage.get(kh).then((L) => { L = L || []; L.push(ligne); if (L.length > 1500) L.splice(0, L.length - 1500); return this.state.storage.put(kh, L); }).catch((err) => this.erreur("archive " + kh, err));
@@ -2915,7 +2924,7 @@ function nRisqueVue(r) { const h = { ...(r.hist || {}) }; if (r.serie > 0) h[r.s
 const PAGE_N = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes</title>${STYLE}</head><body>
 <h1>Nouvelles stratégies — mode fantôme</h1>
 <div class="mu">Aucun argent réel. Depuis le 07.10 à 15h, seulement sur BTC (ETH abandonné, ses anciens résultats restent visibles) : V1, V1 + assurance (6/9/12 et 4/7/10), désaccord 20 et ses variantes (V2 B à H…). Le 09.10, les stratégies à plus de 500 $ de pertes ont été supprimées (trades sauvés sur GitHub). Toutes les autres stratégies sont arrêtées ; leurs résultats restent visibles, figés, dans « Stratégies arrêtées ».</div>
-<div style="margin-top:8px"><a href="/">← Tableau de bord</a></div><div id="classement" style="margin-top:12px"></div><div id="app" style="margin-top:12px">Chargement…</div>
+<div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <b>Onglet 1 : depuis le début</b> · <a href="/zero">Onglet 2 : remise à 0 →</a></div><div id="classement" style="margin-top:12px"></div><div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+x.toFixed(2)+" $";const fc=(x)=>"<span class='"+(x>=0?"ok":"ko")+"'>"+f(x)+"</span>";
 const ser=(h)=>{const e=Object.entries(h||{}).map(([l,n])=>[+l,n]).sort((a,b)=>b[0]-a[0]);return e.length?e.map(([l,n])=>l+" de suite : "+n+" fois").join(" · "):"aucune perte";};
@@ -2971,6 +2980,21 @@ for(const s of S){const ra=s.rang[auj],rh=hier?s.rang[hier]:null;let ev="—";if
 h+="<tr><td><b>"+rangTxt(ra,c.participants[auj])+"</b></td><td>"+s.nom+"</td><td class='"+((s.parJour[auj]||0)>=0?"ok":"ko")+"'>"+(s.parJour[auj]!=null?f(s.parJour[auj]):"—")+"</td><td>"+(hier?rangTxt(rh,c.participants[hier]):"—")+"</td><td>"+ev+"</td>"+J.map(j=>"<td>"+(s.rang[j]?s.rang[j]:"—")+"<br><span class='mu'>"+(s.parJour[j]!=null?f(s.parJour[j]):"")+"</span></td>").join("")+"<td>"+s.jours1+"</td><td>"+s.jours2+"</td><td>"+s.jours3+"</td><td class='"+(s.total>=0?"ok":"ko")+"'><b>"+f(s.total)+"</b></td></tr>";}
 document.getElementById("classement").innerHTML=h+"</table></div></div>";}catch(e){}}
 classement();setInterval(classement,60000);
+</script></body></html>`;
+const ZERO_DEPUIS = "2026-10-14T08:45:00Z";      // 14.10.2026 10:45 heure suisse : départ de l'onglet 2 « remise à 0 »
+const PAGE_ZERO = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes — remise à 0</title>${STYLE}</head><body>
+<h1>Fantômes — remise à 0 <span class="badge">mode fantôme</span></h1><div class="mu">Mêmes stratégies que l'onglet 1, compteurs repartis de zéro le 14.10.2026 à 10:45 (heure suisse) : seuls les trades ouverts depuis comptent. Aucun argent réel.</div>
+<div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/nouveaux">← Onglet 1 : depuis le début</a> · <b>Onglet 2 : remise à 0</b></div>
+<div id="app" style="margin-top:12px">Chargement…</div>
+<script>
+const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
+async function maj(){try{const d=await (await fetch("/api/zero",{cache:"no-store"})).json();const S=d.strats;
+let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" · "+S.length+" stratégies ont déjà un trade réglé · total : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b></div></div>";
+if(!S.length)h+="<div class='card'>Aucun trade réglé depuis la remise à 0 pour l'instant.</div>";
+else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:760px'><tr><th>Rang</th><th>Stratégie</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td><td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td></tr>").join("")+"</table></div></div>";
+document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
+maj();setInterval(maj,20000);
 </script></body></html>`;
 const PAGE_N_V = (() => { let h = 5381; for (let i = 0; i < PAGE_N.length; i++) h = ((h * 33) ^ PAGE_N.charCodeAt(i)) >>> 0; return h.toString(36); })();
 const RAPPORT = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rapport des refus</title>${STYLE}</head><body>
