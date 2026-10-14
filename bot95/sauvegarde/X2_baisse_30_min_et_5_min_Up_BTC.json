@@ -1,0 +1,66 @@
+{
+"nom": "X2 baisse 30 min et 5 min Up BTC",
+"trades": {
+"2026-10-14T14:40:10.337Z|Up": {
+"heure": "2026-10-14T14:40:10.337Z",
+"cote": "Up",
+"prix": 0.4471,
+"parts": 22.364,
+"U": 0,
+"D": 0,
+"cash": -10,
+"net": -10,
+"issue": "perdu,",
+"journal": [
+"perdu, 10 $"
+],
+"start": 1791988800,
+"slug": "btc-updown-5m-1791988800"
+},
+"2026-10-14T14:30:10.789Z|Up": {
+"heure": "2026-10-14T14:30:10.789Z",
+"cote": "Up",
+"prix": 0.7438,
+"parts": 13.445,
+"U": 0,
+"D": 0,
+"cash": 3.45,
+"net": 3.45,
+"issue": "gagné,",
+"journal": [
+"gagné, 10 $"
+],
+"start": 1791988200,
+"slug": "btc-updown-5m-1791988200"
+}
+},
+"resume_bot": {
+"depuis": 1791988943.172,
+"n": 2,
+"gains": 1,
+"pertes": 1,
+"pnl": -6.55
+},
+"archive": [
+[
+"2026-10-14T14:30:10.789Z",
+"Up",
+0.7438,
+3.45,
+"gagné,",
+null,
+null
+],
+[
+"2026-10-14T14:40:10.337Z",
+"Up",
+0.4471,
+-10,
+"perdu,",
+null,
+null
+]
+],
+"n_sauves": 2,
+"maj": "2026-10-14 15:10 UTC"
+}
