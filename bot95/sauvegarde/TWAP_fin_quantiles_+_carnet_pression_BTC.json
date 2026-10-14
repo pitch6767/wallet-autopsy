@@ -1946,14 +1946,80 @@
 "clRecu": 1791949437.354,
 "clDernier": 83780.12773969557,
 "btc": 83752.77
+},
+"2026-10-14T06:03:34.052Z|Down": {
+"heure": "2026-10-14T06:03:34.052Z",
+"cote": "Down",
+"prix": 0.4071,
+"parts": 5,
+"U": 0,
+"D": 5,
+"cash": 2.964356,
+"net": 2.96,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.643,
+"restant_s": 86,
+"journal": [
+"214.1s TWAP fin quantiles : probabilité 0.643, vendeur 0.39, 86 s restantes → achat Down 5.0 parts"
+],
+"start": 1791957600,
+"slug": "btc-updown-5m-1791957600",
+"carnet": {
+"0": [
+[
+0.39,
+5
+],
+[
+0.4,
+5
+],
+[
+0.41,
+5
+],
+[
+0.42,
+5
+],
+[
+0.44,
+39
+],
+[
+0.45,
+10
+],
+[
+0.46,
+40
+],
+[
+0.47,
+10
+]
+],
+"achat": [
+5,
+2.04
+]
+},
+"tAchat": 1791957814.052,
+"tailleAffichee": 5,
+"prixABattre": 83369.8,
+"clObs": 1791957813,
+"clRecu": 1791957813.419,
+"clDernier": 83376.62244044412,
+"btc": 83363.4
 }
 },
 "resume_bot": {
 "depuis": 1791926554.023,
-"n": 12,
-"gains": 6,
+"n": 13,
+"gains": 7,
 "pertes": 6,
-"pnl": 146.98999999999998
+"pnl": 149.95
 },
 "archive": [
 [
@@ -2063,8 +2129,17 @@
 "une seule jambe",
 0.421,
 46
+],
+[
+"2026-10-14T06:03:34.052Z",
+"Down",
+0.4071,
+2.96,
+"une seule jambe",
+0.643,
+86
 ]
 ],
-"n_sauves": 12,
-"maj": "2026-10-14 06:01 UTC"
+"n_sauves": 13,
+"maj": "2026-10-14 06:41 UTC"
 }

@@ -342,14 +342,71 @@
 ],
 "start": 1791948900,
 "slug": "btc-updown-5m-1791948900"
+},
+"2026-10-14T06:32:08.940Z|Up": {
+"heure": "2026-10-14T06:32:08.940Z",
+"cote": "Up",
+"prix": 0.2739,
+"parts": 192.31,
+"U": 192.3076923076923,
+"D": 0,
+"cash": -52.664,
+"net": -52.66,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.583,
+"restant_s": 171,
+"journal": [
+"128.9s désaccord 20 (modèle 0.583, vendeur 0.26) ; 3 s avant : Binance 5.41 pb, perp 5.48 pb, OKX 6.14 pb, Coinbase 3.56 pb (+ = dans notre sens) → achat à 0.2739"
+],
+"start": 1791959400,
+"slug": "btc-updown-5m-1791959400"
+},
+"2026-10-14T06:16:21.337Z|Down": {
+"heure": "2026-10-14T06:16:21.337Z",
+"cote": "Down",
+"prix": 0.2529,
+"parts": 217.39,
+"U": 0,
+"D": 217.39130434782606,
+"cash": 162.41434278260868,
+"net": 162.41,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.433,
+"restant_s": 219,
+"journal": [
+"81.3s désaccord 20 (modèle 0.433, vendeur 0.23) ; 3 s avant : Binance 2.51 pb, perp 1.52 pb, OKX 2.51 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.2529"
+],
+"start": 1791958500,
+"slug": "btc-updown-5m-1791958500"
+},
+"2026-10-14T06:00:49.827Z|Down": {
+"heure": "2026-10-14T06:00:49.827Z",
+"cote": "Down",
+"prix": 0.2127,
+"parts": 45,
+"U": 0,
+"D": 45,
+"cash": 35.429476,
+"net": 35.43,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.444,
+"restant_s": 250,
+"journal": [
+"49.8s désaccord 20 (modèle 0.444, vendeur 0.2) ; 3 s avant : Binance -0.07 pb, perp 0.01 pb, OKX -0.2 pb, Coinbase -1.17 pb (+ = dans notre sens) → achat à 0.2127"
+],
+"start": 1791957600,
+"slug": "btc-updown-5m-1791957600"
 }
 },
 "resume_bot": {
 "depuis": 1791923094.804,
-"n": 18,
-"gains": 2,
-"pertes": 16,
-"pnl": -183.34000000000003
+"n": 21,
+"gains": 4,
+"pertes": 17,
+"pnl": -38.160000000000025
 },
 "archive": [
 [
@@ -513,8 +570,35 @@
 "perdu",
 0.395,
 222
+],
+[
+"2026-10-14T06:00:49.827Z",
+"Down",
+0.2127,
+35.43,
+"gagné",
+0.444,
+250
+],
+[
+"2026-10-14T06:16:21.337Z",
+"Down",
+0.2529,
+162.41,
+"gagné",
+0.433,
+219
+],
+[
+"2026-10-14T06:32:08.940Z",
+"Up",
+0.2739,
+-52.66,
+"perdu",
+0.583,
+171
 ]
 ],
-"n_sauves": 18,
-"maj": "2026-10-14 06:02 UTC"
+"n_sauves": 21,
+"maj": "2026-10-14 06:41 UTC"
 }

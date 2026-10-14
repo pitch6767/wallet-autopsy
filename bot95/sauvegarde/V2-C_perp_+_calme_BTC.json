@@ -969,14 +969,90 @@
 ],
 "start": 1791948300,
 "slug": "btc-updown-5m-1791948300"
+},
+"2026-10-14T06:16:21.337Z|Down": {
+"heure": "2026-10-14T06:16:21.337Z",
+"cote": "Down",
+"prix": 0.2529,
+"parts": 217.39,
+"U": 0,
+"D": 217.39130434782606,
+"cash": 162.41434278260868,
+"net": 162.41,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.433,
+"restant_s": 219,
+"journal": [
+"81.3s écart 0.20, 219 s restantes → achat Down 217.4 parts à 0.2529 (modèle 0.433)"
+],
+"start": 1791958500,
+"slug": "btc-updown-5m-1791958500"
+},
+"2026-10-14T06:12:21.647Z|Down": {
+"heure": "2026-10-14T06:12:21.647Z",
+"cote": "Down",
+"prix": 0.1697,
+"parts": 312.5,
+"U": 0,
+"D": 312.5,
+"cash": -53.024,
+"net": -53.02,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.366,
+"restant_s": 158,
+"journal": [
+"141.6s écart 0.21, 158 s restantes → achat Down 312.5 parts à 0.1697 (modèle 0.366)"
+],
+"start": 1791958200,
+"slug": "btc-updown-5m-1791958200"
+},
+"2026-10-14T06:05:28.306Z|Up": {
+"heure": "2026-10-14T06:05:28.306Z",
+"cote": "Up",
+"prix": 0.1276,
+"parts": 21,
+"U": 21,
+"D": 0,
+"cash": 18.3203328,
+"net": 18.32,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.353,
+"restant_s": 272,
+"journal": [
+"28.3s écart 0.23, 272 s restantes → achat Up 21.0 parts à 0.1276 (modèle 0.353)"
+],
+"start": 1791957900,
+"slug": "btc-updown-5m-1791957900"
+},
+"2026-10-14T06:00:49.827Z|Down": {
+"heure": "2026-10-14T06:00:49.827Z",
+"cote": "Down",
+"prix": 0.2127,
+"parts": 45,
+"U": 0,
+"D": 45,
+"cash": 35.429476,
+"net": 35.43,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.444,
+"restant_s": 250,
+"journal": [
+"49.8s écart 0.24, 250 s restantes → achat Down 45.0 parts à 0.2127 (modèle 0.444)"
+],
+"start": 1791957600,
+"slug": "btc-updown-5m-1791957600"
 }
 },
 "resume_bot": {
 "depuis": 1791925831.024,
-"n": 51,
-"gains": 11,
-"pertes": 40,
-"pnl": 118.30999999999995
+"n": 55,
+"gains": 14,
+"pertes": 41,
+"pnl": 281.44999999999993
 },
 "archive": [
 [
@@ -1437,8 +1513,44 @@
 "une seule jambe",
 0.395,
 222
+],
+[
+"2026-10-14T06:00:49.827Z",
+"Down",
+0.2127,
+35.43,
+"une seule jambe",
+0.444,
+250
+],
+[
+"2026-10-14T06:05:28.306Z",
+"Up",
+0.1276,
+18.32,
+"une seule jambe",
+0.353,
+272
+],
+[
+"2026-10-14T06:12:21.647Z",
+"Down",
+0.1697,
+-53.02,
+"une seule jambe",
+0.366,
+158
+],
+[
+"2026-10-14T06:16:21.337Z",
+"Down",
+0.2529,
+162.41,
+"une seule jambe",
+0.433,
+219
 ]
 ],
-"n_sauves": 51,
-"maj": "2026-10-14 06:01 UTC"
+"n_sauves": 55,
+"maj": "2026-10-14 06:41 UTC"
 }
