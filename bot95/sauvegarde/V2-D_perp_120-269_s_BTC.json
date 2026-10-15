@@ -19684,17 +19684,74 @@
 ],
 "start": 1792059300,
 "slug": "btc-updown-5m-1792059300"
+},
+"2026-10-15T17:06:13.514Z|Down": {
+"heure": "2026-10-15T17:06:13.514Z",
+"cote": "Down",
+"prix": 0.1592,
+"parts": 333.33,
+"U": 0,
+"D": 333.33333333333337,
+"cash": -53.06000000000001,
+"net": -53.06,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.353,
+"restant_s": 226,
+"journal": [
+"73.5s écart 0.20, 226 s restantes → achat Down 333.3 parts à 0.1592 (modèle 0.353)"
+],
+"start": 1792083900,
+"slug": "btc-updown-5m-1792083900"
+},
+"2026-10-15T16:11:58.070Z|Up": {
+"heure": "2026-10-15T16:11:58.070Z",
+"cote": "Up",
+"prix": 0.263,
+"parts": 208.33,
+"U": 208.33333333333334,
+"D": 0,
+"cash": -54.79216133333334,
+"net": -54.79,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.445,
+"restant_s": 182,
+"journal": [
+"118.1s écart 0.20, 182 s restantes → achat Up 208.3 parts à 0.263 (modèle 0.445)"
+],
+"start": 1792080600,
+"slug": "btc-updown-5m-1792080600"
+},
+"2026-10-15T15:17:57.990Z|Down": {
+"heure": "2026-10-15T15:17:57.990Z",
+"cote": "Down",
+"prix": 0.1888,
+"parts": 294.12,
+"U": 0,
+"D": 294.11764705882354,
+"cash": -55.54342352941177,
+"net": -55.54,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.371,
+"restant_s": 122,
+"journal": [
+"178.0s écart 0.20, 122 s restantes → achat Down 294.1 parts à 0.1888 (modèle 0.371)"
+],
+"start": 1792077300,
+"slug": "btc-updown-5m-1792077300"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 722,
+"n": 725,
 "gains": 169,
-"pertes": 553,
-"pnl": 1764.029999999997
+"pertes": 556,
+"pnl": 1600.6399999999971
 },
-"n_sauves": 1036,
-"maj": "2026-10-15 15:09 UTC",
+"n_sauves": 1039,
+"maj": "2026-10-15 17:53 UTC",
 "archive": [
 [
 "2026-10-09T05:31:54.168Z",
@@ -28524,6 +28581,33 @@
 "une seule jambe",
 0.434,
 218
+],
+[
+"2026-10-15T15:17:57.990Z",
+"Down",
+0.1888,
+-55.54,
+"une seule jambe",
+0.371,
+122
+],
+[
+"2026-10-15T16:11:58.070Z",
+"Up",
+0.263,
+-54.79,
+"une seule jambe",
+0.445,
+182
+],
+[
+"2026-10-15T17:06:13.514Z",
+"Down",
+0.1592,
+-53.06,
+"une seule jambe",
+0.353,
+226
 ]
 ]
 }
