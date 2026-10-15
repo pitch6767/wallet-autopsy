@@ -60,6 +60,7 @@ import numpy as np, pandas as pd
 ICI = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, ICI)
 import latence_h766 as LH, liquidite_h833 as L, dpe_h841 as DP, pression_h971 as PR
 CONTROLE = "--controle" in sys.argv
+L.RESERVE = 10 ** 12  # plomberie (15.10) : sans cela liquidite_h833.grille écarte les cycles ≥ 13.10 00:00 (validation/test vides). Aucune règle modifiée.
 DEB = 1791817200; VAL = 1791849600; TEST = 1791936000
 SORTIE = os.path.join(ICI, "resultat_liq_h994" + ("_controle" if CONTROLE else "") + ".md")
 MISE = 20.0; RNG = np.random.default_rng(994); fee = lambda p: 0.07 * p * (1 - p); SEUIL = 50000
