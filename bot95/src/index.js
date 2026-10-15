@@ -405,6 +405,14 @@ export class Bot {
       return json({ moteurNourriPar: this.sourceCl(), reglage: "secret ou variable CHAINLINK_SOURCE : rtds (défaut) | polybolt | auto", polyboltConnecte: !!this.ws.cl2, authentifie: this.pbAuth || null, erreur: this.pbErreur || null, parActif: par, twapOfficiel: this.twOff || [] });
     }
     if (u.pathname === "/api/pbdiag") { try { const c = await identifiantsLecture(this.state.storage); return json({ ok: true, adresse: c.adresse, cle: !!c.apiKey }); } catch (e) { return json({ ok: false, erreur: String((e && e.stack) || e).slice(0, 800) }); } }
+    // 15.10.2026 : la liste complète dépassait la mémoire (erreur 500 depuis le 14.10 08:00 UTC) → lecture par pages : ?apres=<début de cycle>&n=<clés>
+    if (u.pathname === "/api/rapidemaker" && u.searchParams.has("apres")) {
+      const ap = String(+u.searchParams.get("apres") || 0), n = Math.min(200, +(u.searchParams.get("n") || 60));
+      const M = await this.state.storage.list({ prefix: "rapm:", start: "rapm:" + ap, limit: n }); const J = []; let der = null;
+      let fin = M.size < n;
+      for (const [k, v] of M) { if (k.length !== 15) { fin = true; break; } J.push(...v); der = k.slice(5); }   // clés par cycle (10 chiffres) seulement
+      return json({ offres: J, dernier: der, fin });
+    }
     if (u.pathname === "/api/rapidemaker") { const M = await this.state.storage.list({ prefix: "rapm:" }); const J = []; for (const v of M.values()) J.push(...v); J.sort((x, y) => x.tPose - y.tPose); return json({ offres: J }); }
     if (u.pathname === "/api/rapide") {
       const M = await this.state.storage.list({ prefix: "rap:" }); const J = []; let etat = null;

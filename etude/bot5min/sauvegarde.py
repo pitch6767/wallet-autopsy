@@ -70,8 +70,17 @@ try:                                                         # bot95 rapide (VPS
     json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("rapide", len(old["signaux"]), d.get("etat"))
 except Exception as e: print("rapide", e)
 try:                                                         # fantomes maker de Dublin (offres posees), 11.10.2026
-    d = get(U + "/api/rapidemaker"); J = d.get("offres", []); f = "bot95/rapide_maker.json"
-    old = json.load(open(f)) if os.path.exists(f) else []
+    f = "bot95/rapide_maker.json"
+    if os.path.exists(f): old = json.load(open(f))
+    elif os.path.exists(f + ".gz"):
+        import gzip; old = json.load(gzip.open(f + ".gz", "rt"))
+    else: old = []
+    # 15.10.2026 : lecture par pages depuis le dernier cycle connu (la liste complète faisait « erreur 500 »)
+    ap = max([x.get("start", 0) for x in old] or [0]) - 600; J = []
+    for _ in range(400):
+        d = get(U + f"/api/rapidemaker?apres={max(ap, 0)}&n=60"); J += d.get("offres", [])
+        if d.get("fin") or not d.get("dernier"): break
+        ap = int(d["dernier"]) + 1
     vu = {x["oid"] for x in old}; old += [x for x in J if x["oid"] not in vu]
     old.sort(key=lambda x: x.get("tPose", 0)); json.dump(old, open(f, "w"), ensure_ascii=False, indent=0); print("maker", len(old))
 except Exception as e: print("maker", e)
