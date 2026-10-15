@@ -1,23 +1,33 @@
 + python3 -
-Traceback (most recent call last):
-  File "<stdin>", line 11, in <module>
-  File "<stdin>", line 9, in get
-  File "<stdin>", line 6, in get
-  File "/usr/lib/python3.12/urllib/request.py", line 215, in urlopen
-    return opener.open(url, data, timeout)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 521, in open
-    response = meth(req, response)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 630, in http_response
-    response = self.parent.error(
-               ^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 559, in error
-    return self._call_chain(*args)
-           ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 492, in _call_chain
-    result = func(*args)
-             ^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 639, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 500: Internal Server Error
+nouveaux cycles 42 dans le bot 900
+++ date -u -d '21 days ago' +%Y-%m-%d
++ LIM=2026-09-24
++ for d in cycles/*/
+++ basename cycles/2026-10-11/
++ b=2026-10-11
++ [[ 2026-10-11 < 2026-09-24 ]]
++ for d in cycles/*/
+++ basename cycles/2026-10-12/
++ b=2026-10-12
++ [[ 2026-10-12 < 2026-09-24 ]]
++ for d in cycles/*/
+++ basename cycles/2026-10-13/
++ b=2026-10-13
++ [[ 2026-10-13 < 2026-09-24 ]]
++ for d in cycles/*/
+++ basename cycles/2026-10-14/
++ b=2026-10-14
++ [[ 2026-10-14 < 2026-09-24 ]]
++ for d in cycles/*/
+++ basename cycles/2026-10-15/
++ b=2026-10-15
++ [[ 2026-10-15 < 2026-09-24 ]]
++ git add cycles README.md
+++ git rev-list --max-parents=0 HEAD
+++ tail -1
++ R=d56616f84ffc1a59ac93f2507f4d98be7cb5e179
++ git reset -q --soft d56616f84ffc1a59ac93f2507f4d98be7cb5e179
++ git commit -q --amend -m 'cycles bot rapide (un seul commit, 21 jours)'
++ for k in 1 2 3
++ git push -q -f origin donnees-rapide
++ break
