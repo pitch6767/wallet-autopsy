@@ -38,14 +38,33 @@
 ],
 "start": 1792010100,
 "slug": "btc-updown-5m-1792010100"
+},
+"2026-10-15T08:27:29.308Z|Down": {
+"heure": "2026-10-15T08:27:29.308Z",
+"cote": "Down",
+"prix": 0.1822,
+"parts": 126.45,
+"U": 0,
+"D": 126.45,
+"cash": -23.04283084,
+"net": -23.04,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.382,
+"restant_s": 151,
+"journal": [
+"149.3s V2-G jury des bourses achète Down avec 15 autres stratégies du même côté (première il y a 0.4 s), 151 s restantes → achat 126.5 parts à 0.1822"
+],
+"start": 1792052700,
+"slug": "btc-updown-5m-1792052700"
 }
 },
 "resume_bot": {
 "depuis": 1791960098.509,
-"n": 2,
+"n": 3,
 "gains": 0,
-"pertes": 2,
-"pnl": -110.66
+"pertes": 3,
+"pnl": -133.7
 },
 "archive": [
 [
@@ -65,8 +84,17 @@
 "une seule jambe",
 0.251,
 174
+],
+[
+"2026-10-15T08:27:29.308Z",
+"Down",
+0.1822,
+-23.04,
+"une seule jambe",
+0.382,
+151
 ]
 ],
-"n_sauves": 2,
-"maj": "2026-10-15 05:22 UTC"
+"n_sauves": 3,
+"maj": "2026-10-15 10:08 UTC"
 }

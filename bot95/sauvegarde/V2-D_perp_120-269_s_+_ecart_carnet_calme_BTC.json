@@ -1083,14 +1083,71 @@
 ],
 "start": 1792024800,
 "slug": "btc-updown-5m-1792024800"
+},
+"2026-10-15T08:52:43.130Z|Up": {
+"heure": "2026-10-15T08:52:43.130Z",
+"cote": "Up",
+"prix": 0.1811,
+"parts": 139.53,
+"U": 139.53,
+"D": 0,
+"cash": -25.268463176000004,
+"net": -25.27,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.377,
+"restant_s": 137,
+"journal": [
+"163.1s écart 0.21, 137 s restantes → achat Up 139.5 parts à 0.1811 (modèle 0.377)"
+],
+"start": 1792054200,
+"slug": "btc-updown-5m-1792054200"
+},
+"2026-10-15T08:32:54.623Z|Down": {
+"heure": "2026-10-15T08:32:54.623Z",
+"cote": "Down",
+"prix": 0.0959,
+"parts": 555.56,
+"U": 0,
+"D": 555.5555555555555,
+"cash": -53.275999999999996,
+"net": -53.28,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.317,
+"restant_s": 125,
+"journal": [
+"174.6s écart 0.23, 125 s restantes → achat Down 555.6 parts à 0.0959 (modèle 0.317)"
+],
+"start": 1792053000,
+"slug": "btc-updown-5m-1792053000"
+},
+"2026-10-15T07:21:08.870Z|Up": {
+"heure": "2026-10-15T07:21:08.870Z",
+"cote": "Up",
+"prix": 0.1474,
+"parts": 125,
+"U": 125,
+"D": 0,
+"cash": 106.574284,
+"net": 106.57,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.33,
+"restant_s": 231,
+"journal": [
+"68.9s écart 0.20, 231 s restantes → achat Up 125.0 parts à 0.1474 (modèle 0.330)"
+],
+"start": 1792048800,
+"slug": "btc-updown-5m-1792048800"
 }
 },
 "resume_bot": {
 "depuis": 1791928150.58,
-"n": 57,
-"gains": 10,
-"pertes": 47,
-"pnl": -587.1900000000003
+"n": 60,
+"gains": 11,
+"pertes": 49,
+"pnl": -559.1700000000003
 },
 "archive": [
 [
@@ -1605,8 +1662,35 @@
 "une seule jambe",
 0.545,
 261
+],
+[
+"2026-10-15T07:21:08.870Z",
+"Up",
+0.1474,
+106.57,
+"une seule jambe",
+0.33,
+231
+],
+[
+"2026-10-15T08:32:54.623Z",
+"Down",
+0.0959,
+-53.28,
+"une seule jambe",
+0.317,
+125
+],
+[
+"2026-10-15T08:52:43.130Z",
+"Up",
+0.1811,
+-25.27,
+"une seule jambe",
+0.377,
+137
 ]
 ],
-"n_sauves": 57,
-"maj": "2026-10-15 05:21 UTC"
+"n_sauves": 60,
+"maj": "2026-10-15 10:08 UTC"
 }

@@ -152,14 +152,90 @@
 ],
 "start": 1792029000,
 "slug": "btc-updown-5m-1792029000"
+},
+"2026-10-15T08:31:02.164Z|Up": {
+"heure": "2026-10-15T08:31:02.164Z",
+"cote": "Up",
+"prix": 0.4375,
+"parts": 119.05,
+"U": 119.04761904761905,
+"D": 0,
+"cash": 66.95961904761904,
+"net": 66.96,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.67,
+"restant_s": 238,
+"journal": [
+"62.2s écart 0.25 (modèle 0.670, vendeur 0.42), 238 s restantes → achat Up 119.0 parts à 0.4375 (meilleur vendeur seul, 295 parts affichées)"
+],
+"start": 1792053000,
+"slug": "btc-updown-5m-1792053000"
+},
+"2026-10-15T07:51:31.908Z|Up": {
+"heure": "2026-10-15T07:51:31.908Z",
+"cote": "Up",
+"prix": 0.3664,
+"parts": 7.69,
+"U": 7.69,
+"D": 0,
+"cash": 4.8725378,
+"net": 4.87,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.554,
+"restant_s": 208,
+"journal": [
+"91.9s écart 0.20 (modèle 0.554, vendeur 0.35), 208 s restantes → achat Up 7.7 parts à 0.3664 (meilleur vendeur seul, 8 parts affichées)"
+],
+"start": 1792050600,
+"slug": "btc-updown-5m-1792050600"
+},
+"2026-10-15T07:21:58.063Z|Up": {
+"heure": "2026-10-15T07:21:58.063Z",
+"cote": "Up",
+"prix": 0.3766,
+"parts": 20,
+"U": 20,
+"D": 0,
+"cash": 12.468224000000001,
+"net": 12.47,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.572,
+"restant_s": 182,
+"journal": [
+"118.1s écart 0.21 (modèle 0.572, vendeur 0.36), 182 s restantes → achat Up 20.0 parts à 0.3766 (meilleur vendeur seul, 20 parts affichées)"
+],
+"start": 1792048800,
+"slug": "btc-updown-5m-1792048800"
+},
+"2026-10-15T05:56:34.678Z|Up": {
+"heure": "2026-10-15T05:56:34.678Z",
+"cote": "Up",
+"prix": 0.3868,
+"parts": 5,
+"U": 5,
+"D": 0,
+"cash": -1.933916,
+"net": -1.93,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.577,
+"restant_s": 205,
+"journal": [
+"94.7s écart 0.21 (modèle 0.577, vendeur 0.37), 205 s restantes → achat Up 5.0 parts à 0.3868 (meilleur vendeur seul, 5 parts affichées)"
+],
+"start": 1792043700,
+"slug": "btc-updown-5m-1792043700"
 }
 },
 "resume_bot": {
 "depuis": 1791931003.234,
-"n": 8,
-"gains": 4,
-"pertes": 4,
-"pnl": -2.249999999999999
+"n": 12,
+"gains": 7,
+"pertes": 5,
+"pnl": 80.12
 },
 "archive": [
 [
@@ -233,8 +309,44 @@
 "perdu",
 0.599,
 183
+],
+[
+"2026-10-15T05:56:34.678Z",
+"Up",
+0.3868,
+-1.93,
+"perdu",
+0.577,
+205
+],
+[
+"2026-10-15T07:21:58.063Z",
+"Up",
+0.3766,
+12.47,
+"gagné",
+0.572,
+182
+],
+[
+"2026-10-15T07:51:31.908Z",
+"Up",
+0.3664,
+4.87,
+"gagné",
+0.554,
+208
+],
+[
+"2026-10-15T08:31:02.164Z",
+"Up",
+0.4375,
+66.96,
+"gagné",
+0.67,
+238
 ]
 ],
-"n_sauves": 8,
-"maj": "2026-10-15 05:23 UTC"
+"n_sauves": 12,
+"maj": "2026-10-15 10:09 UTC"
 }

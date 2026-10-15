@@ -928,14 +928,110 @@
 ],
 "start": 1792027500,
 "slug": "btc-updown-5m-1792027500"
+},
+"2026-10-15T08:37:12.576Z|Up": {
+"heure": "2026-10-15T08:37:12.576Z",
+"cote": "Up",
+"prix": 0.4471,
+"parts": 22.364,
+"U": 0,
+"D": 0,
+"cash": -10,
+"net": -10,
+"issue": "gardé,",
+"journal": [
+"gardé, perdu"
+],
+"start": 1792053300,
+"slug": "btc-updown-5m-1792053300"
+},
+"2026-10-15T08:06:01.052Z|Up": {
+"heure": "2026-10-15T08:06:01.052Z",
+"cote": "Up",
+"prix": 0.5772,
+"parts": 17.326,
+"U": 0,
+"D": 0,
+"cash": 1.16,
+"net": 1.16,
+"issue": "couvert",
+"journal": [
+"couvert à 0.37"
+],
+"start": 1792051500,
+"slug": "btc-updown-5m-1792051500"
+},
+"2026-10-15T08:06:33.364Z|Down": {
+"heure": "2026-10-15T08:06:33.364Z",
+"cote": "Down",
+"prix": 0.5673,
+"parts": 17.627,
+"U": 0,
+"D": 0,
+"cash": 7.63,
+"net": 7.63,
+"issue": "gardé,",
+"journal": [
+"gardé, gagné"
+],
+"start": 1792051500,
+"slug": "btc-updown-5m-1792051500"
+},
+"2026-10-15T07:36:02.265Z|Down": {
+"heure": "2026-10-15T07:36:02.265Z",
+"cote": "Down",
+"prix": 0.5772,
+"parts": 17.324,
+"U": 0,
+"D": 0,
+"cash": 0.63,
+"net": 0.63,
+"issue": "couvert",
+"journal": [
+"couvert à 0.38"
+],
+"start": 1792049700,
+"slug": "btc-updown-5m-1792049700"
+},
+"2026-10-15T05:30:50.260Z|Down": {
+"heure": "2026-10-15T05:30:50.260Z",
+"cote": "Down",
+"prix": 0.7147,
+"parts": 13.992,
+"U": 0,
+"D": 0,
+"cash": 3.99,
+"net": 3.99,
+"issue": "gardé,",
+"journal": [
+"gardé, gagné"
+],
+"start": 1792042200,
+"slug": "btc-updown-5m-1792042200"
+},
+"2026-10-15T05:26:17.255Z|Down": {
+"heure": "2026-10-15T05:26:17.255Z",
+"cote": "Down",
+"prix": 0.5772,
+"parts": 17.324,
+"U": 0,
+"D": 0,
+"cash": 7.32,
+"net": 7.32,
+"issue": "gardé,",
+"journal": [
+"gardé, gagné"
+],
+"start": 1792041900,
+"slug": "btc-updown-5m-1792041900"
 }
 },
 "resume_bot": {
 "depuis": 1791963477.052,
-"n": 58,
-"gains": 41,
-"pertes": 17,
-"pnl": 21.10999999999999
+"n": 64,
+"gains": 46,
+"pertes": 18,
+"pnl": 31.83999999999999
 },
 "archive": [
 [
@@ -1243,8 +1339,53 @@ null
 "gardé,",
 null,
 null
+],
+[
+"2026-10-15T05:26:17.255Z",
+"Down",
+0.5772,
+7.32,
+"gardé,",
+null,
+null
+],
+[
+"2026-10-15T05:30:50.260Z",
+"Down",
+0.7147,
+3.99,
+"gardé,",
+null,
+null
+],
+[
+"2026-10-15T07:36:02.265Z",
+"Down",
+0.5772,
+0.63,
+"couvert",
+null,
+null
+],
+[
+"2026-10-15T08:06:01.052Z",
+"Up",
+0.5772,
+1.16,
+"couvert",
+null,
+null
+],
+[
+"2026-10-15T08:37:12.576Z",
+"Up",
+0.4471,
+-10,
+"gardé,",
+null,
+null
 ]
 ],
-"n_sauves": 58,
-"maj": "2026-10-15 05:21 UTC"
+"n_sauves": 64,
+"maj": "2026-10-15 10:07 UTC"
 }
