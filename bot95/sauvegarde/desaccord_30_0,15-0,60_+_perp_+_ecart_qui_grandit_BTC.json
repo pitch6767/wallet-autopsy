@@ -8912,16 +8912,73 @@
 ],
 "start": 1792021200,
 "slug": "btc-updown-5m-1792021200"
+},
+"2026-10-15T05:02:08.093Z|Up": {
+"heure": "2026-10-15T05:02:08.093Z",
+"cote": "Up",
+"prix": 0.1906,
+"parts": 277.78,
+"U": 277.77777777777777,
+"D": 0,
+"cash": -52.952,
+"net": -52.95,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.49,
+"restant_s": 172,
+"journal": [
+"128.1s écart 0.31 (modèle 0.490, vendeur 0.18), 172 s restantes ; 3 s avant : Binance -0.5, perp 2.6 (+ = dans notre sens)"
+],
+"start": 1792040400,
+"slug": "btc-updown-5m-1792040400"
+},
+"2026-10-15T03:43:53.478Z|Down": {
+"heure": "2026-10-15T03:43:53.478Z",
+"cote": "Down",
+"prix": 0.4728,
+"parts": 56.85,
+"U": 0,
+"D": 56.85,
+"cash": 29.9726186,
+"net": 29.97,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.771,
+"restant_s": 67,
+"journal": [
+"233.5s écart 0.32 (modèle 0.771, vendeur 0.45), 67 s restantes ; 3 s avant : Binance 45.0, perp 33.5 (+ = dans notre sens)"
+],
+"start": 1792035600,
+"slug": "btc-updown-5m-1792035600"
+},
+"2026-10-15T00:58:32.365Z|Up": {
+"heure": "2026-10-15T00:58:32.365Z",
+"cote": "Up",
+"prix": 0.2011,
+"parts": 263.16,
+"U": 263.1578947368421,
+"D": 0,
+"cash": 210.24189473684208,
+"net": 210.24,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.501,
+"restant_s": 88,
+"journal": [
+"212.4s écart 0.31 (modèle 0.501, vendeur 0.19), 88 s restantes ; 3 s avant : Binance 1.3, perp 2.4 (+ = dans notre sens)"
+],
+"start": 1792025700,
+"slug": "btc-updown-5m-1792025700"
 }
 },
-"n_sauves": 472,
-"maj": "2026-10-15 00:39 UTC",
+"n_sauves": 475,
+"maj": "2026-10-15 05:23 UTC",
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 279,
-"gains": 69,
-"pertes": 210,
-"pnl": 186.92999999999958
+"n": 282,
+"gains": 71,
+"pertes": 211,
+"pnl": 374.18999999999966
 },
 "archive": [
 [
@@ -12577,6 +12634,33 @@
 "perdu",
 0.521,
 74
+],
+[
+"2026-10-15T00:58:32.365Z",
+"Up",
+0.2011,
+210.24,
+"gagné",
+0.501,
+88
+],
+[
+"2026-10-15T03:43:53.478Z",
+"Down",
+0.4728,
+29.97,
+"gagné",
+0.771,
+67
+],
+[
+"2026-10-15T05:02:08.093Z",
+"Up",
+0.1906,
+-52.95,
+"perdu",
+0.49,
+172
 ]
 ]
 }

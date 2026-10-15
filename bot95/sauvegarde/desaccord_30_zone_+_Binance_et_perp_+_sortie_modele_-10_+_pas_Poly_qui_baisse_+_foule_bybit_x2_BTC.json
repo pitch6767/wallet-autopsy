@@ -228,14 +228,59 @@
 ],
 "start": 1792009200,
 "slug": "btc-updown-5m-1792009200"
+},
+"2026-10-15T02:20:00.931Z|Down": {
+"heure": "2026-10-15T02:20:00.931Z",
+"cote": "Down",
+"prix": 0.2496,
+"parts": 434.78,
+"U": 0,
+"D": 0,
+"cash": -6.463087373913027,
+"net": -6.46,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.53,
+"restant_s": 299,
+"journal": [
+"0.9s écart 0.30 (modèle 0.530, vendeur 0.23), 299 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)",
+"2.8s le modèle est passé de 0.53 à 0.272 → revente de 217.4 parts pour 51.41 $ (297 s restantes)",
+"mise x2.00, surcoût 0.77 $"
+],
+"start": 1792030800,
+"slug": "btc-updown-5m-1792030800"
+},
+"2026-10-15T00:58:37.883Z|Up": {
+"heure": "2026-10-15T00:58:37.883Z",
+"cote": "Up",
+"prix": 0.289,
+"parts": 370.38,
+"U": 0,
+"D": 0,
+"cash": -67.76191479703706,
+"net": -67.76,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.596,
+"restant_s": 82,
+"journal": [
+"219.0s le modèle est passé de 0.596 à 0.494 → revente de 85.6 parts pour 9.31 $ (81 s restantes)",
+"219.0s le modèle est passé de 0.596 à 0.494 → revente de 85.6 parts pour 9.31 $ (81 s restantes)",
+"219.0s le modèle est passé de 0.596 à 0.494 → revente de 5.0 parts pour 0.85 $ (81 s restantes)",
+"219.0s le modèle est passé de 0.596 à 0.494 → revente de 5.0 parts pour 0.85 $ (81 s restantes)",
+"219.0s le modèle est passé de 0.596 à 0.494 → revente de 4.0 parts pour 0.68 $ (81 s restantes)",
+"mise x2.00, surcoût 2.73 $"
+],
+"start": 1792025700,
+"slug": "btc-updown-5m-1792025700"
 }
 },
 "resume_bot": {
 "depuis": 1791936230.949,
-"n": 11,
+"n": 13,
 "gains": 5,
-"pertes": 6,
-"pnl": 982.1899999999998
+"pertes": 8,
+"pnl": 907.9699999999998
 },
 "archive": [
 [
@@ -336,8 +381,26 @@
 "perdu",
 0.518,
 73
+],
+[
+"2026-10-15T00:58:37.883Z",
+"Up",
+0.289,
+-67.76,
+"gagné",
+0.596,
+82
+],
+[
+"2026-10-15T02:20:00.931Z",
+"Down",
+0.2496,
+-6.46,
+"gagné",
+0.53,
+299
 ]
 ],
-"n_sauves": 11,
-"maj": "2026-10-15 00:39 UTC"
+"n_sauves": 13,
+"maj": "2026-10-15 05:23 UTC"
 }
