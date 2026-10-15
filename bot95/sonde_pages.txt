@@ -1,27 +1,27 @@
 == /
-code 200 taille 10062 temps 0.297699s
+code 200 taille 10062 temps 0.373019s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media (prefers-color-
 == /nouveaux
-code 200 taille 27303 temps 0.323252s
+code 200 taille 27303 temps 0.307532s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media (prefers-col
 == /zero
-code 200 taille 4568 temps 0.227016s
+code 200 taille 4568 temps 0.313897s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes — remise à 0</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @me
 == /api/nouveaux
-code 200 taille 2095577 temps 0.856730s
+code 200 taille 2470541 temps 2.164465s
 {"depuis":1791633049.024,"typesDesaccord":{"fin (<2 min) | bon marché (<0,30) | perp avec nous | marché vers nous | autre crypto d'accord":{"simple":{"n":4,"g":0,"pnl":-130.57,"etats":{}}},"fin (<2 min) | bon marché (<0,30) | perp contre nous | marché ? | autre crypto d'accord":{"simple":{"n":6,
 == /api/zero
-code 200 taille 92267 temps 0.383189s
-{"depuis":"2026-10-14T08:45:00Z","strats":[{"nom":"corrige : V2-F ecart qui grandit + foule bybit x2 BTC","n":14,"gains":6,"pertes":8,"pnl":3142.27,"pertesTot":-705.32,"pire":-126.76,"cum":3142.2700000000004,"pic":3334.27,"creux":366.11,"serie":2,"serieMax":4,"parJour":{"2026-10-14":3142.27}},{"nom"
+code 200 taille 102892 temps 0.317086s
+{"depuis":"2026-10-14T08:45:00Z","strats":[{"nom":"corrige marge mesuree : V2-F + foule bybit x2 BTC","n":48,"gains":16,"pertes":32,"pnl":5463.63,"pertesTot":-2333.91,"pire":-140.85,"cum":5463.630000000001,"pic":5463.630000000001,"creux":839.04,"serie":0,"serieMax":7,"parJour":{"2026-10-14":2513.7,"
 == /api/etat
-code 200 taille 577622 temps 0.603425s
-{"mode":"fantôme","reste":48,"e":{"capital":182.61999999999998,"mise":58.64333333333333,"reserve":17.286666666666665,"pnl":-17.380000000000003,"gains":16,"pertes":1,"pause":false,"positions":[],"attente":[],"trades":[{"actif":"XRP","start":1791473700,"end":1791474000,"slug":"xrp-updown-5m-179147370
+code 200 taille 609460 temps 0.674242s
+{"mode":"fantôme","reste":140,"e":{"capital":182.67999999999998,"mise":58.663333333333334,"reserve":17.326666666666664,"pnl":-17.320000000000004,"gains":17,"pertes":1,"pause":false,"positions":[],"attente":[],"trades":[{"actif":"ETH","start":1792030800,"end":1792031100,"slug":"eth-updown-5m-1792030
 == /api/classement
-code 200 taille 87886 temps 0.714952s
-{"jours":["2026-10-10","2026-10-11","2026-10-12","2026-10-13","2026-10-14"],"participants":{"2026-10-10":31,"2026-10-11":33,"2026-10-12":36,"2026-10-13":251,"2026-10-14":391},"strats":[{"nom":"B3 favori fin de cycle 3 sigma BTC","parJour":{"2026-10-14":0.37},"rang":{"2026-10-14":310},"total":0.37,"j
+code 200 taille 102734 temps 1.008357s
+{"jours":["2026-10-10","2026-10-11","2026-10-12","2026-10-13","2026-10-14","2026-10-15"],"participants":{"2026-10-10":31,"2026-10-11":33,"2026-10-12":36,"2026-10-13":251,"2026-10-14":393,"2026-10-15":393},"strats":[{"nom":"B3 favori fin de cycle 3 sigma BTC","parJour":{"2026-10-14":0.37,"2026-10-15"
