@@ -102,6 +102,8 @@ Le 11.10, Pitch a décidé de garder Cloudflare comme bot existant et Dublin com
 - Routeurs, méta-modèles, Kronos, arbitrage 15/5 min, paires, filtres d'exécution H818.
 - Supports, résistances et figures de liquidité (H822–H832, 12.10) : les anciens sommets et creux rejettent même moins que des niveaux fictifs, les figures n'ajoutent rien au modèle de règlement, et le meilleur veto n'est pas démontré. Marge de sécurité utile : environ 1,9 σ pour 90 % de victoires et 2,6 σ pour 95 %.
 
+- **Confirmation du 15.10 (674 cycles, 13.10 → 15.10)** : les conclusions du test tiennent. Le cerveau égale le marché. Conserver le favori 0,60–0,85 perd 397 $ ; les achats ≤ 0,10 perdent 1 074 $ (le +94 $ du test était un hasard). Aucune sortie n'est démontrée. Détail : [archives/rapports/RESUME_CHATGPT_15-10_confirmation.md](archives/rapports/RESUME_CHATGPT_15-10_confirmation.md).
+- **Liquidations H994–H1002 (15.10)** : les liquidations suivent le prix au lieu de le précéder, et Polymarket réagit en 1,2 s. Les alertes avant salve sont fausses 9 fois sur 10 ; le P&L est de −375 $ en validation comme sur le test, avec des IC contenant 0 ou négatifs. Arrêt. Détail : [archives/rapports/LIQ_H994-H1002_15-10.md](archives/rapports/LIQ_H994-H1002_15-10.md).
 - **Sorties anticipées, TEST unique du 13.10 (H1003–H1052)** : sur les favoris, les billets bon marché et les 10 gagnantes du 12.10, aucune règle de sortie (trailing, prise de gain, free-roll, verrou, sauvetage, couverture) ne bat la conservation. Sur les gagnantes : conserver +2 170 $, meilleure sortie −1 115 $ de moins. Les sorties coupent les jackpots. Le cerveau de règlement égale le marché sans le battre. Rapports : archives/rapports/TEST_*_13-10.md.
 
 **Où se perd l'argent.** Ce n'est pas l'exécution : 94 % des ordres passent, sans remplissage toxique, et la profondeur suffit jusqu'à 100 $. C'est **le choix des billets** : le gain moyen repose sur quelques jackpots, et la médiane est négative.
@@ -157,7 +159,7 @@ Lecture des colonnes de la page /nouveaux :
 | 14.10, 08:00 | Verdict sur journées inédites : combinaison D, robustesse E, variantes V2-F | — |
 | **14.10, 09:30** | **Verdicts H816, H816 + H821, calibration** sur la période réservée, lancés une seule fois | commits 56ef5e2 et 9f2eabf |
 | 14.10, 10:00 | Queue Race phases 3 à 6 | — |
-| 15.10, 14:52 | Analyse H994 (liquidations) et confirmation H1003 / H1047 / H1051 | — |
+| 15.10, 14:52 | **Fait** : H994–H1002 (liquidations) → arrêt ; confirmation H1003 / H1047 / H1051 → les conclusions du test tiennent, rien de démontré | commits 5ee9f5a, 8629a86 ; f2110b7, 30c5972, d1dded1 |
 | 15.10, 19:00 | Verdict makers / FAST sur la période réservée | — |
 
 **Critères validés par Pitch le 11.10 à 22:06**

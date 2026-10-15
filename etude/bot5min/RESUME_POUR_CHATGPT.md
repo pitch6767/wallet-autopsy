@@ -1,5 +1,7 @@
 Bonjour, je suis un ancien trader d'options (conversions/reversals sur futures DAX à Eurex). Je construis un bot sur Polymarket et je cherche des idées neuves. Voici tout ce qui a été fait et testé.
 
+> **Version la plus récente (15.10.2026)** : [archives/rapports/RESUME_CHATGPT_15-10_confirmation.md](archives/rapports/RESUME_CHATGPT_15-10_confirmation.md) — PDF : archives/pdf/bot95_resume_chatgpt_15-10_confirmation.pdf. Ce fichier-ci date du 05.10.
+
 ## 1. Le marché
 - Marchés Polymarket « Bitcoin Up or Down » de 5 minutes (aussi ETH, SOL, XRP, DOGE, BNB, HYPE), un nouveau toutes les 5 minutes, jetons Up et Down entre 0 et 1 $.
 - Règle de résolution : moyenne Chainlink des 60 dernières secondes du cycle ≥ moyenne Chainlink des 60 secondes avant le début (le « price to beat ») → Up gagne.
