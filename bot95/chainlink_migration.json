@@ -1,151 +1,10 @@
 {
 "moteurNourriPar": "rtds",
 "reglage": "secret ou variable CHAINLINK_SOURCE : rtds (défaut) | polybolt | auto",
-"polyboltConnecte": true,
+"polyboltConnecte": false,
 "authentifie": null,
 "erreur": null,
-"parActif": {
-"XRP": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 659,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"HYPE": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 659,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"BTC": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 659,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"BNB": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 659,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"ETH": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 659,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"DOGE": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 659,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"SOL": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 675,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-}
-},
+"parActif": {},
 "twapOfficiel": [
 {
 "a": "BNB",
@@ -3298,7 +3157,7 @@
 "recu_ms": 1562
 }
 ],
-"lu": 1792059048.7355223,
+"lu": 1792077235.9213219,
 "historique": [
 {
 "lu": 1791720145.5216165,
@@ -9393,6 +9252,12 @@
 }
 }
 }
+},
+{
+"lu": 1792077235.9213219,
+"moteurNourriPar": "rtds",
+"polyboltConnecte": false,
+"parActif": {}
 }
 ]
 }
