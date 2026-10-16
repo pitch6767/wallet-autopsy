@@ -1672,14 +1672,71 @@
 ],
 "start": 1792131000,
 "slug": "btc-updown-5m-1792131000"
+},
+"2026-10-16T09:12:10.023Z|Down": {
+"heure": "2026-10-16T09:12:10.023Z",
+"cote": "Down",
+"prix": 0.2219,
+"parts": 238.1,
+"U": 0,
+"D": 238.0952380952381,
+"cash": -52.844,
+"net": -52.84,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.411,
+"restant_s": 170,
+"journal": [
+"130.0s V2-H veto complet achète Down avec 8 autres stratégies du même côté (première il y a 0.0 s), 170 s restantes → achat 238.1 parts à 0.2219"
+],
+"start": 1792141800,
+"slug": "btc-updown-5m-1792141800"
+},
+"2026-10-16T09:00:13.087Z|Up": {
+"heure": "2026-10-16T09:00:13.087Z",
+"cote": "Up",
+"prix": 0.2716,
+"parts": 200,
+"U": 200,
+"D": 0,
+"cash": -54.3150368,
+"net": -54.32,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.466,
+"restant_s": 287,
+"journal": [
+"13.1s V2-F + pas les deux baissent achète Up avec 8 autres stratégies du même côté (première il y a 3.5 s), 287 s restantes → achat 200.0 parts à 0.2716"
+],
+"start": 1792141200,
+"slug": "btc-updown-5m-1792141200"
+},
+"2026-10-16T08:37:14.590Z|Down": {
+"heure": "2026-10-16T08:37:14.590Z",
+"cote": "Down",
+"prix": 0.0821,
+"parts": 714.29,
+"U": 0,
+"D": 714.2857142857142,
+"cash": -58.644934320000004,
+"net": -58.64,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.271,
+"restant_s": 165,
+"journal": [
+"134.6s V2-G jury des bourses achète Down avec 9 autres stratégies du même côté (première il y a 74.3 s), 165 s restantes → achat 714.3 parts à 0.0821"
+],
+"start": 1792139700,
+"slug": "btc-updown-5m-1792139700"
 }
 },
 "resume_bot": {
 "depuis": 1791924695.55,
-"n": 88,
+"n": 91,
 "gains": 14,
-"pertes": 74,
-"pnl": -323.14000000000004
+"pertes": 77,
+"pnl": -488.94000000000005
 },
 "archive": [
 [
@@ -2473,8 +2530,35 @@
 "une seule jambe",
 0.713,
 272
+],
+[
+"2026-10-16T08:37:14.590Z",
+"Down",
+0.0821,
+-58.64,
+"une seule jambe",
+0.271,
+165
+],
+[
+"2026-10-16T09:00:13.087Z",
+"Up",
+0.2716,
+-54.32,
+"une seule jambe",
+0.466,
+287
+],
+[
+"2026-10-16T09:12:10.023Z",
+"Down",
+0.2219,
+-52.84,
+"une seule jambe",
+0.411,
+170
 ]
 ],
-"n_sauves": 88,
-"maj": "2026-10-16 07:44 UTC"
+"n_sauves": 91,
+"maj": "2026-10-16 09:58 UTC"
 }
