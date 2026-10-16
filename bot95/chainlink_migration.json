@@ -4,148 +4,7 @@
 "polyboltConnecte": false,
 "authentifie": null,
 "erreur": null,
-"parActif": {
-"XRP": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 875,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"DOGE": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 875,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"ETH": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 875,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"HYPE": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 875,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"SOL": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 875,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"BNB": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 875,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"BTC": {
-"messages": {
-"rtds": 1,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 875,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-}
-},
+"parActif": {},
 "twapOfficiel": [
 {
 "a": "BNB",
@@ -3382,7 +3241,7 @@
 "recu_ms": 789
 }
 ],
-"lu": 1792174701.9189847,
+"lu": 1792186101.063622,
 "historique": [
 {
 "lu": 1791720145.5216165,
@@ -10806,6 +10665,12 @@
 }
 }
 }
+},
+{
+"lu": 1792186101.063622,
+"moteurNourriPar": "rtds",
+"polyboltConnecte": false,
+"parActif": {}
 }
 ]
 }
