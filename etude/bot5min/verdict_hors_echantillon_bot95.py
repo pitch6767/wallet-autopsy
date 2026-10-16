@@ -3,14 +3,15 @@ Demande de Pitch, 15.10.2026. Complète resultat_maker_h559_hors_echantillon.md 
 mêmes données (bot95/rapide_maker.json, cycles ≥ 13.10.2026 00:00 UTC), mêmes fonctions ic_blocs / creux que maker_h559.py,
 mais groupes de variantes EXACTS (dans maker_h559.py, « M1 » attrape aussi M10 et M11, « M8 » attrape aussi M8b).
 Ajoute : couverture réelle des données, comparaison appariée au témoin M0 par cycle, rappel des chiffres avant la période réservée.
-Usage : python3 etude/bot5min/verdict_hors_echantillon_bot95.py [dossier_des_cycles] → etude/bot5min/resultat_verdict_hors_echantillon_bot95.md"""
+Usage : python3 etude/bot5min/verdict_hors_echantillon_bot95.py [dossier_des_cycles] [--complet] → etude/bot5min/resultat_verdict_hors_echantillon_bot95.md (ou ..._complet.md)"""
 import json, os, sys, collections, time
 import numpy as np
 
 ICI = os.path.dirname(os.path.abspath(__file__)); RACINE = os.path.abspath(os.path.join(ICI, "..", ".."))
 sys.path.insert(0, ICI)
 from maker_h559 import ic_blocs, creux, HORS_ECH
-SORTIE = os.path.join(ICI, "resultat_verdict_hors_echantillon_bot95.md")
+COMPLET = "--complet" in sys.argv   # 16.10.2026 : même verdict sur toute la période réservée (sauvegarde maker réparée), sortie séparée
+SORTIE = os.path.join(ICI, "resultat_verdict_hors_echantillon_bot95_complet.md" if COMPLET else "resultat_verdict_hors_echantillon_bot95.md")
 
 GROUPES = [  # (nom affiché, test sur le nom de variante)
     ("M0 témoin aléatoire", lambda v: v == "M0 temoin aleatoire"),
@@ -119,8 +120,9 @@ def main():
         elif ic[1] < 0: v = "perte démontrée (IC entièrement sous 0)"
         else: v = "non démontré (l'IC contient 0)"
         w(f"- {nom} : {v}.")
-    w("\n## Limites\n- Les offres réglées s'arrêtent au cycle du 14.10.2026 07:50 UTC : depuis, la sauvegarde de bot95/rapide_maker.json échoue "
-      "(l'adresse /api/rapidemaker du bot répond « erreur 500 »). Le volet maker couvre donc ~32 h de la période réservée, pas 2,7 jours.\n"
+    w("\n## Limites\n" + (f"- Sauvegarde maker réparée : offres réglées couvrant toute la période réservée jusqu'au cycle du {time.strftime('%d.%m.%Y %H:%M', time.gmtime(cyc_h[-1]))} UTC.\n" if COMPLET else
+      "- Les offres réglées s'arrêtent au cycle du 14.10.2026 07:50 UTC : depuis, la sauvegarde de bot95/rapide_maker.json échoue "
+      "(l'adresse /api/rapidemaker du bot répond « erreur 500 »). Le volet maker couvre donc ~32 h de la période réservée, pas 2,7 jours.\n") +
       "- Remplissages simulés (file d'attente reconstituée), pas des exécutions réelles ; retard preneur de 150 ms supposé, non mesuré.\n"
       "- Variantes testées en parallèle sur les mêmes cycles : avec une dizaine de variantes, un IC qui exclurait 0 de peu pourrait être dû au hasard.\n")
     open(SORTIE, "w").write("\n".join(o)); print("\n".join(o))
