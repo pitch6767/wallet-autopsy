@@ -630,7 +630,11 @@ function milieu(id) { const b = meilleurAcheteur(id), a = asksTries(id)[0]; retu
 function autreJeton(id) { const [st, k] = tokIdx(id); if (st == null) return null; return k === 0 ? M[st].down : M[st].up; }
 function mstat(v) { return (MSTAT[v] = MSTAT[v] || { posees: 0, rejetees: 0, annulees: 0, remplies: 0, retraitsToxiques: 0 }); }
 function fairDe(O) { const d = DP[O.start]; return d && d.pu != null ? +(O.cote === "Up" ? d.pu : 1 - d.pu).toFixed(4) : null; }
+// 16.10.2026 (Pitch : « fait comme tu dis ») : makers passifs ARRÊTÉS après le verdict hors échantillon (aucun ne bat le témoin M0) :
+// M1, M2, M3, M4 (a/b/c), M5, M6, M10. Restent : M0 (témoin), M8, M8b, M9, M21. Les calculs internes (modèle de file de M5 utilisé par M8) continuent.
+const MAKERS_ARRETES = /^(M1 |M2 |M3 |M4 |M4a |M4b |M4c |M5 |M6 |M10 )/;
 function poser(variante, mk, up, prix, budget, info) {
+  if (MAKERS_ARRETES.test(variante)) return null;
   const id = up ? mk.up : mk.down, t = nowMs(), bb = meilleurAcheteur(id), as0 = asksTries(id)[0];
   const O = { oid: `${mk.start}:${++oidN}`, variante, start: mk.start, cote: up ? "Up" : "Down", id, prix, parts: +(budget / prix).toFixed(2), tPose: +t.toFixed(1), lat_ms: LAT(),
     restantPose_s: +(mk.end - t / 1000).toFixed(2), acheteurPose: bb, vendeurPose: as0 ? as0[0] : null, niveauPose: livres[id] ? +(livres[id].bids.get(prix) || 0).toFixed(2) : 0,
