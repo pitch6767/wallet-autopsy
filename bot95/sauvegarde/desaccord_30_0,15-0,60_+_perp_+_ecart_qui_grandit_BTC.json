@@ -9577,16 +9577,73 @@
 ],
 "start": 1792116000,
 "slug": "btc-updown-5m-1792116000"
+},
+"2026-10-16T07:37:57.115Z|Up": {
+"heure": "2026-10-16T07:37:57.115Z",
+"cote": "Up",
+"prix": 0.2468,
+"parts": 217.39,
+"U": 217.39130434782606,
+"D": 0,
+"cash": -53.64811676521738,
+"net": -53.65,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.547,
+"restant_s": 123,
+"journal": [
+"177.1s écart 0.32 (modèle 0.547, vendeur 0.23), 123 s restantes ; 3 s avant : Binance 0.0, perp 0.1 (+ = dans notre sens)"
+],
+"start": 1792136100,
+"slug": "btc-updown-5m-1792136100"
+},
+"2026-10-16T07:26:37.536Z|Up": {
+"heure": "2026-10-16T07:26:37.536Z",
+"cote": "Up",
+"prix": 0.1994,
+"parts": 277.78,
+"U": 277.77777777777777,
+"D": 0,
+"cash": 222.38195839999997,
+"net": 222.38,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.484,
+"restant_s": 202,
+"journal": [
+"97.5s écart 0.30 (modèle 0.484, vendeur 0.18), 202 s restantes ; 3 s avant : Binance 0.0, perp 5.3 (+ = dans notre sens)"
+],
+"start": 1792135500,
+"slug": "btc-updown-5m-1792135500"
+},
+"2026-10-16T07:23:50.382Z|Up": {
+"heure": "2026-10-16T07:23:50.382Z",
+"cote": "Up",
+"prix": 0.1794,
+"parts": 312.5,
+"U": 312.5,
+"D": 0,
+"cash": -56.048172400000006,
+"net": -56.05,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.465,
+"restant_s": 70,
+"journal": [
+"230.4s écart 0.31 (modèle 0.465, vendeur 0.16), 70 s restantes ; 3 s avant : Binance -0.0, perp 0.1 (+ = dans notre sens)"
+],
+"start": 1792135200,
+"slug": "btc-updown-5m-1792135200"
 }
 },
-"n_sauves": 507,
-"maj": "2026-10-16 05:13 UTC",
+"n_sauves": 510,
+"maj": "2026-10-16 07:45 UTC",
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 314,
-"gains": 80,
-"pertes": 234,
-"pnl": 452.03999999999985
+"n": 317,
+"gains": 81,
+"pertes": 236,
+"pnl": 564.7199999999999
 },
 "archive": [
 [
@@ -13557,6 +13614,33 @@
 "perdu",
 0.521,
 74
+],
+[
+"2026-10-16T07:23:50.382Z",
+"Up",
+0.1794,
+-56.05,
+"perdu",
+0.465,
+70
+],
+[
+"2026-10-16T07:26:37.536Z",
+"Up",
+0.1994,
+222.38,
+"gagné",
+0.484,
+202
+],
+[
+"2026-10-16T07:37:57.115Z",
+"Up",
+0.2468,
+-53.65,
+"perdu",
+0.547,
+123
 ]
 ]
 }

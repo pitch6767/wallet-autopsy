@@ -437,14 +437,52 @@
 ],
 "start": 1792112100,
 "slug": "btc-updown-5m-1792112100"
+},
+"2026-10-16T07:38:10.649Z|Up": {
+"heure": "2026-10-16T07:38:10.649Z",
+"cote": "Up",
+"prix": 0.4968,
+"parts": 24.11,
+"U": 24.11,
+"D": 0,
+"cash": -11.977282311999998,
+"net": -11.98,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.657,
+"restant_s": 109,
+"journal": [
+"190.6s désaccord repéré à 0.285 il y a 21 s, marché monté à 0.465 → achat Up 24.1 parts à 0.4968 (modèle 0.657)"
+],
+"start": 1792136100,
+"slug": "btc-updown-5m-1792136100"
+},
+"2026-10-16T06:27:51.359Z|Down": {
+"heure": "2026-10-16T06:27:51.359Z",
+"cote": "Down",
+"prix": 0.2635,
+"parts": 200,
+"U": 0,
+"D": 200,
+"cash": 147.3,
+"net": 147.3,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.407,
+"restant_s": 129,
+"journal": [
+"171.4s désaccord repéré à 0.165 il y a 20 s, marché monté à 0.245 → achat Down 200.0 parts à 0.2635 (modèle 0.407)"
+],
+"start": 1792131900,
+"slug": "btc-updown-5m-1792131900"
 }
 },
 "resume_bot": {
 "depuis": 1791941104.505,
-"n": 23,
-"gains": 9,
-"pertes": 14,
-"pnl": 172.78999999999994
+"n": 25,
+"gains": 10,
+"pertes": 15,
+"pnl": 308.1099999999999
 },
 "archive": [
 [
@@ -653,8 +691,26 @@
 "perdu",
 0.362,
 135
+],
+[
+"2026-10-16T06:27:51.359Z",
+"Down",
+0.2635,
+147.3,
+"gagné",
+0.407,
+129
+],
+[
+"2026-10-16T07:38:10.649Z",
+"Up",
+0.4968,
+-11.98,
+"perdu",
+0.657,
+109
 ]
 ],
-"n_sauves": 23,
-"maj": "2026-10-16 05:14 UTC"
+"n_sauves": 25,
+"maj": "2026-10-16 07:45 UTC"
 }
