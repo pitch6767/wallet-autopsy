@@ -1797,14 +1797,71 @@
 ],
 "start": 1792235700,
 "slug": "btc-updown-5m-1792235700"
+},
+"2026-10-17T17:11:03.653Z|Down": {
+"heure": "2026-10-17T17:11:03.653Z",
+"cote": "Down",
+"prix": 0.4476,
+"parts": 116.28,
+"U": 0,
+"D": 116.27906976744187,
+"cash": -52.052,
+"net": -52.05,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.63,
+"restant_s": 236,
+"journal": [
+"63.7s écart 0.20 avec 0,01 % (modèle 0,08 % : 0.569) → achat Down 116.3 parts à 0.4476 (meilleur vendeur seul, 120 parts affichées)"
+],
+"start": 1792257000,
+"slug": "btc-updown-5m-1792257000"
+},
+"2026-10-17T16:48:17.289Z|Down": {
+"heure": "2026-10-17T16:48:17.289Z",
+"cote": "Down",
+"prix": 0.117,
+"parts": 293,
+"U": 0,
+"D": 293,
+"cash": -34.2952984,
+"net": -34.3,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.48,
+"restant_s": 103,
+"journal": [
+"197.3s écart 0.37 avec 0,01 % (modèle 0,08 % : 0.495) → achat Down 293.0 parts à 0.117 (meilleur vendeur seul, 293 parts affichées)"
+],
+"start": 1792255500,
+"slug": "btc-updown-5m-1792255500"
+},
+"2026-10-17T14:50:41.745Z|Up": {
+"heure": "2026-10-17T14:50:41.745Z",
+"cote": "Up",
+"prix": 0.518,
+"parts": 100,
+"U": 100,
+"D": 0,
+"cash": 48.2,
+"net": 48.2,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.786,
+"restant_s": 258,
+"journal": [
+"41.7s écart 0.29 avec 0,01 % (modèle 0,08 % : 0.540) → achat Up 100.0 parts à 0.518 (meilleur vendeur seul, 126 parts affichées)"
+],
+"start": 1792248600,
+"slug": "btc-updown-5m-1792248600"
 }
 },
 "resume_bot": {
 "depuis": 1791924695.55,
-"n": 95,
-"gains": 50,
-"pertes": 45,
-"pnl": 1083.1600000000005
+"n": 98,
+"gains": 51,
+"pertes": 47,
+"pnl": 1045.0100000000007
 },
 "archive": [
 [
@@ -2661,8 +2718,35 @@
 "une seule jambe",
 0.545,
 78
+],
+[
+"2026-10-17T14:50:41.745Z",
+"Up",
+0.518,
+48.2,
+"une seule jambe",
+0.786,
+258
+],
+[
+"2026-10-17T16:48:17.289Z",
+"Down",
+0.117,
+-34.3,
+"une seule jambe",
+0.48,
+103
+],
+[
+"2026-10-17T17:11:03.653Z",
+"Down",
+0.4476,
+-52.05,
+"une seule jambe",
+0.63,
+236
 ]
 ],
-"n_sauves": 95,
-"maj": "2026-10-17 14:04 UTC"
+"n_sauves": 98,
+"maj": "2026-10-17 17:22 UTC"
 }
