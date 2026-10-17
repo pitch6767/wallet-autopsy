@@ -1,0 +1,33 @@
+name: Journaux bot95 (lecture seule)
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: |
+          set +e
+          cd bot95
+          timeout 150 npx -y wrangler@4 tail --format json > /tmp/t.json 2>/tmp/t.err
+          python3 - <<'P' > tail.txt
+          import json
+          out=[];buf=""
+          for l in open("/tmp/t.json"):
+              buf+=l
+              try: o=json.loads(buf); buf=""
+              except: continue
+              ev=o.get("event") or {}; req=(ev.get("request") or {}).get("url","")
+              ex=o.get("exceptions") or []; logs=o.get("logs") or []
+              if o.get("outcome")!="ok" or ex: out.append(json.dumps({"outcome":o.get("outcome"),"script":o.get("scriptName"),"url":req[:80],"ev":list(ev.keys())[:4],"ex":ex[:3],"logs":[x.get("message") for x in logs][:5]})[:1500])
+          print(len(out)); print("\n".join(out[:60]))
+          P
+          tail -20 /tmp/t.err >> tail.txt
+          cd ..; git config user.name tail; git config user.email bot@users.noreply.github.com
+          git add bot95/tail.txt && git commit -qm "journaux bot95 [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
