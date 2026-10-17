@@ -284,7 +284,10 @@ export class Bot {
       const T = (o) => Object.fromEntries(Object.keys(o || {}).map((k) => [k, taille(o[k])]).sort((x, y) => y[1] - x[1]).slice(0, 40));
       const strats = Object.entries((this.N && this.N.strats) || {}).map(([k, v]) => [k, taille(v)]).sort((x, y) => y[1] - x[1]).slice(0, 15);
       const sec = Object.fromEntries(Object.entries(this.sec || {}).map(([a, m]) => [a, m.size]));
-      return json({ objet: T(this), N: T(this.N), e: T(this.e), stratsPlusGrosses: strats, nStrats: Object.keys((this.N && this.N.strats) || {}).length, secondes: sec });
+      const gros = this.N && this.N.strats && strats.length ? this.N.strats[strats[0][0]] : null;
+      const detail = gros ? { champs: T(gros), nTrades: (gros.trades || []).length, trade0: T((gros.trades || [])[0]), trade30: T((gros.trades || [])[30]) } : null;
+      const somme = {}; for (const v of Object.values((this.N && this.N.strats) || {})) for (const [k, x] of Object.entries(v)) somme[k] = (somme[k] || 0) + taille(x);
+      return json({ detail, sommeParChamp: somme, objet: T(this), N: T(this.N), e: T(this.e), stratsPlusGrosses: strats, nStrats: Object.keys((this.N && this.N.strats) || {}).length, secondes: sec });
     }
     if (u.pathname === "/api/reprendre" && req.method === "POST") { this.e.pause = false; await this.sauver(); return json({ ok: true }); }
     if (u.pathname === "/api/reveil") return json({ ok: true });
