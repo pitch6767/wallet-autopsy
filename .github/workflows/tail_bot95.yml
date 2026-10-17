@@ -25,8 +25,8 @@ jobs:
               except: continue
               ev=o.get("event") or {}; req=(ev.get("request") or {}).get("url","")
               ex=o.get("exceptions") or []; logs=o.get("logs") or []
-              if o.get("outcome")!="ok" or ex: out.append(json.dumps({"outcome":o.get("outcome"),"script":o.get("scriptName"),"url":req[:80],"ev":list(ev.keys())[:4],"ex":ex[:3],"logs":[x.get("message") for x in logs][:5]})[:1500])
-          print(len(out)); print("\n".join(out[:60]))
+              hd=(ev.get("request") or {}).get("headers") or {}; out.append(json.dumps({"t":o.get("eventTimestamp"),"outcome":o.get("outcome"),"url":req[:90],"meth":(ev.get("request") or {}).get("method"),"len":hd.get("content-length"),"ev":list(ev.keys())[:3],"ex":[x.get("message","")[:60] for x in ex[:2]]}))
+          print(len(out)); print("\n".join(out[:400]))
           P
           tail -20 /tmp/t.err >> tail.txt
           cd ..; git config user.name tail; git config user.email bot@users.noreply.github.com
