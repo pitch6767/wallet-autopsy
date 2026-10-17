@@ -110,6 +110,22 @@ export default {
       return Response.json(pathname.endsWith("/version") ? { version: RAPIDE_VERSION } :
         { version: RAPIDE_VERSION, code: RAPIDE_CODE }, { headers: { "cache-control": "no-store" } });
     }
+    // 17.10.2026 : Dublin renvoyait un paquet de 10 Mo (envois ratés remis en file, qui grossissent) → le Durable Object dépassait sa mémoire
+    // à chaque envoi et redémarrait toutes les minutes depuis le 16.10 12:20 (plus aucun trade fantôme). Les gros paquets sont maintenant
+    // découpés ici (isolat séparé) en morceaux de ~600 Ko envoyés l'un après l'autre. Rien n'est perdu ni doublé (dédoublonnage côté objet).
+    if (req.method === "POST" && pathname === "/api/rapide/donnees" && +(req.headers.get("content-length") || 0) > 1500000) {
+      const d = await req.json(), H = new Headers(req.headers); H.delete("content-length");
+      const envoi = async (corps) => { const r = await stub(env).fetch(new Request(req.url, { method: "POST", headers: H, body: JSON.stringify(corps) })); if (!r.ok) throw new Error("morceau HTTP " + r.status); };
+      try {
+        await envoi({ ...d, maker: [], signaux: [] });
+        for (const champ of ["maker", "signaux"]) {
+          let lot = [], taille = 0;
+          for (const x of d[champ] || []) { const n = JSON.stringify(x).length; if (lot.length && taille + n > 600000) { await envoi({ version: d.version, [champ]: lot }); lot = []; taille = 0; } lot.push(x); taille += n; }
+          if (lot.length) await envoi({ version: d.version, [champ]: lot });
+        }
+        return Response.json({ ok: true, decoupe: true, n: (d.signaux || []).length });
+      } catch (e) { return Response.json({ ok: false, erreur: String((e && e.message) || e) }, { status: 503 }); }
+    }
     return stub(env).fetch(req);
   },
   async scheduled(_e, env, ctx) { ctx.waitUntil(stub(env).fetch("https://bot95/api/reveil")); },
@@ -369,7 +385,7 @@ export class Bot {
       }
       if (u.pathname === "/api/rapide/donnees" && req.method === "POST") {
         const d = await req.json();
-        await this.state.storage.put("rap:etat", { recu: now(), version: d.version, latence: d.latence, flux: d.flux, systeme: d.systeme || null, chainlink: d.chainlink || null, makerEnCours: d.makerEnCours || null });
+        if (d.latence || d.flux) await this.state.storage.put("rap:etat", { recu: now(), version: d.version, latence: d.latence, flux: d.flux, systeme: d.systeme || null, chainlink: d.chainlink || null, makerEnCours: d.makerEnCours || null });
         // 12.10.2026 : stockage par cycle de 5 min (et non plus par heure) — la clé horaire des fantômes maker dépassait la taille maximale
         // d'une valeur (≈ 3 Mo vers 02:00 UTC) et faisait échouer tout l'envoi depuis 03:06 UTC. Regroupement par clé : une lecture et une écriture par clé.
         const grouper = (L, pre) => { const G = new Map(); for (const x of L || []) { const k = pre + x.start; if (!G.has(k)) G.set(k, []); G.get(k).push(x); } return G; };
