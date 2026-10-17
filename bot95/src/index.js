@@ -237,7 +237,8 @@ export class Bot {
         for (const k of Object.keys(this.N.strats)) if (k.startsWith(ancien + " ") && k.split(" ").length === 2) { this.N.strats[neuf + " " + k.split(" ")[1]] = this.N.strats[k]; delete this.N.strats[k]; }
         for (const P of [...this.N.ouvertes, ...this.N.attente]) if (P.strat === ancien) P.strat = neuf;
       }
-      for (const v of Object.values(this.N.strats)) nAlleger(v);   // 17.10.2026 : voir nAlleger
+      for (const [k, v] of Object.entries(this.N.strats)) { nAlleger(v);   // 17.10.2026 : voir nAlleger
+        if (STOPPEES.has(k.replace(/ ([A-Z]+)$/, "|$1")) && (v.trades || []).length > 5) v.trades.length = 5; }   // stratégies arrêtées (non affichées) : 5 derniers trades en mémoire, tout reste sur GitHub et dans hist:
       for (const k of NV.SUPPRIMEES) { delete this.N.strats[k]; await this.state.storage.delete(["nv:strat:" + k, "hist:" + k]); }
       // REMISE À ZÉRO demandée par Pitch le 10.10.2026 13:43 : P&L, gains et pertes à 0 pour tous ; les trades d'avant sont gardés
       // (copie complète dans raz:<id>:<stratégie>, archive hist:<stratégie> intacte, sauvegarde GitHub intacte, résumé d'avant dans avantRaz)
@@ -2965,11 +2966,12 @@ go();setInterval(go,3000);
 function nRisquePas(r, net) { r.hist = r.hist || {}; if (net >= 0 && r.serie > 0) r.hist[r.serie] = (r.hist[r.serie] || 0) + 1; r.serie = net < 0 ? r.serie + 1 : 0; r.serieMax = Math.max(r.serieMax, r.serie); r.cum += net; r.pic = Math.max(r.pic, r.cum); r.creux = Math.min(r.creux, r.cum - r.pic); }
 function qtl(L, x) { if (!L || !L.length) return null; const b = [...L].sort((a2, b2) => a2 - b2); return b[Math.min(b.length - 1, Math.floor(b.length * x))]; }
 // 17.10.2026 : le Durable Object dépassait sa limite de mémoire (454 stratégies × 60 trades ≈ 19 Mo de JSON) et redémarrait toutes les minutes
-// depuis le 16.10 12:20 (plus aucun trade). Les 15 trades les plus récents restent complets ; les plus anciens (déjà sauvegardés sur GitHub
-// toutes les 30 min) perdent seulement leurs gros champs (carnet, signaux…) et gardent les 2 dernières lignes du journal. Résultats, prix, côté, heure : intacts.
-function nAlleger(S2) { const T = (S2 && S2.trades) || []; for (let i = 15; i < T.length; i++) { const P = T[i]; if (!P || P._leger) continue;
-  for (const k of Object.keys(P)) { if (k === "journal") continue; const v = P[k]; if (v && typeof v === "object" && JSON.stringify(v).length > 120) delete P[k]; }
-  if (Array.isArray(P.journal)) P.journal = P.journal.slice(-2); P._leger = 1; } }
+// depuis le 16.10 12:20 (plus aucun trade). Les plus anciens trades (déjà sauvegardés sur GitHub
+// toutes les 30 min) ne gardent que les champs affichés ou comptés (heure, côté, prix, parts, net, issue…) et les 2 dernières lignes du journal. Les 10 plus récents restent complets.
+const N_GARDE = new Set(["heure", "cote", "prix", "parts", "U", "D", "cash", "net", "issue", "gagnant", "proba0", "restant_s", "start", "end", "fini", "type", "etatSignal", "journal", "strat", "actif", "famille"]);
+function nAlleger(S2) { const T = (S2 && S2.trades) || []; for (let i = 10; i < T.length; i++) { const P = T[i]; if (!P || P._leger === 2) continue;
+  for (const k of Object.keys(P)) if (!N_GARDE.has(k)) delete P[k];
+  if (Array.isArray(P.journal)) P.journal = P.journal.slice(-2); P._leger = 2; } }
 function nRisqueDepuis(trades) { const r = { serie: 0, serieMax: 0, cum: 0, pic: 0, creux: 0, hist: {} }; const T = [...(trades || [])].filter((x) => x.net != null).sort((a, b) => Date.parse(a.heure) - Date.parse(b.heure)); for (const x of T) nRisquePas(r, x.net); return r; }
 function nRisqueVue(r) { const h = { ...(r.hist || {}) }; if (r.serie > 0) h[r.serie] = (h[r.serie] || 0) + 1; return { serie: r.serie, serieMax: r.serieMax, series: h, creux: +r.creux.toFixed(2), capital: Math.round((2 * -r.creux + 2 * 50) / 50) * 50 }; }
 
