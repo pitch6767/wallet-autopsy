@@ -2128,14 +2128,33 @@
 ],
 "start": 1792141800,
 "slug": "btc-updown-5m-1792141800"
+},
+"2026-10-17T05:46:28.445Z|Up": {
+"heure": "2026-10-17T05:46:28.445Z",
+"cote": "Up",
+"prix": 0.3664,
+"parts": 15,
+"U": 15,
+"D": 0,
+"cash": -5.4957,
+"net": -5.5,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.601,
+"restant_s": 212,
+"journal": [
+"88.4s écart 0.25 (modèle 0.601, vendeur 0.35), 212 s restantes → achat Up 15.0 parts à 0.3664 (meilleur vendeur seul, 15 parts affichées)"
+],
+"start": 1792215900,
+"slug": "btc-updown-5m-1792215900"
 }
 },
 "resume_bot": {
 "depuis": 1791643242.486,
-"n": 112,
+"n": 113,
 "gains": 60,
-"pertes": 52,
-"pnl": 650.8700000000003
+"pertes": 53,
+"pnl": 645.3700000000003
 },
 "archive": [
 [
@@ -3145,8 +3164,17 @@
 "perdu",
 0.564,
 162
+],
+[
+"2026-10-17T05:46:28.445Z",
+"Up",
+0.3664,
+-5.5,
+"perdu",
+0.601,
+212
 ]
 ],
-"n_sauves": 112,
-"maj": "2026-10-17 01:42 UTC"
+"n_sauves": 113,
+"maj": "2026-10-17 06:18 UTC"
 }
