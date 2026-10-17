@@ -1035,14 +1035,90 @@
 ],
 "start": 1792258500,
 "slug": "btc-updown-5m-1792258500"
+},
+"2026-10-17T20:58:38.559Z|Up": {
+"heure": "2026-10-17T20:58:38.559Z",
+"cote": "Up",
+"prix": 0.1636,
+"parts": 120,
+"U": 120,
+"D": 0,
+"cash": -19.626440000000002,
+"net": -19.63,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.456,
+"restant_s": 81,
+"journal": [
+"218.6s écart 0.31 (modèle 0.456, vendeur 0.15), 81 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1792270500,
+"slug": "btc-updown-5m-1792270500"
+},
+"2026-10-17T20:15:38.849Z|Up": {
+"heure": "2026-10-17T20:15:38.849Z",
+"cote": "Up",
+"prix": 0.1719,
+"parts": 156.25,
+"U": 156.25,
+"D": 0,
+"cash": -26.8631604,
+"net": -26.86,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.474,
+"restant_s": 261,
+"journal": [
+"38.8s écart 0.31 (modèle 0.474, vendeur 0.16), 261 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1792268100,
+"slug": "btc-updown-5m-1792268100"
+},
+"2026-10-17T20:06:35.284Z|Down": {
+"heure": "2026-10-17T20:06:35.284Z",
+"cote": "Down",
+"prix": 0.1943,
+"parts": 138.89,
+"U": 0,
+"D": 138.88888888888889,
+"cash": -26.99093272088889,
+"net": -26.99,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.499,
+"restant_s": 205,
+"journal": [
+"95.3s écart 0.32 (modèle 0.499, vendeur 0.18), 205 s restantes ; 3 s avant : Binance 0.0, perp 0.1 (+ = dans notre sens)"
+],
+"start": 1792267500,
+"slug": "btc-updown-5m-1792267500"
+},
+"2026-10-17T19:53:49.291Z|Down": {
+"heure": "2026-10-17T19:53:49.291Z",
+"cote": "Down",
+"prix": 0.2115,
+"parts": 5,
+"U": 0,
+"D": 5,
+"cash": -1.0576,
+"net": -1.06,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.518,
+"restant_s": 71,
+"journal": [
+"229.3s écart 0.32 (modèle 0.518, vendeur 0.2), 71 s restantes ; 3 s avant : Binance 0.0, perp 2.3 (+ = dans notre sens)"
+],
+"start": 1792266600,
+"slug": "btc-updown-5m-1792266600"
 }
 },
 "resume_bot": {
 "depuis": 1791924695.55,
-"n": 53,
+"n": 57,
 "gains": 18,
-"pertes": 35,
-"pnl": 533.6100000000002
+"pertes": 39,
+"pnl": 459.0700000000003
 },
 "archive": [
 [
@@ -1521,8 +1597,44 @@
 "perdu",
 0.532,
 99
+],
+[
+"2026-10-17T19:53:49.291Z",
+"Down",
+0.2115,
+-1.06,
+"perdu",
+0.518,
+71
+],
+[
+"2026-10-17T20:06:35.284Z",
+"Down",
+0.1943,
+-26.99,
+"perdu",
+0.499,
+205
+],
+[
+"2026-10-17T20:15:38.849Z",
+"Up",
+0.1719,
+-26.86,
+"perdu",
+0.474,
+261
+],
+[
+"2026-10-17T20:58:38.559Z",
+"Up",
+0.1636,
+-19.63,
+"perdu",
+0.456,
+81
 ]
 ],
-"n_sauves": 53,
-"maj": "2026-10-17 19:34 UTC"
+"n_sauves": 57,
+"maj": "2026-10-17 21:49 UTC"
 }

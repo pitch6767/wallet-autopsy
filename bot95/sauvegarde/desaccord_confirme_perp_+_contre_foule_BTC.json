@@ -1273,14 +1273,71 @@
 ],
 "start": 1792263300,
 "slug": "btc-updown-5m-1792263300"
+},
+"2026-10-17T20:51:52.077Z|Down": {
+"heure": "2026-10-17T20:51:52.077Z",
+"cote": "Down",
+"prix": 0.3459,
+"parts": 151.52,
+"U": 0,
+"D": 151.5151515151515,
+"cash": -52.412,
+"net": -52.41,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.499,
+"restant_s": 188,
+"journal": [
+"112.1s désaccord repéré à 0.285 il y a 20 s, marché monté à 0.325 → achat Down 151.5 parts à 0.3459 (modèle 0.499)"
+],
+"start": 1792270200,
+"slug": "btc-updown-5m-1792270200"
+},
+"2026-10-17T20:40:56.739Z|Up": {
+"heure": "2026-10-17T20:40:56.739Z",
+"cote": "Up",
+"prix": 0.3704,
+"parts": 120.5,
+"U": 120.5,
+"D": 0,
+"cash": 75.8637398,
+"net": 75.86,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.454,
+"restant_s": 243,
+"journal": [
+"56.7s désaccord repéré à 0.245 il y a 20 s, marché monté à 0.345 → achat Up 120.5 parts à 0.3704 (modèle 0.454)"
+],
+"start": 1792269600,
+"slug": "btc-updown-5m-1792269600"
+},
+"2026-10-17T19:40:29.652Z|Down": {
+"heure": "2026-10-17T19:40:29.652Z",
+"cote": "Down",
+"prix": 0.3006,
+"parts": 18.71,
+"U": 0,
+"D": 18.71,
+"cash": -5.623784992000001,
+"net": -5.62,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.36,
+"restant_s": 270,
+"journal": [
+"29.7s désaccord repéré à 0.170 il y a 20 s, marché monté à 0.275 → achat Down 18.7 parts à 0.3006 (modèle 0.360)"
+],
+"start": 1792266000,
+"slug": "btc-updown-5m-1792266000"
 }
 },
 "resume_bot": {
 "depuis": 1791929427.822,
-"n": 67,
-"gains": 20,
-"pertes": 47,
-"pnl": 76.5599999999998
+"n": 70,
+"gains": 21,
+"pertes": 49,
+"pnl": 94.38999999999979
 },
 "archive": [
 [
@@ -1885,8 +1942,35 @@
 "gagné",
 0.405,
 254
+],
+[
+"2026-10-17T19:40:29.652Z",
+"Down",
+0.3006,
+-5.62,
+"perdu",
+0.36,
+270
+],
+[
+"2026-10-17T20:40:56.739Z",
+"Up",
+0.3704,
+75.86,
+"gagné",
+0.454,
+243
+],
+[
+"2026-10-17T20:51:52.077Z",
+"Down",
+0.3459,
+-52.41,
+"perdu",
+0.499,
+188
 ]
 ],
-"n_sauves": 67,
-"maj": "2026-10-17 19:34 UTC"
+"n_sauves": 70,
+"maj": "2026-10-17 21:49 UTC"
 }

@@ -76,14 +76,33 @@
 ],
 "start": 1792047000,
 "slug": "btc-updown-5m-1792047000"
+},
+"2026-10-17T20:00:33.066Z|Down": {
+"heure": "2026-10-17T20:00:33.066Z",
+"cote": "Down",
+"prix": 0.2324,
+"parts": 227.27,
+"U": 0,
+"D": 227.27272727272728,
+"cash": -52.808,
+"net": -52.81,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.517,
+"restant_s": 267,
+"journal": [
+"33.1s V2-C perp achète Down avec 20 autres stratégies du même côté (première il y a 1.9 s), 267 s restantes → achat 227.3 parts à 0.2324"
+],
+"start": 1792267200,
+"slug": "btc-updown-5m-1792267200"
 }
 },
 "resume_bot": {
 "depuis": 1792010750.392,
-"n": 4,
+"n": 5,
 "gains": 1,
-"pertes": 3,
-"pnl": 192.3
+"pertes": 4,
+"pnl": 139.49
 },
 "archive": [
 [
@@ -121,8 +140,17 @@
 "une seule jambe",
 0.338,
 151
+],
+[
+"2026-10-17T20:00:33.066Z",
+"Down",
+0.2324,
+-52.81,
+"une seule jambe",
+0.517,
+267
 ]
 ],
-"n_sauves": 4,
-"maj": "2026-10-17 19:33 UTC"
+"n_sauves": 5,
+"maj": "2026-10-17 21:48 UTC"
 }
