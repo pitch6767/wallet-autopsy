@@ -1,6 +1,97 @@
-5
-{"outcome": "exception", "script": "bot95", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "ev": ["request", "response"], "ex": [{"name": "Error", "message": "Durable Object's isolate exceeded its memory limit and was reset.", "timestamp": 1792196238629}], "logs": []}
-{"outcome": "exception", "script": "bot95", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "ev": ["request", "response"], "ex": [{"name": "Error", "message": "Durable Object's isolate exceeded its memory limit and was reset.", "timestamp": 1792196238630}], "logs": []}
-{"outcome": "exceededMemory", "script": "bot95", "url": "", "ev": ["scheduledTime"], "ex": [{"name": "Error", "message": "Durable Object's isolate exceeded its memory limit and was reset.", "timestamp": 1792196293068}, {"name": "Error", "message": "Durable Object's isolate exceeded its memory limit and was reset.", "timestamp": 1792196293068}, {"name": "Error", "message": "Durable Object's isolate exceeded its memory limit and was reset.", "timestamp": 1792196293068}], "logs": []}
-{"outcome": "exceededMemory", "script": "bot95", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "ev": ["request"], "ex": [], "logs": []}
-{"outcome": "exception", "script": "bot95", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "ev": ["request", "response"], "ex": [{"name": "Error", "message": "Durable Object's isolate exceeded its memory limit and was reset.", "timestamp": 1792196296393}], "logs": []}
+96
+{"t": 1792199748392, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": []}
+{"t": 1792199772979, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "10344736", "ev": ["request", "response"], "ex": ["Durable Object's isolate exceeded its memory limit and was r"]}
+{"t": 1792199776945, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": ["Durable Object's isolate exceeded its memory limit and was r"]}
+{"t": 1792199782583, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199783755, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199784820, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199785820, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199786807, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199787836, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199788861, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199789849, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199790861, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199791814, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199792860, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199793878, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199794871, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199795865, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199796875, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199797690, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199798848, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199799073, "outcome": "canceled", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199799902, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199800913, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199801962, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199802957, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199803847, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199804905, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199805934, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199806989, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199808371, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": []}
+{"t": 1792199808328, "outcome": "ok", "url": "https://bot95/api/reveil", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
+{"t": 1792199808971, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199809982, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199810911, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199811990, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199812801, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199813967, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199815056, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199816049, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199817040, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199818038, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199819069, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199820074, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199821065, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199822089, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199823061, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199824061, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199825069, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199826066, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199827087, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199827851, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199828984, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199830050, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199831079, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199832091, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199833089, "outcome": "exceededMemory", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199832918, "outcome": "exceededMemory", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "10344756", "ev": ["request"], "ex": []}
+{"t": 1792199781738, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199833089, "outcome": "exceededMemory", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request"], "ex": ["Durable Object's isolate exceeded its memory limit and was r", "Durable Object's isolate exceeded its memory limit and was r"]}
+{"t": 1792199780774, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199832990, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "10344756", "ev": ["request", "response"], "ex": ["Durable Object's isolate exceeded its memory limit and was r"]}
+{"t": 1792199836947, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": ["Durable Object's isolate exceeded its memory limit and was r"]}
+{"t": 1792199843182, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199844349, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199845438, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199846469, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199847454, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199848398, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199849402, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199851473, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199852433, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199853435, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199854482, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199855498, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199856459, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199857498, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199858257, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199859140, "outcome": "canceled", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199859410, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199860454, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199861445, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199862457, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199863403, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199864441, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199865435, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199866450, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199867467, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199868505, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": []}
+{"t": 1792199868438, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199869434, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199870441, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199871440, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199872444, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199873258, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199874428, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
+{"t": 1792199875462, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["scheduledTime"], "ex": []}
