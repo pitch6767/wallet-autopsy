@@ -277,6 +277,14 @@ export class Bot {
     const u = new URL(req.url);
     const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } });
     if (u.pathname === "/api/etat") return json(this.vue());
+    // 17.10.2026 : diagnostic mémoire (lecture seule) — taille approximative de chaque structure en mémoire
+    if (u.pathname === "/api/memoire") {
+      const taille = (x) => { try { if (x instanceof Map) { let n = 0; for (const [k, v] of x) n += String(k).length + (v instanceof Map ? taille(v) : JSON.stringify(v ?? null).length); return n; } return JSON.stringify(x ?? null, (k, v) => (v instanceof Map ? Object.fromEntries(v) : v instanceof Set ? [...v] : v)).length; } catch (e) { return -1; } };
+      const T = (o) => Object.fromEntries(Object.keys(o || {}).map((k) => [k, taille(o[k])]).sort((x, y) => y[1] - x[1]).slice(0, 40));
+      const strats = Object.entries((this.N && this.N.strats) || {}).map(([k, v]) => [k, taille(v)]).sort((x, y) => y[1] - x[1]).slice(0, 15);
+      const sec = Object.fromEntries(Object.entries(this.sec || {}).map(([a, m]) => [a, m.size]));
+      return json({ objet: T(this), N: T(this.N), e: T(this.e), stratsPlusGrosses: strats, nStrats: Object.keys((this.N && this.N.strats) || {}).length, secondes: sec });
+    }
     if (u.pathname === "/api/reprendre" && req.method === "POST") { this.e.pause = false; await this.sauver(); return json({ ok: true }); }
     if (u.pathname === "/api/reveil") return json({ ok: true });
     if (u.pathname === "/api/sante") {
