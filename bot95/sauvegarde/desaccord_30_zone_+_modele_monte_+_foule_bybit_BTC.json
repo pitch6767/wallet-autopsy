@@ -855,14 +855,71 @@
 ],
 "start": 1792251600,
 "slug": "btc-updown-5m-1792251600"
+},
+"2026-10-17T18:43:10.176Z|Up": {
+"heure": "2026-10-17T18:43:10.176Z",
+"cote": "Up",
+"prix": 0.1592,
+"parts": 5,
+"U": 5,
+"D": 0,
+"cash": -0.7959,
+"net": -0.8,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.47,
+"restant_s": 110,
+"journal": [
+"190.2s écart 0.32 (modèle 0.470, vendeur 0.15), 110 s restantes ; 3 s avant : Binance 0.0, perp 4.0 (+ = dans notre sens)"
+],
+"start": 1792262400,
+"slug": "btc-updown-5m-1792262400"
+},
+"2026-10-17T18:37:08.343Z|Down": {
+"heure": "2026-10-17T18:37:08.343Z",
+"cote": "Down",
+"prix": 0.1676,
+"parts": 172.75,
+"U": 0,
+"D": 172.75,
+"cash": -28.9442792,
+"net": -28.94,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.452,
+"restant_s": 172,
+"journal": [
+"128.3s écart 0.30 (modèle 0.452, vendeur 0.15), 172 s restantes ; 3 s avant : Binance -5.1, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1792262100,
+"slug": "btc-updown-5m-1792262100"
+},
+"2026-10-17T17:37:33.628Z|Up": {
+"heure": "2026-10-17T17:37:33.628Z",
+"cote": "Up",
+"prix": 0.1742,
+"parts": 44,
+"U": 44,
+"D": 0,
+"cash": 36.3350552,
+"net": 36.34,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.488,
+"restant_s": 146,
+"journal": [
+"153.6s écart 0.33 (modèle 0.488, vendeur 0.16), 146 s restantes ; 3 s avant : Binance 6.0, perp 10.4 (+ = dans notre sens)"
+],
+"start": 1792258500,
+"slug": "btc-updown-5m-1792258500"
 }
 },
 "resume_bot": {
 "depuis": 1791932553.713,
-"n": 45,
-"gains": 12,
-"pertes": 33,
-"pnl": 661.6099999999999
+"n": 48,
+"gains": 13,
+"pertes": 35,
+"pnl": 668.2099999999999
 },
 "archive": [
 [
@@ -1269,8 +1326,35 @@
 "perdu",
 0.523,
 102
+],
+[
+"2026-10-17T17:37:33.628Z",
+"Up",
+0.1742,
+36.34,
+"gagné",
+0.488,
+146
+],
+[
+"2026-10-17T18:37:08.343Z",
+"Down",
+0.1676,
+-28.94,
+"perdu",
+0.452,
+172
+],
+[
+"2026-10-17T18:43:10.176Z",
+"Up",
+0.1592,
+-0.8,
+"perdu",
+0.47,
+110
 ]
 ],
-"n_sauves": 45,
-"maj": "2026-10-17 17:23 UTC"
+"n_sauves": 48,
+"maj": "2026-10-17 19:34 UTC"
 }
