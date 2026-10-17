@@ -18,6 +18,7 @@ jobs:
           curl -sS -m 90 "$U/api/classement" -o bot95/classement.json
           curl -sS -m 90 "$U/api/zero" -o bot95/sonde_zero.json
           curl -sS -m 90 "$U/api/etat" -o bot95/sonde_etat.json
+          for i in 1 2 3 4 5 6 7 8 9 10 11 12; do date -u +%T; curl -sS -m 30 "$U/api/v1debug" | head -c 400; echo; curl -sS -m 60 "$U/api/etat" | python3 -c "import json,sys;d=json.load(sys.stdin);print(d['diag'],[(x['a'],x['strike']) for x in d['actifs']][:3])"; sleep 20; done > bot95/sonde_boucle.txt 2>&1
           { echo "== version"; curl -sS -m 30 "$U/api/rapide/version"; echo; echo "== cycles depuis 3 h"; curl -sS -m 60 "$U/api/rapidecycles?apres=$(( $(date +%s) - 10800 ))" | head -c 1500; echo; echo "== sante"; curl -sS -m 30 "$U/api/sante" | head -c 1500; } > bot95/sonde_dublin.txt 2>&1
           git config user.name sonde; git config user.email bot@users.noreply.github.com
-          git add bot95/sonde_etat.json bot95/sonde_zero.json bot95/sonde_pages.txt bot95/classement.json bot95/sonde_dublin.txt && git commit -qm "sonde pages [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
+          git add bot95/sonde_boucle.txt bot95/sonde_etat.json bot95/sonde_zero.json bot95/sonde_pages.txt bot95/classement.json bot95/sonde_dublin.txt && git commit -qm "sonde pages [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
