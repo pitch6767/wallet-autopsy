@@ -117,7 +117,8 @@ export default {
       const d = await req.json(), H = new Headers(req.headers); H.delete("content-length");
       const envoi = async (corps) => { const r = await stub(env).fetch(new Request(req.url, { method: "POST", headers: H, body: JSON.stringify(corps) })); if (!r.ok) throw new Error("morceau HTTP " + r.status); };
       try {
-        await envoi({ ...d, maker: [], signaux: [] });
+        await envoi({ ...d, maker: [], signaux: [], fantomes: [] });
+        const F = d.fantomes || []; for (let i = 0; i < F.length; i += 40) await envoi({ version: d.version, fantomes: F.slice(i, i + 40) });   // chaque fantôme réglé relit son archive : 40 à la fois
         for (const champ of ["maker", "signaux"]) {
           let lot = [], taille = 0;
           for (const x of d[champ] || []) { const n = JSON.stringify(x).length; if (lot.length && taille + n > 600000) { await envoi({ version: d.version, [champ]: lot }); lot = []; taille = 0; } lot.push(x); taille += n; }
