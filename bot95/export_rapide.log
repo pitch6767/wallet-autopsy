@@ -1,37 +1,56 @@
 + python3 -
-nouveaux cycles 54 dans le bot 900
+nouveaux cycles 88 dans le bot 900
 ++ date -u -d '21 days ago' +%Y-%m-%d
-+ LIM=2026-09-25
++ LIM=2026-09-26
 + for d in cycles/*/
 ++ basename cycles/2026-10-11/
 + b=2026-10-11
-+ [[ 2026-10-11 < 2026-09-25 ]]
++ [[ 2026-10-11 < 2026-09-26 ]]
 + for d in cycles/*/
 ++ basename cycles/2026-10-12/
 + b=2026-10-12
-+ [[ 2026-10-12 < 2026-09-25 ]]
++ [[ 2026-10-12 < 2026-09-26 ]]
 + for d in cycles/*/
 ++ basename cycles/2026-10-13/
 + b=2026-10-13
-+ [[ 2026-10-13 < 2026-09-25 ]]
++ [[ 2026-10-13 < 2026-09-26 ]]
 + for d in cycles/*/
 ++ basename cycles/2026-10-14/
 + b=2026-10-14
-+ [[ 2026-10-14 < 2026-09-25 ]]
++ [[ 2026-10-14 < 2026-09-26 ]]
 + for d in cycles/*/
 ++ basename cycles/2026-10-15/
 + b=2026-10-15
-+ [[ 2026-10-15 < 2026-09-25 ]]
++ [[ 2026-10-15 < 2026-09-26 ]]
 + for d in cycles/*/
 ++ basename cycles/2026-10-16/
 + b=2026-10-16
-+ [[ 2026-10-16 < 2026-09-25 ]]
++ [[ 2026-10-16 < 2026-09-26 ]]
++ for d in cycles/*/
+++ basename cycles/2026-10-17/
++ b=2026-10-17
++ [[ 2026-10-17 < 2026-09-26 ]]
 + git add cycles README.md
 ++ git rev-list --max-parents=0 HEAD
 ++ tail -1
-+ R=c307009a875384428b7074ee12111e9ca48db4b7
-+ git reset -q --soft c307009a875384428b7074ee12111e9ca48db4b7
++ R=fca36c3dcb9c29b868c575a09f33353fb4e79949
++ git reset -q --soft fca36c3dcb9c29b868c575a09f33353fb4e79949
 + git commit -q --amend -m 'cycles bot rapide (un seul commit, 21 jours)'
 + for k in 1 2 3
 + git push -q -f origin donnees-rapide
-+ break
+error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500
+send-pack: unexpected disconnect while reading sideband packet
+fatal: the remote end hung up unexpectedly
++ sleep 5
++ for k in 1 2 3
++ git push -q -f origin donnees-rapide
+error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500
+send-pack: unexpected disconnect while reading sideband packet
+fatal: the remote end hung up unexpectedly
++ sleep 5
++ for k in 1 2 3
++ git push -q -f origin donnees-rapide
+error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500
+send-pack: unexpected disconnect while reading sideband packet
+fatal: the remote end hung up unexpectedly
++ sleep 5
