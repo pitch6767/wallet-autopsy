@@ -1,0 +1,29 @@
+name: Verification doublons strategies (lecture seule)
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  v:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 - <<'P'
+          import json, urllib.request, urllib.parse, time
+          U = "https://bot95.pitch67.workers.dev"
+          g = lambda p: json.load(urllib.request.urlopen(U + p, timeout=120))
+          noms = set(x["nom"] for x in g("/api/zero")["strats"])
+          try: noms |= set(g("/api/nouveaux").get("strats", {}).keys())
+          except Exception as e: print("nouveaux", e)
+          out = {}
+          for n in sorted(noms):
+              for k in range(3):
+                  try: out[n] = g("/api/hist?s=" + urllib.parse.quote(n)); break
+                  except Exception as e: time.sleep(3); out[n] = {"erreur": str(e)}
+              out[n].pop("derniers", None)
+          json.dump(out, open("bot95/hist_toutes.json", "w"))
+          print(len(out))
+          P
+          gzip -f bot95/hist_toutes.json
+          git config user.name verif; git config user.email bot@users.noreply.github.com
+          git add bot95/hist_toutes.json.gz && git commit -qm "historiques toutes strategies [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
