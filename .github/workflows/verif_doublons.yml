@@ -11,7 +11,7 @@ jobs:
           python3 - <<'P'
           import json, urllib.request, urllib.parse, time
           U = "https://bot95.pitch67.workers.dev"
-          g = lambda p: json.load(urllib.request.urlopen(U + p, timeout=120))
+          g = lambda p: json.load(urllib.request.urlopen(urllib.request.Request(U + p, headers={"User-Agent": "Mozilla/5.0"}), timeout=120))
           noms = set(x["nom"] for x in g("/api/zero")["strats"])
           try: noms |= set(g("/api/nouveaux").get("strats", {}).keys())
           except Exception as e: print("nouveaux", e)
