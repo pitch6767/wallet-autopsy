@@ -384,6 +384,30 @@ export class Bot {
         await this.state.storage.put("rapc-index", idx);
         return json({ ok: true, parts });
       }
+      // 18.10.2026 (Pitch : « check toutes les stratégies ») : recalcul des fantômes de Dublin depuis les enregistrements bruts de chaque cycle
+      // (doublons retirés, gagnants officiels). Remplace leurs compteurs, leur archive et leur onglet « remise à 0 ». Jeton requis. Aucune stratégie modifiée.
+      if (u.pathname === "/api/rapide/refaire" && req.method === "POST") {
+        const d = await req.json(), out = {};
+        for (const [nom, T] of Object.entries(d.strats || {})) {
+          const k = nom + " BTC"; T.sort((x, y) => Date.parse(x.heure) - Date.parse(y.heure));
+          const S2 = this.nStrat(k), dep = S2.depuis || 0;
+          const apres = T.filter((P) => Date.parse(P.heure) / 1000 >= dep);
+          S2.n = apres.length; S2.pnl = apres.reduce((a, P) => a + P.net, 0); S2.gains = apres.filter((P) => P.net >= 0).length; S2.pertes = S2.n - S2.gains;
+          S2.issues = {}; for (const P of apres) { const i = P.issue || "dublin"; (S2.issues[i] = S2.issues[i] || { n: 0, pnl: 0 }).n++; S2.issues[i].pnl += P.net; }
+          S2.trades = apres.slice(-60).reverse().map((P) => ({ strat: nom, actif: "BTC", start: P.start, end: P.start + 300, heure: P.heure, cote: P.cote, prix: P.prix, parts: P.parts, U: 0, D: 0, cash: P.net, net: P.net, issue: P.issue, fini: true, famille: "dublin", journal: [String(P.detail || "")] }));
+          S2.rq = nRisqueDepuis(apres); S2.recalcule = "2026-10-18";
+          const Z = (this.N.zero = this.N.zero || {}), z = (Z[k] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {} });
+          for (const P of T) { if (Date.parse(P.heure) < Date.parse(ZERO_DEPUIS)) continue;
+            const jz = new Date(Date.parse(P.heure) + 2 * 3600e3).toISOString().slice(0, 10); z.parJour[jz] = (z.parJour[jz] || 0) + P.net;
+            z.n++; z.pnl += P.net; z.cum += P.net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, P.net);
+            if (P.net >= 0) { z.gains++; z.serie = 0; } else { z.pertes++; z.pertesTot += P.net; z.serie++; z.serieMax = Math.max(z.serieMax, z.serie); } }
+          await this.state.storage.put("hist:" + k, T.slice(-1500).map((P) => [P.heure, P.cote, P.prix, P.net, P.issue, null, null]));
+          for (let i = 0; i < T.length; i += 100) { const o = {}; for (const P of T.slice(i, i + 100)) if (P.id) o["fid:" + P.id] = 1; await this.state.storage.put(o); }
+          out[k] = { n: S2.n, pnl: +S2.pnl.toFixed(2), zero: z.n };
+        }
+        this.nSauver();
+        return json({ ok: true, out });
+      }
       if (u.pathname === "/api/rapide/donnees" && req.method === "POST") {
         const d = await req.json();
         if (d.latence || d.flux) await this.state.storage.put("rap:etat", { recu: now(), version: d.version, latence: d.latence, flux: d.flux, systeme: d.systeme || null, chainlink: d.chainlink || null, makerEnCours: d.makerEnCours || null });
@@ -408,6 +432,9 @@ export class Bot {
           const vus = new Set((await this.state.storage.get("fant:vus")) || []);
           for (const f of d.fantomes) {
             if (!f || !f.id || vus.has(f.id) || typeof f.net !== "number") continue; vus.add(f.id);
+            // 18.10.2026 : Dublin renvoie tous ses trades réglés à chaque redémarrage ; « vus » ne gardait que 5 000 identifiants → trades recomptés
+            // (compteurs gonflés jusqu'à 5×). Chaque identifiant est maintenant noté pour toujours (clé fid:<id>) avant d'être compté.
+            const fid = "fid:" + f.id; if (await this.state.storage.get(fid)) continue; await this.state.storage.put(fid, 1);
             const P = { strat: f.nom, actif: f.actif || "BTC", start: f.start, end: f.start + 300, slug: "btc-updown-5m-" + f.start, U: 0, D: 0, cash: f.net, heure: f.heure,
               cote: f.cote, prix: f.prix, parts: f.parts, journal: [String(f.detail || "")], famille: "dublin" };
             this.nClore(P, f.issue || "dublin");
@@ -1678,7 +1705,9 @@ export class Bot {
       if (P.net >= 0) { z.gains++; z.serie = 0; } else { z.pertes++; z.pertesTot += P.net; z.serie++; z.serieMax = Math.max(z.serieMax, z.serie); } } } catch (_) {}
     // archive compacte de TOUS les trades (09.10.2026) : [heure, côté, prix, net, issue, modèle, secondes restantes]
     const kh = "hist:" + P.strat + " " + P.actif, ligne = [P.heure, P.cote || null, P.prix ?? null, P.net, issue, P.proba0 ?? null, P.restant_s ?? null];
-    this.state.storage.get(kh).then((L) => { L = L || []; L.push(ligne); if (L.length > 1500) L.splice(0, L.length - 1500); return this.state.storage.put(kh, L); }).catch((err) => this.erreur("archive " + kh, err));
+    // 18.10.2026 : écritures de l'archive mises en file par stratégie (avant : deux trades réglés ensemble se marchaient dessus et l'un était perdu)
+    const QH = (this._qh = this._qh || {});
+    QH[kh] = (QH[kh] || Promise.resolve()).then(() => this.state.storage.get(kh)).then((L) => { L = L || []; L.push(ligne); if (L.length > 1500) L.splice(0, L.length - 1500); return this.state.storage.put(kh, L); }).catch((err) => this.erreur("archive " + kh, err));
     this.N.ouvertes = this.N.ouvertes.filter((x) => x !== P);
     // H1075 (accord de Pitch « fantômes de toutes tes trouvailles ») : cycle calme (≤ 2 passages par 0,5), contre la foule (flux preneurs 30 s ≤ −0,296),
     // et combinaison écart ≤ 1 c + carnet pour nous + cycle calme. Copies seulement ; aucun ordre réel.
