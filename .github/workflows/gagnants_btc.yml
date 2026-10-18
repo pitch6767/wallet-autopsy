@@ -1,0 +1,30 @@
+name: Gagnants BTC 5 min (lecture seule)
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  g:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 - <<'P'
+          import json, time, urllib.request, os, concurrent.futures as cf
+          f = "bot95/gagnants_btc.json"; G = json.load(open(f)) if os.path.exists(f) else {}
+          fin = int(time.time()) // 300 * 300 - 600
+          todo = [s for s in range(1792022400 - 86400, fin, 300) if str(s) not in G]
+          def un(s):
+              for k in range(3):
+                  try:
+                      ev = json.load(urllib.request.urlopen(urllib.request.Request(f"https://gamma-api.polymarket.com/events?slug=btc-updown-5m-{s}", headers={"User-Agent": "Mozilla/5.0"}), timeout=30))
+                      m = ev[0]["markets"][0]; px = [float(x) for x in json.loads(m.get("outcomePrices") or "[]")]; outs = json.loads(m.get("outcomes") or "[]")
+                      return s, (outs[px.index(1.0)] if 1.0 in px else None)
+                  except Exception: time.sleep(2)
+              return s, None
+          with cf.ThreadPoolExecutor(8) as ex:
+              for s, g in ex.map(un, todo):
+                  if g: G[str(s)] = g
+          json.dump(G, open(f, "w")); print(len(G), "sur", len(todo))
+          P
+          git config user.name gagnants; git config user.email bot@users.noreply.github.com
+          git add bot95/gagnants_btc.json && git commit -qm "gagnants BTC [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
