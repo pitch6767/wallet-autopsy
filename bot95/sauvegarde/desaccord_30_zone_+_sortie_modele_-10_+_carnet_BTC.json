@@ -1732,14 +1732,72 @@
 ],
 "start": 1792330800,
 "slug": "btc-updown-5m-1792330800"
+},
+"2026-10-18T17:33:29.687Z|Down": {
+"heure": "2026-10-18T17:33:29.687Z",
+"cote": "Down",
+"prix": 0.2072,
+"parts": 48,
+"U": 0,
+"D": 48,
+"cash": 38.055824,
+"net": 38.06,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.497,
+"restant_s": 90,
+"journal": [
+"209.7s écart 0.31 (modèle 0.497, vendeur 0.19), 90 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1792344600,
+"slug": "btc-updown-5m-1792344600"
+},
+"2026-10-18T15:33:56.592Z|Up": {
+"heure": "2026-10-18T15:33:56.592Z",
+"cote": "Up",
+"prix": 0.1932,
+"parts": 204.5,
+"U": 0,
+"D": 0,
+"cash": -23.110600191999996,
+"net": -23.11,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.487,
+"restant_s": 63,
+"journal": [
+"236.6s écart 0.31 (modèle 0.487, vendeur 0.18), 63 s restantes ; 3 s avant : Binance 0.0, perp -0.1 (+ = dans notre sens)",
+"249.9s le modèle est passé de 0.487 à 0.382 → revente de 204.5 parts pour 16.40 $ (50 s restantes)"
+],
+"start": 1792337400,
+"slug": "btc-updown-5m-1792337400"
+},
+"2026-10-18T15:08:41.333Z|Down": {
+"heure": "2026-10-18T15:08:41.333Z",
+"cote": "Down",
+"prix": 0.211,
+"parts": 263.16,
+"U": 0,
+"D": 263.1578947368421,
+"cash": -55.537887494736836,
+"net": -55.54,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.494,
+"restant_s": 79,
+"journal": [
+"221.3s écart 0.30 (modèle 0.494, vendeur 0.19), 79 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1792335900,
+"slug": "btc-updown-5m-1792335900"
 }
 },
 "resume_bot": {
 "depuis": 1791923700.988,
-"n": 89,
-"gains": 25,
-"pertes": 64,
-"pnl": 279.80000000000007
+"n": 92,
+"gains": 26,
+"pertes": 66,
+"pnl": 239.2100000000001
 },
 "archive": [
 [
@@ -2542,8 +2600,35 @@
 "gagné",
 0.46,
 68
+],
+[
+"2026-10-18T15:08:41.333Z",
+"Down",
+0.211,
+-55.54,
+"perdu",
+0.494,
+79
+],
+[
+"2026-10-18T15:33:56.592Z",
+"Up",
+0.1932,
+-23.11,
+"perdu",
+0.487,
+63
+],
+[
+"2026-10-18T17:33:29.687Z",
+"Down",
+0.2072,
+38.06,
+"gagné",
+0.497,
+90
 ]
 ],
-"n_sauves": 89,
-"maj": "2026-10-18 14:57 UTC"
+"n_sauves": 92,
+"maj": "2026-10-18 17:38 UTC"
 }

@@ -627,14 +627,71 @@
 ],
 "start": 1792305900,
 "slug": "btc-updown-5m-1792305900"
+},
+"2026-10-18T17:22:17.958Z|Up": {
+"heure": "2026-10-18T17:22:17.958Z",
+"cote": "Up",
+"prix": 0.1673,
+"parts": 146.01,
+"U": 146.01,
+"D": 0,
+"cash": 121.58198979999999,
+"net": 121.58,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.317,
+"restant_s": 162,
+"journal": [
+"138.0s désaccord repéré à 0.085 il y a 20 s, marché monté à 0.145 → achat Up 146.0 parts à 0.1673 (modèle 0.317)"
+],
+"start": 1792344000,
+"slug": "btc-updown-5m-1792344000"
+},
+"2026-10-18T17:17:31.059Z|Down": {
+"heure": "2026-10-18T17:17:31.059Z",
+"cote": "Down",
+"prix": 0.3127,
+"parts": 56,
+"U": 0,
+"D": 56,
+"cash": -17.5128824,
+"net": -17.51,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.437,
+"restant_s": 149,
+"journal": [
+"151.1s désaccord repéré à 0.225 il y a 20 s, marché monté à 0.285 → achat Down 56.0 parts à 0.3127 (modèle 0.437)"
+],
+"start": 1792343700,
+"slug": "btc-updown-5m-1792343700"
+},
+"2026-10-18T16:48:34.840Z|Up": {
+"heure": "2026-10-18T16:48:34.840Z",
+"cote": "Up",
+"prix": 0.0901,
+"parts": 625,
+"U": 625,
+"D": 0,
+"cash": -56.32277816,
+"net": -56.32,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.282,
+"restant_s": 85,
+"journal": [
+"214.8s désaccord repéré à 0.045 il y a 20 s, marché monté à 0.075 → achat Up 625.0 parts à 0.0901 (modèle 0.282)"
+],
+"start": 1792341900,
+"slug": "btc-updown-5m-1792341900"
 }
 },
 "resume_bot": {
 "depuis": 1791941104.505,
-"n": 33,
-"gains": 9,
-"pertes": 24,
-"pnl": 119.74999999999996
+"n": 36,
+"gains": 10,
+"pertes": 26,
+"pnl": 167.49999999999994
 },
 "archive": [
 [
@@ -933,8 +990,35 @@
 "perdu",
 0.411,
 153
+],
+[
+"2026-10-18T16:48:34.840Z",
+"Up",
+0.0901,
+-56.32,
+"perdu",
+0.282,
+85
+],
+[
+"2026-10-18T17:17:31.059Z",
+"Down",
+0.3127,
+-17.51,
+"perdu",
+0.437,
+149
+],
+[
+"2026-10-18T17:22:17.958Z",
+"Up",
+0.1673,
+121.58,
+"gagné",
+0.317,
+162
 ]
 ],
-"n_sauves": 33,
-"maj": "2026-10-18 14:57 UTC"
+"n_sauves": 36,
+"maj": "2026-10-18 17:38 UTC"
 }
