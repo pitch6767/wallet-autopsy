@@ -296,6 +296,37 @@ export class Bot {
     const u = new URL(req.url);
     const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } });
     if (u.pathname === "/api/etat") return json(this.vue());
+    // 18.10.2026 (Pitch : « check toutes les stratégies ») : recalcul des fantômes de Dublin depuis les enregistrements bruts de chaque cycle
+    // (doublons retirés, gagnants officiels). Remplace leurs compteurs, leur archive et leur onglet « remise à 0 ». Aucune stratégie modifiée.
+    if (u.pathname === "/api/refaire_dublin" && req.method === "POST") {
+      // données recalculées publiées dans le dépôt (seul Claude/GitHub peut les écrire) ; appliquées une seule fois par version du fichier
+      const txt = await (await fetch("https://raw.githubusercontent.com/pitch6767/wallet-autopsy/main/bot95/refait_dublin.json", { cf: { cacheTtl: 0 } })).text();
+      const empreinte = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(txt)))].map((x) => x.toString(16).padStart(2, "0")).join("");
+      if ((await this.state.storage.get("refait:fait")) === empreinte) return json({ ok: true, deja: true });
+      const brut = JSON.parse(txt), d = { strats: {} }, out = {};
+      for (const [nom, L] of Object.entries(brut.strats || {})) d.strats[nom] = L.map(([heure, cote, prix, parts, net, issue, start, tr]) => ({ id: nom + "|" + start + "|" + tr, heure, cote, prix, parts, net, issue, start, detail: issue }));
+      for (const [nom, T] of Object.entries(d.strats || {})) {
+        const k = nom + " BTC"; T.sort((x, y) => Date.parse(x.heure) - Date.parse(y.heure));
+        const S2 = this.nStrat(k), dep = S2.depuis || 0, fin = T.length ? T[T.length - 1].heure : "";
+        // trades réglés par le bot après la fin du fichier : gardés tels quels
+        for (const P of [...(S2.trades || [])].reverse()) if (P.heure > fin && P.net != null) T.push({ heure: P.heure, cote: P.cote, prix: P.prix, parts: P.parts, net: P.net, issue: P.issue, start: P.start, detail: (P.journal || [])[0] });
+        const apres = T.filter((P) => Date.parse(P.heure) / 1000 >= dep);
+        S2.n = apres.length; S2.pnl = apres.reduce((a, P) => a + P.net, 0); S2.gains = apres.filter((P) => P.net >= 0).length; S2.pertes = S2.n - S2.gains;
+        S2.issues = {}; for (const P of apres) { const i = P.issue || "dublin"; (S2.issues[i] = S2.issues[i] || { n: 0, pnl: 0 }).n++; S2.issues[i].pnl += P.net; }
+        S2.trades = apres.slice(-60).reverse().map((P) => ({ strat: nom, actif: "BTC", start: P.start, end: P.start + 300, heure: P.heure, cote: P.cote, prix: P.prix, parts: P.parts, U: 0, D: 0, cash: P.net, net: P.net, issue: P.issue, fini: true, famille: "dublin", journal: [String(P.detail || "")] }));
+        S2.rq = nRisqueDepuis(apres); S2.recalcule = "2026-10-18";
+        const Z = (this.N.zero = this.N.zero || {}), z = (Z[k] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {} });
+        for (const P of T) { if (Date.parse(P.heure) < Date.parse(ZERO_DEPUIS)) continue;
+          const jz = new Date(Date.parse(P.heure) + 2 * 3600e3).toISOString().slice(0, 10); z.parJour[jz] = (z.parJour[jz] || 0) + P.net;
+          z.n++; z.pnl += P.net; z.cum += P.net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, P.net);
+          if (P.net >= 0) { z.gains++; z.serie = 0; } else { z.pertes++; z.pertesTot += P.net; z.serie++; z.serieMax = Math.max(z.serieMax, z.serie); } }
+        await this.state.storage.put("hist:" + k, T.slice(-1500).map((P) => [P.heure, P.cote, P.prix, P.net, P.issue, null, null]));
+        for (let i = 0; i < T.length; i += 100) { const o = {}; for (const P of T.slice(i, i + 100)) if (P.id) o["fid:" + P.id] = 1; await this.state.storage.put(o); }
+        out[k] = { n: S2.n, pnl: +S2.pnl.toFixed(2), zero: z.n };
+      }
+      this.nSauver(); await this.state.storage.put("refait:fait", empreinte);
+      return json({ ok: true, out });
+    }
     // 17.10.2026 : diagnostic mémoire (lecture seule) — taille approximative de chaque structure en mémoire
     if (u.pathname === "/api/memoire") {
       const taille = (x) => { try { if (x instanceof Map) { let n = 0; for (const [k, v] of x) n += String(k).length + (v instanceof Map ? taille(v) : JSON.stringify(v ?? null).length); return n; } return JSON.stringify(x ?? null, (k, v) => (v instanceof Map ? Object.fromEntries(v) : v instanceof Set ? [...v] : v)).length; } catch (e) { return -1; } };
@@ -383,30 +414,6 @@ export class Bot {
         while (idx.length > 900) { const v = idx.shift(); const ks = []; for (let i = 0; i < v.parts; i++) ks.push(`rapc:${v.start}:${String(i).padStart(3, "0")}`); await this.state.storage.delete(ks); }
         await this.state.storage.put("rapc-index", idx);
         return json({ ok: true, parts });
-      }
-      // 18.10.2026 (Pitch : « check toutes les stratégies ») : recalcul des fantômes de Dublin depuis les enregistrements bruts de chaque cycle
-      // (doublons retirés, gagnants officiels). Remplace leurs compteurs, leur archive et leur onglet « remise à 0 ». Jeton requis. Aucune stratégie modifiée.
-      if (u.pathname === "/api/rapide/refaire" && req.method === "POST") {
-        const d = await req.json(), out = {};
-        for (const [nom, T] of Object.entries(d.strats || {})) {
-          const k = nom + " BTC"; T.sort((x, y) => Date.parse(x.heure) - Date.parse(y.heure));
-          const S2 = this.nStrat(k), dep = S2.depuis || 0;
-          const apres = T.filter((P) => Date.parse(P.heure) / 1000 >= dep);
-          S2.n = apres.length; S2.pnl = apres.reduce((a, P) => a + P.net, 0); S2.gains = apres.filter((P) => P.net >= 0).length; S2.pertes = S2.n - S2.gains;
-          S2.issues = {}; for (const P of apres) { const i = P.issue || "dublin"; (S2.issues[i] = S2.issues[i] || { n: 0, pnl: 0 }).n++; S2.issues[i].pnl += P.net; }
-          S2.trades = apres.slice(-60).reverse().map((P) => ({ strat: nom, actif: "BTC", start: P.start, end: P.start + 300, heure: P.heure, cote: P.cote, prix: P.prix, parts: P.parts, U: 0, D: 0, cash: P.net, net: P.net, issue: P.issue, fini: true, famille: "dublin", journal: [String(P.detail || "")] }));
-          S2.rq = nRisqueDepuis(apres); S2.recalcule = "2026-10-18";
-          const Z = (this.N.zero = this.N.zero || {}), z = (Z[k] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {} });
-          for (const P of T) { if (Date.parse(P.heure) < Date.parse(ZERO_DEPUIS)) continue;
-            const jz = new Date(Date.parse(P.heure) + 2 * 3600e3).toISOString().slice(0, 10); z.parJour[jz] = (z.parJour[jz] || 0) + P.net;
-            z.n++; z.pnl += P.net; z.cum += P.net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, P.net);
-            if (P.net >= 0) { z.gains++; z.serie = 0; } else { z.pertes++; z.pertesTot += P.net; z.serie++; z.serieMax = Math.max(z.serieMax, z.serie); } }
-          await this.state.storage.put("hist:" + k, T.slice(-1500).map((P) => [P.heure, P.cote, P.prix, P.net, P.issue, null, null]));
-          for (let i = 0; i < T.length; i += 100) { const o = {}; for (const P of T.slice(i, i + 100)) if (P.id) o["fid:" + P.id] = 1; await this.state.storage.put(o); }
-          out[k] = { n: S2.n, pnl: +S2.pnl.toFixed(2), zero: z.n };
-        }
-        this.nSauver();
-        return json({ ok: true, out });
       }
       if (u.pathname === "/api/rapide/donnees" && req.method === "POST") {
         const d = await req.json();
