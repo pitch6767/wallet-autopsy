@@ -32,8 +32,8 @@ jobs:
           json.dump(L, open("/tmp/liste.json", "w"))
           P
           for J in $(cat /tmp/jours); do
-            B=dr-$J; rm -rf /tmp/w && mkdir /tmp/w && cd /tmp/w && git init -q && git config user.name rapide && git config user.email bot@users.noreply.github.com
-            git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+            B=dr-$J; W=/tmp/w-$J; mkdir -p $W && cd $W && git init -q && git config user.name rapide && git config user.email bot@users.noreply.github.com
+            set +x; git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" 2>/dev/null || true; set -x
             if git fetch -q --depth 1 origin $B 2>/dev/null; then git checkout -q FETCH_HEAD; fi
             git checkout -q -B $B
             python3 - "$J" <<'P'
