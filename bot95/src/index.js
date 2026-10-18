@@ -10,6 +10,11 @@ const FILTRE_HEURES = new Set(["corrige marge mesuree : V2-F|BTC", "TWAP fin con
 // remise à 0 du 14.10 10:45 ne sont plus comptées ni affichées. Celles qui servent de base à des copies (+ carnet, + calme…) continuent d'être simulées
 // en coulisse pour que ces copies restent inchangées ; leur signal reste aussi transmis au consensus. Données passées gardées (stockage + GitHub).
 const ARRET_18 = new Set(["V2-D perp 120-269 s + foule bybit x2|BTC", "V2-F + plus de 120 s + foule bybit x2|BTC", "consensus K2 + foule bybit x2|BTC", "V2-C perp + calme|BTC", "V2-D perp 120-269 s + calme|BTC", "corrige : V2-F + garde-fou + foule bybit x2|BTC", "desaccord 30 0,15-0,60 + perp + ecart qui grandit + foule bybit x2|BTC", "V2-D perp 120-269 s|BTC", "consensus K2 + calme|BTC", "consensus K2 + ecart serre|BTC", "V2-D perp 120-269 s + ecart serre|BTC", "V2-F + plus de 120 s + calme|BTC", "consensus K2|BTC", "V2-F + plus de 120 s + ecart serre|BTC", "V2-F + plus de 120 s|BTC", "V2-D perp 120-269 s + foule bybit|BTC", "desaccord 30 0,15-0,60 + perp + ecart qui grandit + ecart serre|BTC", "V2-F + plus de 120 s + foule bybit|BTC", "V2-G jury des bourses + calme|BTC", "desaccord 30 zone 0,15-0,35 + foule bybit x2|BTC", "V2-D perp 120-269 s + contre foule|BTC", "V2-F + plus de 120 s + contre foule|BTC", "desaccord 30 0,15-0,60 + perp + ecart qui grandit|BTC", "consensus K2 + foule bybit|BTC", "consensus K2 + contre foule|BTC", "consensus K5 + calme|BTC", "desaccord 30 zone 0,15-0,35 + ecart serre|BTC", "corrige : V2-F + garde-fou + foule bybit|BTC", "desaccord 30 0,15-0,60 + perp + ecart qui grandit sans 02-10h|BTC", "desaccord 30 0,15-0,60 + perp + ecart qui grandit + foule bybit|BTC", "corrige : V2-F + garde-fou + contre foule|BTC", "desaccord 30 0,15-0,60 + perp + ecart qui grandit + calme|BTC", "V2-G jury des bourses + ecart carnet calme|BTC", "billet elan retourne|BTC", "desaccord 30 0,15-0,60 + perp + ecart qui grandit + contre foule|BTC", "consensus K5 + foule bybit x2|BTC", "desaccord 30 zone 0,15-0,35|BTC", "desaccord 30 zone + sortie modele -10 + foule bybit x2|BTC", "consensus K2 + ecart carnet calme|BTC", "V2-D perp 120-269 s + ecart carnet calme|BTC", "consensus K5 + ecart serre|BTC", "desaccord 30 zone + sortie modele -10 + ecart serre|BTC", "V2-C perp + ecart carnet calme|BTC", "corrige : V2-F + garde-fou + calme|BTC", "consensus K5|BTC", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + ecart serre|BTC", "desaccord 30 zone 0,15-0,35 + calme|BTC", "billet + favori si recul 20 c|BTC", "desaccord 30 + calme|BTC", "corrige : V2-F ecart qui grandit + calme|BTC", "corrige : desaccord 20 + calme|BTC", "desaccord 30 zone 0,15-0,35 + foule bybit|BTC", "consensus K5 + ecart carnet calme|BTC", "E2 elan contraire billet|BTC", "desaccord 30 zone 0,15-0,35 + contre foule|BTC", "corrige : V2-F + garde-fou|BTC", "corrige : V2-F + pas les deux baissent + calme|BTC", "desaccord confirme perp + ecart serre|BTC", "consensus K5 + contre foule|BTC", "desaccord confirme perp|BTC", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + foule bybit x2|BTC", "V2-C perp + foule bybit x2|BTC", "desaccord 30 zone + sortie modele -10 + calme|BTC", "consensus K5 + foule bybit|BTC", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + calme|BTC", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse|BTC", "desaccord confirme perp + calme|BTC", "V2-F + plus de 120 s + ecart carnet calme|BTC", "desaccord 30 zone + sortie modele -10|BTC", "TWAP fin confirme Chainlink 0,5 s sans 02-10h|BTC", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50 + ecart serre|BTC", "consensus K5 anti-bete + ecart serre|BTC", "consensus K2 + carnet ecart serre|BTC", "corrige : V2-F + garde-fou + ecart serre|BTC"]);
+// 18.10.2026 20:28 (Pitch : « fait un fantôme de cette idée ») : DUO calme / rapide. Règle figée : au début de chaque cycle BTC, écart-type des
+// rendements 1 min (log) des 60 minutes précédentes (prix Coinbase). Sous 0,038 % par minute = calme → on prend les trades de « BY1 Bybit premier 100 $ » ;
+// sinon = rapide → ceux de « V2-G jury des bourses + foule bybit x2 ». Copie seulement, aucun ordre réel, les deux stratégies d'origine inchangées.
+const DUO_SEUIL = 3.8e-4, DUO_NOM = "DUO calme BY1 100 / rapide V2-G x2";
+const DUO_REGLE = { "BY1 Bybit premier 100 $|BTC": "calme", "V2-G jury des bourses + foule bybit x2|BTC": "rapide" };
 const STOPPEES = new Set(["V2-E persistant|BTC", "V2-H veto complet|BTC", "desaccord 20 60-180 s|BTC", "corrige : desaccord 20|ETH",
   "corrige marge mesuree : V2-F|ETH", "corrige : V2-F ecart qui grandit|ETH",
   // 13.10.2026 15:48 (Pitch : « tu peux enlever encore les 10 dernières du classement ») : les 10 derniers du classement à 15:50 (hors stratégies
@@ -282,6 +287,7 @@ export class Bot {
       const garde = (P) => !NV.SUPPRIMEES.includes(P.strat + " " + P.actif);
       this.N.ouvertes = (this.N.ouvertes || []).filter(garde); this.N.attente = (this.N.attente || []).filter(garde);
       this.BL = (await this.state.storage.get("blink")) || { depuis: now(), evts: [] };
+      this.duo = (await this.state.storage.get("duo")) || { min: [], reg: {} };
       this.e = (await this.state.storage.get("etat2")) || {
         capital: CFG.CAPITAL, mise: CFG.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, pause: false,
         positions: [], attente: [], trades: [], vetos: {}, candidats: {}, parActif: {}, refus: [], verif: [], depuis: now(),
@@ -300,6 +306,7 @@ export class Bot {
     const u = new URL(req.url);
     const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } });
     if (u.pathname === "/api/etat") return json(this.vue());
+    if (u.pathname === "/api/duo") { const D = this.duo || {}; return json({ seuil: DUO_SEUIL, regle: DUO_REGLE, minutes: (D.min || []).length, cycles: Object.fromEntries(Object.entries(D.reg || {}).slice(-24).map(([k, v]) => [k, v == null ? null : { vol_pct_min: +(v * 100).toFixed(4), regime: v < DUO_SEUIL ? "calme" : "rapide" }])) }); }
     // 18.10.2026 (Pitch : « check toutes les stratégies ») : recalcul des fantômes de Dublin depuis les enregistrements bruts de chaque cycle
     // (doublons retirés, gagnants officiels). Remplace leurs compteurs, leur archive et leur onglet « remise à 0 ». Aucune stratégie modifiée.
     if (u.pathname === "/api/refaire_dublin" && req.method === "POST") {
@@ -1038,6 +1045,7 @@ export class Bot {
 
   // ------------------------------------------------------------------ boucle
   async tick() {
+    try { this.duoMinute(); } catch (err) { this.erreur("duo minute", err); }
     const t = now(), start = Math.floor(t / 300) * 300, tleft = start + 300 - t;
     // 11.10.2026 : aller-retour Cloudflare → serveur Polymarket, toutes les 15 s, pour le comparer au VPS de Dublin (mesure seulement)
     if (t - (this._rttT || 0) > 15) { this._rttT = t; const t0 = Date.now(); fetch(C + "/time").then((r) => r.text()).then(() => { (this.rttClob = this.rttClob || []).push(Date.now() - t0); if (this.rttClob.length > 500) this.rttClob.shift(); }).catch(() => {}); }
@@ -1700,8 +1708,27 @@ export class Bot {
   }
 
   nNote(P, x) { P.journal.push((now() - P.start).toFixed(1) + "s " + x); if (P.journal.length > 30) P.journal.shift(); }
+  // DUO : clôture de chaque minute (dernier prix Coinbase vu dans la minute) et volatilité figée au début de chaque cycle (minutes d'avant seulement)
+  duoMinute() {
+    const t = now(), m = Math.floor(t / 60), x = this.f.BTC && this.f.BTC.cb; if (!x || !x.p || t - x.t > 30) return;
+    const D = (this.duo = this.duo || { min: [], reg: {} }); D.min = D.min || []; D.reg = D.reg || {};
+    if (!D.min.length || D.min[D.min.length - 1][0] !== m) { D.min.push([m, x.p]); while (D.min.length > 75) D.min.shift(); this.state.storage.put("duo", D).catch(() => {}); }
+    else D.min[D.min.length - 1][1] = x.p;
+    const st = Math.floor(t / 300) * 300;
+    if (D.reg[st] === undefined && t - st < 30) {
+      const L = D.min.filter(([mm]) => mm * 60 >= st - 3600 && mm * 60 < st), r = [];
+      for (let i = 1; i < L.length; i++) if (L[i][0] === L[i - 1][0] + 1) r.push(Math.log(L[i][1] / L[i - 1][1]));
+      if (r.length >= 40) { const mu = r.reduce((a, b) => a + b, 0) / r.length; D.reg[st] = Math.sqrt(r.reduce((a, b) => a + (b - mu) ** 2, 0) / (r.length - 1)); }
+      else D.reg[st] = null;
+      for (const k of Object.keys(D.reg)) if (+k < st - 6 * 3600) delete D.reg[k];
+      this.state.storage.put("duo", D).catch(() => {});
+    }
+  }
   nClore(P, issue) {
     P.fini = true; P.issue = issue; P.net = +P.cash.toFixed(2);
+    if (!P.copieDuo && DUO_REGLE[P.strat + "|" + P.actif]) { try { const v = this.duo && this.duo.reg ? this.duo.reg[P.start] : null;
+      if (v != null && (v < DUO_SEUIL ? "calme" : "rapide") === DUO_REGLE[P.strat + "|" + P.actif])
+        this.nClore({ ...P, strat: DUO_NOM, copieCarnet: true, copieDuo: true, journal: [...(P.journal || []), "volatilite 1 h " + (v * 100).toFixed(4) + " %/min → " + DUO_REGLE[P.strat + "|" + P.actif]] }, issue); } catch (err) { this.erreur("duo", err); } }
     if (ARRET_18.has(P.strat + "|" + P.actif)) { this.nCopies(P, issue); return; }   // 18.10.2026 : stratégie enlevée, seules ses copies continuent
     const S2 = this.nStrat(P.strat + " " + P.actif);
     if (!S2.rq || !S2.rq.hist) S2.rq = nRisqueDepuis(S2.trades);
