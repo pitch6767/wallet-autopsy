@@ -13,7 +13,8 @@ jobs:
       - run: |
           python3 -c "import urllib.parse,os;print(urllib.parse.quote(os.environ['S']))" > /tmp/q
           curl -sS -m 90 "https://bot95.pitch67.workers.dev/api/hist?s=$(cat /tmp/q)" -o bot95/strat_lue.json
+          curl -sS -m 30 "https://bot95.pitch67.workers.dev/api/duo" -o bot95/duo.json
           git config user.name lecture; git config user.email bot@users.noreply.github.com
-          git add bot95/strat_lue.json && git commit -qm "lecture strategie [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
+          git add bot95/duo.json bot95/strat_lue.json && git commit -qm "lecture strategie [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
         env:
           S: ${{ inputs.s }}
