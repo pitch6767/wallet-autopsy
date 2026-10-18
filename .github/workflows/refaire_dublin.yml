@@ -1,0 +1,14 @@
+name: Appliquer le recalcul des fantomes de Dublin
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sS -m 120 -X POST https://bot95.pitch67.workers.dev/api/refaire_dublin > bot95/refaire_resultat.json; cat bot95/refaire_resultat.json | head -c 3000
+          sleep 20; curl -sS -m 90 https://bot95.pitch67.workers.dev/api/zero -o bot95/sonde_zero.json
+          git config user.name refaire; git config user.email bot@users.noreply.github.com
+          git add bot95/refaire_resultat.json bot95/sonde_zero.json && git commit -qm "recalcul Dublin applique [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
