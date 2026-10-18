@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths: [bot95/rapide_go.txt]
+  workflow_dispatch:
   schedule:
     - cron: "17 */3 * * *"
 permissions:
@@ -15,42 +16,46 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - name: Branche donnees-rapide
-        run: |
-          git config user.name rapide; git config user.email bot@users.noreply.github.com
-          set -x
-          if git ls-remote --exit-code --heads origin donnees-rapide; then git fetch -q origin donnees-rapide; git switch donnees-rapide
-          else git switch --orphan donnees-rapide; echo "Enregistrements du bot rapide (VPS Dublin), un fichier gzip par cycle BTC 5 min." > README.md; git add README.md; git commit -qm "debut"; fi
-          ls
-      - name: Telecharger les nouveaux cycles
+      - name: Telecharger les nouveaux cycles (une branche par jour, 18.10.2026)
         run: |
           exec > >(tee /tmp/export.log) 2>&1
           set -x
+          # 18.10.2026 : la branche unique donnees-rapide dépassait la taille d'un envoi GitHub (erreur 500 depuis le 16.10 21:21).
+          # Désormais une branche par jour : dr-AAAA-MM-JJ (un seul commit chacune). Les jours déjà sur donnees-rapide y restent.
+          git config user.name rapide; git config user.email bot@users.noreply.github.com
           python3 - <<'P'
-          import json, os, glob, time, urllib.request
+          import json, time, urllib.request
           U = "https://bot95.pitch67.workers.dev"
-          def get(u, binaire=False):
+          L = json.load(urllib.request.urlopen(urllib.request.Request(U + "/api/rapidecycles?apres=0", headers={"User-Agent": "rapide"}), timeout=90))["cycles"]
+          jours = sorted({time.strftime("%Y-%m-%d", time.gmtime(c["start"])) for c in L})
+          open("/tmp/jours", "w").write("\n".join(j for j in jours if j >= "2026-10-16"))
+          json.dump(L, open("/tmp/liste.json", "w"))
+          P
+          for J in $(cat /tmp/jours); do
+            B=dr-$J; rm -rf /tmp/w && mkdir /tmp/w && cd /tmp/w && git init -q && git config user.name rapide && git config user.email bot@users.noreply.github.com
+            git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+            if git fetch -q --depth 1 origin $B 2>/dev/null; then git checkout -q FETCH_HEAD; fi
+            git checkout -q -B $B
+            python3 - "$J" <<'P'
+          import json, os, glob, sys, time, urllib.request
+          J = sys.argv[1]; U = "https://bot95.pitch67.workers.dev"
+          deja = {int(os.path.basename(p).split(".")[0]) for p in glob.glob("cycles/*/*.json.gz")}
+          n = 0
+          for c in json.load(open("/tmp/liste.json")):
+              st = c["start"]
+              if time.strftime("%Y-%m-%d", time.gmtime(st)) != J or st in deja: continue
+              os.makedirs("cycles/" + J, exist_ok=True)
               for k in range(4):
                   try:
-                      with urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "rapide"}), timeout=90) as r:
-                          d = r.read(); return d if binaire else json.loads(d)
-                  except Exception as e: err = e; time.sleep(4)
-              raise err
-          deja = {int(os.path.basename(p).split(".")[0]) for p in glob.glob("cycles/*/*.json.gz")}
-          L = get(U + "/api/rapidecycles?apres=0")["cycles"]; n = 0
-          for c in L:
-              st = c["start"]
-              if st in deja: continue
-              d = time.strftime("%Y-%m-%d", time.gmtime(st)); os.makedirs("cycles/" + d, exist_ok=True)
-              open(f"cycles/{d}/{st}.json.gz", "wb").write(get(f"{U}/api/rapidecycle?start={st}", True)); n += 1
-          print("nouveaux cycles", n, "dans le bot", len(L))
+                      d = urllib.request.urlopen(urllib.request.Request(f"{U}/api/rapidecycle?start={st}", headers={"User-Agent": "rapide"}), timeout=90).read(); break
+                  except Exception as e: time.sleep(4); d = None
+              if d: open(f"cycles/{J}/{st}.json.gz", "wb").write(d); n += 1
+          print(J, "nouveaux cycles", n)
           P
-          # cycles de plus de 21 jours retirés ; la branche garde UN seul commit (sinon l'historique grossit d'environ 300 Mo par jour)
-          LIM=$(date -u -d "21 days ago" +%Y-%m-%d); for d in cycles/*/; do b=$(basename $d); if [[ "$b" < "$LIM" ]]; then git rm -rq "$d"; fi; done
-          git add cycles README.md 2>/dev/null || true
-          R=$(git rev-list --max-parents=0 HEAD | tail -1); git reset -q --soft "$R"; git commit -q --amend -m "cycles bot rapide (un seul commit, 21 jours)" || echo "rien de neuf"
-          for k in 1 2 3; do git push -q -f origin donnees-rapide && break; sleep 5; done
+            git add cycles 2>/dev/null; git commit -q --amend -m "cycles bot rapide $J" 2>/dev/null || git commit -q -m "cycles bot rapide $J" || echo "rien de neuf $J"
+            for k in 1 2 3; do git push -q -f origin $B && break; sleep 5; done
+            cd /
+          done
       - name: Journal de l'export (sur main)
         if: always()
         run: |
