@@ -1,0 +1,19 @@
+name: Lire une strategie (lecture seule)
+on:
+  workflow_dispatch:
+    inputs:
+      s: { description: "nom", required: true }
+permissions:
+  contents: write
+jobs:
+  l:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 -c "import urllib.parse,os;print(urllib.parse.quote(os.environ['S']))" > /tmp/q
+          curl -sS -m 90 "https://bot95.pitch67.workers.dev/api/hist?s=$(cat /tmp/q)" -o bot95/strat_lue.json
+          git config user.name lecture; git config user.email bot@users.noreply.github.com
+          git add bot95/strat_lue.json && git commit -qm "lecture strategie [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
+        env:
+          S: ${{ inputs.s }}
