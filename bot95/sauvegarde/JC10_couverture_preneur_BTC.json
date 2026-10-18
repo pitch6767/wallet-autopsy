@@ -1836,14 +1836,94 @@
 ],
 "start": 1792320600,
 "slug": "btc-updown-5m-1792320600"
+},
+"2026-10-18T14:36:51.905Z|Up": {
+"heure": "2026-10-18T14:36:51.905Z",
+"cote": "Up",
+"prix": 0.5872,
+"parts": 17.031,
+"U": 0,
+"D": 0,
+"cash": 7.03,
+"net": 7.03,
+"issue": "gardé,",
+"journal": [
+"gardé, gagné"
+],
+"start": 1792334100,
+"slug": "btc-updown-5m-1792334100"
+},
+"2026-10-18T14:37:12.551Z|Up": {
+"heure": "2026-10-18T14:37:12.551Z",
+"cote": "Up",
+"prix": 0.5971,
+"parts": 16.749,
+"U": 0,
+"D": 0,
+"cash": 0.45,
+"net": 0.45,
+"issue": "couvert",
+"journal": [
+"couvert à 0.36"
+],
+"start": 1792334100,
+"slug": "btc-updown-5m-1792334100"
+},
+"2026-10-18T14:07:54.043Z|Down": {
+"heure": "2026-10-18T14:07:54.043Z",
+"cote": "Down",
+"prix": 0.5375,
+"parts": 18.606,
+"U": 0,
+"D": 0,
+"cash": -10,
+"net": -10,
+"issue": "gardé,",
+"journal": [
+"gardé, perdu"
+],
+"start": 1792332300,
+"slug": "btc-updown-5m-1792332300"
+},
+"2026-10-18T13:40:52.588Z|Up": {
+"heure": "2026-10-18T13:40:52.588Z",
+"cote": "Up",
+"prix": 0.5375,
+"parts": 15,
+"U": 0,
+"D": 0,
+"cash": 0.99,
+"net": 0.99,
+"issue": "couvert",
+"journal": [
+"couvert à 0.38"
+],
+"start": 1792330800,
+"slug": "btc-updown-5m-1792330800"
+},
+"2026-10-18T13:25:35.789Z|Down": {
+"heure": "2026-10-18T13:25:35.789Z",
+"cote": "Down",
+"prix": 0.6266,
+"parts": 15.958,
+"U": 0,
+"D": 0,
+"cash": 1.1,
+"net": 1.1,
+"issue": "couvert",
+"journal": [
+"couvert à 0.3"
+],
+"start": 1792329900,
+"slug": "btc-updown-5m-1792329900"
 }
 },
 "resume_bot": {
 "depuis": 1791963477.052,
-"n": 95,
-"gains": 72,
-"pertes": 23,
-"pnl": 98.63999999999997
+"n": 100,
+"gains": 76,
+"pertes": 24,
+"pnl": 98.20999999999997
 },
 "archive": [
 [
@@ -2898,8 +2978,53 @@ null
 "couvert",
 null,
 null
+],
+[
+"2026-10-18T13:25:35.789Z",
+"Down",
+0.6266,
+1.1,
+"couvert",
+null,
+null
+],
+[
+"2026-10-18T13:40:52.588Z",
+"Up",
+0.5375,
+0.99,
+"couvert",
+null,
+null
+],
+[
+"2026-10-18T14:07:54.043Z",
+"Down",
+0.5375,
+-10,
+"gardé,",
+null,
+null
+],
+[
+"2026-10-18T14:36:51.905Z",
+"Up",
+0.5872,
+7.03,
+"gardé,",
+null,
+null
+],
+[
+"2026-10-18T14:37:12.551Z",
+"Up",
+0.5971,
+0.45,
+"couvert",
+null,
+null
 ]
 ],
-"n_sauves": 117,
-"maj": "2026-10-18 11:47 UTC"
+"n_sauves": 122,
+"maj": "2026-10-18 14:55 UTC"
 }
