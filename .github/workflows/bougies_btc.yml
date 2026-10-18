@@ -1,0 +1,25 @@
+name: Bougies BTC 1 min Coinbase (lecture seule)
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  b:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 - <<'P'
+          import json, time, urllib.request
+          out = {}; t = 1792022400 - 3 * 3600; fin = int(time.time()) // 60 * 60
+          while t < fin:
+              e = min(t + 300 * 60, fin)
+              u = f"https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=60&start={time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(t))}&end={time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(e))}"
+              for k in range(4):
+                  try: L = json.load(urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"}), timeout=30)); break
+                  except Exception as ex: time.sleep(3); L = []
+              for x in L: out[x[0]] = x[1:]   # [low, high, open, close, volume]
+              t = e; time.sleep(0.4)
+          json.dump(out, open("bot95/bougies_btc_1m.json", "w")); print(len(out))
+          P
+          git config user.name bougies; git config user.email bot@users.noreply.github.com
+          git add bot95/bougies_btc_1m.json && git commit -qm "bougies BTC 1 min [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
