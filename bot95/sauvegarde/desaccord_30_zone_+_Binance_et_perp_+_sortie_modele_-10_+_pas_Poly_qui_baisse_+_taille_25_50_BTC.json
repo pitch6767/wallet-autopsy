@@ -9291,17 +9291,94 @@
 ],
 "start": 1792277700,
 "slug": "btc-updown-5m-1792277700"
+},
+"2026-10-18T00:43:42.758Z|Up": {
+"heure": "2026-10-18T00:43:42.758Z",
+"cote": "Up",
+"prix": 0.1671,
+"parts": 105.72,
+"U": 105.72,
+"D": 0,
+"cash": -17.6682536,
+"net": -17.67,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.461,
+"restant_s": 77,
+"journal": [
+"222.8s écart 0.31 (modèle 0.461, vendeur 0.15), 77 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1792284000,
+"slug": "btc-updown-5m-1792284000"
+},
+"2026-10-18T00:33:31.725Z|Down": {
+"heure": "2026-10-18T00:33:31.725Z",
+"cote": "Down",
+"prix": 0.1798,
+"parts": 156.25,
+"U": 0,
+"D": 156.25,
+"cash": -28.097463,
+"net": -28.1,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.462,
+"restant_s": 88,
+"journal": [
+"211.7s écart 0.30 (modèle 0.462, vendeur 0.16), 88 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1792283400,
+"slug": "btc-updown-5m-1792283400"
+},
+"2026-10-18T00:28:06.584Z|Up": {
+"heure": "2026-10-18T00:28:06.584Z",
+"cote": "Up",
+"prix": 0.164,
+"parts": 55,
+"U": 0,
+"D": 0,
+"cash": -4.908776000000001,
+"net": -4.91,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.451,
+"restant_s": 113,
+"journal": [
+"186.6s écart 0.30 (modèle 0.451, vendeur 0.15), 113 s restantes ; 3 s avant : Binance 0.0, perp 0.9 (+ = dans notre sens)",
+"220.9s le modèle est passé de 0.451 à 0.336 → revente de 55.0 parts pour 4.11 $ (79 s restantes)"
+],
+"start": 1792283100,
+"slug": "btc-updown-5m-1792283100"
+},
+"2026-10-17T23:48:06.268Z|Down": {
+"heure": "2026-10-17T23:48:06.268Z",
+"cote": "Down",
+"prix": 0.1592,
+"parts": 166.67,
+"U": 0,
+"D": 166.66666666666669,
+"cash": -26.530000000000005,
+"net": -26.53,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.456,
+"restant_s": 114,
+"journal": [
+"186.3s écart 0.31 (modèle 0.456, vendeur 0.15), 114 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1792280700,
+"slug": "btc-updown-5m-1792280700"
 }
 },
 "resume_bot": {
 "depuis": 1791633049.024,
-"n": 333,
+"n": 337,
 "gains": 86,
-"pertes": 247,
-"pnl": 1217.8199999999997
+"pertes": 251,
+"pnl": 1140.6099999999997
 },
-"n_sauves": 484,
-"maj": "2026-10-17 23:33 UTC",
+"n_sauves": 488,
+"maj": "2026-10-18 01:38 UTC",
 "archive": [
 [
 "2026-10-09T05:38:25.744Z",
@@ -13334,6 +13411,42 @@
 "perdu",
 0.456,
 97
+],
+[
+"2026-10-17T23:48:06.268Z",
+"Down",
+0.1592,
+-26.53,
+"perdu",
+0.456,
+114
+],
+[
+"2026-10-18T00:28:06.584Z",
+"Up",
+0.164,
+-4.91,
+"perdu",
+0.451,
+113
+],
+[
+"2026-10-18T00:33:31.725Z",
+"Down",
+0.1798,
+-28.1,
+"perdu",
+0.462,
+88
+],
+[
+"2026-10-18T00:43:42.758Z",
+"Up",
+0.1671,
+-17.67,
+"perdu",
+0.461,
+77
 ]
 ]
 }

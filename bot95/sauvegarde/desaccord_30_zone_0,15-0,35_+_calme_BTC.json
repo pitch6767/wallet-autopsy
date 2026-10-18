@@ -1795,14 +1795,71 @@
 ],
 "start": 1792266300,
 "slug": "btc-updown-5m-1792266300"
+},
+"2026-10-18T00:33:17.704Z|Down": {
+"heure": "2026-10-18T00:33:17.704Z",
+"cote": "Down",
+"prix": 0.1994,
+"parts": 152.5,
+"U": 0,
+"D": 152.5,
+"cash": -30.413935600000002,
+"net": -30.41,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.487,
+"restant_s": 102,
+"journal": [
+"197.7s écart 0.31 (modèle 0.487, vendeur 0.18), 102 s restantes ; 3 s avant : Binance 0.0, perp -0.6 (+ = dans notre sens)"
+],
+"start": 1792283400,
+"slug": "btc-updown-5m-1792283400"
+},
+"2026-10-18T00:28:06.584Z|Up": {
+"heure": "2026-10-18T00:28:06.584Z",
+"cote": "Up",
+"prix": 0.164,
+"parts": 55,
+"U": 55,
+"D": 0,
+"cash": -9.017320000000002,
+"net": -9.02,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.451,
+"restant_s": 113,
+"journal": [
+"186.6s écart 0.30 (modèle 0.451, vendeur 0.15), 113 s restantes ; 3 s avant : Binance 0.0, perp 0.9 (+ = dans notre sens)"
+],
+"start": 1792283100,
+"slug": "btc-updown-5m-1792283100"
+},
+"2026-10-17T23:27:53.756Z|Down": {
+"heure": "2026-10-17T23:27:53.756Z",
+"cote": "Down",
+"prix": 0.1592,
+"parts": 31.33,
+"U": 0,
+"D": 31.33,
+"cash": -4.9871094,
+"net": -4.99,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.451,
+"restant_s": 126,
+"journal": [
+"173.8s écart 0.30 (modèle 0.451, vendeur 0.15), 126 s restantes ; 3 s avant : Binance -0.0, perp -0.1 (+ = dans notre sens)"
+],
+"start": 1792279500,
+"slug": "btc-updown-5m-1792279500"
 }
 },
 "resume_bot": {
 "depuis": 1791927168.33,
-"n": 97,
+"n": 100,
 "gains": 19,
-"pertes": 78,
-"pnl": -820.27
+"pertes": 81,
+"pnl": -864.6899999999999
 },
 "archive": [
 [
@@ -2677,8 +2734,35 @@
 "perdu",
 0.457,
 87
+],
+[
+"2026-10-17T23:27:53.756Z",
+"Down",
+0.1592,
+-4.99,
+"perdu",
+0.451,
+126
+],
+[
+"2026-10-18T00:28:06.584Z",
+"Up",
+0.164,
+-9.02,
+"perdu",
+0.451,
+113
+],
+[
+"2026-10-18T00:33:17.704Z",
+"Down",
+0.1994,
+-30.41,
+"perdu",
+0.487,
+102
 ]
 ],
-"n_sauves": 97,
-"maj": "2026-10-17 23:33 UTC"
+"n_sauves": 100,
+"maj": "2026-10-18 01:38 UTC"
 }
