@@ -4,31 +4,69 @@
 ++ cat /tmp/jours
 + for J in $(cat /tmp/jours)
 + B=dr-2026-10-16
-+ rm -rf /tmp/w
-+ mkdir /tmp/w
-+ cd /tmp/w
++ W=/tmp/w-2026-10-16
++ mkdir -p /tmp/w-2026-10-16
++ cd /tmp/w-2026-10-16
 + git init -q
 + git config user.name rapide
 + git config user.email bot@users.noreply.github.com
-+ git remote add origin https://x-access-token:ghs_15368_eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRobmQiLCJjdHgiOiJJbUxfejRwdzRya3RWTlI4Q2VQb2NKc1VNVVRQSnNXNlBXVmV0UFpCMjNrbDJWYzlpZDAzM0dZIiwiZXhwIjoxNzkyMzA5NjU0LCJpYXQiOjE3OTIzMDYwNTQsImlzcyI6ImdpdGh1YiIsImp0aSI6IjIxN2MyOGU1LTJmYTEtNGRkMS04N2RhLTRlYzliN2MzYzA3ZCIsInZlciI6M30.4TF0VNKVugGe-JqeqkePHc7Fdb1IDISGlqsg0eHUwGOa-GR1VzT7eqtNvoAc45JF3oMbIDIUFAlw7Dl0wA57Ig@github.com/pitch6767/wallet-autopsy
++ set +x
 + git fetch -q --depth 1 origin dr-2026-10-16
++ git checkout -q FETCH_HEAD
 + git checkout -q -B dr-2026-10-16
 + python3 - 2026-10-16
-2026-10-16 nouveaux cycles 285
+2026-10-16 nouveaux cycles 0
 + git add cycles
 + git commit -q --amend -m 'cycles bot rapide 2026-10-16'
-+ git commit -q -m 'cycles bot rapide 2026-10-16'
 + for k in 1 2 3
 + git push -q -f origin dr-2026-10-16
-remote: 
-remote: Create a pull request for 'dr-2026-10-16' on GitHub by visiting:        
-remote:      https://github.com/pitch6767/wallet-autopsy/pull/new/dr-2026-10-16        
-remote: 
 + break
 + cd /
 + for J in $(cat /tmp/jours)
 + B=dr-2026-10-17
-+ rm -rf /tmp/w
-rm: cannot remove '/tmp/w/.git': Directory not empty
-+ git remote add origin https://x-access-token:ghs_15368_eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRobmQiLCJjdHgiOiJJbUxfejRwdzRya3RWTlI4Q2VQb2NKc1VNVVRQSnNXNlBXVmV0UFpCMjNrbDJWYzlpZDAzM0dZIiwiZXhwIjoxNzkyMzA5NjU0LCJpYXQiOjE3OTIzMDYwNTQsImlzcyI6ImdpdGh1YiIsImp0aSI6IjIxN2MyOGU1LTJmYTEtNGRkMS04N2RhLTRlYzliN2MzYzA3ZCIsInZlciI6M30.4TF0VNKVugGe-JqeqkePHc7Fdb1IDISGlqsg0eHUwGOa-GR1VzT7eqtNvoAc45JF3oMbIDIUFAlw7Dl0wA57Ig@github.com/pitch6767/wallet-autopsy
-fatal: not a git repository (or any of the parent directories): .git
++ W=/tmp/w-2026-10-17
++ mkdir -p /tmp/w-2026-10-17
++ cd /tmp/w-2026-10-17
++ git init -q
++ git config user.name rapide
++ git config user.email bot@users.noreply.github.com
++ set +x
++ git fetch -q --depth 1 origin dr-2026-10-17
++ git checkout -q -B dr-2026-10-17
++ python3 - 2026-10-17
+2026-10-17 nouveaux cycles 288
++ git add cycles
++ git commit -q --amend -m 'cycles bot rapide 2026-10-17'
++ git commit -q -m 'cycles bot rapide 2026-10-17'
++ for k in 1 2 3
++ git push -q -f origin dr-2026-10-17
+remote: 
+remote: Create a pull request for 'dr-2026-10-17' on GitHub by visiting:        
+remote:      https://github.com/pitch6767/wallet-autopsy/pull/new/dr-2026-10-17        
+remote: 
++ break
++ cd /
++ for J in $(cat /tmp/jours)
++ B=dr-2026-10-18
++ W=/tmp/w-2026-10-18
++ mkdir -p /tmp/w-2026-10-18
++ cd /tmp/w-2026-10-18
++ git init -q
++ git config user.name rapide
++ git config user.email bot@users.noreply.github.com
++ set +x
++ git fetch -q --depth 1 origin dr-2026-10-18
++ git checkout -q -B dr-2026-10-18
++ python3 - 2026-10-18
+2026-10-18 nouveaux cycles 82
++ git add cycles
++ git commit -q --amend -m 'cycles bot rapide 2026-10-18'
++ git commit -q -m 'cycles bot rapide 2026-10-18'
++ for k in 1 2 3
++ git push -q -f origin dr-2026-10-18
+remote: 
+remote: Create a pull request for 'dr-2026-10-18' on GitHub by visiting:        
+remote:      https://github.com/pitch6767/wallet-autopsy/pull/new/dr-2026-10-18        
+remote: 
++ break
++ cd /
