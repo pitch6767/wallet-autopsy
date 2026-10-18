@@ -1,0 +1,103 @@
+{
+"nom": "V2-G jury des bourses + contre foule marché rapide BTC",
+"trades": {
+"2026-10-18T20:57:16.117Z|Down": {
+"heure": "2026-10-18T20:57:16.117Z",
+"cote": "Down",
+"prix": 0.1535,
+"parts": 126.84,
+"U": 0,
+"D": 126.84,
+"cash": -19.46459284,
+"net": -19.46,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.343,
+"restant_s": 164,
+"journal": [
+"136.1s écart 0.20, 164 s restantes → achat Down 126.8 parts à 0.1535 (modèle 0.343)",
+"volatilite 1 h 0.0431 %/min"
+],
+"start": 1792356900,
+"slug": "btc-updown-5m-1792356900"
+},
+"2026-10-18T20:53:28.785Z|Up": {
+"heure": "2026-10-18T20:53:28.785Z",
+"cote": "Up",
+"prix": 0.0831,
+"parts": 580,
+"U": 580,
+"D": 0,
+"cash": -48.200096,
+"net": -48.2,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.277,
+"restant_s": 91,
+"journal": [
+"208.8s écart 0.21, 91 s restantes → achat Up 580.0 parts à 0.0831 (modèle 0.277)",
+"volatilite 1 h 0.0416 %/min"
+],
+"start": 1792356600,
+"slug": "btc-updown-5m-1792356600"
+},
+"2026-10-18T20:43:32.189Z|Up": {
+"heure": "2026-10-18T20:43:32.189Z",
+"cote": "Up",
+"prix": 0.1906,
+"parts": 277.78,
+"U": 277.77777777777777,
+"D": 0,
+"cash": 224.82577777777777,
+"net": 224.83,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.398,
+"restant_s": 88,
+"journal": [
+"212.2s écart 0.22, 88 s restantes → achat Up 277.8 parts à 0.1906 (modèle 0.398)",
+"volatilite 1 h 0.0497 %/min"
+],
+"start": 1792356000,
+"slug": "btc-updown-5m-1792356000"
+}
+},
+"resume_bot": {
+"depuis": 1792356649.91,
+"n": 3,
+"gains": 1,
+"pertes": 2,
+"pnl": 157.17
+},
+"archive": [
+[
+"2026-10-18T20:43:32.189Z",
+"Up",
+0.1906,
+224.83,
+"une seule jambe",
+0.398,
+88
+],
+[
+"2026-10-18T20:53:28.785Z",
+"Up",
+0.0831,
+-48.2,
+"une seule jambe",
+0.277,
+91
+],
+[
+"2026-10-18T20:57:16.117Z",
+"Down",
+0.1535,
+-19.46,
+"une seule jambe",
+0.343,
+164
+]
+],
+"n_sauves": 3,
+"maj": "2026-10-18 21:57 UTC"
+}

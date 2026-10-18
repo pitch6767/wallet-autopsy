@@ -1,0 +1,103 @@
+{
+"nom": "desaccord 20 Binance ou perp avec nous sans nuit marché rapide BTC",
+"trades": {
+"2026-10-18T20:53:00.677Z|Up": {
+"heure": "2026-10-18T20:53:00.677Z",
+"cote": "Up",
+"prix": 0.045,
+"parts": 495.34,
+"U": 495.34,
+"D": 0,
+"cash": -22.305321696,
+"net": -22.31,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.243,
+"restant_s": 119,
+"journal": [
+"180.7s désaccord 20 (modèle 0.243, vendeur 0.04) ; 3 s avant : Binance 0 pb, perp 0.01 pb, OKX 0.01 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.045",
+"volatilite 1 h 0.0416 %/min"
+],
+"start": 1792356600,
+"slug": "btc-updown-5m-1792356600"
+},
+"2026-10-18T20:43:13.753Z|Up": {
+"heure": "2026-10-18T20:43:13.753Z",
+"cote": "Up",
+"prix": 0.2202,
+"parts": 250,
+"U": 250,
+"D": 0,
+"cash": 194.943510256,
+"net": 194.94,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.404,
+"restant_s": 106,
+"journal": [
+"193.8s désaccord 20 (modèle 0.404, vendeur 0.2) ; 3 s avant : Binance 0 pb, perp 0.61 pb, OKX 0 pb, Coinbase 0.25 pb (+ = dans notre sens) → achat à 0.2202",
+"volatilite 1 h 0.0497 %/min"
+],
+"start": 1792356000,
+"slug": "btc-updown-5m-1792356000"
+},
+"2026-10-18T20:33:06.102Z|Up": {
+"heure": "2026-10-18T20:33:06.102Z",
+"cote": "Up",
+"prix": 0.2482,
+"parts": 217.39,
+"U": 217.39130434782606,
+"D": 0,
+"cash": -53.96475556521739,
+"net": -53.96,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.444,
+"restant_s": 114,
+"journal": [
+"186.1s désaccord 20 (modèle 0.444, vendeur 0.23) ; 3 s avant : Binance 0 pb, perp 0.01 pb, OKX 0 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.2482",
+"volatilite 1 h 0.0508 %/min"
+],
+"start": 1792355400,
+"slug": "btc-updown-5m-1792355400"
+}
+},
+"resume_bot": {
+"depuis": 1792356006.586,
+"n": 3,
+"gains": 1,
+"pertes": 2,
+"pnl": 118.66999999999999
+},
+"archive": [
+[
+"2026-10-18T20:33:06.102Z",
+"Up",
+0.2482,
+-53.96,
+"perdu",
+0.444,
+114
+],
+[
+"2026-10-18T20:43:13.753Z",
+"Up",
+0.2202,
+194.94,
+"gagné",
+0.404,
+106
+],
+[
+"2026-10-18T20:53:00.677Z",
+"Up",
+0.045,
+-22.31,
+"perdu",
+0.243,
+119
+]
+],
+"n_sauves": 3,
+"maj": "2026-10-18 21:58 UTC"
+}

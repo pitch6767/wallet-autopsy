@@ -1,0 +1,74 @@
+{
+"nom": "desaccord 30 marché rapide BTC",
+"trades": {
+"2026-10-18T20:53:53.846Z|Up": {
+"heure": "2026-10-18T20:53:53.846Z",
+"cote": "Up",
+"prix": 0.0534,
+"parts": 174.97,
+"U": 174.97,
+"D": 0,
+"cash": -9.3468974,
+"net": -9.35,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.369,
+"restant_s": 66,
+"journal": [
+"233.8s écart 0.32 (modèle 0.369, vendeur 0.05), 66 s restantes → achat Up 175.0 parts à 0.0534 (meilleur vendeur seul, 175 parts affichées)",
+"volatilite 1 h 0.0416 %/min"
+],
+"start": 1792356600,
+"slug": "btc-updown-5m-1792356600"
+},
+"2026-10-18T20:43:53.601Z|Down": {
+"heure": "2026-10-18T20:43:53.601Z",
+"cote": "Down",
+"prix": 0.2531,
+"parts": 20,
+"U": 0,
+"D": 20,
+"cash": -5.062656,
+"net": -5.06,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.546,
+"restant_s": 66,
+"journal": [
+"233.6s écart 0.31 (modèle 0.546, vendeur 0.24), 66 s restantes → achat Down 20.0 parts à 0.2531 (meilleur vendeur seul, 20 parts affichées)",
+"volatilite 1 h 0.0497 %/min"
+],
+"start": 1792356000,
+"slug": "btc-updown-5m-1792356000"
+}
+},
+"resume_bot": {
+"depuis": 1792356649.91,
+"n": 2,
+"gains": 0,
+"pertes": 2,
+"pnl": -14.41
+},
+"archive": [
+[
+"2026-10-18T20:43:53.601Z",
+"Down",
+0.2531,
+-5.06,
+"perdu",
+0.546,
+66
+],
+[
+"2026-10-18T20:53:53.846Z",
+"Up",
+0.0534,
+-9.35,
+"perdu",
+0.369,
+66
+]
+],
+"n_sauves": 2,
+"maj": "2026-10-18 21:58 UTC"
+}
