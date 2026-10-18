@@ -12,7 +12,7 @@ jobs:
           import json, time, urllib.request, os, concurrent.futures as cf
           f = "bot95/gagnants_btc.json"; G = json.load(open(f)) if os.path.exists(f) else {}
           fin = int(time.time()) // 300 * 300 - 600
-          todo = [s for s in range(1792022400 - 86400, fin, 300) if str(s) not in G]
+          todo = [s for s in range(1791849600, fin, 300) if str(s) not in G]
           def un(s):
               for k in range(3):
                   try:
