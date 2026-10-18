@@ -10,7 +10,7 @@ jobs:
       - run: |
           python3 - <<'P'
           import json, time, urllib.request
-          out = {}; t = 1792022400 - 3 * 3600; fin = int(time.time()) // 60 * 60
+          out = {}; t = 1791936000; fin = int(time.time()) // 60 * 60
           while t < fin:
               e = min(t + 300 * 60, fin)
               u = f"https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=60&start={time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(t))}&end={time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(e))}"
