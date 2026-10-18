@@ -1,35 +1,39 @@
 + python3 -
-nouveaux cycles 311 dans le bot 900
+nouveaux cycles 377 dans le bot 900
 ++ date -u -d '21 days ago' +%Y-%m-%d
-+ LIM=2026-09-26
++ LIM=2026-09-27
 + for d in cycles/*/
 ++ basename cycles/2026-10-11/
 + b=2026-10-11
-+ [[ 2026-10-11 < 2026-09-26 ]]
++ [[ 2026-10-11 < 2026-09-27 ]]
 + for d in cycles/*/
 ++ basename cycles/2026-10-12/
 + b=2026-10-12
-+ [[ 2026-10-12 < 2026-09-26 ]]
++ [[ 2026-10-12 < 2026-09-27 ]]
 + for d in cycles/*/
 ++ basename cycles/2026-10-13/
 + b=2026-10-13
-+ [[ 2026-10-13 < 2026-09-26 ]]
++ [[ 2026-10-13 < 2026-09-27 ]]
 + for d in cycles/*/
 ++ basename cycles/2026-10-14/
 + b=2026-10-14
-+ [[ 2026-10-14 < 2026-09-26 ]]
++ [[ 2026-10-14 < 2026-09-27 ]]
 + for d in cycles/*/
 ++ basename cycles/2026-10-15/
 + b=2026-10-15
-+ [[ 2026-10-15 < 2026-09-26 ]]
++ [[ 2026-10-15 < 2026-09-27 ]]
 + for d in cycles/*/
 ++ basename cycles/2026-10-16/
 + b=2026-10-16
-+ [[ 2026-10-16 < 2026-09-26 ]]
++ [[ 2026-10-16 < 2026-09-27 ]]
 + for d in cycles/*/
 ++ basename cycles/2026-10-17/
 + b=2026-10-17
-+ [[ 2026-10-17 < 2026-09-26 ]]
++ [[ 2026-10-17 < 2026-09-27 ]]
++ for d in cycles/*/
+++ basename cycles/2026-10-18/
++ b=2026-10-18
++ [[ 2026-10-18 < 2026-09-27 ]]
 + git add cycles README.md
 ++ git rev-list --max-parents=0 HEAD
 ++ tail -1
