@@ -1311,14 +1311,71 @@
 ],
 "start": 1792283100,
 "slug": "btc-updown-5m-1792283100"
+},
+"2026-10-18T05:48:02.219Z|Up": {
+"heure": "2026-10-18T05:48:02.219Z",
+"cote": "Up",
+"prix": 0.2219,
+"parts": 238.1,
+"U": 238.0952380952381,
+"D": 0,
+"cash": 185.2512380952381,
+"net": 185.25,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.525,
+"restant_s": 118,
+"journal": [
+"182.2s écart 0.31 (modèle 0.525, vendeur 0.21), 118 s restantes ; 3 s avant : Binance 0.0, perp -0.1 (+ = dans notre sens)"
+],
+"start": 1792302300,
+"slug": "btc-updown-5m-1792302300"
+},
+"2026-10-18T04:30:45.141Z|Up": {
+"heure": "2026-10-18T04:30:45.141Z",
+"cote": "Up",
+"prix": 0.1802,
+"parts": 13,
+"U": 13,
+"D": 0,
+"cash": -2.3420696,
+"net": -2.34,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.479,
+"restant_s": 255,
+"journal": [
+"45.1s écart 0.31 (modèle 0.479, vendeur 0.17), 255 s restantes ; 3 s avant : Binance -5.7, perp -0.1 (+ = dans notre sens)"
+],
+"start": 1792297800,
+"slug": "btc-updown-5m-1792297800"
+},
+"2026-10-18T04:13:24.921Z|Down": {
+"heure": "2026-10-18T04:13:24.921Z",
+"cote": "Down",
+"prix": 0.164,
+"parts": 75.83,
+"U": 0,
+"D": 75.83,
+"cash": -12.4380074,
+"net": -12.44,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.48,
+"restant_s": 95,
+"journal": [
+"204.9s écart 0.33 (modèle 0.480, vendeur 0.15), 95 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1792296600,
+"slug": "btc-updown-5m-1792296600"
 }
 },
 "resume_bot": {
 "depuis": 1791927168.33,
-"n": 69,
-"gains": 19,
-"pertes": 50,
-"pnl": 121.31000000000027
+"n": 72,
+"gains": 20,
+"pertes": 52,
+"pnl": 291.78000000000026
 },
 "archive": [
 [
@@ -1941,8 +1998,35 @@
 "perdu",
 0.451,
 113
+],
+[
+"2026-10-18T04:13:24.921Z",
+"Down",
+0.164,
+-12.44,
+"perdu",
+0.48,
+95
+],
+[
+"2026-10-18T04:30:45.141Z",
+"Up",
+0.1802,
+-2.34,
+"perdu",
+0.479,
+255
+],
+[
+"2026-10-18T05:48:02.219Z",
+"Up",
+0.2219,
+185.25,
+"gagné",
+0.525,
+118
 ]
 ],
-"n_sauves": 69,
-"maj": "2026-10-18 01:38 UTC"
+"n_sauves": 72,
+"maj": "2026-10-18 06:40 UTC"
 }

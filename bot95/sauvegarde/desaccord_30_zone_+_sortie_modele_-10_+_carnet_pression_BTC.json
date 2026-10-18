@@ -810,14 +810,71 @@
 ],
 "start": 1792283100,
 "slug": "btc-updown-5m-1792283100"
+},
+"2026-10-18T05:38:03.997Z|Up": {
+"heure": "2026-10-18T05:38:03.997Z",
+"cote": "Up",
+"prix": 0.1592,
+"parts": 85.84,
+"U": 85.84,
+"D": 0,
+"cash": 72.1759888,
+"net": 72.18,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.476,
+"restant_s": 116,
+"journal": [
+"184.0s écart 0.33 (modèle 0.476, vendeur 0.15), 116 s restantes ; 3 s avant : Binance 0.0, perp 10.1 (+ = dans notre sens)"
+],
+"start": 1792301700,
+"slug": "btc-updown-5m-1792301700"
+},
+"2026-10-18T04:13:24.900Z|Down": {
+"heure": "2026-10-18T04:13:24.900Z",
+"cote": "Down",
+"prix": 0.1639,
+"parts": 33.33,
+"U": 0,
+"D": 33.33,
+"cash": -5.462921399999999,
+"net": -5.46,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.48,
+"restant_s": 95,
+"journal": [
+"204.9s écart 0.33 (modèle 0.480, vendeur 0.15), 95 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1792296600,
+"slug": "btc-updown-5m-1792296600"
+},
+"2026-10-18T03:33:52.917Z|Up": {
+"heure": "2026-10-18T03:33:52.917Z",
+"cote": "Up",
+"prix": 0.168,
+"parts": 209.75,
+"U": 209.75,
+"D": 0,
+"cash": -35.240795168,
+"net": -35.24,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.45,
+"restant_s": 67,
+"journal": [
+"232.9s écart 0.30 (modèle 0.450, vendeur 0.15), 67 s restantes ; 3 s avant : Binance 0.0, perp 8.5 (+ = dans notre sens)"
+],
+"start": 1792294200,
+"slug": "btc-updown-5m-1792294200"
 }
 },
 "resume_bot": {
 "depuis": 1791924695.55,
-"n": 42,
-"gains": 18,
-"pertes": 24,
-"pnl": 1031.12
+"n": 45,
+"gains": 19,
+"pertes": 26,
+"pnl": 1062.6
 },
 "archive": [
 [
@@ -1197,8 +1254,35 @@
 "perdu",
 0.451,
 113
+],
+[
+"2026-10-18T03:33:52.917Z",
+"Up",
+0.168,
+-35.24,
+"perdu",
+0.45,
+67
+],
+[
+"2026-10-18T04:13:24.900Z",
+"Down",
+0.1639,
+-5.46,
+"perdu",
+0.48,
+95
+],
+[
+"2026-10-18T05:38:03.997Z",
+"Up",
+0.1592,
+72.18,
+"gagné",
+0.476,
+116
 ]
 ],
-"n_sauves": 42,
-"maj": "2026-10-18 01:38 UTC"
+"n_sauves": 45,
+"maj": "2026-10-18 06:40 UTC"
 }
