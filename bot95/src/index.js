@@ -1061,6 +1061,7 @@ export class Bot {
   // ------------------------------------------------------------------ boucle
   async tick() {
     try { this.duoMinute(); } catch (err) { this.erreur("duo minute", err); }
+    try { this.contraTick(); } catch (err) { this.erreur("contrarien", err); }
     const t = now(), start = Math.floor(t / 300) * 300, tleft = start + 300 - t;
     // 11.10.2026 : aller-retour Cloudflare → serveur Polymarket, toutes les 15 s, pour le comparer au VPS de Dublin (mesure seulement)
     if (t - (this._rttT || 0) > 15) { this._rttT = t; const t0 = Date.now(); fetch(C + "/time").then((r) => r.text()).then(() => { (this.rttClob = this.rttClob || []).push(Date.now() - t0); if (this.rttClob.length > 500) this.rttClob.shift(); }).catch(() => {}); }
@@ -1738,6 +1739,33 @@ export class Bot {
       for (const k of Object.keys(D.reg)) if (+k < st - 6 * 3600) delete D.reg[k];
       this.state.storage.put("duo", D).catch(() => {});
     }
+  }
+  // 19.10.2026 21:48 (Pitch : « oui ») : fantôme « contrarien 5 min + 1 h ». Règle figée (étude sur 90 jours Coinbase + 27 jours de prix Polymarket) :
+  // au début du cycle BTC, r5 = log(clôture minute −1 / clôture minute −6), r60 = log(clôture minute −1 / clôture minute −61) (prix Coinbase).
+  // r5 < −0,103 % ET r60 < −0,342 % → achat Up ; r5 > +0,106 % ET r60 > +0,371 % → achat Down. 50 $ au meilleur vendeur + 1 c, dans les 30 s, un par cycle.
+  contraTick() {
+    const t = now(), st = Math.floor(t / 300) * 300; if (t - st > 30) return;
+    const C = (this._contra = this._contra || {}); if (C.st === st && C.fait) return;
+    if (C.st !== st) {
+      const D = this.duo; if (!D || !D.min) return;
+      const m = st / 60, cl = (mm) => { const x = D.min.find((y) => y[0] === mm); return x ? x[1] : null; };
+      const c1 = cl(m - 1), c6 = cl(m - 6), c61 = cl(m - 61);
+      this._contra = { st, cote: null, fait: false };
+      if (!c1 || !c6 || !c61) { this._contra.fait = true; return; }
+      const r5 = Math.log(c1 / c6), r60 = Math.log(c1 / c61);
+      if (r5 < -0.00103 && r60 < -0.00342) this._contra.cote = "Up"; else if (r5 > 0.00106 && r60 > 0.00371) this._contra.cote = "Down"; else { this._contra.fait = true; return; }
+      this._contra.r5 = r5; this._contra.r60 = r60;
+    }
+    const K = this._contra, mk = this.mk.BTC; if (!mk || mk.start !== st || !mk.up || !mk.down) return;
+    const id = K.cote === "Up" ? mk.up : mk.down, L = this.livreTrie(id, "asks"); if (!L.length) return;
+    const k0 = L[0][0]; if (k0 < 0.05 || k0 > 0.95) { K.fait = true; return; }
+    const r = this.nAcheter(id, 50 / k0, k0 + 0.01); if (r.parts < 1) return;
+    K.fait = true;
+    const P = this.nPos("contrarien 5 min + 1 h", "BTC", mk, { famille: "contrarien", cote: K.cote, prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), restant_s: +(st + 300 - t).toFixed(0) });
+    if (P.stoppee) return;
+    P.cash = -r.cout; if (K.cote === "Up") P.U = r.parts; else P.D = r.parts;
+    this.nNote(P, `r5 ${(K.r5 * 100).toFixed(3)} %, r60 ${(K.r60 * 100).toFixed(3)} % → achat ${K.cote} ${r.parts.toFixed(1)} parts à ${P.prix}`);
+    this.nSauver();
   }
   nClore(P, issue) {
     P.fini = true; P.issue = issue; P.net = +P.cash.toFixed(2);
