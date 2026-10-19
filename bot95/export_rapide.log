@@ -1,23 +1,88 @@
 + git config user.name rapide
 + git config user.email bot@users.noreply.github.com
 + python3 -
-Traceback (most recent call last):
-  File "<stdin>", line 3, in <module>
-  File "/usr/lib/python3.12/urllib/request.py", line 215, in urlopen
-    return opener.open(url, data, timeout)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 521, in open
-    response = meth(req, response)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 630, in http_response
-    response = self.parent.error(
-               ^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 559, in error
-    return self._call_chain(*args)
-           ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 492, in _call_chain
-    result = func(*args)
-             ^^^^^^^^^^^
-  File "/usr/lib/python3.12/urllib/request.py", line 639, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 500: Internal Server Error
+++ cat /tmp/jours
++ for J in $(cat /tmp/jours)
++ B=dr-2026-10-16
++ W=/tmp/w-2026-10-16
++ mkdir -p /tmp/w-2026-10-16
++ cd /tmp/w-2026-10-16
++ git init -q
++ git config user.name rapide
++ git config user.email bot@users.noreply.github.com
++ set +x
++ git fetch -q --depth 1 origin dr-2026-10-16
++ git checkout -q FETCH_HEAD
++ git checkout -q -B dr-2026-10-16
++ python3 - 2026-10-16
+2026-10-16 nouveaux cycles 0
++ git add cycles
++ git commit -q --amend -m 'cycles bot rapide 2026-10-16'
++ for k in 1 2 3
++ git push -q -f origin dr-2026-10-16
++ break
++ cd /
++ for J in $(cat /tmp/jours)
++ B=dr-2026-10-17
++ W=/tmp/w-2026-10-17
++ mkdir -p /tmp/w-2026-10-17
++ cd /tmp/w-2026-10-17
++ git init -q
++ git config user.name rapide
++ git config user.email bot@users.noreply.github.com
++ set +x
++ git fetch -q --depth 1 origin dr-2026-10-17
++ git checkout -q FETCH_HEAD
++ git checkout -q -B dr-2026-10-17
++ python3 - 2026-10-17
+2026-10-17 nouveaux cycles 0
++ git add cycles
++ git commit -q --amend -m 'cycles bot rapide 2026-10-17'
++ for k in 1 2 3
++ git push -q -f origin dr-2026-10-17
++ break
++ cd /
++ for J in $(cat /tmp/jours)
++ B=dr-2026-10-18
++ W=/tmp/w-2026-10-18
++ mkdir -p /tmp/w-2026-10-18
++ cd /tmp/w-2026-10-18
++ git init -q
++ git config user.name rapide
++ git config user.email bot@users.noreply.github.com
++ set +x
++ git fetch -q --depth 1 origin dr-2026-10-18
++ git checkout -q FETCH_HEAD
++ git checkout -q -B dr-2026-10-18
++ python3 - 2026-10-18
+2026-10-18 nouveaux cycles 8
++ git add cycles
++ git commit -q --amend -m 'cycles bot rapide 2026-10-18'
++ for k in 1 2 3
++ git push -q -f origin dr-2026-10-18
++ break
++ cd /
++ for J in $(cat /tmp/jours)
++ B=dr-2026-10-19
++ W=/tmp/w-2026-10-19
++ mkdir -p /tmp/w-2026-10-19
++ cd /tmp/w-2026-10-19
++ git init -q
++ git config user.name rapide
++ git config user.email bot@users.noreply.github.com
++ set +x
++ git fetch -q --depth 1 origin dr-2026-10-19
++ git checkout -q -B dr-2026-10-19
++ python3 - 2026-10-19
+2026-10-19 nouveaux cycles 100
++ git add cycles
++ git commit -q --amend -m 'cycles bot rapide 2026-10-19'
++ git commit -q -m 'cycles bot rapide 2026-10-19'
++ for k in 1 2 3
++ git push -q -f origin dr-2026-10-19
+remote: 
+remote: Create a pull request for 'dr-2026-10-19' on GitHub by visiting:        
+remote:      https://github.com/pitch6767/wallet-autopsy/pull/new/dr-2026-10-19        
+remote: 
++ break
++ cd /
