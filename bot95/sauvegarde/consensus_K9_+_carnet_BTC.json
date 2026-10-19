@@ -228,14 +228,71 @@
 ],
 "start": 1792330200,
 "slug": "btc-updown-5m-1792330200"
+},
+"2026-10-19T13:36:10.711Z|Up": {
+"heure": "2026-10-19T13:36:10.711Z",
+"cote": "Up",
+"prix": 0.2099,
+"parts": 263.16,
+"U": 263.1578947368421,
+"D": 0,
+"cash": -55.24558989473684,
+"net": -55.25,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.394,
+"restant_s": 229,
+"journal": [
+"70.7s V2-F + plus de 120 s achète Up avec 15 autres stratégies du même côté (première il y a 0.0 s), 229 s restantes → achat 263.2 parts à 0.2099"
+],
+"start": 1792416900,
+"slug": "btc-updown-5m-1792416900"
+},
+"2026-10-19T12:22:32.293Z|Up": {
+"heure": "2026-10-19T12:22:32.293Z",
+"cote": "Up",
+"prix": 0.1671,
+"parts": 93,
+"U": 93,
+"D": 0,
+"cash": -15.538516000000001,
+"net": -15.54,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.44,
+"restant_s": 148,
+"journal": [
+"152.3s V2-G jury des bourses achète Up avec 21 autres stratégies du même côté (première il y a 0.2 s), 148 s restantes → achat 93.0 parts à 0.1671"
+],
+"start": 1792412400,
+"slug": "btc-updown-5m-1792412400"
+},
+"2026-10-19T10:05:26.000Z|Down": {
+"heure": "2026-10-19T10:05:26.000Z",
+"cote": "Down",
+"prix": 0.298,
+"parts": 30,
+"U": 0,
+"D": 30,
+"cash": 21.061448,
+"net": 21.06,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.49,
+"restant_s": 274,
+"journal": [
+"26.0s V2-H veto complet achète Down avec 15 autres stratégies du même côté (première il y a 0.0 s), 274 s restantes → achat 30.0 parts à 0.298"
+],
+"start": 1792404300,
+"slug": "btc-updown-5m-1792404300"
 }
 },
 "resume_bot": {
 "depuis": 1791960098.509,
-"n": 12,
-"gains": 6,
-"pertes": 6,
-"pnl": 433.47
+"n": 15,
+"gains": 7,
+"pertes": 8,
+"pnl": 383.74
 },
 "archive": [
 [
@@ -345,8 +402,35 @@
 "une seule jambe",
 0.857,
 292
+],
+[
+"2026-10-19T10:05:26.000Z",
+"Down",
+0.298,
+21.06,
+"une seule jambe",
+0.49,
+274
+],
+[
+"2026-10-19T12:22:32.293Z",
+"Up",
+0.1671,
+-15.54,
+"une seule jambe",
+0.44,
+148
+],
+[
+"2026-10-19T13:36:10.711Z",
+"Up",
+0.2099,
+-55.25,
+"une seule jambe",
+0.394,
+229
 ]
 ],
-"n_sauves": 12,
-"maj": "2026-10-19 08:33 UTC"
+"n_sauves": 15,
+"maj": "2026-10-19 14:27 UTC"
 }
