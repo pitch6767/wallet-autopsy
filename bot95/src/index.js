@@ -25,6 +25,7 @@ const RAPIDE_SEUL = new Set(["V2-C perp + contre foule|BTC", "V2-C perp + ecart 
 //  « après gain » (le trade n'est pris que si le trade précédent de la même stratégie était gagnant).
 //  CHEF : 29 stratégies de base V2 / corrige / desaccord / consensus — tous leurs trades SAUF « cycle calme (≤ 2 passages par 0,50) sans pression
 //  du carnet pour nous » (carnetPour > 0 et pressPour > 0). Analyse du 18.10 (rapport Bot95_switch_selon_le_marche).
+const PORTEFEUILLE_400 = new Set(["BY1 contre-elan calme 100 $|BTC", "TWAP fin sauts + foule bybit x2|BTC", "V2-F incertitude 0,01 % + carnet|BTC"]);
 const META_TOP20 = new Set(["desaccord 20 Binance avec nous + foule bybit x2|BTC", "corrige : desaccord 20 + carnet|BTC", "desaccord 20 Binance avec nous|BTC", "desaccord 20 Binance avec nous + contre foule|BTC", "corrige : desaccord 20 + carnet ecart serre|BTC", "corrige marge mesuree : V2-F + carnet|BTC", "corrige : V2-F + pas les deux baissent + carnet|BTC", "corrige : V2-F ecart qui grandit + carnet|BTC", "corrige marge mesuree : V2-F sans 02-10h|BTC", "corrige : V2-F + pas les deux baissent + carnet ecart serre|BTC", "corrige marge mesuree : V2-F + carnet ecart serre|BTC", "desaccord 20 Binance avec nous + ecart serre|BTC", "corrige : desaccord 20 + carnet pression|BTC", "desaccord 20 Binance ou perp avec nous + contre foule|BTC", "corrige : V2-F ecart qui grandit + carnet ecart serre|BTC", "corrige : V2-F ecart qui grandit + carnet pression|BTC", "V2-G jury des bourses|BTC", "corrige : V2-F + pas les deux baissent + carnet pression|BTC", "desaccord 20 Binance avec nous + foule bybit|BTC", "desaccord 20 Binance ou perp avec nous|BTC"]);
 const CHEF_BASES = new Set(["V2-C perp|BTC", "V2-D perp 120-269 s|BTC", "V2-F + plus de 120 s|BTC", "V2-F incertitude 0,01 %|BTC", "V2-F miroir 1 s|BTC", "V2-G jury des bourses|BTC", "consensus K2|BTC", "consensus K5|BTC", "consensus K5 anti-bete|BTC", "consensus K9|BTC", "corrige : V2-F + garde-fou|BTC", "corrige : V2-F + pas les deux baissent|BTC", "corrige : V2-F ecart qui grandit|BTC", "corrige : desaccord 20|BTC", "corrige : zone + Binance et perp + sortie -10|BTC", "corrige marge mesuree : V2-F|BTC", "desaccord 20 Binance avec nous|BTC", "desaccord 20 Binance avec nous sans nuit|BTC", "desaccord 20 Binance ou perp avec nous|BTC", "desaccord 20 Binance ou perp avec nous sans nuit|BTC", "desaccord 20 jeton 0,35-0,65|BTC", "desaccord 30 0,15-0,60 + perp + ecart qui grandit|BTC", "desaccord 30|BTC", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50|BTC", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse|BTC", "desaccord 30 zone + modele monte|BTC", "desaccord 30 zone + sortie modele -10|BTC", "desaccord 30 zone 0,15-0,35|BTC", "desaccord confirme perp|BTC"]);
 const STOPPEES = new Set(["V2-E persistant|BTC", "V2-H veto complet|BTC", "desaccord 20 60-180 s|BTC", "corrige : desaccord 20|ETH",
@@ -270,6 +271,8 @@ export class Bot {
         this.N.ordres = (await this.state.storage.get("nv:ordres")) || [];
         this.N.audit = { fait: base.auditFait || {}, lignes: (await this.state.storage.get("nv:audit")) || [] };
         this.N.zero = (await this.state.storage.get("nv:zero")) || {};
+        // 19.10.2026 : nouvelle remise à 0 de l'onglet 2 ; les anciens compteurs sont archivés une seule fois
+        if ((await this.state.storage.get("zero:depuis")) !== ZERO_DEPUIS) { await this.state.storage.put("zero:archive:" + ((await this.state.storage.get("zero:depuis")) || "2026-10-14T08:45:00Z"), this.N.zero); this.N.zero = {}; await this.state.storage.put("nv:zero", {}); await this.state.storage.put("zero:depuis", ZERO_DEPUIS); }
       } else this.N = (await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
       for (const [ancien, neuf] of [["assurance", "assurance 6/9/12"], ["mm", "mm actuel"]]) {
         for (const k of Object.keys(this.N.strats)) if (k.startsWith(ancien + " ") && k.split(" ").length === 2) { this.N.strats[neuf + " " + k.split(" ")[1]] = this.N.strats[k]; delete this.N.strats[k]; }
@@ -1750,6 +1753,8 @@ export class Bot {
         const S0 = this.N.strats[P.strat + " " + P.actif], prev = S0 && S0.trades && S0.trades[0];
         if (prev && prev.net > 0) cp("META apres gain (top 20)", "précédent +" + prev.net);
       }
+      // 19.10.2026 11:49 (Pitch : « go ») : PORTEFEUILLE 400 = somme de 3 stratégies régulières (gagnantes chaque jour du 14 au 18.10), objectif +400 $ / jour
+      if (PORTEFEUILLE_400.has(k)) cp("PORTEFEUILLE 400");
       if (CHEF_BASES.has(k) && !P.copieCarnet) {
         const piege = P.passages != null && P.passages <= 2 && !(P.carnetPour > 0 && P.pressPour > 0);
         if (!piege) cp("CHEF D'ORCHESTRE (sans calme sans pression)");
@@ -3149,9 +3154,9 @@ h+="<tr><td><b>"+rangTxt(ra,c.participants[auj])+"</b></td><td>"+s.nom+"</td><td
 document.getElementById("classement").innerHTML=h+"</table></div></div>";}catch(e){}}
 classement();setInterval(classement,60000);
 </script></body></html>`;
-const ZERO_DEPUIS = "2026-10-14T08:45:00Z";      // 14.10.2026 10:45 heure suisse : départ de l'onglet 2 « remise à 0 »
+const ZERO_DEPUIS = "2026-10-19T09:00:00Z";      // 19.10.2026 11:00 heure suisse (Pitch : « on remet tous à 0 ») ; avant : 14.10.2026 10:45, compteurs archivés dans zero:archive:2026-10-14T08:45:00Z
 const PAGE_ZERO = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes — remise à 0</title>${STYLE}</head><body>
-<h1>Fantômes — remise à 0 <span class="badge">mode fantôme</span></h1><div class="mu">Mêmes stratégies que l'onglet 1, compteurs repartis de zéro le 14.10.2026 à 10:45 (heure suisse) : seuls les trades ouverts depuis comptent. Aucun argent réel.</div>
+<h1>Fantômes — remise à 0 <span class="badge">mode fantôme</span></h1><div class="mu">Mêmes stratégies que l'onglet 1, compteurs repartis de zéro le 19.10.2026 à 11:00 (heure suisse) : seuls les trades ouverts depuis comptent. Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/nouveaux">← Onglet 1 : depuis le début</a> · <b>Onglet 2 : remise à 0</b></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
