@@ -5085,14 +5085,134 @@
 "proba0": 0.261,
 "restant_s": 67,
 "start": 1792361400
+},
+"2026-10-19T01:38:22.999Z|Up": {
+"heure": "2026-10-19T01:38:22.999Z",
+"cote": "Up",
+"prix": 0.0321,
+"parts": 2093.67,
+"U": 1115.67,
+"D": 0,
+"cash": -83.460950384,
+"net": -83.46,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.241,
+"restant_s": 97,
+"journal": [
+"203.0s écart 0.21 né dans la dernière seconde (modèle 1 s avant 0.240) → achat Up 1115.7 parts à 0.0321 (meilleur vendeur seul, 1116 parts affichées)",
+"mise x1.88, surcoût 16.26 $"
+],
+"start": 1792373700,
+"slug": "btc-updown-5m-1792373700"
+},
+"2026-10-19T01:27:37.798Z|Up": {
+"heure": "2026-10-19T01:27:37.798Z",
+"cote": "Up",
+"prix": 0.1487,
+"parts": 209.94,
+"U": 104.97,
+"D": 0,
+"cash": -33.08744987200001,
+"net": -33.09,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.348,
+"restant_s": 142,
+"journal": [
+"157.8s écart 0.21 né dans la dernière seconde (modèle 1 s avant 0.293) → achat Up 105.0 parts à 0.1487 (meilleur vendeur seul, 105 parts affichées)",
+"mise x2.00, surcoût 1.88 $"
+],
+"start": 1792373100,
+"slug": "btc-updown-5m-1792373100"
+},
+"2026-10-19T01:23:40.243Z|Down": {
+"heure": "2026-10-19T01:23:40.243Z",
+"cote": "Down",
+"prix": 0.1487,
+"parts": 714.28,
+"U": 0,
+"D": 357.1428571428571,
+"cash": -106.19200000000001,
+"net": -106.19,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.388,
+"restant_s": 80,
+"journal": [
+"220.2s écart 0.25 né dans la dernière seconde (modèle 1 s avant 0.340) → achat Down 357.1 parts à 0.1487 (meilleur vendeur seul, 802 parts affichées)",
+"mise x2.00, surcoût -0.02 $"
+],
+"start": 1792372800,
+"slug": "btc-updown-5m-1792372800"
+},
+"2026-10-19T01:13:44.718Z|Up": {
+"heure": "2026-10-19T01:13:44.718Z",
+"cote": "Up",
+"prix": 0.2324,
+"parts": 40,
+"U": 20,
+"D": 0,
+"cash": -9.604208000000002,
+"net": -9.6,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.424,
+"restant_s": 75,
+"journal": [
+"224.7s écart 0.20 né dans la dernière seconde (modèle 1 s avant 0.424) → achat Up 20.0 parts à 0.2324 (meilleur vendeur seul, 20 parts affichées)",
+"mise x2.00, surcoût 0.31 $"
+],
+"start": 1792372200,
+"slug": "btc-updown-5m-1792372200"
+},
+"2026-10-19T00:48:13.776Z|Up": {
+"heure": "2026-10-19T00:48:13.776Z",
+"cote": "Up",
+"prix": 0.2324,
+"parts": 78.14,
+"U": 39.07,
+"D": 0,
+"cash": -18.558499328000003,
+"net": -18.56,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.421,
+"restant_s": 106,
+"journal": [
+"193.8s écart 0.20 né dans la dernière seconde (modèle 1 s avant 0.419) → achat Up 39.1 parts à 0.2324 (meilleur vendeur seul, 39 parts affichées)",
+"mise x2.00, surcoût 0.40 $"
+],
+"start": 1792370700,
+"slug": "btc-updown-5m-1792370700"
+},
+"2026-10-19T00:02:04.125Z|Up": {
+"heure": "2026-10-19T00:02:04.125Z",
+"cote": "Up",
+"prix": 0.1065,
+"parts": 367.42,
+"U": 183.71,
+"D": 0,
+"cash": -41.05665160000001,
+"net": -41.06,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.367,
+"restant_s": 176,
+"journal": [
+"124.1s écart 0.27 né dans la dernière seconde (modèle 1 s avant 0.322) → achat Up 183.7 parts à 0.1065 (meilleur vendeur seul, 184 parts affichées)",
+"mise x2.00, surcoût 1.93 $"
+],
+"start": 1792368000,
+"slug": "btc-updown-5m-1792368000"
 }
 },
 "resume_bot": {
 "depuis": 1791931324.773,
-"n": 259,
+"n": 265,
 "gains": 53,
-"pertes": 206,
-"pnl": 1599.4800000000007
+"pertes": 212,
+"pnl": 1307.520000000001
 },
 "archive": [
 [
@@ -7425,8 +7545,62 @@
 "une seule jambe",
 0.288,
 120
+],
+[
+"2026-10-19T00:02:04.125Z",
+"Up",
+0.1065,
+-41.06,
+"une seule jambe",
+0.367,
+176
+],
+[
+"2026-10-19T00:48:13.776Z",
+"Up",
+0.2324,
+-18.56,
+"une seule jambe",
+0.421,
+106
+],
+[
+"2026-10-19T01:13:44.718Z",
+"Up",
+0.2324,
+-9.6,
+"une seule jambe",
+0.424,
+75
+],
+[
+"2026-10-19T01:23:40.243Z",
+"Down",
+0.1487,
+-106.19,
+"une seule jambe",
+0.388,
+80
+],
+[
+"2026-10-19T01:27:37.798Z",
+"Up",
+0.1487,
+-33.09,
+"une seule jambe",
+0.348,
+142
+],
+[
+"2026-10-19T01:38:22.999Z",
+"Up",
+0.0321,
+-83.46,
+"une seule jambe",
+0.241,
+97
 ]
 ],
-"n_sauves": 259,
-"maj": "2026-10-18 23:49 UTC"
+"n_sauves": 265,
+"maj": "2026-10-19 01:55 UTC"
 }
