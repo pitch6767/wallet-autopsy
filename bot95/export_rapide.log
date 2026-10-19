@@ -55,7 +55,7 @@
 + git checkout -q FETCH_HEAD
 + git checkout -q -B dr-2026-10-18
 + python3 - 2026-10-18
-2026-10-18 nouveaux cycles 8
+2026-10-18 nouveaux cycles 0
 + git add cycles
 + git commit -q --amend -m 'cycles bot rapide 2026-10-18'
 + for k in 1 2 3
@@ -72,17 +72,13 @@
 + git config user.email bot@users.noreply.github.com
 + set +x
 + git fetch -q --depth 1 origin dr-2026-10-19
++ git checkout -q FETCH_HEAD
 + git checkout -q -B dr-2026-10-19
 + python3 - 2026-10-19
-2026-10-19 nouveaux cycles 100
+2026-10-19 nouveaux cycles 59
 + git add cycles
 + git commit -q --amend -m 'cycles bot rapide 2026-10-19'
-+ git commit -q -m 'cycles bot rapide 2026-10-19'
 + for k in 1 2 3
 + git push -q -f origin dr-2026-10-19
-remote: 
-remote: Create a pull request for 'dr-2026-10-19' on GitHub by visiting:        
-remote:      https://github.com/pitch6767/wallet-autopsy/pull/new/dr-2026-10-19        
-remote: 
 + break
 + cd /
