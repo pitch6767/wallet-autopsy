@@ -1501,14 +1501,71 @@
 ],
 "start": 1792370100,
 "slug": "btc-updown-5m-1792370100"
+},
+"2026-10-19T05:48:37.599Z|Down": {
+"heure": "2026-10-19T05:48:37.599Z",
+"cote": "Down",
+"prix": 0.2505,
+"parts": 20,
+"U": 0,
+"D": 20,
+"cash": -5.0107479999999995,
+"net": -5.01,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.534,
+"restant_s": 82,
+"journal": [
+"217.6s écart 0.30 (modèle 0.534, vendeur 0.23), 82 s restantes ; 3 s avant : Binance 0.0, perp 0.0 (+ = dans notre sens)"
+],
+"start": 1792388700,
+"slug": "btc-updown-5m-1792388700"
+},
+"2026-10-19T05:13:18.839Z|Up": {
+"heure": "2026-10-19T05:13:18.839Z",
+"cote": "Up",
+"prix": 0.1775,
+"parts": 20,
+"U": 20,
+"D": 0,
+"cash": -3.5507720000000003,
+"net": -3.55,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.47,
+"restant_s": 101,
+"journal": [
+"198.8s écart 0.31 (modèle 0.470, vendeur 0.16), 101 s restantes ; 3 s avant : Binance 0.0, perp 0.1 (+ = dans notre sens)"
+],
+"start": 1792386600,
+"slug": "btc-updown-5m-1792386600"
+},
+"2026-10-19T03:48:40.651Z|Up": {
+"heure": "2026-10-19T03:48:40.651Z",
+"cote": "Up",
+"prix": 0.1852,
+"parts": 175,
+"U": 175,
+"D": 0,
+"cash": -32.417640000000006,
+"net": -32.42,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.489,
+"restant_s": 79,
+"journal": [
+"220.7s écart 0.32 (modèle 0.489, vendeur 0.17), 79 s restantes ; 3 s avant : Binance 0.0, perp 4.1 (+ = dans notre sens)"
+],
+"start": 1792381500,
+"slug": "btc-updown-5m-1792381500"
 }
 },
 "resume_bot": {
 "depuis": 1791924695.55,
-"n": 79,
+"n": 82,
 "gains": 22,
-"pertes": 57,
-"pnl": 33.58000000000016
+"pertes": 60,
+"pnl": -7.39999999999984
 },
 "archive": [
 [
@@ -2221,8 +2278,35 @@
 "perdu",
 0.493,
 81
+],
+[
+"2026-10-19T03:48:40.651Z",
+"Up",
+0.1852,
+-32.42,
+"perdu",
+0.489,
+79
+],
+[
+"2026-10-19T05:13:18.839Z",
+"Up",
+0.1775,
+-3.55,
+"perdu",
+0.47,
+101
+],
+[
+"2026-10-19T05:48:37.599Z",
+"Down",
+0.2505,
+-5.01,
+"perdu",
+0.534,
+82
 ]
 ],
-"n_sauves": 79,
-"maj": "2026-10-19 01:55 UTC"
+"n_sauves": 82,
+"maj": "2026-10-19 07:02 UTC"
 }

@@ -779,14 +779,71 @@
 ],
 "start": 1792362000,
 "slug": "btc-updown-5m-1792362000"
+},
+"2026-10-19T06:52:07.308Z|Up": {
+"heure": "2026-10-19T06:52:07.308Z",
+"cote": "Up",
+"prix": 0.1669,
+"parts": 333.33,
+"U": 333.33333333333337,
+"D": 0,
+"cash": -55.63521493333334,
+"net": -55.64,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.352,
+"restant_s": 173,
+"journal": [
+"127.3s desaccord 20 sans nuit achète Up avec 9 autres stratégies du même côté (première il y a 0.0 s), 173 s restantes → achat 333.3 parts à 0.1669"
+],
+"start": 1792392600,
+"slug": "btc-updown-5m-1792392600"
+},
+"2026-10-19T06:25:53.917Z|Up": {
+"heure": "2026-10-19T06:25:53.917Z",
+"cote": "Up",
+"prix": 0.125,
+"parts": 40,
+"U": 40,
+"D": 0,
+"cash": -4.998583999999999,
+"net": -5,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.334,
+"restant_s": 246,
+"journal": [
+"53.9s desaccord 20 sans nuit achète Up avec 8 autres stratégies du même côté (première il y a 0.0 s), 246 s restantes → achat 40.0 parts à 0.125"
+],
+"start": 1792391100,
+"slug": "btc-updown-5m-1792391100"
+},
+"2026-10-19T03:21:23.594Z|Up": {
+"heure": "2026-10-19T03:21:23.594Z",
+"cote": "Up",
+"prix": 0.2926,
+"parts": 16.12,
+"U": 16.119999999999997,
+"D": 0,
+"cash": 11.403386975999997,
+"net": 11.4,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.484,
+"restant_s": 216,
+"journal": [
+"83.6s V2-F + plus de 120 s achète Up avec 8 autres stratégies du même côté (première il y a 0.0 s), 216 s restantes → achat 16.1 parts à 0.2926"
+],
+"start": 1792380000,
+"slug": "btc-updown-5m-1792380000"
 }
 },
 "resume_bot": {
 "depuis": 1791931324.773,
-"n": 41,
-"gains": 8,
-"pertes": 33,
-"pnl": 4.0900000000000745
+"n": 44,
+"gains": 9,
+"pertes": 35,
+"pnl": -45.14999999999993
 },
 "archive": [
 [
@@ -1157,8 +1214,35 @@
 "une seule jambe",
 0.288,
 120
+],
+[
+"2026-10-19T03:21:23.594Z",
+"Up",
+0.2926,
+11.4,
+"une seule jambe",
+0.484,
+216
+],
+[
+"2026-10-19T06:25:53.917Z",
+"Up",
+0.125,
+-5,
+"une seule jambe",
+0.334,
+246
+],
+[
+"2026-10-19T06:52:07.308Z",
+"Up",
+0.1669,
+-55.64,
+"une seule jambe",
+0.352,
+173
 ]
 ],
-"n_sauves": 41,
-"maj": "2026-10-19 01:55 UTC"
+"n_sauves": 44,
+"maj": "2026-10-19 07:01 UTC"
 }
