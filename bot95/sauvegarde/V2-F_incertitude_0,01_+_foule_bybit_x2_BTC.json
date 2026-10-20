@@ -5380,14 +5380,74 @@
 ],
 "start": 1792500900,
 "slug": "btc-updown-5m-1792500900"
+},
+"2026-10-20T20:24:02.017Z|Up": {
+"heure": "2026-10-20T20:24:02.017Z",
+"cote": "Up",
+"prix": 0.1276,
+"parts": 65,
+"U": 65,
+"D": 0,
+"cash": -8.294208000000001,
+"net": -8.29,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.35,
+"restant_s": 58,
+"journal": [
+"242.0s écart 0.23 avec 0,01 % (modèle 0,08 % : 0.469) → achat Up 65.0 parts à 0.1276 (meilleur vendeur seul, 65 parts affichées)",
+"mise x1.00, surcoût 0.00 $"
+],
+"start": 1792527600,
+"slug": "btc-updown-5m-1792527600"
+},
+"2026-10-20T19:48:34.210Z|Up": {
+"heure": "2026-10-20T19:48:34.210Z",
+"cote": "Up",
+"prix": 0.4274,
+"parts": 243.9,
+"U": 121.95121951219512,
+"D": 0,
+"cash": 139.65029902439022,
+"net": 139.65,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.634,
+"restant_s": 86,
+"journal": [
+"214.2s écart 0.22 avec 0,01 % (modèle 0,08 % : 0.538) → achat Up 122.0 parts à 0.4274 (meilleur vendeur seul, 870 parts affichées)",
+"mise x2.00, surcoût 0.00 $"
+],
+"start": 1792525500,
+"slug": "btc-updown-5m-1792525500"
+},
+"2026-10-20T19:08:13.862Z|Down": {
+"heure": "2026-10-20T19:08:13.862Z",
+"cote": "Down",
+"prix": 0.1802,
+"parts": 44.22,
+"U": 0,
+"D": 22.11,
+"cash": -8.196195824,
+"net": -8.2,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.515,
+"restant_s": 106,
+"journal": [
+"193.9s écart 0.35 avec 0,01 % (modèle 0,08 % : 0.505) → achat Down 22.1 parts à 0.1802 (meilleur vendeur seul, 22 parts affichées)",
+"mise x2.00, surcoût 0.23 $"
+],
+"start": 1792523100,
+"slug": "btc-updown-5m-1792523100"
 }
 },
 "resume_bot": {
 "depuis": 1791931340.173,
-"n": 281,
-"gains": 76,
-"pertes": 205,
-"pnl": 1990.2499999999989
+"n": 284,
+"gains": 77,
+"pertes": 207,
+"pnl": 2113.409999999999
 },
 "archive": [
 [
@@ -7918,8 +7978,35 @@
 "une seule jambe",
 0.618,
 162
+],
+[
+"2026-10-20T19:08:13.862Z",
+"Down",
+0.1802,
+-8.2,
+"une seule jambe",
+0.515,
+106
+],
+[
+"2026-10-20T19:48:34.210Z",
+"Up",
+0.4274,
+139.65,
+"une seule jambe",
+0.634,
+86
+],
+[
+"2026-10-20T20:24:02.017Z",
+"Up",
+0.1276,
+-8.29,
+"une seule jambe",
+0.35,
+58
 ]
 ],
-"n_sauves": 281,
-"maj": "2026-10-20 18:02 UTC"
+"n_sauves": 284,
+"maj": "2026-10-20 21:45 UTC"
 }
