@@ -1784,6 +1784,18 @@ export class Bot {
       }
       // 19.10.2026 11:49 (Pitch : « go ») : PORTEFEUILLE 400 = somme de 3 stratégies régulières (gagnantes chaque jour du 14 au 18.10), objectif +400 $ / jour
       if (PORTEFEUILLE_400.has(k)) cp("PORTEFEUILLE 400");
+      // 20.10.2026 19:05 (Pitch : « oui go ») : PORTEFEUILLE 400 corrige = mêmes 3 stratégies avec
+      // (3) BY1 seulement si prix d'achat 0,50-0,70 ; (4)+(5) une seule mise par cycle et par côté, toutes stratégies confondues
+      // (donc au plus 2 trades par cycle : jamais deux fois le même côté). Même cycle + même côté = même issue : la première copie close est gardée.
+      if (PORTEFEUILLE_400.has(k)) {
+        const okPrix = !k.startsWith("BY1") || (P.prix >= 0.50 - 1e-9 && P.prix <= 0.70 + 1e-9);
+        const C = this.N.p400c = this.N.p400c || {}, cle = P.start + "|" + P.cote;
+        if (okPrix && !C[cle]) {
+          C[cle] = P.strat;
+          for (const c of Object.keys(C)) if (+c.split("|")[0] < (P.start || 0) - 86400) delete C[c];
+          cp("PORTEFEUILLE 400 corrige");
+        }
+      }
       if (CHEF_BASES.has(k) && !P.copieCarnet) {
         const piege = P.passages != null && P.passages <= 2 && !(P.carnetPour > 0 && P.pressPour > 0);
         if (!piege) cp(P.strat + " chef");
