@@ -300,14 +300,94 @@
 ],
 "start": 1792536600,
 "slug": "btc-updown-5m-1792536600"
+},
+"2026-10-21T03:22:51.040Z|Down": {
+"heure": "2026-10-21T03:22:51.040Z",
+"cote": "Down",
+"prix": 0.2635,
+"parts": 5,
+"U": 0,
+"D": 5,
+"cash": -1.3175,
+"net": -1.32,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.458,
+"restant_s": 129,
+"journal": [
+"171.0s V2-F + plus de 120 s achète Down avec 8 autres stratégies du même côté (première il y a 1.1 s), 129 s restantes → achat 5.0 parts à 0.2635",
+"copie de consensus K5 anti-bete"
+],
+"start": 1792552800,
+"slug": "btc-updown-5m-1792552800"
+},
+"2026-10-21T02:52:00.225Z|Down": {
+"heure": "2026-10-21T02:52:00.225Z",
+"cote": "Down",
+"prix": 0.2102,
+"parts": 81,
+"U": 0,
+"D": 81,
+"cash": -17.028728,
+"net": -17.03,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.408,
+"restant_s": 180,
+"journal": [
+"120.2s V2-G jury des bourses achète Down avec 8 autres stratégies du même côté (première il y a 1.1 s), 180 s restantes → achat 81.0 parts à 0.2102",
+"copie de consensus K5 anti-bete"
+],
+"start": 1792551000,
+"slug": "btc-updown-5m-1792551000"
+},
+"2026-10-21T02:32:27.427Z|Up": {
+"heure": "2026-10-21T02:32:27.427Z",
+"cote": "Up",
+"prix": 0.2358,
+"parts": 227.27,
+"U": 227.27272727272728,
+"D": 0,
+"cash": 173.69165236,
+"net": 173.69,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.429,
+"restant_s": 153,
+"journal": [
+"147.4s V2-F + pas les deux baissent achète Up avec 8 autres stratégies du même côté (première il y a 0.0 s), 153 s restantes → achat 227.3 parts à 0.2358",
+"copie de consensus K5 anti-bete"
+],
+"start": 1792549800,
+"slug": "btc-updown-5m-1792549800"
+},
+"2026-10-21T00:06:08.832Z|Down": {
+"heure": "2026-10-21T00:06:08.832Z",
+"cote": "Down",
+"prix": 0.2803,
+"parts": 39.99,
+"U": 0,
+"D": 39.99,
+"cash": -11.209833472,
+"net": -11.21,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.476,
+"restant_s": 231,
+"journal": [
+"68.8s V2-C perp achète Down avec 8 autres stratégies du même côté (première il y a 0.0 s), 231 s restantes → achat 40.0 parts à 0.2803",
+"copie de consensus K5 anti-bete"
+],
+"start": 1792541100,
+"slug": "btc-updown-5m-1792541100"
 }
 },
 "resume_bot": {
 "depuis": 1792442870.79,
-"n": 15,
-"gains": 4,
-"pertes": 11,
-"pnl": 89.76000000000002
+"n": 19,
+"gains": 5,
+"pertes": 14,
+"pnl": 233.89000000000001
 },
 "archive": [
 [
@@ -444,8 +524,44 @@
 "une seule jambe",
 0.435,
 196
+],
+[
+"2026-10-21T00:06:08.832Z",
+"Down",
+0.2803,
+-11.21,
+"une seule jambe",
+0.476,
+231
+],
+[
+"2026-10-21T02:32:27.427Z",
+"Up",
+0.2358,
+173.69,
+"une seule jambe",
+0.429,
+153
+],
+[
+"2026-10-21T02:52:00.225Z",
+"Down",
+0.2102,
+-17.03,
+"une seule jambe",
+0.408,
+180
+],
+[
+"2026-10-21T03:22:51.040Z",
+"Down",
+0.2635,
+-1.32,
+"une seule jambe",
+0.458,
+129
 ]
 ],
-"n_sauves": 15,
-"maj": "2026-10-21 00:14 UTC"
+"n_sauves": 19,
+"maj": "2026-10-21 05:03 UTC"
 }
