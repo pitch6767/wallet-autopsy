@@ -2,83 +2,23 @@
 "moteurNourriPar": "rtds",
 "reglage": "secret ou variable CHAINLINK_SOURCE : rtds (défaut) | polybolt | auto",
 "polyboltConnecte": true,
-"authentifie": 1792559100.434,
+"authentifie": 1792578211.499,
 "erreur": null,
 "parActif": {
 "SOL": {
 "messages": {
-"rtds": 15,
-"pb": 19
+"rtds": 28,
+"pb": 29
 },
 "retard_ms": {
-"rtds": 1092,
-"polybolt": 942
+"rtds": 1064,
+"polybolt": 790
 },
 "avancePolybolt_ms": {
-"med": 221,
-"p10": 180,
-"p90": 317,
-"n": 13
-},
-"ecartValeurRelatif": {
-"med": 0,
-"max": 0
-}
-},
-"HYPE": {
-"messages": {
-"rtds": 15,
-"pb": 18
-},
-"retard_ms": {
-"rtds": 978,
-"polybolt": 971
-},
-"avancePolybolt_ms": {
-"med": 130,
-"p10": 69,
-"p90": 147,
-"n": 13
-},
-"ecartValeurRelatif": {
-"med": 0,
-"max": 0
-}
-},
-"ETH": {
-"messages": {
-"rtds": 15,
-"pb": 19
-},
-"retard_ms": {
-"rtds": 1056,
-"polybolt": 968
-},
-"avancePolybolt_ms": {
-"med": 201,
-"p10": 126,
-"p90": 302,
-"n": 13
-},
-"ecartValeurRelatif": {
-"med": 0,
-"max": 0
-}
-},
-"XRP": {
-"messages": {
-"rtds": 15,
-"pb": 18
-},
-"retard_ms": {
-"rtds": 1004,
-"polybolt": 937
-},
-"avancePolybolt_ms": {
-"med": 150,
-"p10": 103,
-"p90": 242,
-"n": 13
+"med": 224,
+"p10": 105,
+"p90": 397,
+"n": 28
 },
 "ecartValeurRelatif": {
 "med": 0,
@@ -87,38 +27,98 @@
 },
 "DOGE": {
 "messages": {
-"rtds": 15,
-"pb": 18
+"rtds": 28,
+"pb": 29
 },
 "retard_ms": {
-"rtds": 1021,
-"polybolt": 956
+"rtds": 1060,
+"polybolt": 802
 },
 "avancePolybolt_ms": {
-"med": 199,
-"p10": 114,
-"p90": 269,
-"n": 13
+"med": 257,
+"p10": 106,
+"p90": 390,
+"n": 28
 },
 "ecartValeurRelatif": {
-"med": 1.6997189512984427e-16,
-"max": 5.099663275976522e-16
+"med": 1.7001319806893543e-16,
+"max": 6.803524079673238e-16
+}
+},
+"ETH": {
+"messages": {
+"rtds": 28,
+"pb": 29
+},
+"retard_ms": {
+"rtds": 1068,
+"polybolt": 828
+},
+"avancePolybolt_ms": {
+"med": 281,
+"p10": 123,
+"p90": 391,
+"n": 28
+},
+"ecartValeurRelatif": {
+"med": 0,
+"max": 0
+}
+},
+"XRP": {
+"messages": {
+"rtds": 28,
+"pb": 29
+},
+"retard_ms": {
+"rtds": 1060,
+"polybolt": 790
+},
+"avancePolybolt_ms": {
+"med": 248,
+"p10": 133,
+"p90": 437,
+"n": 28
+},
+"ecartValeurRelatif": {
+"med": 0,
+"max": 0
+}
+},
+"HYPE": {
+"messages": {
+"rtds": 28,
+"pb": 29
+},
+"retard_ms": {
+"rtds": 1046,
+"polybolt": 834
+},
+"avancePolybolt_ms": {
+"med": 232,
+"p10": 94,
+"p90": 351,
+"n": 28
+},
+"ecartValeurRelatif": {
+"med": 0,
+"max": 0
 }
 },
 "BNB": {
 "messages": {
-"rtds": 15,
-"pb": 18
+"rtds": 28,
+"pb": 29
 },
 "retard_ms": {
-"rtds": 1031,
-"polybolt": 950
+"rtds": 1096,
+"polybolt": 808
 },
 "avancePolybolt_ms": {
-"med": 196,
-"p10": 150,
-"p90": 296,
-"n": 13
+"med": 262,
+"p10": 135,
+"p90": 359,
+"n": 28
 },
 "ecartValeurRelatif": {
 "med": 0,
@@ -127,18 +127,18 @@
 },
 "BTC": {
 "messages": {
-"rtds": 15,
-"pb": 18
+"rtds": 28,
+"pb": 29
 },
 "retard_ms": {
-"rtds": 1083,
-"polybolt": 982
+"rtds": 1023,
+"polybolt": 828
 },
 "avancePolybolt_ms": {
-"med": 229,
-"p10": 143,
-"p90": 335,
-"n": 13
+"med": 259,
+"p10": 98,
+"p90": 361,
+"n": 28
 },
 "ecartValeurRelatif": {
 "med": 0,
@@ -3550,7 +3550,7 @@
 "recu_ms": 519
 }
 ],
-"lu": 1792559121.00315,
+"lu": 1792578243.233103,
 "historique": [
 {
 "lu": 1791720145.5216165,
@@ -15236,6 +15236,153 @@
 "p10": 143,
 "p90": 335,
 "n": 13
+},
+"ecartValeurRelatif": {
+"med": 0,
+"max": 0
+}
+}
+}
+},
+{
+"lu": 1792578243.233103,
+"moteurNourriPar": "rtds",
+"polyboltConnecte": true,
+"parActif": {
+"SOL": {
+"messages": {
+"rtds": 28,
+"pb": 29
+},
+"retard_ms": {
+"rtds": 1064,
+"polybolt": 790
+},
+"avancePolybolt_ms": {
+"med": 224,
+"p10": 105,
+"p90": 397,
+"n": 28
+},
+"ecartValeurRelatif": {
+"med": 0,
+"max": 0
+}
+},
+"DOGE": {
+"messages": {
+"rtds": 28,
+"pb": 29
+},
+"retard_ms": {
+"rtds": 1060,
+"polybolt": 802
+},
+"avancePolybolt_ms": {
+"med": 257,
+"p10": 106,
+"p90": 390,
+"n": 28
+},
+"ecartValeurRelatif": {
+"med": 1.7001319806893543e-16,
+"max": 6.803524079673238e-16
+}
+},
+"ETH": {
+"messages": {
+"rtds": 28,
+"pb": 29
+},
+"retard_ms": {
+"rtds": 1068,
+"polybolt": 828
+},
+"avancePolybolt_ms": {
+"med": 281,
+"p10": 123,
+"p90": 391,
+"n": 28
+},
+"ecartValeurRelatif": {
+"med": 0,
+"max": 0
+}
+},
+"XRP": {
+"messages": {
+"rtds": 28,
+"pb": 29
+},
+"retard_ms": {
+"rtds": 1060,
+"polybolt": 790
+},
+"avancePolybolt_ms": {
+"med": 248,
+"p10": 133,
+"p90": 437,
+"n": 28
+},
+"ecartValeurRelatif": {
+"med": 0,
+"max": 0
+}
+},
+"HYPE": {
+"messages": {
+"rtds": 28,
+"pb": 29
+},
+"retard_ms": {
+"rtds": 1046,
+"polybolt": 834
+},
+"avancePolybolt_ms": {
+"med": 232,
+"p10": 94,
+"p90": 351,
+"n": 28
+},
+"ecartValeurRelatif": {
+"med": 0,
+"max": 0
+}
+},
+"BNB": {
+"messages": {
+"rtds": 28,
+"pb": 29
+},
+"retard_ms": {
+"rtds": 1096,
+"polybolt": 808
+},
+"avancePolybolt_ms": {
+"med": 262,
+"p10": 135,
+"p90": 359,
+"n": 28
+},
+"ecartValeurRelatif": {
+"med": 0,
+"max": 0
+}
+},
+"BTC": {
+"messages": {
+"rtds": 28,
+"pb": 29
+},
+"retard_ms": {
+"rtds": 1023,
+"polybolt": 828
+},
+"avancePolybolt_ms": {
+"med": 259,
+"p10": 98,
+"p90": 361,
+"n": 28
 },
 "ecartValeurRelatif": {
 "med": 0,
