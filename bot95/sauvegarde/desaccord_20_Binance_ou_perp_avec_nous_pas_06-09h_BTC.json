@@ -1080,14 +1080,134 @@
 ],
 "start": 1792519800,
 "slug": "btc-updown-5m-1792519800"
+},
+"2026-10-20T23:47:29.521Z|Down": {
+"heure": "2026-10-20T23:47:29.521Z",
+"cote": "Down",
+"prix": 0.0531,
+"parts": 414.6,
+"U": 0,
+"D": 414.6,
+"cash": -22.030217959999998,
+"net": -22.03,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.246,
+"restant_s": 150,
+"journal": [
+"149.5s désaccord 20 (modèle 0.246, vendeur 0.04) ; 3 s avant : Binance 0 pb, perp 0.01 pb, OKX 0 pb, Coinbase 0.79 pb (+ = dans notre sens) → achat à 0.0531",
+"copie de desaccord 20 Binance ou perp avec nous"
+],
+"start": 1792539900,
+"slug": "btc-updown-5m-1792539900"
+},
+"2026-10-20T23:36:55.900Z|Up": {
+"heure": "2026-10-20T23:36:55.900Z",
+"cote": "Up",
+"prix": 0.2203,
+"parts": 250,
+"U": 250,
+"D": 0,
+"cash": -55.069208,
+"net": -55.07,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.405,
+"restant_s": 184,
+"journal": [
+"115.9s désaccord 20 (modèle 0.405, vendeur 0.2) ; 3 s avant : Binance 0 pb, perp 0.01 pb, OKX 0 pb, Coinbase -0.4 pb (+ = dans notre sens) → achat à 0.2203",
+"copie de desaccord 20 Binance ou perp avec nous"
+],
+"start": 1792539300,
+"slug": "btc-updown-5m-1792539300"
+},
+"2026-10-20T23:28:32.052Z|Down": {
+"heure": "2026-10-20T23:28:32.052Z",
+"cote": "Down",
+"prix": 0.2635,
+"parts": 5,
+"U": 0,
+"D": 5,
+"cash": 3.6825,
+"net": 3.68,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.494,
+"restant_s": 88,
+"journal": [
+"212.1s désaccord 20 (modèle 0.494, vendeur 0.25) ; 3 s avant : Binance 0 pb, perp 0.01 pb, OKX 0 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.2635",
+"copie de desaccord 20 Binance ou perp avec nous"
+],
+"start": 1792538700,
+"slug": "btc-updown-5m-1792538700"
+},
+"2026-10-20T22:58:44.229Z|Up": {
+"heure": "2026-10-20T22:58:44.229Z",
+"cote": "Up",
+"prix": 0.2011,
+"parts": 5,
+"U": 5,
+"D": 0,
+"cash": -1.005404,
+"net": -1.01,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.427,
+"restant_s": 76,
+"journal": [
+"224.2s désaccord 20 (modèle 0.427, vendeur 0.19) ; 3 s avant : Binance 0 pb, perp 0.3 pb, OKX 0.17 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.2011",
+"copie de desaccord 20 Binance ou perp avec nous"
+],
+"start": 1792536900,
+"slug": "btc-updown-5m-1792536900"
+},
+"2026-10-20T22:52:35.838Z|Up": {
+"heure": "2026-10-20T22:52:35.838Z",
+"cote": "Up",
+"prix": 0.2306,
+"parts": 238.1,
+"U": 238.0952380952381,
+"D": 0,
+"cash": 183.18898742857144,
+"net": 183.19,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.416,
+"restant_s": 144,
+"journal": [
+"155.8s désaccord 20 (modèle 0.416, vendeur 0.21) ; 3 s avant : Binance 0 pb, perp 0.01 pb, OKX 0 pb, Coinbase 0.21 pb (+ = dans notre sens) → achat à 0.2306",
+"copie de desaccord 20 Binance ou perp avec nous"
+],
+"start": 1792536600,
+"slug": "btc-updown-5m-1792536600"
+},
+"2026-10-20T22:27:20.441Z|Up": {
+"heure": "2026-10-20T22:27:20.441Z",
+"cote": "Up",
+"prix": 0.2271,
+"parts": 60,
+"U": 60,
+"D": 0,
+"cash": -13.629,
+"net": -13.63,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.418,
+"restant_s": 160,
+"journal": [
+"140.4s désaccord 20 (modèle 0.418, vendeur 0.21) ; 3 s avant : Binance 0 pb, perp 0.01 pb, OKX 0.01 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.2271",
+"copie de desaccord 20 Binance ou perp avec nous"
+],
+"start": 1792535100,
+"slug": "btc-updown-5m-1792535100"
 }
 },
 "resume_bot": {
 "depuis": 1792437488.548,
-"n": 59,
-"gains": 10,
-"pertes": 49,
-"pnl": -479.0300000000001
+"n": 65,
+"gains": 12,
+"pertes": 53,
+"pnl": -383.9000000000001
 },
 "archive": [
 [
@@ -1620,8 +1740,62 @@
 "perdu",
 0.471,
 84
+],
+[
+"2026-10-20T22:27:20.441Z",
+"Up",
+0.2271,
+-13.63,
+"perdu",
+0.418,
+160
+],
+[
+"2026-10-20T22:52:35.838Z",
+"Up",
+0.2306,
+183.19,
+"gagné",
+0.416,
+144
+],
+[
+"2026-10-20T22:58:44.229Z",
+"Up",
+0.2011,
+-1.01,
+"perdu",
+0.427,
+76
+],
+[
+"2026-10-20T23:28:32.052Z",
+"Down",
+0.2635,
+3.68,
+"gagné",
+0.494,
+88
+],
+[
+"2026-10-20T23:36:55.900Z",
+"Up",
+0.2203,
+-55.07,
+"perdu",
+0.405,
+184
+],
+[
+"2026-10-20T23:47:29.521Z",
+"Down",
+0.0531,
+-22.03,
+"perdu",
+0.246,
+150
 ]
 ],
-"n_sauves": 59,
-"maj": "2026-10-20 21:46 UTC"
+"n_sauves": 65,
+"maj": "2026-10-21 00:15 UTC"
 }
