@@ -1444,14 +1444,71 @@
 ],
 "start": 1792567200,
 "slug": "btc-updown-5m-1792567200"
+},
+"2026-10-21T18:21:48.644Z|Up": {
+"heure": "2026-10-21T18:21:48.644Z",
+"cote": "Up",
+"prix": 0.1697,
+"parts": 312.5,
+"U": 312.5,
+"D": 0,
+"cash": 259.476,
+"net": 259.48,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.461,
+"restant_s": 191,
+"journal": [
+"108.6s écart 0.30 (modèle 0.461, vendeur 0.16), 191 s restantes ; 3 s avant : Binance -0.0, perp 6.5 (+ = dans notre sens)"
+],
+"start": 1792606800,
+"slug": "btc-updown-5m-1792606800"
+},
+"2026-10-21T11:48:58.891Z|Down": {
+"heure": "2026-10-21T11:48:58.891Z",
+"cote": "Down",
+"prix": 0.1644,
+"parts": 16,
+"U": 0,
+"D": 16,
+"cash": -2.6308544,
+"net": -2.63,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.456,
+"restant_s": 61,
+"journal": [
+"238.9s écart 0.31 (modèle 0.456, vendeur 0.15), 61 s restantes ; 3 s avant : Binance 0.0, perp -0.1 (+ = dans notre sens)"
+],
+"start": 1792583100,
+"slug": "btc-updown-5m-1792583100"
+},
+"2026-10-21T11:28:47.760Z|Down": {
+"heure": "2026-10-21T11:28:47.760Z",
+"cote": "Down",
+"prix": 0.1602,
+"parts": 196.06,
+"U": 0,
+"D": 196.06,
+"cash": -31.412258784,
+"net": -31.41,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.463,
+"restant_s": 72,
+"journal": [
+"227.8s écart 0.31 (modèle 0.463, vendeur 0.15), 72 s restantes ; 3 s avant : Binance 10.0, perp 5.4 (+ = dans notre sens)"
+],
+"start": 1792581900,
+"slug": "btc-updown-5m-1792581900"
 }
 },
 "resume_bot": {
 "depuis": 1791924695.55,
-"n": 76,
-"gains": 25,
-"pertes": 51,
-"pnl": 967.2500000000005
+"n": 79,
+"gains": 26,
+"pertes": 53,
+"pnl": 1192.6900000000005
 },
 "archive": [
 [
@@ -2137,8 +2194,35 @@
 "gagné",
 0.462,
 97
+],
+[
+"2026-10-21T11:28:47.760Z",
+"Down",
+0.1602,
+-31.41,
+"perdu",
+0.463,
+72
+],
+[
+"2026-10-21T11:48:58.891Z",
+"Down",
+0.1644,
+-2.63,
+"perdu",
+0.456,
+61
+],
+[
+"2026-10-21T18:21:48.644Z",
+"Up",
+0.1697,
+259.48,
+"gagné",
+0.461,
+191
 ]
 ],
-"n_sauves": 76,
-"maj": "2026-10-21 10:22 UTC"
+"n_sauves": 79,
+"maj": "2026-10-21 19:26 UTC"
 }
