@@ -380,14 +380,54 @@
 ],
 "start": 1792583400,
 "slug": "btc-updown-5m-1792583400"
+},
+"2026-10-21T20:31:23.143Z|Up": {
+"heure": "2026-10-21T20:31:23.143Z",
+"cote": "Up",
+"prix": 0.3146,
+"parts": 164,
+"U": 164,
+"D": 0,
+"cash": 112.40268160000001,
+"net": 112.4,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.493,
+"restant_s": 217,
+"journal": [
+"83.1s désaccord 20 (modèle 0.493, vendeur 0.29) ; 3 s avant : Binance 1.34 pb, perp 1.47 pb, OKX 0.89 pb, Coinbase 0.7 pb (+ = dans notre sens) → achat à 0.3146",
+"copie de desaccord 20 Binance avec nous sans nuit"
+],
+"start": 1792614600,
+"slug": "btc-updown-5m-1792614600"
+},
+"2026-10-21T19:38:52.319Z|Down": {
+"heure": "2026-10-21T19:38:52.319Z",
+"cote": "Down",
+"prix": 0.3288,
+"parts": 101,
+"U": 0,
+"D": 101,
+"cash": -33.204272,
+"net": -33.2,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.581,
+"restant_s": 68,
+"journal": [
+"232.3s désaccord 20 (modèle 0.581, vendeur 0.31) ; 3 s avant : Binance 1.26 pb, perp 3.31 pb, OKX 2.97 pb, Coinbase 2.54 pb (+ = dans notre sens) → achat à 0.3288",
+"copie de desaccord 20 Binance avec nous sans nuit"
+],
+"start": 1792611300,
+"slug": "btc-updown-5m-1792611300"
 }
 },
 "resume_bot": {
 "depuis": 1792446336.518,
-"n": 19,
-"gains": 4,
-"pertes": 15,
-"pnl": -81.48000000000005
+"n": 21,
+"gains": 5,
+"pertes": 16,
+"pnl": -2.2800000000000438
 },
 "archive": [
 [
@@ -560,8 +600,26 @@
 "gagné",
 0.682,
 218
+],
+[
+"2026-10-21T19:38:52.319Z",
+"Down",
+0.3288,
+-33.2,
+"perdu",
+0.581,
+68
+],
+[
+"2026-10-21T20:31:23.143Z",
+"Up",
+0.3146,
+112.4,
+"gagné",
+0.493,
+217
 ]
 ],
-"n_sauves": 19,
-"maj": "2026-10-21 19:25 UTC"
+"n_sauves": 21,
+"maj": "2026-10-21 22:31 UTC"
 }

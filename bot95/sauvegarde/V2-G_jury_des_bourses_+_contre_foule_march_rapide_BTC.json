@@ -2955,14 +2955,74 @@
 ],
 "start": 1792600200,
 "slug": "btc-updown-5m-1792600200"
+},
+"2026-10-21T19:49:36.590Z|Up": {
+"heure": "2026-10-21T19:49:36.590Z",
+"cote": "Up",
+"prix": 0.0959,
+"parts": 555.56,
+"U": 555.5555555555555,
+"D": 0,
+"cash": 502.27955555555553,
+"net": 502.28,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.487,
+"restant_s": 23,
+"journal": [
+"276.6s écart 0.40, 23 s restantes → achat Up 555.6 parts à 0.0959 (modèle 0.487)",
+"volatilite 1 h 0.0528 %/min"
+],
+"start": 1792611900,
+"slug": "btc-updown-5m-1792611900"
+},
+"2026-10-21T19:43:38.828Z|Down": {
+"heure": "2026-10-21T19:43:38.828Z",
+"cote": "Down",
+"prix": 0.1894,
+"parts": 163.57,
+"U": 0,
+"D": 163.57000000000002,
+"cash": 132.596061256,
+"net": 132.6,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.393,
+"restant_s": 81,
+"journal": [
+"218.8s écart 0.22, 81 s restantes → achat Down 163.6 parts à 0.1894 (modèle 0.393)",
+"volatilite 1 h 0.0531 %/min"
+],
+"start": 1792611600,
+"slug": "btc-updown-5m-1792611600"
+},
+"2026-10-21T19:24:02.725Z|Up": {
+"heure": "2026-10-21T19:24:02.725Z",
+"cote": "Up",
+"prix": 0.241,
+"parts": 227.27,
+"U": 227.27272727272728,
+"D": 0,
+"cash": -54.775575312727284,
+"net": -54.78,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.42,
+"restant_s": 57,
+"journal": [
+"242.7s écart 0.20, 57 s restantes → achat Up 227.3 parts à 0.241 (modèle 0.420)",
+"volatilite 1 h 0.0530 %/min"
+],
+"start": 1792610400,
+"slug": "btc-updown-5m-1792610400"
 }
 },
 "resume_bot": {
 "depuis": 1792356649.91,
-"n": 159,
-"gains": 27,
-"pertes": 132,
-"pnl": 996.9
+"n": 162,
+"gains": 29,
+"pertes": 133,
+"pnl": 1577
 },
 "archive": [
 [
@@ -4395,8 +4455,35 @@
 "une seule jambe",
 0.332,
 83
+],
+[
+"2026-10-21T19:24:02.725Z",
+"Up",
+0.241,
+-54.78,
+"une seule jambe",
+0.42,
+57
+],
+[
+"2026-10-21T19:43:38.828Z",
+"Down",
+0.1894,
+132.6,
+"une seule jambe",
+0.393,
+81
+],
+[
+"2026-10-21T19:49:36.590Z",
+"Up",
+0.0959,
+502.28,
+"une seule jambe",
+0.487,
+23
 ]
 ],
-"n_sauves": 159,
-"maj": "2026-10-21 19:25 UTC"
+"n_sauves": 162,
+"maj": "2026-10-21 22:31 UTC"
 }

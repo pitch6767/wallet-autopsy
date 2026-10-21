@@ -893,14 +893,52 @@
 ],
 "start": 1792597200,
 "slug": "btc-updown-5m-1792597200"
+},
+"2026-10-21T21:32:44.273Z|Down": {
+"heure": "2026-10-21T21:32:44.273Z",
+"cote": "Down",
+"prix": 0.2739,
+"parts": 192.31,
+"U": 0,
+"D": 192.3076923076923,
+"cash": -52.664,
+"net": -52.66,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.489,
+"restant_s": 136,
+"journal": [
+"164.3s V2-G jury des bourses achète Down avec 15 autres stratégies du même côté (première il y a 0.3 s), 136 s restantes → achat 192.3 parts à 0.2739"
+],
+"start": 1792618200,
+"slug": "btc-updown-5m-1792618200"
+},
+"2026-10-21T20:31:23.276Z|Up": {
+"heure": "2026-10-21T20:31:23.276Z",
+"cote": "Up",
+"prix": 0.3206,
+"parts": 166.67,
+"U": 166.66666666666669,
+"D": 0,
+"cash": 113.23510240000002,
+"net": 113.24,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.507,
+"restant_s": 217,
+"journal": [
+"83.3s V2-H veto complet achète Up avec 19 autres stratégies du même côté (première il y a 0.1 s), 217 s restantes → achat 166.7 parts à 0.3206"
+],
+"start": 1792614600,
+"slug": "btc-updown-5m-1792614600"
 }
 },
 "resume_bot": {
 "depuis": 1791844541.507,
-"n": 47,
-"gains": 23,
-"pertes": 24,
-"pnl": 817.6100000000001
+"n": 49,
+"gains": 24,
+"pertes": 25,
+"pnl": 878.1900000000002
 },
 "archive": [
 [
@@ -1325,8 +1363,26 @@
 "une seule jambe",
 0.668,
 121
+],
+[
+"2026-10-21T20:31:23.276Z",
+"Up",
+0.3206,
+113.24,
+"une seule jambe",
+0.507,
+217
+],
+[
+"2026-10-21T21:32:44.273Z",
+"Down",
+0.2739,
+-52.66,
+"une seule jambe",
+0.489,
+136
 ]
 ],
-"n_sauves": 47,
-"maj": "2026-10-21 19:25 UTC"
+"n_sauves": 49,
+"maj": "2026-10-21 22:31 UTC"
 }
