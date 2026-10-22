@@ -420,14 +420,77 @@
 ],
 "start": 1792637700,
 "slug": "btc-updown-5m-1792637700"
+},
+"2026-10-22T09:58:03.063Z|Down": {
+"heure": "2026-10-22T09:58:03.063Z",
+"cote": "Down",
+"prix": 0.1881,
+"parts": 437.09,
+"U": 0,
+"D": 241.79,
+"cash": -85.28654533349237,
+"net": -85.29,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.342,
+"restant_s": 117,
+"journal": [
+"183.1s désaccord repéré à 0.085 il y a 20 s, marché monté à 0.165 → achat Down 241.8 parts à 0.1881 (modèle 0.342)",
+"mise x1.81, surcoût 3.09 $",
+"volatilite 1 h 0.0440 %/min"
+],
+"start": 1792662900,
+"slug": "btc-updown-5m-1792662900"
+},
+"2026-10-22T09:47:18.200Z|Down": {
+"heure": "2026-10-22T09:47:18.200Z",
+"cote": "Down",
+"prix": 0.3048,
+"parts": 344.82,
+"U": 0,
+"D": 172.41379310344828,
+"cash": -105.120864,
+"net": -105.12,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.394,
+"restant_s": 162,
+"journal": [
+"138.2s désaccord repéré à 0.085 il y a 20 s, marché monté à 0.285 → achat Down 172.4 parts à 0.3048 (modèle 0.394)",
+"mise x2.00, surcoût 0.01 $",
+"volatilite 1 h 0.0435 %/min"
+],
+"start": 1792662300,
+"slug": "btc-updown-5m-1792662300"
+},
+"2026-10-22T09:03:24.221Z|Up": {
+"heure": "2026-10-22T09:03:24.221Z",
+"cote": "Up",
+"prix": 0.2842,
+"parts": 37.84,
+"U": 18.92,
+"D": 0,
+"cash": -11.143667008,
+"net": -11.14,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.389,
+"restant_s": 96,
+"journal": [
+"204.2s désaccord repéré à 0.205 il y a 20 s, marché monté à 0.250 → achat Up 18.9 parts à 0.2842 (modèle 0.389)",
+"mise x2.00, surcoût 0.39 $",
+"volatilite 1 h 0.0439 %/min"
+],
+"start": 1792659600,
+"slug": "btc-updown-5m-1792659600"
 }
 },
 "resume_bot": {
 "depuis": 1792356306.085,
-"n": 20,
+"n": 23,
 "gains": 7,
-"pertes": 13,
-"pnl": 218.56000000000003
+"pertes": 16,
+"pnl": 17.010000000000005
 },
 "archive": [
 [
@@ -609,8 +672,35 @@
 "perdu",
 0.48,
 61
+],
+[
+"2026-10-22T09:03:24.221Z",
+"Up",
+0.2842,
+-11.14,
+"perdu",
+0.389,
+96
+],
+[
+"2026-10-22T09:47:18.200Z",
+"Down",
+0.3048,
+-105.12,
+"perdu",
+0.394,
+162
+],
+[
+"2026-10-22T09:58:03.063Z",
+"Down",
+0.1881,
+-85.29,
+"perdu",
+0.342,
+117
 ]
 ],
-"n_sauves": 20,
-"maj": "2026-10-22 06:12 UTC"
+"n_sauves": 23,
+"maj": "2026-10-22 12:10 UTC"
 }

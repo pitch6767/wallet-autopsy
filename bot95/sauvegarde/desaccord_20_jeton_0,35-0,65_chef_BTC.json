@@ -700,14 +700,94 @@
 ],
 "start": 1792633200,
 "slug": "btc-updown-5m-1792633200"
+},
+"2026-10-22T11:53:08.599Z|Up": {
+"heure": "2026-10-22T11:53:08.599Z",
+"cote": "Up",
+"prix": 0.3868,
+"parts": 20,
+"U": 20,
+"D": 0,
+"cash": -7.735664,
+"net": -7.74,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.571,
+"restant_s": 111,
+"journal": [
+"188.6s écart 0.20 (modèle 0.571, vendeur 0.37), 111 s restantes → achat Up 20.0 parts à 0.3868 (meilleur vendeur seul, 20 parts affichées)",
+"copie de desaccord 20 jeton 0,35-0,65"
+],
+"start": 1792669800,
+"slug": "btc-updown-5m-1792669800"
+},
+"2026-10-22T10:41:38.047Z|Down": {
+"heure": "2026-10-22T10:41:38.047Z",
+"cote": "Down",
+"prix": 0.4071,
+"parts": 17.95,
+"U": 0,
+"D": 17.95,
+"cash": 10.64203804,
+"net": 10.64,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.629,
+"restant_s": 202,
+"journal": [
+"98.0s écart 0.24 (modèle 0.629, vendeur 0.39), 202 s restantes → achat Down 17.9 parts à 0.4071 (meilleur vendeur seul, 18 parts affichées)",
+"copie de desaccord 20 jeton 0,35-0,65"
+],
+"start": 1792665600,
+"slug": "btc-updown-5m-1792665600"
+},
+"2026-10-22T08:37:14.057Z|Down": {
+"heure": "2026-10-22T08:37:14.057Z",
+"cote": "Down",
+"prix": 0.3664,
+"parts": 5,
+"U": 0,
+"D": 5,
+"cash": 3.1681,
+"net": 3.17,
+"issue": "gagné",
+"gagnant": "Down",
+"proba0": 0.59,
+"restant_s": 166,
+"journal": [
+"134.1s écart 0.24 (modèle 0.590, vendeur 0.35), 166 s restantes → achat Down 5.0 parts à 0.3664 (meilleur vendeur seul, 5 parts affichées)",
+"copie de desaccord 20 jeton 0,35-0,65"
+],
+"start": 1792658100,
+"slug": "btc-updown-5m-1792658100"
+},
+"2026-10-22T08:12:50.671Z|Up": {
+"heure": "2026-10-22T08:12:50.671Z",
+"cote": "Up",
+"prix": 0.3766,
+"parts": 138.89,
+"U": 138.88888888888889,
+"D": 0,
+"cash": 86.58488888888888,
+"net": 86.58,
+"issue": "gagné",
+"gagnant": "Up",
+"proba0": 0.573,
+"restant_s": 129,
+"journal": [
+"170.7s écart 0.21 (modèle 0.573, vendeur 0.36), 129 s restantes → achat Up 138.9 parts à 0.3766 (meilleur vendeur seul, 976 parts affichées)",
+"copie de desaccord 20 jeton 0,35-0,65"
+],
+"start": 1792656600,
+"slug": "btc-updown-5m-1792656600"
 }
 },
 "resume_bot": {
 "depuis": 1792477330.688,
-"n": 35,
-"gains": 18,
-"pertes": 17,
-"pnl": 74.89000000000001
+"n": 39,
+"gains": 21,
+"pertes": 18,
+"pnl": 167.54000000000002
 },
 "archive": [
 [
@@ -1024,8 +1104,44 @@
 "gagné",
 0.782,
 297
+],
+[
+"2026-10-22T08:12:50.671Z",
+"Up",
+0.3766,
+86.58,
+"gagné",
+0.573,
+129
+],
+[
+"2026-10-22T08:37:14.057Z",
+"Down",
+0.3664,
+3.17,
+"gagné",
+0.59,
+166
+],
+[
+"2026-10-22T10:41:38.047Z",
+"Down",
+0.4071,
+10.64,
+"gagné",
+0.629,
+202
+],
+[
+"2026-10-22T11:53:08.599Z",
+"Up",
+0.3868,
+-7.74,
+"perdu",
+0.571,
+111
 ]
 ],
-"n_sauves": 35,
-"maj": "2026-10-22 06:12 UTC"
+"n_sauves": 39,
+"maj": "2026-10-22 12:09 UTC"
 }
