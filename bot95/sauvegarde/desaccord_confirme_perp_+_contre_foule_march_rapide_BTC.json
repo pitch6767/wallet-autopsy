@@ -480,14 +480,94 @@
 ],
 "start": 1792659600,
 "slug": "btc-updown-5m-1792659600"
+},
+"2026-10-22T18:53:21.023Z|Down": {
+"heure": "2026-10-22T18:53:21.023Z",
+"cote": "Down",
+"prix": 0.1697,
+"parts": 312.5,
+"U": 0,
+"D": 312.5,
+"cash": -53.024,
+"net": -53.02,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.363,
+"restant_s": 99,
+"journal": [
+"201.0s désaccord repéré à 0.025 il y a 20 s, marché monté à 0.155 → achat Down 312.5 parts à 0.1697 (modèle 0.363)",
+"volatilite 1 h 0.0404 %/min"
+],
+"start": 1792695000,
+"slug": "btc-updown-5m-1792695000"
+},
+"2026-10-22T18:48:26.586Z|Down": {
+"heure": "2026-10-22T18:48:26.586Z",
+"cote": "Down",
+"prix": 0.1065,
+"parts": 500,
+"U": 0,
+"D": 500,
+"cash": -53.24,
+"net": -53.24,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.31,
+"restant_s": 93,
+"journal": [
+"206.6s désaccord repéré à 0.055 il y a 20 s, marché monté à 0.095 → achat Down 500.0 parts à 0.1065 (modèle 0.310)",
+"volatilite 1 h 0.0410 %/min"
+],
+"start": 1792694700,
+"slug": "btc-updown-5m-1792694700"
+},
+"2026-10-22T17:49:11.991Z|Up": {
+"heure": "2026-10-22T17:49:11.991Z",
+"cote": "Up",
+"prix": 0.3254,
+"parts": 161.29,
+"U": 161.29032258064515,
+"D": 0,
+"cash": -52.484,
+"net": -52.48,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.484,
+"restant_s": 48,
+"journal": [
+"252.0s désaccord repéré à 0.210 il y a 20 s, marché monté à 0.290 → achat Up 161.3 parts à 0.3254 (modèle 0.484)",
+"volatilite 1 h 0.0723 %/min"
+],
+"start": 1792691100,
+"slug": "btc-updown-5m-1792691100"
+},
+"2026-10-22T15:33:24.259Z|Up": {
+"heure": "2026-10-22T15:33:24.259Z",
+"cote": "Up",
+"prix": 0.1514,
+"parts": 357.14,
+"U": 357.1428571428571,
+"D": 0,
+"cash": -54.064532,
+"net": -54.06,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.344,
+"restant_s": 96,
+"journal": [
+"204.3s désaccord repéré à 0.065 il y a 20 s, marché monté à 0.135 → achat Up 357.1 parts à 0.1514 (modèle 0.344)",
+"volatilite 1 h 0.0657 %/min"
+],
+"start": 1792683000,
+"slug": "btc-updown-5m-1792683000"
 }
 },
 "resume_bot": {
 "depuis": 1792356306.085,
-"n": 24,
+"n": 28,
 "gains": 8,
-"pertes": 16,
-"pnl": 86.17999999999995
+"pertes": 20,
+"pnl": -126.62000000000006
 },
 "archive": [
 [
@@ -705,8 +785,44 @@
 "perdu",
 0.342,
 117
+],
+[
+"2026-10-22T15:33:24.259Z",
+"Up",
+0.1514,
+-54.06,
+"perdu",
+0.344,
+96
+],
+[
+"2026-10-22T17:49:11.991Z",
+"Up",
+0.3254,
+-52.48,
+"perdu",
+0.484,
+48
+],
+[
+"2026-10-22T18:48:26.586Z",
+"Down",
+0.1065,
+-53.24,
+"perdu",
+0.31,
+93
+],
+[
+"2026-10-22T18:53:21.023Z",
+"Down",
+0.1697,
+-53.02,
+"perdu",
+0.363,
+99
 ]
 ],
-"n_sauves": 24,
-"maj": "2026-10-22 12:10 UTC"
+"n_sauves": 28,
+"maj": "2026-10-22 20:41 UTC"
 }
