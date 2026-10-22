@@ -1310,14 +1310,114 @@
 ],
 "start": 1792626900,
 "slug": "btc-updown-5m-1792626900"
+},
+"2026-10-22T04:08:12.388Z|Up": {
+"heure": "2026-10-22T04:08:12.388Z",
+"cote": "Up",
+"prix": 0.0607,
+"parts": 1000,
+"U": 1000,
+"D": 0,
+"cash": -60.71948239199999,
+"net": -60.72,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.254,
+"restant_s": 108,
+"journal": [
+"192.4s désaccord 20 (modèle 0.254, vendeur 0.05) ; 3 s avant : Binance 1.85 pb, perp 2.09 pb, OKX 1.61 pb, Coinbase 1.85 pb (+ = dans notre sens) → achat à 0.0607",
+"volatilite 1 h 0.0427 %/min"
+],
+"start": 1792641900,
+"slug": "btc-updown-5m-1792641900"
+},
+"2026-10-22T03:31:37.470Z|Up": {
+"heure": "2026-10-22T03:31:37.470Z",
+"cote": "Up",
+"prix": 0.1829,
+"parts": 172.94,
+"U": 172.94,
+"D": 0,
+"cash": -31.627792048,
+"net": -31.63,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.375,
+"restant_s": 203,
+"journal": [
+"97.5s désaccord 20 (modèle 0.375, vendeur 0.17) ; 3 s avant : Binance 2.01 pb, perp 3.29 pb, OKX 2.72 pb, Coinbase 1.51 pb (+ = dans notre sens) → achat à 0.1829",
+"volatilite 1 h 0.0403 %/min"
+],
+"start": 1792639800,
+"slug": "btc-updown-5m-1792639800"
+},
+"2026-10-22T03:13:32.970Z|Up": {
+"heure": "2026-10-22T03:13:32.970Z",
+"cote": "Up",
+"prix": 0.0401,
+"parts": 547.26,
+"U": 547.26,
+"D": 0,
+"cash": -21.958160432,
+"net": -21.96,
+"issue": "perdu",
+"gagnant": "Down",
+"proba0": 0.244,
+"restant_s": 87,
+"journal": [
+"213.0s désaccord 20 (modèle 0.244, vendeur 0.03) ; 3 s avant : Binance 0.44 pb, perp 0 pb, OKX 0.47 pb, Coinbase 0.53 pb (+ = dans notre sens) → achat à 0.0401",
+"volatilite 1 h 0.0532 %/min"
+],
+"start": 1792638600,
+"slug": "btc-updown-5m-1792638600"
+},
+"2026-10-22T03:03:36.139Z|Down": {
+"heure": "2026-10-22T03:03:36.139Z",
+"cote": "Down",
+"prix": 0.0381,
+"parts": 1043.96,
+"U": 0,
+"D": 1043.96,
+"cash": -39.80042211999999,
+"net": -39.8,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.245,
+"restant_s": 84,
+"journal": [
+"216.1s désaccord 20 (modèle 0.245, vendeur 0.03) ; 3 s avant : Binance 2.08 pb, perp 2.09 pb, OKX 2.01 pb, Coinbase 0 pb (+ = dans notre sens) → achat à 0.0381",
+"volatilite 1 h 0.0553 %/min"
+],
+"start": 1792638000,
+"slug": "btc-updown-5m-1792638000"
+},
+"2026-10-22T01:43:46.351Z|Down": {
+"heure": "2026-10-22T01:43:46.351Z",
+"cote": "Down",
+"prix": 0.2626,
+"parts": 113,
+"U": 0,
+"D": 113,
+"cash": -29.671827999999998,
+"net": -29.67,
+"issue": "perdu",
+"gagnant": "Up",
+"proba0": 0.443,
+"restant_s": 74,
+"journal": [
+"226.4s désaccord 20 (modèle 0.443, vendeur 0.24) ; 3 s avant : Binance -1.27 pb, perp 0.43 pb, OKX -0.01 pb, Coinbase -1.16 pb (+ = dans notre sens) → achat à 0.2626",
+"volatilite 1 h 0.0667 %/min"
+],
+"start": 1792633200,
+"slug": "btc-updown-5m-1792633200"
 }
 },
 "resume_bot": {
 "depuis": 1792356006.586,
-"n": 67,
+"n": 72,
 "gains": 10,
-"pertes": 57,
-"pnl": -197.73000000000013
+"pertes": 62,
+"pnl": -381.5100000000001
 },
 "archive": [
 [
@@ -1922,8 +2022,53 @@
 "perdu",
 0.481,
 143
+],
+[
+"2026-10-22T01:43:46.351Z",
+"Down",
+0.2626,
+-29.67,
+"perdu",
+0.443,
+74
+],
+[
+"2026-10-22T03:03:36.139Z",
+"Down",
+0.0381,
+-39.8,
+"perdu",
+0.245,
+84
+],
+[
+"2026-10-22T03:13:32.970Z",
+"Up",
+0.0401,
+-21.96,
+"perdu",
+0.244,
+87
+],
+[
+"2026-10-22T03:31:37.470Z",
+"Up",
+0.1829,
+-31.63,
+"perdu",
+0.375,
+203
+],
+[
+"2026-10-22T04:08:12.388Z",
+"Up",
+0.0607,
+-60.72,
+"perdu",
+0.254,
+108
 ]
 ],
-"n_sauves": 67,
-"maj": "2026-10-22 01:02 UTC"
+"n_sauves": 72,
+"maj": "2026-10-22 06:12 UTC"
 }
