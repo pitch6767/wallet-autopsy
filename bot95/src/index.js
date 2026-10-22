@@ -3203,7 +3203,7 @@ classement();setInterval(classement,60000);
 </script></body></html>`;
 const ZERO_DEPUIS = "2026-10-19T09:00:00Z";      // 19.10.2026 11:00 heure suisse (Pitch : « on remet tous à 0 ») ; avant : 14.10.2026 10:45, compteurs archivés dans zero:archive:2026-10-14T08:45:00Z
 const PAGE_ZERO = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes — remise à 0</title>${STYLE}</head><body>
-<h1>Fantômes — remise à 0 <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 19.10.2026 à 11:00 (heure suisse) : seuls les trades ouverts depuis comptent. Aucun argent réel.</div>
+<h1>Fantômes — remise à 0 <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 19.10.2026 à 11:00 (heure suisse) : seuls les trades ouverts depuis comptent. Capital conseillé = 2 × creux max + 2 mises de 50 $ (comme l'onglet 1). Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <b>Stratégies fantômes : remise à 0</b></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
@@ -3211,8 +3211,8 @@ const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" · "+S.length+" stratégies (" + S.filter(x=>x.n>0).length + " ont déjà un trade réglé) · total : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b></div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade réglé depuis la remise à 0 pour l'instant.</div>";
-else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Stratégie</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td></tr>").join("")+"</table></div></div>";
+else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Stratégie</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseillé</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 </script></body></html>`;
