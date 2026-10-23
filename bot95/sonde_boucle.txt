@@ -1,41 +1,24 @@
-17:26:56
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-    import json,sys;d=json.load(sys.stdin);print(d['objet'].get('N'),d['N']['strats'],d['secondes']['BTC'])
-                      ~~~~~~~~~^^^^^^^^^^^
-  File "/usr/lib/python3.14/json/__init__.py", line 298, in load
-    return loads(fp.read(),
-        cls=cls, object_hook=object_hook,
-        parse_float=parse_float, parse_int=parse_int,
-        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
-  File "/usr/lib/python3.14/json/__init__.py", line 352, in loads
-    return _default_decoder.decode(s)
-           ~~~~~~~~~~~~~~~~~~~~~~~^^^
-  File "/usr/lib/python3.14/json/decoder.py", line 345, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/json/decoder.py", line 363, in raw_decode
-    raise JSONDecodeError("Expecting value", s, err.value) from None
-json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
-17:27:16
-7393671 7160414 9
-17:27:37
-7393673 7160416 30
-17:27:58
-7393673 7160416 51
-17:28:18
-7393673 7160416 71
-17:28:40
-7393673 7160416 93
-17:29:01
-7393673 7160416 114
-17:29:22
-7393673 7160416 135
-17:29:43
-7393673 7160416 156
-17:30:04
-7393673 7160416 176
-17:30:24
-7393673 7160416 196
-17:30:49
-7393995 7160416 216
+17:35:20
+7409824 7160417 6
+17:35:41
+7410140 7160417 27
+17:36:02
+7410140 7160417 48
+17:36:23
+7410140 7160417 64
+17:36:48
+7410140 7160417 84
+17:37:08
+7422760 7160417 102
+17:37:29
+7423245 7160417 123
+17:37:50
+7423245 7160417 144
+17:38:11
+7423937 7160417 164
+17:38:32
+7424674 7160417 186
+17:38:54
+7424674 7160417 208
+17:39:15
+7424674 7160417 229
