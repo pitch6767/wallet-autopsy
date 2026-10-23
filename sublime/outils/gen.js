@@ -11,12 +11,8 @@
     };
   }
 
-  function taille(niveau) {
-    if (niveau <= 10) return 5;
-    if (niveau <= 30) return 6;
-    if (niveau <= 60) return 7;
-    if (niveau <= 100) return 8;
-    return 9;
+  function taille() {
+    return 12;
   }
 
   // Position d'un chat par ligne : colonnes toutes différentes, jamais collées (même en diagonale)
@@ -66,52 +62,56 @@
     return z;
   }
 
-  // Nombre de solutions (arrêt à 2)
-  function compte(n, z, limite) {
-    const colPris = new Array(n).fill(false);
-    const zonePris = new Array(n).fill(false);
-    let total = 0, prec = -9;
-    function pose(l, p) {
-      if (l === n) { total++; return total >= limite; }
-      for (let c = 0; c < n; c++) {
-        if (colPris[c] || Math.abs(p - c) <= 1) continue;
-        const k = z[l * n + c];
-        if (zonePris[k]) continue;
-        colPris[c] = zonePris[k] = true;
-        const stop = pose(l + 1, c);
-        colPris[c] = zonePris[k] = false;
-        if (stop) return true;
+  // Recherche des solutions (zone la plus contrainte d'abord), arrêt à « limite »
+  function chercher(n, z, limite) {
+    const cellules = Array.from({ length: n }, () => []);
+    for (let i = 0; i < n * n; i++) cellules[z[i]].push(i);
+    const ligne = new Uint8Array(n), col = new Uint8Array(n), bloque = new Uint8Array(n * n);
+    const faite = new Uint8Array(n), pos = new Array(n);
+    const sols = [];
+    function libre(i) { return !ligne[(i / n) | 0] && !col[i % n] && !bloque[i]; }
+    function marque(i, d) {
+      const l = (i / n) | 0, c = i % n;
+      ligne[l] += d; col[c] += d;
+      for (let dl = -1; dl <= 1; dl += 2) for (let dc = -1; dc <= 1; dc += 2) {
+        const l2 = l + dl, c2 = c + dc;
+        if (l2 >= 0 && l2 < n && c2 >= 0 && c2 < n) bloque[l2 * n + c2] += d;
       }
+    }
+    function pose(reste) {
+      if (reste === 0) {
+        const s = new Array(n);
+        for (let k = 0; k < n; k++) s[(pos[k] / n) | 0] = pos[k] % n;
+        sols.push(s);
+        return sols.length >= limite;
+      }
+      let best = -1, bestCand = null;
+      for (let k = 0; k < n; k++) {
+        if (faite[k]) continue;
+        const cand = [];
+        for (const i of cellules[k]) if (libre(i)) cand.push(i);
+        if (!cand.length) return false;
+        if (!bestCand || cand.length < bestCand.length) { best = k; bestCand = cand; if (cand.length === 1) break; }
+      }
+      faite[best] = 1;
+      for (const i of bestCand) {
+        pos[best] = i; marque(i, 1);
+        const stop = pose(reste - 1);
+        marque(i, -1);
+        if (stop) { faite[best] = 0; return true; }
+      }
+      faite[best] = 0;
       return false;
     }
-    pose(0, prec);
-    return total;
+    pose(n);
+    return sols;
   }
 
-  // Une solution différente de la vraie, ou null
+  function compte(n, z, limite) { return chercher(n, z, limite).length; }
+
   function autre(n, z, sol) {
-    const colPris = new Array(n).fill(false);
-    const zonePris = new Array(n).fill(false);
-    const cur = new Array(n);
-    let trouve = null;
-    function pose(l, p) {
-      if (l === n) {
-        for (let i = 0; i < n; i++) if (cur[i] !== sol[i]) { trouve = cur.slice(); return true; }
-        return false;
-      }
-      for (let c = 0; c < n; c++) {
-        if (colPris[c] || Math.abs(p - c) <= 1) continue;
-        const k = z[l * n + c];
-        if (zonePris[k]) continue;
-        colPris[c] = zonePris[k] = true; cur[l] = c;
-        const stop = pose(l + 1, c);
-        colPris[c] = zonePris[k] = false;
-        if (stop) return true;
-      }
-      return false;
-    }
-    pose(0, -9);
-    return trouve;
+    for (const s of chercher(n, z, 2)) for (let i = 0; i < n; i++) if (s[i] !== sol[i]) return s;
+    return null;
   }
 
   function voisins4(n, i) {
@@ -139,10 +139,10 @@
   function grille(niveau) {
     const n = taille(niveau);
     const r = rng(niveau * 7919 + 2026);
-    for (let essai = 0; essai < 500; essai++) {
+    for (let essai = 0; essai < 3000; essai++) {
       const sol = solution(n, r);
       const z = zones(n, sol, r);
-      for (let rep = 0; rep < 400; rep++) {
+      for (let rep = 0; rep < 3000; rep++) {
         const alt = autre(n, z, sol);
         if (!alt) return { n, sol, z, niveau };
         // Casser cette autre solution : déplacer une de ses cases vers une zone voisine

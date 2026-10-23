@@ -1,7 +1,7 @@
 // Sublime — le jeu
 (function () {
   const $ = (id) => document.getElementById(id);
-  const COULEURS = ["#F6C1C1", "#F9D9A8", "#F3EBA0", "#C8E6B0", "#B5E0DC", "#B9D3F2", "#CDBDF0", "#F0C2E4", "#E3D3BE"];
+  const COULEURS = ["#CF7472", "#E0BC57", "#67B3AC", "#EEB4CC", "#7FB8E3", "#9480D1", "#5F72AE", "#AFC0D4", "#F2AE76", "#A9D08E", "#B98E73", "#3F9A80"];
   const POISSONS_MAX = 3;
 
   const SVG_CHAT =
@@ -47,6 +47,7 @@
       const d = await api("/api/" + action, { nom, pin });
       jeton = d.jeton;
       try { localStorage.setItem("sublime-jeton", jeton); } catch (e) {}
+      await pret;
       demarrer(d.profil);
     } catch (e) {
       $("msg-connexion").textContent = e.message;
@@ -71,8 +72,27 @@
   let G = null; // grille
   let P = null; // état de la partie
 
+  // Grilles 12×12 pré-calculées (niveaux.json), retournées/miroir au-delà pour varier à l'infini
+  let NIVEAUX = [];
+  function grilleDuNiveau(niveau) {
+    const n = 12, base = NIVEAUX[(niveau - 1) % NIVEAUX.length];
+    const t = Math.floor((niveau - 1) / NIVEAUX.length) % 8;
+    const z0 = [...base.z].map((x) => parseInt(x, 16)), s0 = [...base.s].map((x) => parseInt(x, 16));
+    const tr = (l, c) => {
+      let a = l, b = c;
+      if (t & 1) b = n - 1 - b;
+      if (t & 2) a = n - 1 - a;
+      if (t & 4) { const x = a; a = b; b = x; }
+      return [a, b];
+    };
+    const z = new Array(n * n), sol = new Array(n);
+    for (let l = 0; l < n; l++) for (let c = 0; c < n; c++) { const [a, b] = tr(l, c); z[a * n + b] = z0[l * n + c]; }
+    for (let l = 0; l < n; l++) { const [a, b] = tr(l, s0[l]); sol[a] = b; }
+    return { n, z, sol, niveau };
+  }
+
   function nouvellePartie(niveau, recommence) {
-    return { niveau, croix: {}, chats: [], poissons: POISSONS_MAX, recommence: !!recommence, offerts: [] };
+    return { n: 12, niveau, croix: {}, chats: [], poissons: POISSONS_MAX, recommence: !!recommence, offerts: [] };
   }
 
   function demarrer(p) {
@@ -81,13 +101,13 @@
     $("nom-joueur").textContent = profil.nom;
     montrer("ecran-jeu");
     let partie = profil.partie;
-    if (!partie || partie.niveau !== profil.niveau) partie = nouvellePartie(profil.niveau, false);
+    if (!partie || partie.niveau !== profil.niveau || partie.n !== 12) partie = nouvellePartie(profil.niveau, false);
     charger(partie);
   }
 
   function charger(partie) {
     P = partie;
-    G = SublimeGen.grille(P.niveau);
+    G = grilleDuNiveau(P.niveau);
     $("titre-niveau").textContent = "Niveau " + P.niveau;
     $("msg-jeu").textContent = "";
     dessinerPlateau();
@@ -101,17 +121,9 @@
     pl.style.gridTemplateColumns = "repeat(" + n + ", 1fr)";
     pl.innerHTML = "";
     for (let i = 0; i < n * n; i++) {
-      const l = Math.floor(i / n), c = i % n, k = G.z[i];
+      const k = G.z[i];
       const d = document.createElement("div");
       d.className = "case";
-      if (l === 0 || G.z[i - n] !== k) d.classList.add("bh");
-      if (l === n - 1 || G.z[i + n] !== k) d.classList.add("bb");
-      if (c === 0 || G.z[i - 1] !== k) d.classList.add("bg");
-      if (c === n - 1 || G.z[i + 1] !== k) d.classList.add("bd");
-      if (l === 0) d.style.borderTopWidth = "0";
-      if (l === n - 1) d.style.borderBottomWidth = "0";
-      if (c === 0) d.style.borderLeftWidth = "0";
-      if (c === n - 1) d.style.borderRightWidth = "0";
       d.style.background = COULEURS[k % COULEURS.length];
       d.dataset.i = i;
       pl.appendChild(d);
@@ -370,8 +382,9 @@
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") sauverMaintenant(); });
 
   // ---------- Démarrage ----------
+  const pret = fetch("/niveaux.json?v=1").then((r) => r.json()).then((d) => (NIVEAUX = d));
   if (jeton) {
-    api("/api/profil").then((d) => demarrer(d.profil)).catch(() => { jeton = null; montrer("ecran-connexion"); });
+    pret.then(() => api("/api/profil")).then((d) => demarrer(d.profil)).catch(() => { jeton = null; montrer("ecran-connexion"); });
   } else montrer("ecran-connexion");
 
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});

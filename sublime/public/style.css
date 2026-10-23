@@ -55,22 +55,18 @@ input:focus { border-color: var(--accent2); }
 @keyframes secoue { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-8deg); } 75% { transform: translateX(5px) rotate(8deg); } }
 
 .plateau-cadre {
-  background: var(--trait); padding: 3px; border-radius: 14px;
-  width: min(100%, 460px); margin: 4px auto 0; box-shadow: 0 6px 18px rgba(46,38,56,.18);
+  background: #FFFFFF; padding: 6px; border-radius: 16px;
+  width: min(100%, 520px); margin: 4px auto 0; box-shadow: 0 4px 14px rgba(46,38,56,.10);
 }
-.plateau { display: grid; gap: 0; border-radius: 11px; overflow: hidden; aspect-ratio: 1; }
+.plateau { display: grid; gap: 3px; aspect-ratio: 1; }
 .case {
   position: relative; display: flex; align-items: center; justify-content: center;
-  border: 0.5px solid rgba(46,38,56,.18); cursor: pointer;
+  border-radius: 5px; cursor: pointer; aspect-ratio: 1; min-width: 0;
 }
-.case.bh { border-top: 2.5px solid var(--trait); }
-.case.bb { border-bottom: 2.5px solid var(--trait); }
-.case.bg { border-left: 2.5px solid var(--trait); }
-.case.bd { border-right: 2.5px solid var(--trait); }
-.case .croix { width: 38%; height: 38%; opacity: .55; }
+.case .croix { width: 46%; height: 46%; opacity: .75; }
 .case .croix.err { opacity: 1; }
 .case .croix.aide { opacity: 1; animation: pulse 1.2s 2; }
-.case .chat { width: 78%; height: 78%; animation: pop .28s ease-out; }
+.case .chat { width: 86%; height: 86%; animation: pop .28s ease-out; }
 .case .chat.offert { filter: drop-shadow(0 0 4px rgba(255,255,255,.95)); }
 @keyframes pop { 0% { transform: scale(.3); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
 @keyframes pulse { 50% { transform: scale(1.45); } }
