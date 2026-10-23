@@ -3348,7 +3348,7 @@ async function xlClasseur(Q, depuis) {
 }
 const ZERO_DEPUIS = "2026-10-19T09:00:00Z";      // 19.10.2026 11:00 heure suisse (Pitch : « on remet tous à 0 ») ; avant : 14.10.2026 10:45, compteurs archivés dans zero:archive:2026-10-14T08:45:00Z
 const PAGE_ZERO = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes — remise à 0</title>${STYLE}</head><body>
-<h1>Fantômes — remise à 0 <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 19.10.2026 à 11:00 (heure suisse) : seuls les trades ouverts depuis comptent. Capital conseillé = 2 × creux max + 2 mises de 50 $ (comme l'onglet 1). Aucun argent réel.</div>
+<h1>Fantômes — remise à 0 <span class="badge">mode fantôme</span></h1><div class="mu"><a href="/excel" style="font-weight:600">📥 Fichier Excel : tous les trades de chaque stratégie (une ligne par trade, à jour à chaque ouverture)</a></div><div class="mu">Compteurs repartis de zéro le 19.10.2026 à 11:00 (heure suisse) : seuls les trades ouverts depuis comptent. Capital conseillé = 2 × creux max + 2 mises de 50 $ (comme l'onglet 1). Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <b>Stratégies fantômes : remise à 0</b></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
