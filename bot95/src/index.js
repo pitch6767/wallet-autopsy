@@ -292,6 +292,29 @@ export class Bot {
       for (const [k, v] of Object.entries(this.N.strats)) { nAlleger(v);   // 17.10.2026 : voir nAlleger
         if ((STOPPEES.has(k.replace(/ ([A-Z]+)$/, "|$1")) || ARRET_18.has(k.replace(/ ([A-Z]+)$/, "|$1"))) && (v.trades || []).length > 5) v.trades.length = 5; }   // 23.10.2026 : aussi les stratégies enlevées (mémoire de nouveau proche de la limite → erreur 1101)   // stratégies arrêtées (non affichées) : 5 derniers trades en mémoire, tout reste sur GitHub et dans hist:
       for (const k of NV.SUPPRIMEES) { delete this.N.strats[k]; await this.state.storage.delete(["nv:strat:" + k, "hist:" + k]); }
+      // 23.10.2026 21:06 (Pitch : « enlève de tes mémoires toutes les stratégies qui ne sont pas liées à celles actuelles ») : on garde les stratégies affichées,
+      // leurs stratégies de base et celles de PORTEFEUILLE 400 ; les autres sont effacées de la mémoire et du stockage (leurs trades restent sur GitHub, bot95/sauvegarde)
+      if ((await this.state.storage.get("menage:2310")) !== 1) {
+        const garder = xlLiees(Object.keys(this.N.strats)), del = [];
+        for (const k of Object.keys(this.N.strats)) if (!garder.has(k)) { delete this.N.strats[k]; del.push("nv:strat:" + k, "hist:" + k); }
+        for (const k of Object.keys(this.N.zero || {})) if (!garder.has(k)) delete this.N.zero[k];
+        for (let i = 0; i < del.length; i += 120) await this.state.storage.delete(del.slice(i, i + 120));
+        await this.state.storage.put("nv:zero", this.N.zero || {});
+        this._menage = garder;
+      }
+      // 23.10.2026 (Pitch : « un lien sur une feuille Excel… une trade une écriture ») : journal xl:<stratégie>|<jour UTC> = une ligne par trade réglé
+      // [heure, côté, prix, parts, résultat, issue]. Reprise unique des trades depuis la remise à 0 (archive hist:), parts complétées par les trades en mémoire.
+      if ((await this.state.storage.get("xl:migre")) !== 1) {
+        const o = {};
+        for (const [k, v] of Object.entries(this.N.strats)) { if (!xlVisible(k)) continue;
+          const H = (await this.state.storage.get("hist:" + k)) || [], parts = {};
+          for (const P of v.trades || []) if (P.heure) parts[P.heure + "|" + P.cote] = P.parts;
+          const vu = new Set();
+          for (const l of H) { if (!l[0] || Date.parse(l[0]) < Date.parse(ZERO_DEPUIS) || vu.has(l[0] + "|" + l[1])) continue; vu.add(l[0] + "|" + l[1]);
+            const kx = "xl:" + k + "|" + l[0].slice(0, 10); (o[kx] = o[kx] || []).push([l[0], l[1], l[2], parts[l[0] + "|" + l[1]] ?? null, l[3], l[4]]); } }
+        const ks = Object.keys(o); for (let i = 0; i < ks.length; i += 100) { const b = {}; for (const kx of ks.slice(i, i + 100)) b[kx] = o[kx]; await this.state.storage.put(b); }
+        await this.state.storage.put("xl:migre", 1);
+      }
       // REMISE À ZÉRO demandée par Pitch le 10.10.2026 13:43 : P&L, gains et pertes à 0 pour tous ; les trades d'avant sont gardés
       // (copie complète dans raz:<id>:<stratégie>, archive hist:<stratégie> intacte, sauvegarde GitHub intacte, résumé d'avant dans avantRaz)
       const RAZ_ID = "2026-10-10 13:43";
@@ -323,6 +346,25 @@ export class Bot {
       for (const a of ["ETH"]) if (!this.e.V1x[a]) this.e.V1x[a] = { capital: V1.CAPITAL, mise: V1.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, entrees: 0, pos: null, attente: [], trades: [], issues: {}, depuis: now() };
       if (!this.e.V1) this.e.V1 = { capital: V1.CAPITAL, mise: V1.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, entrees: 0, pos: null, attente: [], trades: [], issues: {}, depuis: now() };
     });
+    this.ready.then(() => this.menageFond()).catch((err) => this.erreur("menage", err));
+  }
+  // 23.10.2026 : suite du ménage en arrière-plan (archives raz:, hist: et zero:archive: des stratégies non liées aux stratégies affichées)
+  async menageFond() {
+    const garder = this._menage; if (!garder) return;
+    let n = 0;
+    for (const pre of ["raz:", "hist:"]) {
+      let apres;
+      for (;;) {
+        const M = await this.state.storage.list({ prefix: pre, limit: 25, ...(apres ? { startAfter: apres } : {}) });
+        if (!M.size) break;
+        const del = [];
+        for (const key of M.keys()) { apres = key; let k = key.slice(pre.length); if (pre === "raz:") k = k.slice(k.indexOf(":") + 1).replace(/^hist:/, ""); if (!garder.has(k)) del.push(key); }
+        if (del.length) { await this.state.storage.delete(del); n += del.length; }
+        if (M.size < 25) break;
+      }
+    }
+    for (const [key, v] of await this.state.storage.list({ prefix: "zero:archive:" })) { const o = {}; for (const k of Object.keys(v || {})) if (garder.has(k)) o[k] = v[k]; await this.state.storage.put(key, o); }
+    await this.state.storage.put("menage:2310", 1); await this.state.storage.put("menage:2310:n", n); this._menage = null;
   }
 
   // ------------------------------------------------------------------ HTTP
@@ -638,6 +680,20 @@ export class Bot {
           jours1: vals.filter((x) => x === 1).length, jours2: vals.filter((x) => x === 2).length, jours3: vals.filter((x) => x === 3).length, joursTop3: vals.filter((x) => x <= 3).length, joursJoues: vals.length }; });
       return json({ jours: JS, participants: Object.fromEntries(JS.map((j) => [j, rang["__n" + j]])), strats });
     }
+    if (u.pathname === "/excel" || u.pathname === "/excel.xlsx") {   // 23.10.2026 (Pitch) : toutes les transactions des stratégies affichées, fichier refait à chaque ouverture
+      const Q = {}; for (const k of Object.keys(this.N.strats)) if (xlVisible(k)) { const L = []; for (const v of (await this.state.storage.list({ prefix: "xl:" + k + "|" })).values()) L.push(...v); L.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)); if (L.length) Q[k] = L; }
+      const corps = await xlClasseur(Q, ZERO_DEPUIS);
+      return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:]/g, "").replace("T", "_") + '.xlsx"', "cache-control": "no-store" } });
+    }
+    if (u.pathname === "/api/xl_compte") { const out = {}; for (const k of Object.keys(this.N.strats)) if (xlVisible(k)) { let n = 0, p = 0; for (const v of (await this.state.storage.list({ prefix: "xl:" + k + "|" })).values()) { n += v.length; p += v.filter((l) => l[3] != null).length; } out[k] = { lignes: n, avecParts: p, zero: ((this.N.zero || {})[k] || {}).n || 0 }; }
+      return json({ strats: out, nStratsMemoire: Object.keys(this.N.strats).length, menage: await this.state.storage.get("menage:2310"), effaces: await this.state.storage.get("menage:2310:n") }); }
+    if (u.pathname === "/api/xl_parts" && req.method === "POST") {   // complète les parts des anciennes lignes à partir de la sauvegarde GitHub ({ strat: [[heure, côté, parts], …] })
+      const d = await req.json(); let n = 0;
+      for (const [k, L] of Object.entries(d || {})) { if (!xlVisible(k)) continue; const parJour = {}; for (const l of L) (parJour[String(l[0]).slice(0, 10)] = parJour[String(l[0]).slice(0, 10)] || []).push(l);
+        for (const [j, LL] of Object.entries(parJour)) { const kx = "xl:" + k + "|" + j, QH = (this._qh = this._qh || {});
+          QH[kx] = (QH[kx] || Promise.resolve()).then(() => this.state.storage.get(kx)).then((X) => { if (!X) return; const m = {}; for (const l of LL) m[l[0] + "|" + l[1]] = l[2]; for (const x of X) { const p = m[x[0] + "|" + x[1]]; if (x[3] == null && p != null) { x[3] = p; n++; } } return this.state.storage.put(kx, X); });
+          await QH[kx]; } }
+      return json({ ok: true, completees: n }); }
     if (u.pathname === "/api/zero") { const Z = { ...(this.N.zero || {}) };
       for (const k of Object.keys(this.N.strats)) { const base = k.slice(0, k.lastIndexOf(" ")); const v = this.N.strats[k]; if (!Z[k] && !STOPPEES.has(base + "|" + k.slice(k.lastIndexOf(" ") + 1)) && !ARRET_18.has(base + "|" + k.slice(k.lastIndexOf(" ") + 1)) && ((v.n || 0) > 0 || (v.trades || []).length > 0)) Z[k] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 }; }
       for (const k of Object.keys(Z)) if (ARRET_18.has(k.replace(/ ([A-Z]+)$/, "|$1"))) delete Z[k];
@@ -1831,6 +1887,8 @@ export class Bot {
     // 18.10.2026 : écritures de l'archive mises en file par stratégie (avant : deux trades réglés ensemble se marchaient dessus et l'un était perdu)
     const QH = (this._qh = this._qh || {});
     QH[kh] = (QH[kh] || Promise.resolve()).then(() => this.state.storage.get(kh)).then((L) => { L = L || []; L.push(ligne); if (L.length > 1500) L.splice(0, L.length - 1500); return this.state.storage.put(kh, L); }).catch((err) => this.erreur("archive " + kh, err));
+    if (P.heure && xlVisible(P.strat + " " + P.actif)) { const kx = "xl:" + P.strat + " " + P.actif + "|" + P.heure.slice(0, 10), lx = [P.heure, P.cote || null, P.prix ?? null, P.parts ?? null, P.net, issue];
+      QH[kx] = (QH[kx] || Promise.resolve()).then(() => this.state.storage.get(kx)).then((L) => { L = L || []; L.push(lx); return this.state.storage.put(kx, L); }).catch((err) => this.erreur("excel " + kx, err)); }   // 23.10.2026 : une trade = une ligne du fichier Excel
     this.nCopies(P, issue);
   }
   nCopies(P, issue) {
@@ -3207,6 +3265,86 @@ h+="<tr><td><b>"+rangTxt(ra,c.participants[auj])+"</b></td><td>"+s.nom+"</td><td
 document.getElementById("classement").innerHTML=h+"</table></div></div>";}catch(e){}}
 classement();setInterval(classement,60000);
 </script></body></html>`;
+// 23.10.2026 : stratégies affichées, leurs bases, et fichier Excel (.xlsx écrit à la main : XML + zip, aucune bibliothèque)
+const XL_SUFFIXES = [" + foule bybit x2", " + foule bybit", " + carnet ecart serre", " + carnet pression", " + carnet", " + ecart serre", " + contre foule", " + ecart carnet calme", " + calme"];
+function xlVisible(k) { const c = k.replace(/ ([A-Z]+)$/, "|$1"); return !STOPPEES.has(c) && !ARRET_18.has(c); }
+function xlLiees(cles) {
+  const g = new Set(["V2-F ecart qui grandit BTC"]);   // lue par la règle « V2-F pause memoire »
+  const ajoute = (k) => { g.add(k); const i = k.lastIndexOf(" "), nom = k.slice(0, i), a = k.slice(i + 1); for (const s of XL_SUFFIXES) if (nom.endsWith(s)) g.add(nom.slice(0, -s.length) + " " + a); };
+  for (const k of cles) if (xlVisible(k)) { ajoute(k); if (k.startsWith("PORTEFEUILLE 400")) for (const m of PORTEFEUILLE_400) ajoute(m.replace("|", " ")); }
+  return g;
+}
+function decalSuisse(ms) { const y = new Date(ms).getUTCFullYear(), dim = (m) => { const x = new Date(Date.UTC(y, m + 1, 0)); return Date.UTC(y, m, x.getUTCDate() - x.getUTCDay(), 1); }; return ms >= dim(2) && ms < dim(9) ? 7200e3 : 3600e3; }
+const XL_CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function xlCrc(b) { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = XL_CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+async function xlZip(fichiers) {
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  for (const [nom, texte] of fichiers) {
+    const brut = enc.encode(texte), n = enc.encode(nom), crc = xlCrc(brut);
+    const comp = new Uint8Array(await new Response(new Blob([brut]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer());
+    const h = new DataView(new ArrayBuffer(30)); h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 8, true); h.setUint32(14, crc, true); h.setUint32(18, comp.length, true); h.setUint32(22, brut.length, true); h.setUint16(26, n.length, true);
+    const c = new DataView(new ArrayBuffer(46)); c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 8, true); c.setUint32(16, crc, true); c.setUint32(20, comp.length, true); c.setUint32(24, brut.length, true); c.setUint16(28, n.length, true); c.setUint32(42, off, true);
+    parts.push(new Uint8Array(h.buffer), n, comp); central.push(new Uint8Array(c.buffer), n); off += 30 + n.length + comp.length;
+  }
+  const tc = central.reduce((a, b) => a + b.length, 0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, fichiers.length, true); e.setUint16(10, fichiers.length, true); e.setUint32(12, tc, true); e.setUint32(16, off, true);
+  return new Blob([...parts, ...central, new Uint8Array(e.buffer)]);
+}
+const xlEsc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const xlCol = (i) => { let s = ""; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+function xlFeuille(lignes, opts = {}) {   // lignes : tableaux de cellules ; cellule = nombre | texte | { v, s, f }
+  const rows = lignes.map((L, r) => "<row r=\"" + (r + 1) + "\">" + L.map((x, c) => { if (x == null || x === "") return ""; const o = typeof x === "object" ? { ...x } : { v: x }; if (o.v == null || o.v === "") return ""; if (o.s === 2 && typeof o.v === "number") o.v = Math.round(o.v * 100) / 100; const ref = xlCol(c) + (r + 1), st = o.s ? " s=\"" + o.s + "\"" : "";
+    if (typeof o.v === "number" && isFinite(o.v)) return "<c r=\"" + ref + "\"" + st + "><v>" + o.v + "</v></c>";
+    return "<c r=\"" + ref + "\"" + st + " t=\"inlineStr\"><is><t xml:space=\"preserve\">" + xlEsc(o.v) + "</t></is></c>"; }).join("") + "</row>").join("");
+  const cols = (opts.largeurs || []).map((w, i) => "<col min=\"" + (i + 1) + "\" max=\"" + (i + 1) + "\" width=\"" + w + "\" customWidth=\"1\"/>").join("");
+  const liens = (opts.liens || []).map(([ref, cible]) => "<hyperlink ref=\"" + ref + "\" location=\"" + xlEsc(cible) + "\" display=\"" + xlEsc(ref) + "\"/>").join("");
+  return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
+    "<sheetViews><sheetView workbookViewId=\"0\"><pane ySplit=\"" + (opts.fige || 1) + "\" topLeftCell=\"A" + ((opts.fige || 1) + 1) + "\" activePane=\"bottomLeft\" state=\"frozen\"/></sheetView></sheetViews>" +
+    (cols ? "<cols>" + cols + "</cols>" : "") + "<sheetData>" + rows + "</sheetData>" + (opts.filtre ? "<autoFilter ref=\"" + opts.filtre + "\"/>" : "") + (liens ? "<hyperlinks>" + liens + "</hyperlinks>" : "") + "</worksheet>";
+}
+async function xlClasseur(Q, depuis) {
+  const serie = (iso) => { const ms = Date.parse(iso); return (ms + decalSuisse(ms)) / 864e5 + 25569; };
+  const jourS = (iso) => { const ms = Date.parse(iso); return new Date(ms + decalSuisse(ms)).toISOString().slice(0, 10); };
+  const nomsF = new Set(), court = (k) => { let n = k.replace(/ BTC$/, "").replace("corrige marge mesuree : ", "CMM ").replace("corrige : ", "C ").replace("PORTEFEUILLE", "PF").replace("carnet ecart serre", "carnet ES").replace("foule bybit x2", "foule x2").replace("pas les deux baissent", "PLDB").replace("ecart qui grandit", "EQG").replace("prevision Chainlink", "prev CL").replace("incertitude 0,01 %", "incert").replace(/[\\\/?*\[\]:]/g, "-").replace(/'/g, "").slice(0, 31).trim(), b = n, i = 2; while (nomsF.has(n.toLowerCase())) n = b.slice(0, 28) + " " + (i++); nomsF.add(n.toLowerCase()); return n; };
+  const maint = Date.now(), j0 = Date.parse(jourS(depuis)), nJours = Math.max(1, Math.round((Date.parse(jourS(new Date(maint).toISOString())) - j0) / 864e5) + 1);
+  const R = [], feuilles = [], tous = [];
+  for (const [k, L] of Object.entries(Q)) {
+    let cum = 0, pic = 0, creux = 0, g = 0, p = 0, pertes = 0, pire = 0, mises = 0, nm = 0;
+    const lignes = [[{ v: k, s: 4 }, "", "", "", "", { v: "← Résumé", s: 5 }], ["Date (heure suisse)", "Côté", "Prix", "Parts", "Mise $", "Résultat $", "Cumul $", "Issue"].map((v) => ({ v, s: 3 }))];
+    for (const l of L) { const net = +l[4] || 0, mise = l[3] != null && l[2] != null ? l[2] * l[3] : null; cum += net; pic = Math.max(pic, cum); creux = Math.max(creux, pic - cum); pire = Math.min(pire, net);
+      if (net >= 0) g++; else { p++; pertes += net; } if (mise != null) { mises += mise; nm++; }
+      lignes.push([{ v: serie(l[0]), s: 1 }, l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: mise ?? "", s: 2 }, { v: net, s: 2 }, { v: cum, s: 2 }, l[5] || ""]);
+      tous.push([l[0], k, l]); }
+    const f = court(k); feuilles.push([f, xlFeuille(lignes, { fige: 2, largeurs: [18, 8, 8, 9, 10, 11, 11, 18], filtre: "A2:H" + lignes.length, liens: [["F1", "'Résumé'!A1"]] })]);
+    R.push({ k, f, n: L.length, g, p, pnl: cum, pertes, pire, creux, cap: Math.round((2 * creux + 2 * 50) / 50) * 50, moy: cum / nJours, mise: nm ? mises / nm : null, der: L[L.length - 1][0] });
+  }
+  R.sort((a, b) => b.pnl - a.pnl);
+  const res = [[{ v: "Bot95 — trades fantômes depuis la remise à 0 du " + new Date(Date.parse(depuis) + decalSuisse(Date.parse(depuis))).toISOString().slice(0, 16).replace("T", " ") + " (heure suisse) — fichier du " + new Date(maint + decalSuisse(maint)).toISOString().slice(0, 16).replace("T", " ") + ". Aucun argent réel. Cliquer un nom pour voir ses trades.", s: 4 }],
+    ["Stratégie", "Trades", "Gagnés", "Perdus", "% gagnés", "Résultat $", "Total pertes $", "Pire trade $", "Creux max $", "Capital conseillé $", "Moyenne / jour $", "Mise moyenne $", "Dernier trade"].map((v) => ({ v, s: 3 }))];
+  const liens = [];
+  R.forEach((x, i) => { res.push([{ v: x.k.replace(/ BTC$/, ""), s: 5 }, x.n, x.g, x.p, { v: x.n ? x.g / x.n : 0, s: 6 }, { v: x.pnl, s: 2 }, { v: x.pertes, s: 2 }, { v: x.pire, s: 2 }, { v: -x.creux, s: 2 }, { v: x.cap, s: 2 }, { v: x.moy, s: 2 }, { v: x.mise ?? "", s: 2 }, { v: serie(x.der), s: 1 }]); liens.push(["A" + (i + 3), "'" + x.f + "'!A1"]); });
+  res.push(["Total", R.reduce((a, x) => a + x.n, 0), R.reduce((a, x) => a + x.g, 0), R.reduce((a, x) => a + x.p, 0), "", { v: R.reduce((a, x) => a + x.pnl, 0), s: 2 }, { v: R.reduce((a, x) => a + x.pertes, 0), s: 2 }]);
+  res.push([]); res.push(["Capital conseillé = 2 × creux max + 2 mises de 50 $, arrondi à 50 $. Moyenne / jour = résultat ÷ " + nJours + " jours (du " + jourS(depuis).split("-").reverse().join(".") + " à aujourd'hui)."]);
+  tous.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  const T = [["Date (heure suisse)", "Stratégie", "Côté", "Prix", "Parts", "Mise $", "Résultat $", "Issue"].map((v) => ({ v, s: 3 }))];
+  for (const [, k, l] of tous) T.push([{ v: serie(l[0]), s: 1 }, k.replace(/ BTC$/, ""), l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: l[3] != null && l[2] != null ? l[2] * l[3] : "", s: 2 }, { v: +l[4] || 0, s: 2 }, l[5] || ""]);
+  const toutes = [["Résumé", xlFeuille(res, { fige: 2, largeurs: [52, 8, 8, 8, 9, 12, 13, 12, 12, 12, 13, 13, 18], liens })], ["Tous les trades", xlFeuille(T, { largeurs: [18, 52, 8, 8, 9, 10, 11, 18], filtre: "A1:H" + T.length })], ...feuilles];
+  const W = "http://schemas.openxmlformats.org/spreadsheetml/2006/main", RL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+  const F = [
+    ["[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>" + toutes.map((_, i) => "<Override PartName=\"/xl/worksheets/sheet" + (i + 1) + ".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>").join("") + "</Types>"],
+    ["_rels/.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"" + RL + "/officeDocument\" Target=\"xl/workbook.xml\"/></Relationships>"],
+    ["xl/workbook.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook xmlns=\"" + W + "\" xmlns:r=\"" + RL + "\"><sheets>" + toutes.map(([n], i) => "<sheet name=\"" + xlEsc(n) + "\" sheetId=\"" + (i + 1) + "\" r:id=\"rId" + (i + 1) + "\"/>").join("") + "</sheets>" + "</workbook>"],
+    ["xl/_rels/workbook.xml.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" + toutes.map((_, i) => "<Relationship Id=\"rId" + (i + 1) + "\" Type=\"" + RL + "/worksheet\" Target=\"worksheets/sheet" + (i + 1) + ".xml\"/>").join("") + "<Relationship Id=\"rId" + (toutes.length + 1) + "\" Type=\"" + RL + "/styles\" Target=\"styles.xml\"/></Relationships>"],
+    ["xl/styles.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><styleSheet xmlns=\"" + W + "\"><numFmts count=\"4\"><numFmt numFmtId=\"164\" formatCode=\"dd.mm.yyyy hh:mm:ss\"/><numFmt numFmtId=\"165\" formatCode=\"#,##0.00;[Red]-#,##0.00\"/><numFmt numFmtId=\"166\" formatCode=\"0.0%\"/><numFmt numFmtId=\"167\" formatCode=\"0.00\"/></numFmts>" +
+      "<fonts count=\"3\"><font><sz val=\"11\"/><name val=\"Calibri\"/></font><font><b/><sz val=\"11\"/><name val=\"Calibri\"/></font><font><u/><sz val=\"11\"/><color rgb=\"FF0563C1\"/><name val=\"Calibri\"/></font></fonts>" +
+      "<fills count=\"3\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill><fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFDDEBF7\"/><bgColor indexed=\"64\"/></patternFill></fill></fills>" +
+      "<borders count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>" +
+      "<cellXfs count=\"8\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/><xf numFmtId=\"164\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\"/><xf numFmtId=\"165\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"0\" xfId=\"0\" applyFont=\"1\" applyFill=\"1\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyFont=\"1\"/><xf numFmtId=\"0\" fontId=\"2\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyFont=\"1\"/><xf numFmtId=\"166\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\"/><xf numFmtId=\"167\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\"/></cellXfs>" +
+      "<cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles></styleSheet>"],
+    ...toutes.map(([, x], i) => ["xl/worksheets/sheet" + (i + 1) + ".xml", x]),
+  ];
+  return xlZip(F);
+}
 const ZERO_DEPUIS = "2026-10-19T09:00:00Z";      // 19.10.2026 11:00 heure suisse (Pitch : « on remet tous à 0 ») ; avant : 14.10.2026 10:45, compteurs archivés dans zero:archive:2026-10-14T08:45:00Z
 const PAGE_ZERO = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes — remise à 0</title>${STYLE}</head><body>
 <h1>Fantômes — remise à 0 <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 19.10.2026 à 11:00 (heure suisse) : seuls les trades ouverts depuis comptent. Capital conseillé = 2 × creux max + 2 mises de 50 $ (comme l'onglet 1). Aucun argent réel.</div>

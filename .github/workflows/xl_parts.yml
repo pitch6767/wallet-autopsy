@@ -1,0 +1,23 @@
+name: Excel - parts des anciens trades
+on:
+  workflow_dispatch:
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 - <<'PY'
+          import json, re, os, urllib.request
+          U = "https://bot95.pitch67.workers.dev"
+          def get(u): return json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "xl"}), timeout=90).read())
+          noms = [x["nom"] for x in get(U + "/api/zero")["strats"]]
+          for nom in noms:
+              f = "bot95/sauvegarde/" + re.sub(r"[^A-Za-z0-9,.+-]+", "_", nom).strip("_") + ".json"
+              if not os.path.exists(f): print(nom, "pas de sauvegarde"); continue
+              T = json.load(open(f))["trades"].values()
+              L = [[t["heure"], t.get("cote"), t["parts"]] for t in T if t.get("heure", "") >= "2026-10-19T09" and t.get("parts") is not None]
+              req = urllib.request.Request(U + "/api/xl_parts", data=json.dumps({nom: L}).encode(), headers={"content-type": "application/json", "User-Agent": "xl"}, method="POST")
+              print(nom, len(L), urllib.request.urlopen(req, timeout=120).read().decode())
+          print(json.dumps(get(U + "/api/xl_compte"), ensure_ascii=False, indent=1))
+          PY
