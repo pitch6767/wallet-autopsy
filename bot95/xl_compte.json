@@ -1,0 +1,357 @@
+{
+ "strats": {
+  "BY1 Bybit premier 100 $ BTC": {
+   "lignes": 1464,
+   "avecParts": 1087,
+   "zero": 1457
+  },
+  "PORTEFEUILLE 400 BTC": {
+   "lignes": 706,
+   "avecParts": 703,
+   "zero": 709
+  },
+  "PORTEFEUILLE 400 corrige BTC": {
+   "lignes": 357,
+   "avecParts": 357,
+   "zero": 357
+  },
+  "TWAP fin + carnet BTC": {
+   "lignes": 95,
+   "avecParts": 95,
+   "zero": 95
+  },
+  "TWAP fin + carnet ecart serre BTC": {
+   "lignes": 78,
+   "avecParts": 78,
+   "zero": 78
+  },
+  "TWAP fin anti-saut + carnet BTC": {
+   "lignes": 97,
+   "avecParts": 97,
+   "zero": 97
+  },
+  "TWAP fin anti-saut + carnet ecart serre BTC": {
+   "lignes": 80,
+   "avecParts": 80,
+   "zero": 80
+  },
+  "TWAP fin confirme Chainlink BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "TWAP fin prevision Chainlink + carnet BTC": {
+   "lignes": 76,
+   "avecParts": 76,
+   "zero": 76
+  },
+  "TWAP fin prevision Chainlink + carnet ecart serre BTC": {
+   "lignes": 56,
+   "avecParts": 56,
+   "zero": 56
+  },
+  "TWAP fin quantiles + carnet BTC": {
+   "lignes": 95,
+   "avecParts": 95,
+   "zero": 95
+  },
+  "TWAP fin quantiles + carnet ecart serre BTC": {
+   "lignes": 78,
+   "avecParts": 78,
+   "zero": 78
+  },
+  "TWAP fin quantiles + ecart serre BTC": {
+   "lignes": 145,
+   "avecParts": 145,
+   "zero": 145
+  },
+  "TWAP fin quantiles + foule bybit x2 BTC": {
+   "lignes": 68,
+   "avecParts": 68,
+   "zero": 68
+  },
+  "TWAP fin quantiles BTC": {
+   "lignes": 198,
+   "avecParts": 198,
+   "zero": 198
+  },
+  "TWAP fin sauts + carnet BTC": {
+   "lignes": 97,
+   "avecParts": 97,
+   "zero": 97
+  },
+  "TWAP fin sauts + carnet ecart serre BTC": {
+   "lignes": 84,
+   "avecParts": 84,
+   "zero": 84
+  },
+  "TWAP fin sauts + foule bybit x2 BTC": {
+   "lignes": 71,
+   "avecParts": 71,
+   "zero": 71
+  },
+  "TWAP fin sauts BTC": {
+   "lignes": 198,
+   "avecParts": 198,
+   "zero": 198
+  },
+  "V2-B hors 60-89 s ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "V2-C perp ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "V2-D perp 120-269 s ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "V2-E persistant ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "V2-F ecart qui grandit ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "V2-F incertitude 0,01 % + foule bybit x2 BTC": {
+   "lignes": 165,
+   "avecParts": 165,
+   "zero": 165
+  },
+  "V2-G jury des bourses ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "V2-H veto complet ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "corrige : V2-F + pas les deux baissent + carnet BTC": {
+   "lignes": 254,
+   "avecParts": 254,
+   "zero": 254
+  },
+  "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC": {
+   "lignes": 196,
+   "avecParts": 196,
+   "zero": 196
+  },
+  "corrige : V2-F ecart qui grandit + carnet BTC": {
+   "lignes": 256,
+   "avecParts": 256,
+   "zero": 256
+  },
+  "corrige : V2-F ecart qui grandit + carnet ecart serre BTC": {
+   "lignes": 198,
+   "avecParts": 198,
+   "zero": 198
+  },
+  "corrige : desaccord 20 + carnet BTC": {
+   "lignes": 262,
+   "avecParts": 262,
+   "zero": 262
+  },
+  "corrige : desaccord 20 + carnet ecart serre BTC": {
+   "lignes": 200,
+   "avecParts": 200,
+   "zero": 200
+  },
+  "corrige : desaccord 20 + foule bybit x2 BTC": {
+   "lignes": 179,
+   "avecParts": 179,
+   "zero": 179
+  },
+  "corrige marge mesuree : V2-F + foule bybit x2 BTC": {
+   "lignes": 219,
+   "avecParts": 219,
+   "zero": 219
+  },
+  "desaccord 10 +demi BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord 10 +validation BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord 10 +validation+inversion BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord 10 BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord 15 +demi BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord 15 +validation BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord 15 +validation+inversion BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord 15 BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord combine 2.5 +freeroll BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord combine 2.5 +validation+inversion BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord combine 2.5 BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord combine 4 +freeroll BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord combine 4 +validation+inversion BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord combine 4 +verrou BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord combine 4 BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord confirme perp ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord croise 10 +validation+inversion BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord croise 10 BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord maker 10 +convergence ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord maker 10 +freeroll ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord maker 10 +validation+inversion ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord maker 10 +verrou ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "desaccord maker 10 ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "inverse V1 BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "inverse V1 ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "inverse desaccord 10 ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "inverse desaccord 15 ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "inverse desaccord 20 BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "inverse desaccord 20 ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "mm actuel BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "mm actuel ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "mm pencher BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "mm pencher ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "mm prudent BTC": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  },
+  "mm prudent ETH": {
+   "lignes": 0,
+   "avecParts": 0,
+   "zero": 0
+  }
+ },
+ "nStratsMemoire": 81,
+ "menage": 1,
+ "effaces": 136
+}
