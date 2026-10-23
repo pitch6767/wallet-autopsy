@@ -294,8 +294,9 @@ export class Bot {
       for (const k of NV.SUPPRIMEES) { delete this.N.strats[k]; await this.state.storage.delete(["nv:strat:" + k, "hist:" + k]); }
       // 23.10.2026 21:06 (Pitch : « enlève de tes mémoires toutes les stratégies qui ne sont pas liées à celles actuelles ») : on garde les stratégies affichées,
       // leurs stratégies de base et celles de PORTEFEUILLE 400 ; les autres sont effacées de la mémoire et du stockage (leurs trades restent sur GitHub, bot95/sauvegarde)
-      if ((await this.state.storage.get("menage:2310")) !== 1) {
-        const garder = xlLiees(Object.keys(this.N.strats)), del = [];
+      // 2e passage (23.10 21:25) : les vieilles stratégies jamais affichées depuis la remise à 0 (ETH, desaccord 10/15, mm…) partent aussi
+      if ((await this.state.storage.get("menage:2310b")) !== 1) {
+        const garder = xlLiees(Object.keys(this.N.strats).filter((k) => ((this.N.zero || {})[k] || {}).n > 0)), del = [];
         for (const k of Object.keys(this.N.strats)) if (!garder.has(k)) { delete this.N.strats[k]; del.push("nv:strat:" + k, "hist:" + k); }
         for (const k of Object.keys(this.N.zero || {})) if (!garder.has(k)) delete this.N.zero[k];
         for (let i = 0; i < del.length; i += 120) await this.state.storage.delete(del.slice(i, i + 120));
@@ -364,7 +365,7 @@ export class Bot {
       }
     }
     for (const [key, v] of await this.state.storage.list({ prefix: "zero:archive:" })) { const o = {}; for (const k of Object.keys(v || {})) if (garder.has(k)) o[k] = v[k]; await this.state.storage.put(key, o); }
-    await this.state.storage.put("menage:2310", 1); await this.state.storage.put("menage:2310:n", n); this._menage = null;
+    await this.state.storage.put("menage:2310b", 1); await this.state.storage.put("menage:2310:n", ((await this.state.storage.get("menage:2310:n")) || 0) + n); this._menage = null;
   }
 
   // ------------------------------------------------------------------ HTTP
@@ -686,7 +687,7 @@ export class Bot {
       return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:]/g, "").replace("T", "_") + '.xlsx"', "cache-control": "no-store" } });
     }
     if (u.pathname === "/api/xl_compte") { const out = {}; for (const k of Object.keys(this.N.strats)) if (xlVisible(k)) { let n = 0, p = 0; for (const v of (await this.state.storage.list({ prefix: "xl:" + k + "|" })).values()) { n += v.length; p += v.filter((l) => l[3] != null).length; } out[k] = { lignes: n, avecParts: p, zero: ((this.N.zero || {})[k] || {}).n || 0 }; }
-      return json({ strats: out, nStratsMemoire: Object.keys(this.N.strats).length, menage: await this.state.storage.get("menage:2310"), effaces: await this.state.storage.get("menage:2310:n") }); }
+      return json({ strats: out, nStratsMemoire: Object.keys(this.N.strats).length, menage: await this.state.storage.get("menage:2310b"), effaces: await this.state.storage.get("menage:2310:n") }); }
     if (u.pathname === "/api/xl_parts" && req.method === "POST") {   // complète les parts des anciennes lignes à partir de la sauvegarde GitHub ({ strat: [[heure, côté, parts], …] })
       const d = await req.json(); let n = 0;
       for (const [k, L] of Object.entries(d || {})) { if (!xlVisible(k)) continue; const parJour = {}; for (const l of L) (parJour[String(l[0]).slice(0, 10)] = parJour[String(l[0]).slice(0, 10)] || []).push(l);
