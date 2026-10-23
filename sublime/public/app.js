@@ -1,7 +1,7 @@
 // Sublime — le jeu
 (function () {
   const $ = (id) => document.getElementById(id);
-  const COULEURS = ["#CF7472", "#E0BC57", "#67B3AC", "#EEB4CC", "#7FB8E3", "#9480D1", "#5F72AE", "#AFC0D4", "#F2AE76", "#A9D08E", "#B98E73", "#3F9A80"];
+  const COULEURS = ["#CF7472", "#E0BC57", "#67B3AC", "#EEB4CC", "#7FB8E3", "#9480D1", "#5F72AE", "#AFC0D4", "#F2AE76", "#A9D08E"];
   const POISSONS_MAX = 3;
 
   const SVG_CHAT =
@@ -15,9 +15,10 @@
   const SVG_POISSON =
     '<svg viewBox="0 0 60 36" class="poisson"><path d="M4 18 Q20 1 40 10 L56 2 L52 18 L56 34 L40 26 Q20 35 4 18Z" fill="#E8845A"/>' +
     '<path d="M22 9 Q27 18 22 27" stroke="#C96A42" stroke-width="2" fill="none"/><circle cx="13" cy="15" r="2.6" fill="#2E2638"/></svg>';
+  // Grande croix blanche sur toute la case (rouge foncé si erreur, verte si astuce)
   const croix = (cls) =>
-    '<svg viewBox="0 0 20 20" class="croix ' + cls + '"><path d="M4 4 L16 16 M16 4 L4 16" stroke="' +
-    (cls === "err" ? "#D9534F" : cls === "aide" ? "#3E8E7E" : "#2E2638") + '" stroke-width="' + (cls ? 3.4 : 2.6) + '" stroke-linecap="round"/></svg>';
+    '<svg viewBox="0 0 20 20" class="croix ' + cls + '"><path d="M4.5 4.5 L15.5 15.5 M15.5 4.5 L4.5 15.5" stroke="' +
+    (cls === "err" ? "#8E1F1B" : cls === "aide" ? "#1F5F52" : "#FFFFFF") + '" stroke-width="3.6" stroke-linecap="round"/></svg>';
 
   document.querySelectorAll(".chat-logo, .chat-mini").forEach((e) => (e.innerHTML = SVG_CHAT));
 
@@ -75,7 +76,7 @@
   // Grilles 12×12 pré-calculées (niveaux.json), retournées/miroir au-delà pour varier à l'infini
   let NIVEAUX = [];
   function grilleDuNiveau(niveau) {
-    const n = 12, base = NIVEAUX[(niveau - 1) % NIVEAUX.length];
+    const n = 10, base = NIVEAUX[(niveau - 1) % NIVEAUX.length];
     const t = Math.floor((niveau - 1) / NIVEAUX.length) % 8;
     const z0 = [...base.z].map((x) => parseInt(x, 16)), s0 = [...base.s].map((x) => parseInt(x, 16));
     const tr = (l, c) => {
@@ -92,7 +93,7 @@
   }
 
   function nouvellePartie(niveau, recommence) {
-    return { n: 12, niveau, croix: {}, chats: [], poissons: POISSONS_MAX, recommence: !!recommence, offerts: [] };
+    return { n: 10, niveau, croix: {}, chats: [], poissons: POISSONS_MAX, recommence: !!recommence, offerts: [] };
   }
 
   function demarrer(p) {
@@ -101,7 +102,7 @@
     $("nom-joueur").textContent = profil.nom;
     montrer("ecran-jeu");
     let partie = profil.partie;
-    if (!partie || partie.niveau !== profil.niveau || partie.n !== 12) partie = nouvellePartie(profil.niveau, false);
+    if (!partie || partie.niveau !== profil.niveau || partie.n !== 10) partie = nouvellePartie(profil.niveau, false);
     charger(partie);
   }
 
@@ -382,10 +383,15 @@
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") sauverMaintenant(); });
 
   // ---------- Démarrage ----------
-  const pret = fetch("/niveaux.json?v=1").then((r) => r.json()).then((d) => (NIVEAUX = d));
+  const pret = fetch("/niveaux.json?v=2").then((r) => r.json()).then((d) => (NIVEAUX = d));
   if (jeton) {
     pret.then(() => api("/api/profil")).then((d) => demarrer(d.profil)).catch(() => { jeton = null; montrer("ecran-connexion"); });
   } else montrer("ecran-connexion");
+
+  // Pas de zoom (iPhone ignore user-scalable=no)
+  ["gesturestart", "gesturechange", "gestureend"].forEach((t) => document.addEventListener(t, (e) => e.preventDefault(), { passive: false }));
+  document.addEventListener("touchmove", (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+  document.addEventListener("dblclick", (e) => e.preventDefault(), { passive: false });
 
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
 })();

@@ -12,7 +12,7 @@
   }
 
   function taille() {
-    return 12;
+    return 10;
   }
 
   // Position d'un chat par ligne : colonnes toutes différentes, jamais collées (même en diagonale)

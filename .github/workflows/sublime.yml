@@ -32,8 +32,8 @@ jobs:
             {
               tail -15 /tmp/d.log
               echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" $U/
-              echo "=== jeu"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" "$U/app.js?v=2"
-              echo "=== niveaux"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" "$U/niveaux.json?v=1"
+              echo "=== jeu"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" "$U/app.js?v=3"
+              echo "=== niveaux"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" "$U/niveaux.json?v=2"
               echo "=== api"; curl -sS -m 20 -X POST $U/api/connexion -d '{"nom":"test-controle","pin":"0000"}'; echo
             } > controle.txt 2>&1
           fi

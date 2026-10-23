@@ -10,16 +10,18 @@
   --aide: #3E8E7E;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; background: var(--fond); color: var(--encre); }
+html, body { touch-action: manipulation; overscroll-behavior: none; margin: 0; background: var(--fond); color: var(--encre); }
 body {
   font-family: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
   min-height: 100dvh;
-  padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+  padding: env(safe-area-inset-top) 8px env(safe-area-inset-bottom);
   -webkit-user-select: none; user-select: none;
   touch-action: manipulation;
 }
 .cache { display: none !important; }
-.ecran { max-width: 480px; margin: 0 auto; }
+.ecran { max-width: 560px; margin: 0 auto; }
+#ecran-connexion { padding-left: 8px; padding-right: 8px; }
+.barre, .outils, .aide-geste, .msg-jeu { margin-left: 6px; margin-right: 6px; }
 
 /* Connexion */
 #ecran-connexion { padding-top: 8vh; text-align: center; }
@@ -55,18 +57,18 @@ input:focus { border-color: var(--accent2); }
 @keyframes secoue { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-8deg); } 75% { transform: translateX(5px) rotate(8deg); } }
 
 .plateau-cadre {
-  background: #FFFFFF; padding: 6px; border-radius: 16px;
-  width: min(100%, 520px); margin: 4px auto 0; box-shadow: 0 4px 14px rgba(46,38,56,.10);
+  background: #FFFFFF; padding: 7px; border-radius: 18px;
+  width: min(100%, 560px); margin: 4px auto 0; box-shadow: 0 4px 14px rgba(46,38,56,.10);
 }
-.plateau { display: grid; gap: 3px; aspect-ratio: 1; }
+.plateau { display: grid; gap: 5px; aspect-ratio: 1; }
 .case {
   position: relative; display: flex; align-items: center; justify-content: center;
-  border-radius: 5px; cursor: pointer; aspect-ratio: 1; min-width: 0;
+  border-radius: 7px; cursor: pointer; aspect-ratio: 1; min-width: 0;
 }
-.case .croix { width: 46%; height: 46%; opacity: .75; }
+.case .croix { width: 100%; height: 100%; }
 .case .croix.err { opacity: 1; }
 .case .croix.aide { opacity: 1; animation: pulse 1.2s 2; }
-.case .chat { width: 86%; height: 86%; animation: pop .28s ease-out; }
+.case .chat { width: 92%; height: 92%; animation: pop .28s ease-out; }
 .case .chat.offert { filter: drop-shadow(0 0 4px rgba(255,255,255,.95)); }
 @keyframes pop { 0% { transform: scale(.3); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
 @keyframes pulse { 50% { transform: scale(1.45); } }
