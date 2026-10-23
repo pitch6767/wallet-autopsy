@@ -284,7 +284,7 @@ export class Bot {
         for (const P of [...this.N.ouvertes, ...this.N.attente]) if (P.strat === ancien) P.strat = neuf;
       }
       for (const [k, v] of Object.entries(this.N.strats)) { nAlleger(v);   // 17.10.2026 : voir nAlleger
-        if (STOPPEES.has(k.replace(/ ([A-Z]+)$/, "|$1")) && (v.trades || []).length > 5) v.trades.length = 5; }   // stratégies arrêtées (non affichées) : 5 derniers trades en mémoire, tout reste sur GitHub et dans hist:
+        if ((STOPPEES.has(k.replace(/ ([A-Z]+)$/, "|$1")) || ARRET_18.has(k.replace(/ ([A-Z]+)$/, "|$1"))) && (v.trades || []).length > 5) v.trades.length = 5; }   // 23.10.2026 : aussi les stratégies enlevées (mémoire de nouveau proche de la limite → erreur 1101)   // stratégies arrêtées (non affichées) : 5 derniers trades en mémoire, tout reste sur GitHub et dans hist:
       for (const k of NV.SUPPRIMEES) { delete this.N.strats[k]; await this.state.storage.delete(["nv:strat:" + k, "hist:" + k]); }
       // REMISE À ZÉRO demandée par Pitch le 10.10.2026 13:43 : P&L, gains et pertes à 0 pour tous ; les trades d'avant sont gardés
       // (copie complète dans raz:<id>:<stratégie>, archive hist:<stratégie> intacte, sauvegarde GitHub intacte, résumé d'avant dans avantRaz)
