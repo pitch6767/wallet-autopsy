@@ -23,5 +23,5 @@ jobs:
               print(nom, len(L), urllib.request.urlopen(req, timeout=120).read().decode())
           json.dump(get(U + "/api/xl_compte"), open("bot95/xl_compte.json", "w"), ensure_ascii=False, indent=1)
           PY
-          curl -s "https://bot95.pitch67.workers.dev/excel" -o /tmp/t.xlsx; ls -l /tmp/t.xlsx > bot95/xl_fichier.txt; file /tmp/t.xlsx >> bot95/xl_fichier.txt
-          git config user.name sonde; git config user.email bot@users.noreply.github.com; git add bot95/xl_compte.json bot95/xl_fichier.txt; git commit -q -m "Excel : compte [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
+          curl -s "https://bot95.pitch67.workers.dev/excel" -o /tmp/t.xlsx; cp /tmp/t.xlsx bot95/xl_dernier.xlsx; ls -l /tmp/t.xlsx > bot95/xl_fichier.txt; file /tmp/t.xlsx >> bot95/xl_fichier.txt
+          git config user.name sonde; git config user.email bot@users.noreply.github.com; git add bot95/xl_compte.json bot95/xl_fichier.txt bot95/xl_dernier.xlsx; git commit -q -m "Excel : compte [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
