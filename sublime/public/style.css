@@ -1,0 +1,106 @@
+:root {
+  --fond: #FBF5EC;
+  --encre: #2E2638;
+  --doux: #7B6F86;
+  --accent: #E8845A;
+  --accent2: #F4B183;
+  --carte: #FFFFFF;
+  --trait: #2E2638;
+  --rouge: #D9534F;
+  --aide: #3E8E7E;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--fond); color: var(--encre); }
+body {
+  font-family: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  min-height: 100dvh;
+  padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+  -webkit-user-select: none; user-select: none;
+  touch-action: manipulation;
+}
+.cache { display: none !important; }
+.ecran { max-width: 480px; margin: 0 auto; }
+
+/* Connexion */
+#ecran-connexion { padding-top: 8vh; text-align: center; }
+.logo { display: flex; justify-content: center; }
+.chat-logo { width: 84px; height: 84px; display: block; }
+h1 { font-size: 40px; margin: 8px 0 4px; letter-spacing: 0.5px; }
+.sous { color: var(--doux); margin: 0 0 28px; line-height: 1.45; }
+form { text-align: left; display: flex; flex-direction: column; gap: 8px; }
+label { font-weight: 600; font-size: 15px; margin-top: 6px; }
+input {
+  font: inherit; font-size: 18px; padding: 14px 14px; border-radius: 14px;
+  border: 2px solid #E6DCCD; background: #fff; color: var(--encre); outline: none;
+  -webkit-user-select: text; user-select: text;
+}
+input:focus { border-color: var(--accent2); }
+.msg { min-height: 22px; color: var(--rouge); font-size: 15px; margin: 4px 0; }
+.btn {
+  font: inherit; font-size: 17px; font-weight: 700; padding: 15px; border-radius: 16px;
+  border: none; cursor: pointer; width: 100%;
+}
+.btn.principal { background: var(--accent); color: #fff; box-shadow: 0 3px 0 #C96A42; }
+.btn.principal:active { transform: translateY(2px); box-shadow: 0 1px 0 #C96A42; }
+.btn.secondaire { background: transparent; color: var(--accent); border: 2px solid var(--accent2); margin-top: 6px; }
+
+/* Jeu */
+.barre { display: flex; justify-content: space-between; align-items: center; padding: 14px 2px 10px; }
+.niveau { font-size: 26px; font-weight: 800; }
+.joueur { color: var(--doux); font-size: 14px; }
+.poissons { display: flex; gap: 6px; }
+.poisson { width: 36px; height: 22px; transition: opacity .3s, filter .3s, transform .3s; }
+.poisson.perdu { opacity: .25; filter: grayscale(1); transform: scale(.85); }
+.poisson.touche { animation: secoue .45s; }
+@keyframes secoue { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-8deg); } 75% { transform: translateX(5px) rotate(8deg); } }
+
+.plateau-cadre {
+  background: var(--trait); padding: 3px; border-radius: 14px;
+  width: min(100%, 460px); margin: 4px auto 0; box-shadow: 0 6px 18px rgba(46,38,56,.18);
+}
+.plateau { display: grid; gap: 0; border-radius: 11px; overflow: hidden; aspect-ratio: 1; }
+.case {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  border: 0.5px solid rgba(46,38,56,.18); cursor: pointer;
+}
+.case.bh { border-top: 2.5px solid var(--trait); }
+.case.bb { border-bottom: 2.5px solid var(--trait); }
+.case.bg { border-left: 2.5px solid var(--trait); }
+.case.bd { border-right: 2.5px solid var(--trait); }
+.case .croix { width: 38%; height: 38%; opacity: .55; }
+.case .croix.err { opacity: 1; }
+.case .croix.aide { opacity: 1; animation: pulse 1.2s 2; }
+.case .chat { width: 78%; height: 78%; animation: pop .28s ease-out; }
+.case .chat.offert { filter: drop-shadow(0 0 4px rgba(255,255,255,.95)); }
+@keyframes pop { 0% { transform: scale(.3); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes pulse { 50% { transform: scale(1.45); } }
+.plateau.gagne .case { animation: vague .6s ease-out both; }
+@keyframes vague { 50% { filter: brightness(1.12); } }
+
+.aide-geste { text-align: center; color: var(--doux); font-size: 13px; margin: 10px 0 12px; }
+.outils { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.outil {
+  font: inherit; font-size: 12px; font-weight: 600; color: var(--encre);
+  background: var(--carte); border: 2px solid #EDE3D5; border-radius: 14px;
+  padding: 8px 2px 7px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  position: relative; cursor: pointer;
+}
+.outil:active { transform: scale(.96); }
+.outil .ic { font-size: 20px; line-height: 24px; height: 24px; display: block; }
+.outil .chat-mini { width: 24px; }
+.outil b {
+  position: absolute; top: -7px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px;
+  border-radius: 11px; background: var(--accent); color: #fff; font-size: 12px; line-height: 22px;
+}
+.outil.vide { opacity: .45; }
+.outil.vide b { background: #B9AFC2; }
+.msg-jeu { text-align: center; min-height: 22px; font-size: 14px; color: var(--doux); margin: 12px 0 4px; }
+.lien { display: block; margin: 8px auto 24px; background: none; border: none; color: var(--doux); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
+
+/* Voile */
+.voile { position: fixed; inset: 0; background: rgba(46,38,56,.45); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 10; }
+.carte { background: var(--fond); border-radius: 24px; padding: 26px 22px 20px; width: min(100%, 360px); text-align: center; animation: pop .3s ease-out; }
+.voile-icone { height: 76px; display: flex; justify-content: center; align-items: center; gap: 6px; }
+.voile-icone svg { height: 70px; width: 70px; }
+.carte h2 { margin: 8px 0 6px; font-size: 26px; }
+.carte p { color: var(--doux); line-height: 1.45; margin: 0 0 18px; }

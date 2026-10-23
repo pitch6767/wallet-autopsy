@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Sublime</title>
+<meta name="theme-color" content="#FBF5EC">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Sublime">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="icon" href="/icon-192.png">
+<link rel="stylesheet" href="/style.css?v=1">
+<!-- sublime-app -->
+</head>
+<body>
+
+<section id="ecran-connexion" class="ecran">
+  <div class="logo"><span class="chat-logo"></span></div>
+  <h1>Sublime</h1>
+  <p class="sous">Un chat par couleur, par ligne, par colonne.<br>Et jamais deux chats qui se touchent.</p>
+  <form id="form-connexion" autocomplete="off">
+    <label for="nom">Prénom</label>
+    <input id="nom" type="text" maxlength="20" autocapitalize="words" required>
+    <label for="pin">Code PIN (4 chiffres)</label>
+    <input id="pin" type="password" inputmode="numeric" pattern="\d{4}" maxlength="4" required>
+    <p id="msg-connexion" class="msg"></p>
+    <button type="submit" class="btn principal" data-action="connexion">Se connecter</button>
+    <button type="button" class="btn secondaire" id="btn-inscription">Créer mon compte</button>
+  </form>
+</section>
+
+<section id="ecran-jeu" class="ecran cache">
+  <header class="barre">
+    <div>
+      <div class="niveau" id="titre-niveau">Niveau 1</div>
+      <div class="joueur" id="nom-joueur"></div>
+    </div>
+    <div class="poissons" id="poissons" aria-label="Vies"></div>
+  </header>
+
+  <div class="plateau-cadre"><div id="plateau" class="plateau"></div></div>
+  <p class="aide-geste">Touche&nbsp;: croix · Double touche&nbsp;: chat</p>
+
+  <div class="outils">
+    <button class="outil" id="btn-annuler"><span class="ic">↶</span>Annuler</button>
+    <button class="outil" id="btn-recommencer"><span class="ic">⟲</span>Recommencer</button>
+    <button class="outil bonus" id="btn-chat"><span class="ic chat-mini"></span>Chat gratuit<b id="nb-chats">0</b></button>
+    <button class="outil bonus" id="btn-astuce"><span class="ic">💡</span>Astuce<b id="nb-astuces">0</b></button>
+  </div>
+  <p id="msg-jeu" class="msg-jeu"></p>
+  <button class="lien" id="btn-deconnexion">Changer de joueur</button>
+</section>
+
+<div id="voile" class="voile cache">
+  <div class="carte">
+    <div id="voile-icone" class="voile-icone"></div>
+    <h2 id="voile-titre"></h2>
+    <p id="voile-texte"></p>
+    <button class="btn principal" id="voile-btn"></button>
+    <button class="btn secondaire cache" id="voile-btn2"></button>
+  </div>
+</div>
+
+<script src="/gen.js?v=1"></script>
+<script src="/app.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+name: Deploy Sublime
+on:
+  push:
+    branches: [main]
+    paths: [sublime/**, .github/workflows/sublime.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deployer et controler
+        run: |
+          set +e
+          cd sublime
+          U=https://sublime.pitch67.workers.dev
+          # garde-fou : ne jamais écraser un autre Worker qui porterait déjà le nom « sublime »
+          code=$(curl -sS -m 20 -o /tmp/avant.html -w "%{http_code}" $U/)
+          if [ "$code" = "200" ] && ! grep -q "sublime-app" /tmp/avant.html; then
+            echo "STOP : un autre Worker nommé sublime existe déjà, rien n'a été déployé" > controle.txt
+          else
+            npx -y wrangler@4 deploy > /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log
+            sleep 15
+            {
+              tail -15 /tmp/d.log
+              echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" $U/
+              echo "=== jeu"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" "$U/app.js?v=1"
+              echo "=== api"; curl -sS -m 20 -X POST $U/api/connexion -d '{"nom":"test-controle","pin":"0000"}'; echo
+            } > controle.txt 2>&1
+          fi
+          cd ..; git config user.name controle; git config user.email bot@users.noreply.github.com
+          git add sublime/controle.txt; git commit -m "Controle sublime [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
