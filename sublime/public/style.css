@@ -63,7 +63,7 @@ input:focus { border-color: var(--accent2); }
   position: relative; display: flex; align-items: center; justify-content: center;
   border-radius: 5px; cursor: pointer; aspect-ratio: 1; min-width: 0;
 }
-.case .croix { width: 46%; height: 46%; opacity: .6; }
+.case .croix { width: 46%; height: 46%; opacity: .75; }
 .case .croix.err { opacity: 1; }
 .case .croix.aide { opacity: 1; animation: pulse 1.2s 2; }
 .case .chat { width: 86%; height: 86%; animation: pop .28s ease-out; }
