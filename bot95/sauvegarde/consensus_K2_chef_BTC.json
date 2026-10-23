@@ -4315,14 +4315,94 @@
 ],
 "start": 1792706400,
 "slug": "btc-updown-5m-1792706400"
+},
+"2026-10-23T01:02:37.636Z|Down": {
+"heure": "2026-10-23T01:02:37.636Z",
+"cote": "Down",
+"prix": 0.1042,
+"parts": 324,
+"U": 0,
+"D": 324,
+"cash": -33.747099192,
+"net": -33.75,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.312,
+"restant_s": 142,
+"journal": [
+"157.6s V2-F + pas les deux baissent achète Down avec 8 autres stratégies du même côté (première il y a 0.0 s), 142 s restantes → achat 324.0 parts à 0.1042",
+"copie de consensus K2"
+],
+"start": 1792717200,
+"slug": "btc-updown-5m-1792717200"
+},
+"2026-10-23T00:27:56.072Z|Up": {
+"heure": "2026-10-23T00:27:56.072Z",
+"cote": "Up",
+"prix": 0.3068,
+"parts": 108.33,
+"U": 108.33,
+"D": 0,
+"cash": 75.09490991999999,
+"net": 75.09,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.501,
+"restant_s": 124,
+"journal": [
+"176.1s V2-F + pas les deux baissent achète Up avec 8 autres stratégies du même côté (première il y a 0.0 s), 124 s restantes → achat 108.3 parts à 0.3068",
+"copie de consensus K2"
+],
+"start": 1792715100,
+"slug": "btc-updown-5m-1792715100"
+},
+"2026-10-23T00:12:10.995Z|Up": {
+"heure": "2026-10-23T00:12:10.995Z",
+"cote": "Up",
+"prix": 0.1595,
+"parts": 290,
+"U": 290,
+"D": 0,
+"cash": -46.267168,
+"net": -46.27,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.361,
+"restant_s": 169,
+"journal": [
+"131.0s V2-F + pas les deux baissent achète Up avec 8 autres stratégies du même côté (première il y a 0.0 s), 169 s restantes → achat 290.0 parts à 0.1595",
+"copie de consensus K2"
+],
+"start": 1792714200,
+"slug": "btc-updown-5m-1792714200"
+},
+"2026-10-22T23:51:38.680Z|Down": {
+"heure": "2026-10-22T23:51:38.680Z",
+"cote": "Down",
+"prix": 0.2469,
+"parts": 217.39,
+"U": 0,
+"D": 217.39130434782606,
+"cash": -53.67926156521739,
+"net": -53.68,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.438,
+"restant_s": 201,
+"journal": [
+"98.7s V2-H veto complet achète Down avec 8 autres stratégies du même côté (première il y a 11.4 s), 201 s restantes → achat 217.4 parts à 0.2469",
+"copie de consensus K2"
+],
+"start": 1792713000,
+"slug": "btc-updown-5m-1792713000"
 }
 },
 "resume_bot": {
 "depuis": 1792437488.548,
-"n": 241,
-"gains": 56,
-"pertes": 185,
-"pnl": 3334.2299999999996
+"n": 245,
+"gains": 57,
+"pertes": 188,
+"pnl": 3275.62
 },
 "archive": [
 [
@@ -6493,8 +6573,44 @@
 "une seule jambe",
 0.463,
 180
+],
+[
+"2026-10-22T23:51:38.680Z",
+"Down",
+0.2469,
+-53.68,
+"une seule jambe",
+0.438,
+201
+],
+[
+"2026-10-23T00:12:10.995Z",
+"Up",
+0.1595,
+-46.27,
+"une seule jambe",
+0.361,
+169
+],
+[
+"2026-10-23T00:27:56.072Z",
+"Up",
+0.3068,
+75.09,
+"une seule jambe",
+0.501,
+124
+],
+[
+"2026-10-23T01:02:37.636Z",
+"Down",
+0.1042,
+-33.75,
+"une seule jambe",
+0.312,
+142
 ]
 ],
-"n_sauves": 241,
-"maj": "2026-10-22 23:42 UTC"
+"n_sauves": 245,
+"maj": "2026-10-23 02:04 UTC"
 }
