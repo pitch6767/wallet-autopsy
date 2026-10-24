@@ -1964,7 +1964,7 @@ export class Bot {
                 const uv = val("pm_up_vente", tr), b = sg > 0 ? val("pm_up_achat", tr) : (uv != null ? 1 - uv : null), sz = sg > 0 ? val("pm_up_achat_taille", tr) : val("pm_up_vente_taille", tr);
                 if (b != null && b > 0 && sz) { const q = Math.min(x.parts || 0, sz); net = q * (b - 0.07 * b * (1 - b)) + ((x.parts || 0) - q) * (x.gagne ? 1 : 0) - cout; } } }
           }
-          if (garder) zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées BTC"), x.heure, mult * net, sans);
+          if (garder) { zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées BTC"), x.heure, mult * net, sans); zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées sans x2 x3 BTC"), x.heure, net, sans); }   // 24.10 21:49 (Pitch) : aussi une version sans mise x2 / x3
         }
         fait[st] = tous; for (const k of Object.keys(fait)) if (+k < s0 - 7200) delete fait[k];
       }
@@ -3448,7 +3448,7 @@ document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("ap
 maj();setInterval(maj,20000);
 </script></body></html>`;
 const PAGE_ZERO2 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 3 — idées</title>${STYLE}</head><body>
-<h1>Onglet 3 — remise à 0 + versions « idées » <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 24.10.2026 à 22:00 (heure suisse). Chaque stratégie affichée apparaît deux fois : telle quelle, et « + idées ». Les lignes « + idées » sont calculées environ 5 min après la fin de chaque cycle, avec seulement ce qui était connu au moment de l'achat. Gros trades (prix ≥ 0,50) : gardés seulement si les bourses sont en avance sur Chainlink d'au moins 3,8 $ et montent vers nous, ou si le jeton Polymarket est en retard d'au moins 10 pts sur les bourses. Petits trades : mise x2 si au moins 10 trades des stratégies affichées sur le même côté du cycle, x3 si en plus la foule Polymarket vient de vendre notre jeton. Revente à 60 s de la fin si Chainlink est pour nous mais les futures Bybit contre nous d'au moins 3 $ (frais compris). Aucun argent réel.</div>
+<h1>Onglet 3 — remise à 0 + versions « idées » <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 24.10.2026 à 22:00 (heure suisse). Chaque stratégie affichée apparaît deux fois : telle quelle, et « + idées ». Les lignes « + idées » sont calculées environ 5 min après la fin de chaque cycle, avec seulement ce qui était connu au moment de l'achat. Gros trades (prix ≥ 0,50) : gardés seulement si les bourses sont en avance sur Chainlink d'au moins 3,8 $ et montent vers nous, ou si le jeton Polymarket est en retard d'au moins 10 pts sur les bourses. Petits trades : mise x2 si au moins 10 trades des stratégies affichées sur le même côté du cycle, x3 si en plus la foule Polymarket vient de vendre notre jeton (la version « + idées sans x2 x3 » garde la mise normale). Revente à 60 s de la fin si Chainlink est pour nous mais les futures Bybit contre nous d'au moins 3 $ (frais compris). Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <b>Onglet 3 : idées</b></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
