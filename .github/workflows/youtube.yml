@@ -1,0 +1,21 @@
+name: YouTube - titres et sous-titres d'une chaine (lecture seule)
+on:
+  workflow_dispatch:
+    inputs:
+      chaine: { description: "chaine", default: "aurumgamma" }
+permissions:
+  contents: write
+jobs:
+  y:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          pip install -q yt-dlp
+          D=etude/youtube/${{ github.event.inputs.chaine }}; mkdir -p $D
+          for onglet in videos shorts streams; do yt-dlp --flat-playlist --print "%(id)s|%(title)s|%(view_count)s|%(duration)s|%(upload_date)s" "https://www.youtube.com/@${{ github.event.inputs.chaine }}/$onglet" >> $D/liste.txt 2>> $D/erreurs.txt || true; done
+          cut -d'|' -f1 $D/liste.txt | sort -u | head -80 > /tmp/ids
+          while read id; do yt-dlp --skip-download --write-auto-subs --write-subs --sub-langs "en.*,fr.*" --sub-format vtt --write-description --write-info-json -o "$D/%(id)s.%(ext)s" "https://www.youtube.com/watch?v=$id" >> $D/erreurs.txt 2>&1 || true; done < /tmp/ids
+          ls $D | head -50
+          git config user.name youtube; git config user.email bot@users.noreply.github.com
+          git add $D && git commit -qm "youtube ${{ github.event.inputs.chaine }} [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
