@@ -1,0 +1,32 @@
+name: YouTube - transcriptions (lecture seule)
+on:
+  workflow_dispatch:
+    inputs:
+      chaine: { description: "chaine", default: "aurumgamma" }
+permissions:
+  contents: write
+jobs:
+  y:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          pip install -q youtube-transcript-api
+          D=etude/youtube/${{ github.event.inputs.chaine }}; mkdir -p $D/transcriptions
+          python3 - <<'PY'
+          import os
+          from youtube_transcript_api import YouTubeTranscriptApi
+          D="etude/youtube/${{ github.event.inputs.chaine }}"
+          api=YouTubeTranscriptApi(); log=open(D+"/transcriptions/journal.txt","w")
+          for l in open(D+"/liste.txt"):
+              vid=l.split("|")[0].strip()
+              if not vid: continue
+              try:
+                  t=api.fetch(vid, languages=["en","fr","en-US"])
+                  open(f"{D}/transcriptions/{vid}.txt","w").write(" ".join(s.text for s in t))
+                  log.write(f"{vid} ok\n")
+              except Exception as e: log.write(f"{vid} ERREUR {type(e).__name__}: {str(e)[:200]}\n")
+          PY
+          cat $D/transcriptions/journal.txt
+          git config user.name youtube; git config user.email bot@users.noreply.github.com
+          git add $D && git commit -qm "youtube transcriptions [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
