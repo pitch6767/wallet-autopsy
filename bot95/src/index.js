@@ -282,6 +282,7 @@ export class Bot {
         this.N.ordres = (await this.state.storage.get("nv:ordres")) || [];
         this.N.audit = { fait: base.auditFait || {}, lignes: (await this.state.storage.get("nv:audit")) || [] };
         this.N.zero = (await this.state.storage.get("nv:zero")) || {};
+        this.N.zero2 = (await this.state.storage.get("nv:zero2")) || {}; { const q = (await this.state.storage.get("nv:idq")) || {}; this.N.idq = q.idq || {}; this.N.idfait = q.idfait || {}; }   // 24.10.2026 : onglet 3 (remise à 0 + versions « + idées »)
         // 19.10.2026 : nouvelle remise à 0 de l'onglet 2 ; les anciens compteurs sont archivés une seule fois
         if ((await this.state.storage.get("zero:depuis")) !== ZERO_DEPUIS) { await this.state.storage.put("zero:archive:" + ((await this.state.storage.get("zero:depuis")) || "2026-10-14T08:45:00Z"), this.N.zero); this.N.zero = {}; await this.state.storage.put("nv:zero", {}); await this.state.storage.put("zero:depuis", ZERO_DEPUIS); }
       } else this.N = (await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
@@ -700,6 +701,10 @@ export class Bot {
       for (const k of Object.keys(Z)) if (ARRET_18.has(k.replace(/ ([A-Z]+)$/, "|$1"))) delete Z[k];
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, ...z, parJour: Object.fromEntries(Object.entries(z.parJour || (z.n > 0 ? { "2026-10-14": z.pnl } : {})).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
       return json({ depuis: ZERO_DEPUIS, strats: L, total: +L.reduce((a, b) => a + b.pnl, 0).toFixed(2) }); }
+    if (u.pathname === "/api/zero2") { const Z = this.N.zero2 || {};
+      const L = Object.entries(Z).map(([nom, z]) => ({ nom, ...z, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
+      return json({ depuis: ZERO2_DEPUIS, strats: L, total: +L.filter((x) => !x.nom.includes(" + idées")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + idées")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length }); }
+    if (u.pathname === "/zero2") return new Response(PAGE_ZERO2, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero") return new Response(PAGE_ZERO, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     // 22.10.2026 (Pitch : « remove onglet 1 ») : onglet 1 « depuis le début » retiré de l'affichage, renvoi vers l'onglet 2 ; données conservées
     if (u.pathname === "/nouveaux") return Response.redirect(u.origin + "/zero", 302);
@@ -1686,6 +1691,7 @@ export class Bot {
       put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {}, markout: N.markout || {} });
       for (const [k, v] of Object.entries(N.strats)) put("nv:strat:" + k, v);
       if (N.zero) put("nv:zero", N.zero);
+      if (N.zero2) put("nv:zero2", N.zero2); if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {} });
       // ordres : non réglés + 250 derniers réglés (les compteurs sont cumulés à part)
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
       N.ordres = [...regles.slice(-250), ...nonRegles];
@@ -1898,7 +1904,72 @@ export class Bot {
     QH[kh] = (QH[kh] || Promise.resolve()).then(() => this.state.storage.get(kh)).then((L) => { L = L || []; L.push(ligne); if (L.length > 1500) L.splice(0, L.length - 1500); return this.state.storage.put(kh, L); }).catch((err) => this.erreur("archive " + kh, err));
     if (P.heure && xlVisible(P.strat + " " + P.actif)) { const kx = "xl:" + P.strat + " " + P.actif + "|" + P.heure.slice(0, 10), lx = [P.heure, P.cote || null, P.prix ?? null, P.parts ?? null, P.net, issue];
       QH[kx] = (QH[kx] || Promise.resolve()).then(() => this.state.storage.get(kx)).then((L) => { L = L || []; L.push(lx); return this.state.storage.put(kx, L); }).catch((err) => this.erreur("excel " + kx, err)); }   // 23.10.2026 : une trade = une ligne du fichier Excel
+    // 24.10.2026 21:37 (Pitch : « un autre onglet où tu mets à 0 nos stratégies existantes et rajoute une version avec toutes tes idées pour chaque stratégie »)
+    try { if (P.heure && P.actif === "BTC" && Date.parse(P.heure) >= Date.parse(ZERO2_DEPUIS) && xlVisible(P.strat + " " + P.actif) && P.start) {
+      const N = this.N; N.zero2 = N.zero2 || {}; N.idq = N.idq || {};
+      zCompte(N.zero2, P.strat + " " + P.actif, P.heure, P.net);
+      (N.idq[P.start] = N.idq[P.start] || []).push({ k: P.strat + " " + P.actif, cote: P.cote, heure: P.heure, prix: P.prix, parts: P.parts, net: P.net, gagne: P.gagnant ? P.gagnant === P.cote : P.net > 0 });
+      this.idTraiter(); } } catch (err) { this.erreur("idées", err); }
     this.nCopies(P, issue);
+  }
+  // 24.10.2026 : version « + idées » de chaque stratégie, calculée 5 min après la fin du cycle avec les signaux enregistrés chaque seconde (sig:BTC:<minute>),
+  // en n'utilisant que ce qui était connu au moment de l'achat (et à T−60 s pour la revente). Règles (analyse du 24.10, apprises 19-21.10, vérifiées 22-24.10) :
+  //  gros (prix ≥ 0,50) : gardé seulement si bourses en avance sur Chainlink ≥ 3,8 $ et montent vers nous sur 10 s, OU jeton Polymarket en retard ≥ 0,10 sur la probabilité des bourses (5 s) ;
+  //  petits (< 0,50) : mise x2 si ≥ 10 trades des stratégies affichées sur le même côté du cycle à l'heure d'achat, x3 si en plus la foule Polymarket a vendu notre jeton (10 s, ≤ −0,3) ;
+  //  revente à T−60 s (tous) si Chainlink est de notre côté mais les futures Bybit (ramenés au niveau Chainlink) de l'autre côté d'au moins 3 $ : vente au meilleur acheteur, frais 7 % × p × (1 − p).
+  //  Sans données seconde par seconde pour un trade : trade gardé tel quel (compté dans « sans données »).
+  idTraiter() {
+    if (this._idEnCours) return; const N = this.N, mures = Object.keys(N.idq || {}).filter((st) => +st + 600 < now());
+    if (!mures.length) return; this._idEnCours = true;
+    (async () => {
+      for (const st of mures) {
+        const L = N.idq[st]; delete N.idq[st]; const s0 = +st;
+        const R = {}; const m0 = Math.floor((s0 - 380) / 60), m1 = Math.floor((s0 + 300) / 60);
+        for (let m = m0; m <= m1; m++) { const v = await this.state.storage.get(`sig:BTC:${m}`); if (v && v.lignes) for (const l of v.lignes) R[l[0]] = l; }
+        const C = Object.fromEntries(SIG_COLS.map((c, i) => [c, i]));
+        const val = (c, t) => { for (let d = 0; d <= 3; d++) { const l = R[t - d]; if (l && l[C[c]] != null) return +l[C[c]]; } return null; };
+        const med = (a) => { a = a.filter((x) => x != null && isFinite(x)).sort((x, y) => x - y); return a.length ? (a.length % 2 ? a[(a.length - 1) / 2] : (a[a.length / 2 - 1] + a[a.length / 2]) / 2) : null; };
+        const EXC = ["bybit_perp", "okx_perp", "binance_spot", "coinbase", "deribit_perp"];
+        const ajust = (c, t) => { const p = val(c, t); if (p == null) return null; const d = []; for (let u = t - 60; u <= t - 5; u++) { const a = val(c, u), b = val("chainlink", u); if (a != null && b != null) d.push(a - b); } return d.length > 10 ? p - med(d) : null; };
+        const cons = (t) => { const v = EXC.map((c) => ajust(c, t)).filter((x) => x != null); return v.length >= 2 ? med(v) : null; };
+        const Phi = (z) => 0.5 * (1 + erf(z / Math.SQRT2));
+        const fait = (N.idfait = N.idfait || {}); const deja = fait[st] || [];
+        const tous = [...deja, ...L.map((x) => ({ cote: x.cote, heure: x.heure }))];
+        for (const x of L) {
+          const ta = Math.floor(Date.parse(x.heure) / 1000), sg = x.cote === "Up" ? 1 : -1, cl = val("chainlink", ta), pab = val("prix_a_battre", ta);
+          let mult = 1, garder = true, net = x.net, sans = false;
+          const cout = (x.parts || 0) * (x.gagne ? 1 : 0) - x.net;
+          if (cl == null || pab == null) sans = true;
+          else {
+            const cA = cons(ta), c10 = cons(ta - 10);
+            const lead = cA != null ? sg * (cA - cl) : null, mom10 = cA != null && c10 != null ? sg * (cA - c10) : null;
+            const dif = []; for (let u = ta - 300; u < ta; u++) { const a = val("chainlink", u), b = val("chainlink", u - 1); if (a != null && b != null && a !== b) dif.push(a - b); }
+            const moy = dif.length ? dif.reduce((s2, v) => s2 + v, 0) / dif.length : 0;
+            const sd = dif.length > 20 ? Math.sqrt(Math.max(0, dif.reduce((s2, v) => s2 + v * v, 0) / dif.length - moy * moy)) * Math.sqrt(dif.length / 300) : null;
+            const pc = (t) => { const c2 = cons(t), k2 = val("prix_a_battre", t), r = s0 + 300 - t; return c2 != null && k2 != null && sd && r > 0 ? Phi(sg * (c2 - k2) / (sd * Math.sqrt(r))) : null; };
+            const mid = (t) => { const b = val("pm_up_achat", t), a = val("pm_up_vente", t); if (b == null || a == null) return null; const m = (a + b) / 2; return sg > 0 ? m : 1 - m; };
+            const p0 = pc(ta), p5 = pc(ta - 5), mA = mid(ta), m5 = mid(ta - 5);
+            const lag5 = p0 != null && p5 != null && mA != null && m5 != null ? (p0 - p5) - (mA - m5) : null;
+            if (x.prix != null && x.prix >= 0.5) garder = (lead != null && mom10 != null && lead >= 3.8 && mom10 >= 0) || (lag5 != null && lag5 >= 0.10);
+            else {
+              const nb = tous.filter((y) => y.cote === x.cote && y.heure <= x.heure).length;
+              if (nb >= 10) { mult = 2;
+                const me = sg > 0 ? "up" : "down", op = sg > 0 ? "down" : "up"; let ea = 0, ev = 0, oa = 0, ov = 0;
+                for (let u = ta - 10; u <= ta; u++) { const l = R[u]; if (!l) continue; ea += +l[C[`pm_${me}_echange_achat`]] || 0; ev += +l[C[`pm_${me}_echange_vente`]] || 0; oa += +l[C[`pm_${op}_echange_achat`]] || 0; ov += +l[C[`pm_${op}_echange_vente`]] || 0; }
+                if (((ea - ev) - (oa - ov)) / (ea + ev + oa + ov + 1) <= -0.3) mult = 3; }
+            }
+            const tr = s0 + 240;
+            if (garder && ta < tr) { const c6 = val("chainlink", tr), k6 = val("prix_a_battre", tr), f6 = ajust("bybit_perp", tr);
+              if (c6 != null && k6 != null && f6 != null && sg * (c6 - k6) > 0 && sg * (f6 - k6) <= -3) {
+                const uv = val("pm_up_vente", tr), b = sg > 0 ? val("pm_up_achat", tr) : (uv != null ? 1 - uv : null), sz = sg > 0 ? val("pm_up_achat_taille", tr) : val("pm_up_vente_taille", tr);
+                if (b != null && b > 0 && sz) { const q = Math.min(x.parts || 0, sz); net = q * (b - 0.07 * b * (1 - b)) + ((x.parts || 0) - q) * (x.gagne ? 1 : 0) - cout; } } }
+          }
+          if (garder) zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées BTC"), x.heure, mult * net, sans);
+        }
+        fait[st] = tous; for (const k of Object.keys(fait)) if (+k < s0 - 7200) delete fait[k];
+      }
+      this.nSauver();
+    })().catch((err) => this.erreur("idées traitement", err)).finally(() => { this._idEnCours = false; });
   }
   nCopies(P, issue) {
     this.N.ouvertes = this.N.ouvertes.filter((x) => x !== P);
@@ -3354,15 +3425,36 @@ async function xlClasseur(Q, depuis) {
   ];
   return xlZip(F);
 }
+const ZERO2_DEPUIS = "2026-10-24T20:00:00Z";     // 24.10.2026 22:00 heure suisse : onglet 3, stratégies affichées remises à 0 + leurs versions « + idées »
+function zCompte(Z, k, heure, net, sans) {
+  const z = (Z[k] = Z[k] || { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {}, sansDonnees: 0 });
+  const ms = Date.parse(heure), jz = new Date(ms + decalSuisse(ms)).toISOString().slice(0, 10); z.parJour[jz] = (z.parJour[jz] || 0) + net;
+  z.n++; z.pnl += net; z.cum += net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, net); if (sans) z.sansDonnees = (z.sansDonnees || 0) + 1;
+  if (net >= 0) { z.gains++; z.serie = 0; } else { z.pertes++; z.pertesTot += net; z.serie++; z.serieMax = Math.max(z.serieMax, z.serie); }
+}
 const ZERO_DEPUIS = "2026-10-19T09:00:00Z";      // 19.10.2026 11:00 heure suisse (Pitch : « on remet tous à 0 ») ; avant : 14.10.2026 10:45, compteurs archivés dans zero:archive:2026-10-14T08:45:00Z
 const PAGE_ZERO = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes — remise à 0</title>${STYLE}</head><body>
 <h1>Fantômes — remise à 0 <span class="badge">mode fantôme</span></h1><div class="mu"><a href="/excel" style="font-weight:600">📥 Fichier Excel : tous les trades de chaque stratégie (une ligne par trade, à jour à chaque ouverture)</a></div><div class="mu">Compteurs repartis de zéro le 19.10.2026 à 11:00 (heure suisse) : seuls les trades ouverts depuis comptent. Capital conseillé = 2 × creux max + 2 mises de 50 $ (comme l'onglet 1). Aucun argent réel.</div>
-<div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <b>Stratégies fantômes : remise à 0</b></div>
+<div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <b>Stratégies fantômes : remise à 0</b> · <a href="/zero2">Onglet 3 : idées</a></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" · "+S.length+" stratégies (" + S.filter(x=>x.n>0).length + " ont déjà un trade réglé) · total : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b></div></div>";
+if(!S.length)h+="<div class='card'>Aucun trade réglé depuis la remise à 0 pour l'instant.</div>";
+else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Stratégie</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseillé</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
+maj();setInterval(maj,20000);
+</script></body></html>`;
+const PAGE_ZERO2 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 3 — idées</title>${STYLE}</head><body>
+<h1>Onglet 3 — remise à 0 + versions « idées » <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 24.10.2026 à 22:00 (heure suisse). Chaque stratégie affichée apparaît deux fois : telle quelle, et « + idées ». Les lignes « + idées » sont calculées environ 5 min après la fin de chaque cycle, avec seulement ce qui était connu au moment de l'achat. Gros trades (prix ≥ 0,50) : gardés seulement si les bourses sont en avance sur Chainlink d'au moins 3,8 $ et montent vers nous, ou si le jeton Polymarket est en retard d'au moins 10 pts sur les bourses. Petits trades : mise x2 si au moins 10 trades des stratégies affichées sur le même côté du cycle, x3 si en plus la foule Polymarket vient de vendre notre jeton. Revente à 60 s de la fin si Chainlink est pour nous mais les futures Bybit contre nous d'au moins 3 $ (frais compris). Aucun argent réel.</div>
+<div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <b>Onglet 3 : idées</b></div>
+<div id="app" style="margin-top:12px">Chargement…</div>
+<script>
+const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
+async function maj(){try{const d=await (await fetch("/api/zero2",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
+let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" · "+S.length+" stratégies (" + S.filter(x=>x.n>0).length + " ont déjà un trade réglé) · total stratégies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> · total versions « + idées » : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> · cycles en attente de calcul : "+d.enAttente+"</div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade réglé depuis la remise à 0 pour l'instant.</div>";
 else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Stratégie</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseillé</th></tr>"+
 S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
