@@ -1853,6 +1853,14 @@ export class Bot {
       }
       // 19.10.2026 11:49 (Pitch : « go ») : PORTEFEUILLE 400 = somme de 3 stratégies régulières (gagnantes chaque jour du 14 au 18.10), objectif +400 $ / jour
       if (PORTEFEUILLE_400.has(k)) cp("PORTEFEUILLE 400");
+      // 24.10.2026 15:15 (Pitch : « fait cela oui » + « on nomme portefeuille 600 ») — analyse du 23.10 : les billets à moins de 10 c ne gagnent plus souvent
+      // que leur prix que s'ils viennent du moteur TWAP fin (17 % gagnés pour 6 % attendus, 10-19.10 et 19-23.10), surtout avec 40 à 90 s restantes.
+      // (a) « TWAP fin billets 40-90 s » : copie des billets < 0,10 de toute stratégie TWAP fin, 40-90 s restantes, un seul par cycle et par côté.
+      // (b) « PORTEFEUILLE 600 » : les mêmes 3 stratégies que PORTEFEUILLE 400, mais un billet < 0,10 n'est gardé que s'il vient de TWAP fin avec 40-90 s restantes.
+      { const billet = P.prix != null && P.prix < 0.10, twapOk = P.strat.startsWith("TWAP fin") && P.restant_s != null && P.restant_s >= 40 && P.restant_s <= 90;
+        if (billet && twapOk) { const B = this.N.tbil = this.N.tbil || {}, cle = P.start + "|" + P.cote;
+          if (!B[cle]) { B[cle] = P.strat; for (const c of Object.keys(B)) if (+c.split("|")[0] < (P.start || 0) - 86400) delete B[c]; cp("TWAP fin billets 40-90 s"); } }
+        if (PORTEFEUILLE_400.has(k) && (!billet || twapOk)) cp("PORTEFEUILLE 600"); }
       // 20.10.2026 19:05 (Pitch : « oui go ») : PORTEFEUILLE 400 corrige = mêmes 3 stratégies avec
       // (3) BY1 seulement si prix d'achat 0,50-0,70 ; (4)+(5) une seule mise par cycle et par côté, toutes stratégies confondues
       // (donc au plus 2 trades par cycle : jamais deux fois le même côté). Même cycle + même côté = même issue : la première copie close est gardée.
