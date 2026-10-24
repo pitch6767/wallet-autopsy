@@ -1907,7 +1907,7 @@ export class Bot {
     // 24.10.2026 21:37 (Pitch : « un autre onglet où tu mets à 0 nos stratégies existantes et rajoute une version avec toutes tes idées pour chaque stratégie »)
     try { if (P.heure && P.actif === "BTC" && Date.parse(P.heure) >= Date.parse(ZERO2_DEPUIS) && xlVisible(P.strat + " " + P.actif) && P.start) {
       const N = this.N; N.zero2 = N.zero2 || {}; N.idq = N.idq || {};
-      zCompte(N.zero2, P.strat + " " + P.actif, P.heure, P.net);
+      zCompte(N.zero2, P.strat + " " + P.actif, P.heure, P.net, false, (P.prix || 0) * (P.parts || 0));
       (N.idq[P.start] = N.idq[P.start] || []).push({ k: P.strat + " " + P.actif, cote: P.cote, heure: P.heure, prix: P.prix, parts: P.parts, net: P.net, gagne: P.gagnant ? P.gagnant === P.cote : P.net > 0 });
       this.idTraiter(); } } catch (err) { this.erreur("idées", err); }
     this.nCopies(P, issue);
@@ -1964,7 +1964,7 @@ export class Bot {
                 const uv = val("pm_up_vente", tr), b = sg > 0 ? val("pm_up_achat", tr) : (uv != null ? 1 - uv : null), sz = sg > 0 ? val("pm_up_achat_taille", tr) : val("pm_up_vente_taille", tr);
                 if (b != null && b > 0 && sz) { const q = Math.min(x.parts || 0, sz); net = q * (b - 0.07 * b * (1 - b)) + ((x.parts || 0) - q) * (x.gagne ? 1 : 0) - cout; } } }
           }
-          if (garder) { zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées BTC"), x.heure, mult * net, sans); zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées sans x2 x3 BTC"), x.heure, net, sans); }   // 24.10 21:49 (Pitch) : aussi une version sans mise x2 / x3
+          if (garder) { zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0)); zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées sans x2 x3 BTC"), x.heure, net, sans, (x.prix || 0) * (x.parts || 0)); }   // 24.10 21:49 (Pitch) : aussi une version sans mise x2 / x3
         }
         fait[st] = tous; for (const k of Object.keys(fait)) if (+k < s0 - 7200) delete fait[k];
       }
@@ -3426,10 +3426,10 @@ async function xlClasseur(Q, depuis) {
   return xlZip(F);
 }
 const ZERO2_DEPUIS = "2026-10-24T20:00:00Z";     // 24.10.2026 22:00 heure suisse : onglet 3, stratégies affichées remises à 0 + leurs versions « + idées »
-function zCompte(Z, k, heure, net, sans) {
+function zCompte(Z, k, heure, net, sans, mise) {
   const z = (Z[k] = Z[k] || { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {}, sansDonnees: 0 });
   const ms = Date.parse(heure), jz = new Date(ms + decalSuisse(ms)).toISOString().slice(0, 10); z.parJour[jz] = (z.parJour[jz] || 0) + net;
-  z.n++; z.pnl += net; z.cum += net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, net); if (sans) z.sansDonnees = (z.sansDonnees || 0) + 1;
+  z.n++; z.pnl += net; z.cum += net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, net); if (sans) z.sansDonnees = (z.sansDonnees || 0) + 1; if (mise) z.mise = (z.mise || 0) + mise;
   if (net >= 0) { z.gains++; z.serie = 0; } else { z.pertes++; z.pertesTot += net; z.serie++; z.serieMax = Math.max(z.serieMax, z.serie); }
 }
 const ZERO_DEPUIS = "2026-10-19T09:00:00Z";      // 19.10.2026 11:00 heure suisse (Pitch : « on remet tous à 0 ») ; avant : 14.10.2026 10:45, compteurs archivés dans zero:archive:2026-10-14T08:45:00Z
@@ -3456,8 +3456,8 @@ const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero2",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" · "+S.length+" stratégies (" + S.filter(x=>x.n>0).length + " ont déjà un trade réglé) · total stratégies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> · total versions « + idées » : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> · cycles en attente de calcul : "+d.enAttente+"</div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade réglé depuis la remise à 0 pour l'instant.</div>";
-else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Stratégie</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseillé</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Stratégie</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th><th>Mise moyenne par trade</th><th>Total misé</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseillé</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 </script></body></html>`;
