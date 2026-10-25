@@ -1940,7 +1940,7 @@ export class Bot {
         const cons = (t) => { const v = EXC.map((c) => ajust(c, t)).filter((x) => x != null); return v.length >= 2 ? med(v) : null; };
         const Phi = (z) => 0.5 * (1 + erf(z / Math.SQRT2));
         const fait = (N.idfait = N.idfait || {}); const deja = fait[st] || [];
-        const tous = [...deja, ...L.map((x) => ({ cote: x.cote, heure: x.heure, prix: x.prix, gagne: x.gagne }))];
+        const tous = [...deja, ...L.map((x) => ({ cote: x.cote, heure: x.heure, prix: x.prix, gagne: x.gagne, k: x.k }))];
         for (const x of L) {
           const ta = Math.floor(Date.parse(x.heure) / 1000), sg = x.cote === "Up" ? 1 : -1, cl = val("chainlink", ta), pab = val("prix_a_battre", ta);
           let mult = 1, garder = true, net = x.net, sans = false;
@@ -2012,15 +2012,21 @@ export class Bot {
           for (const cote of ["Up", "Down"]) {
             const Lc = tous.filter((y) => y.cote === cote).sort((u, v) => (u.heure < v.heure ? -1 : u.heure > v.heure ? 1 : 0)), g = Lc.find((y) => y.gagne != null);
             if (!g) continue;
-            for (const n of [6, 8]) {
-              const cle = st + "|" + cote + "|" + n; if (CP[cle] || Lc.length < n) continue; CP[cle] = 1;
-              const e = Lc[n - 1], te = Math.floor(Date.parse(e.heure) / 1000) + 1;
+            // 25.10.2026 21:10 (Pitch : « go ») : DIVERSITÉ 3 = achat quand 3 familles différentes (BY1, TWAP fin, corrige + carnet, foule bybit x2, PORTEFEUILLE) ont acheté ce côté ;
+            // CONSENSUS 6 billets = CONSENSUS 6 seulement si le prix d'achat est sous 0,10
+            const famille = (k) => !k ? "?" : k.startsWith("BY1") ? "BY1" : k.includes("foule bybit x2") ? "x2" : k.startsWith("TWAP") ? "TWAP" : k.startsWith("PORTEFEUILLE") ? "PF" : "corrige";
+            let eDiv = null; { const vu = new Set(); for (const y of Lc) { vu.add(famille(y.k)); if (vu.size >= 3) { eDiv = y; break; } } }
+            for (const n of [6, 8, "D3", "6b"]) {
+              const cle = st + "|" + cote + "|" + n; if (CP[cle]) continue;
+              const e = n === "D3" ? eDiv : Lc[(n === "6b" ? 6 : n) - 1]; if (!e) continue; CP[cle] = 1;
+              const te = Math.floor(Date.parse(e.heure) / 1000) + 1;
               const uv = val("pm_up_vente", te), ub = val("pm_up_achat", te), ask = cote === "Up" ? uv : (ub != null ? 1 - ub : null);
               const p0 = ask != null && ask > 0.005 && ask < 0.995 ? ask : e.prix; if (!p0) continue;
-              const q = 50 / (p0 + 0.07 * p0 * (1 - p0)), net = q * (g.gagne ? 1 : 0) - 50;
-              N.zero = N.zero || {}; zCompte(N.zero, "CONSENSUS " + n + " BTC", e.heure, net, ask == null, 50, s0);
-              N.zero2 = N.zero2 || {}; zCompte(N.zero2, "CONSENSUS " + n + " BTC", e.heure, net, ask == null, 50, s0);
-              N.zero3 = N.zero3 || {}; zCompte(N.zero3, "CONSENSUS " + n + " BTC", e.heure, net, ask == null, 50, s0);
+              if (n === "6b" && !(p0 < 0.10)) continue;
+              const q = 50 / (p0 + 0.07 * p0 * (1 - p0)), net = q * (g.gagne ? 1 : 0) - 50, nomM = n === "D3" ? "DIVERSITÉ 3 BTC" : n === "6b" ? "CONSENSUS 6 billets BTC" : "CONSENSUS " + n + " BTC";
+              N.zero = N.zero || {}; zCompte(N.zero, nomM, e.heure, net, ask == null, 50, s0);
+              N.zero2 = N.zero2 || {}; zCompte(N.zero2, nomM, e.heure, net, ask == null, 50, s0);
+              N.zero3 = N.zero3 || {}; zCompte(N.zero3, nomM, e.heure, net, ask == null, 50, s0);
             } }
           for (const k of Object.keys(CP)) if (+k.split("|")[0] < s0 - 7200) delete CP[k];
         } catch (err) { this.erreur("CONSENSUS", err); }
