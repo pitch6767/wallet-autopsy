@@ -283,7 +283,7 @@ export class Bot {
         this.N.audit = { fait: base.auditFait || {}, lignes: (await this.state.storage.get("nv:audit")) || [] };
         this.N.zero = (await this.state.storage.get("nv:zero")) || {};
         this.N.zero2 = (await this.state.storage.get("nv:zero2")) || {}; if ((await this.state.storage.get("zero2:depuis")) !== ZERO2_DEPUIS) { const ar = await this.state.storage.get("zero2:archive:" + ZERO2_DEPUIS); if (ar) { this.N.zero2 = ar; await this.state.storage.put("nv:zero2", ar); } await this.state.storage.put("zero2:depuis", ZERO2_DEPUIS); }   // 25.10 : compteurs « + idées » rétablis
-        this.N.zero3 = (await this.state.storage.get("nv:zero3")) || {}; { const q = (await this.state.storage.get("nv:idq")) || {}; this.N.idq = q.idq || {}; this.N.idfait = q.idfait || {}; }   // 24.10.2026 : onglet 3 (remise à 0 + versions « + idées »)
+        this.N.zero3 = (await this.state.storage.get("nv:zero3")) || {}; { const q = (await this.state.storage.get("nv:idq")) || {}; this.N.idq = q.idq || {}; this.N.idfait = q.idfait || {}; this.N.consPris = q.consPris || {}; }   // 24.10.2026 : onglet 3 (remise à 0 + versions « + idées »)
         // 19.10.2026 : nouvelle remise à 0 de l'onglet 2 ; les anciens compteurs sont archivés une seule fois
         if ((await this.state.storage.get("zero:depuis")) !== ZERO_DEPUIS) { await this.state.storage.put("zero:archive:" + ((await this.state.storage.get("zero:depuis")) || "2026-10-14T08:45:00Z"), this.N.zero); this.N.zero = {}; await this.state.storage.put("nv:zero", {}); await this.state.storage.put("zero:depuis", ZERO_DEPUIS); }
       } else this.N = (await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
@@ -1696,7 +1696,7 @@ export class Bot {
       put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {}, markout: N.markout || {} });
       for (const [k, v] of Object.entries(N.strats)) put("nv:strat:" + k, v);
       if (N.zero) put("nv:zero", N.zero);
-      if (N.zero2) put("nv:zero2", N.zero2); if (N.zero3) put("nv:zero3", N.zero3); if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {} });
+      if (N.zero2) put("nv:zero2", N.zero2); if (N.zero3) put("nv:zero3", N.zero3); if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {} });
       // ordres : non réglés + 250 derniers réglés (les compteurs sont cumulés à part)
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
       N.ordres = [...regles.slice(-250), ...nonRegles];
@@ -1940,7 +1940,7 @@ export class Bot {
         const cons = (t) => { const v = EXC.map((c) => ajust(c, t)).filter((x) => x != null); return v.length >= 2 ? med(v) : null; };
         const Phi = (z) => 0.5 * (1 + erf(z / Math.SQRT2));
         const fait = (N.idfait = N.idfait || {}); const deja = fait[st] || [];
-        const tous = [...deja, ...L.map((x) => ({ cote: x.cote, heure: x.heure }))];
+        const tous = [...deja, ...L.map((x) => ({ cote: x.cote, heure: x.heure, prix: x.prix, gagne: x.gagne }))];
         for (const x of L) {
           const ta = Math.floor(Date.parse(x.heure) / 1000), sg = x.cote === "Up" ? 1 : -1, cl = val("chainlink", ta), pab = val("prix_a_battre", ta);
           let mult = 1, garder = true, net = x.net, sans = false;
@@ -2006,6 +2006,24 @@ export class Bot {
               if (R2.includes("bcl") && bil && clm != null && clm >= 2.69 && clm < 12.5) ok = false;
               if (ok) zCompte(N.zero3, x.k.replace(/ BTC$/, " + sur mesure BTC"), x.heure, m2 * x.net, false, m2 * mise, s0); } }   // 24.10 21:49 (Pitch) : aussi une version sans mise x2 / x3
         }
+        // 25.10.2026 21:03 (Pitch : « go ») : méta-stratégies CONSENSUS 6 et CONSENSUS 8 — un seul achat de 50 $ par cycle et par côté, au moment où la 6e (8e) stratégie affichée
+        // achète ce côté ; prix = meilleur vendeur 1 s plus tard (enregistrement seconde par seconde), sinon prix payé par cette stratégie ; frais 7 % × p × (1 − p) ; gardé jusqu'au règlement.
+        try { const CP = (N.consPris = N.consPris || {});
+          for (const cote of ["Up", "Down"]) {
+            const Lc = tous.filter((y) => y.cote === cote).sort((u, v) => (u.heure < v.heure ? -1 : u.heure > v.heure ? 1 : 0)), g = Lc.find((y) => y.gagne != null);
+            if (!g) continue;
+            for (const n of [6, 8]) {
+              const cle = st + "|" + cote + "|" + n; if (CP[cle] || Lc.length < n) continue; CP[cle] = 1;
+              const e = Lc[n - 1], te = Math.floor(Date.parse(e.heure) / 1000) + 1;
+              const uv = val("pm_up_vente", te), ub = val("pm_up_achat", te), ask = cote === "Up" ? uv : (ub != null ? 1 - ub : null);
+              const p0 = ask != null && ask > 0.005 && ask < 0.995 ? ask : e.prix; if (!p0) continue;
+              const q = 50 / (p0 + 0.07 * p0 * (1 - p0)), net = q * (g.gagne ? 1 : 0) - 50;
+              N.zero = N.zero || {}; zCompte(N.zero, "CONSENSUS " + n + " BTC", e.heure, net, ask == null, 50, s0);
+              N.zero2 = N.zero2 || {}; zCompte(N.zero2, "CONSENSUS " + n + " BTC", e.heure, net, ask == null, 50, s0);
+              N.zero3 = N.zero3 || {}; zCompte(N.zero3, "CONSENSUS " + n + " BTC", e.heure, net, ask == null, 50, s0);
+            } }
+          for (const k of Object.keys(CP)) if (+k.split("|")[0] < s0 - 7200) delete CP[k];
+        } catch (err) { this.erreur("CONSENSUS", err); }
         fait[st] = tous; for (const k of Object.keys(fait)) if (+k < s0 - 7200) delete fait[k];
       }
       this.nSauver();
