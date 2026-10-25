@@ -707,7 +707,7 @@ export class Bot {
       return json({ depuis: ZERO2_DEPUIS, strats: L, total: +L.filter((x) => !x.nom.includes(" + idées")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + idées")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length }); }
     if (u.pathname === "/api/zero3") { const Z = this.N.zero3 || {};
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, ...z, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
-      return json({ depuis: ZERO3_DEPUIS, strats: L, total: +L.filter((x) => !x.nom.includes(" + consensus")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + consensus")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length }); }
+      return json({ depuis: ZERO3_DEPUIS, strats: L, total: +L.filter((x) => !x.nom.includes(" + consensus")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + consensus BTC")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length }); }
     if (u.pathname === "/zero3") return new Response(PAGE_ZERO3, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero2") return new Response(PAGE_ZERO2, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero") return new Response(PAGE_ZERO, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -1976,7 +1976,11 @@ export class Bot {
           if (Date.parse(x.heure) >= Date.parse(ZERO3_DEPUIS)) { let mc = 1, gc = true;
             if (x.prix != null && x.prix >= 0.10 && x.prix < 0.5) { const nb = tous.filter((y) => y.cote === x.cote && y.heure <= x.heure).length; if (nb < 3) gc = false; else if (nb >= 10) mc = 2; }
             const mise = (x.prix || 0) * (x.parts || 0); N.zero3 = N.zero3 || {};
-            if (gc) { zCompte(N.zero3, x.k.replace(/ BTC$/, " + consensus BTC"), x.heure, mc * x.net, false, mc * mise, s0); zCompte(N.zero3, x.k.replace(/ BTC$/, " + consensus sans x2 BTC"), x.heure, x.net, false, mise, s0); } }   // 24.10 21:49 (Pitch) : aussi une version sans mise x2 / x3
+            if (gc) { zCompte(N.zero3, x.k.replace(/ BTC$/, " + consensus BTC"), x.heure, mc * x.net, false, mc * mise, s0); zCompte(N.zero3, x.k.replace(/ BTC$/, " + consensus sans x2 BTC"), x.heure, x.net, false, mise, s0); }
+            // 25.10.2026 17:53 (Pitch : « go ») : financement Bybit contre notre côté (sg × financement ≤ −0,0000642, seuil appris sur 10-25.10) — gros trades (≥ 0,50) pris seulement dans ce cas
+            const fz = val("bybit_financement", Math.floor(Date.parse(x.heure) / 1000)), sgz = x.cote === "Up" ? 1 : -1, grosOk = !(x.prix != null && x.prix >= 0.5) || (fz != null && sgz * fz <= -0.0000642);
+            if (grosOk) { zCompte(N.zero3, x.k.replace(/ BTC$/, " + financement contre la foule BTC"), x.heure, x.net, fz == null, mise, s0);
+              if (gc) zCompte(N.zero3, x.k.replace(/ BTC$/, " + consensus + financement BTC"), x.heure, mc * x.net, fz == null, mc * mise, s0); } }   // 24.10 21:49 (Pitch) : aussi une version sans mise x2 / x3
         }
         fait[st] = tous; for (const k of Object.keys(fait)) if (+k < s0 - 7200) delete fait[k];
       }
@@ -3475,7 +3479,7 @@ document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("ap
 maj();setInterval(maj,20000);
 </script></body></html>`;
 const PAGE_ZERO3 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 4 — consensus</title>${STYLE}</head><body>
-<h1>Onglet 4 — remise à 0 + versions « consensus » <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 25.10.2026 à 15:00 (heure suisse). Chaque stratégie affichée apparaît trois fois : telle quelle, « + consensus » et « + consensus sans x2 ». Règle (la seule idée confirmée sur les jours du 10 au 19.10, jamais utilisés pour la trouver) : un petit trade (prix 0,10 à 0,50) n'est pas pris si seulement 1 ou 2 trades des stratégies affichées sont sur le même côté du cycle à son heure d'achat ; s'il y en a au moins 10, la mise est doublée (sauf dans « sans x2 »). Gros trades et billets &lt; 0,10 inchangés. Calcul environ 5 min après la fin du cycle. Aucun argent réel.</div>
+<h1>Onglet 4 — remise à 0 + versions « consensus » <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 25.10.2026 à 15:00 (heure suisse). Chaque stratégie affichée apparaît trois fois : telle quelle, « + consensus » et « + consensus sans x2 ». Règle (la seule idée confirmée sur les jours du 10 au 19.10, jamais utilisés pour la trouver) : un petit trade (prix 0,10 à 0,50) n'est pas pris si seulement 1 ou 2 trades des stratégies affichées sont sur le même côté du cycle à son heure d'achat ; s'il y en a au moins 10, la mise est doublée (sauf dans « sans x2 »). Gros trades et billets &lt; 0,10 inchangés. Depuis le 25.10 vers 18 h, aussi « + financement contre la foule » (gros trades, prix ≥ 0,50, pris seulement quand le financement Bybit est contre notre côté : la foule paie pour être de l'autre côté) et « + consensus + financement » (les deux règles). Calcul environ 5 min après la fin du cycle. Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <a href="/zero2">Onglet 3 : idées</a> · <b>Onglet 4 : consensus</b></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
