@@ -1,41 +1,24 @@
-12:25:51
-1323406 1116921 700
-12:26:12
-1320612 1116921 0
-12:26:33
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-    import json,sys;d=json.load(sys.stdin);print(d['objet'].get('N'),d['N']['strats'],d['secondes']['BTC'])
-                      ~~~~~~~~~^^^^^^^^^^^
-  File "/usr/lib/python3.14/json/__init__.py", line 298, in load
-    return loads(fp.read(),
-        cls=cls, object_hook=object_hook,
-        parse_float=parse_float, parse_int=parse_int,
-        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
-  File "/usr/lib/python3.14/json/__init__.py", line 352, in loads
-    return _default_decoder.decode(s)
-           ~~~~~~~~~~~~~~~~~~~~~~~^^^
-  File "/usr/lib/python3.14/json/decoder.py", line 345, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/json/decoder.py", line 363, in raw_decode
-    raise JSONDecodeError("Expecting value", s, err.value) from None
-json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
-12:26:54
-1317959 1116921 18
-12:27:15
-1317959 1116921 39
-12:27:35
-1317959 1116921 59
-12:27:56
-1317959 1116921 80
-12:28:16
-1317959 1116921 100
-12:28:37
-1294848 1117407 121
-12:28:57
-1294848 1117407 141
-12:29:18
-1294848 1117407 162
-12:29:38
-1294848 1117407 182
+14:25:47
+1298089 1111225 700
+14:26:08
+1296025 1111225 700
+14:26:29
+1296025 1111225 700
+14:26:49
+1296025 1111225 700
+14:27:10
+1296025 1111225 700
+14:27:30
+1296025 1111225 700
+14:27:51
+1299172 1111225 700
+14:28:11
+1299858 1111225 700
+14:28:32
+1300581 1111225 700
+14:28:52
+1300581 1111225 700
+14:29:13
+1300581 1111225 700
+14:29:34
+1300581 1111225 700
