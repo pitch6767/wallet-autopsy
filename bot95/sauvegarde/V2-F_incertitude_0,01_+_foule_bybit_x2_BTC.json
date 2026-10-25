@@ -9620,14 +9620,134 @@
 "proba0": 0.367,
 "restant_s": 41,
 "start": 1792909200
+},
+"2026-10-25T13:51:27.179Z|Up": {
+"heure": "2026-10-25T13:51:27.179Z",
+"cote": "Up",
+"prix": 0.397,
+"parts": 237.21,
+"U": 122.21,
+"D": 0,
+"cash": 140.41472932800002,
+"net": 140.41,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.645,
+"restant_s": 213,
+"journal": [
+"87.2s écart 0.26 avec 0,01 % (modèle 0,08 % : 0.537) → achat Up 122.2 parts à 0.397 (meilleur vendeur seul, 122 parts affichées)",
+"mise x1.94, surcoût 2.63 $"
+],
+"start": 1792936200,
+"slug": "btc-updown-5m-1792936200"
+},
+"2026-10-25T13:33:00.175Z|Down": {
+"heure": "2026-10-25T13:33:00.175Z",
+"cote": "Down",
+"prix": 0.2842,
+"parts": 5,
+"U": 0,
+"D": 5,
+"cash": 3.5790439999999997,
+"net": 3.58,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.577,
+"restant_s": 120,
+"journal": [
+"180.2s écart 0.31 avec 0,01 % (modèle 0,08 % : 0.526) → achat Down 5.0 parts à 0.2842 (meilleur vendeur seul, 5 parts affichées)",
+"mise x1.00, surcoût 0.00 $"
+],
+"start": 1792935000,
+"slug": "btc-updown-5m-1792935000"
+},
+"2026-10-25T13:03:12.635Z|Up": {
+"heure": "2026-10-25T13:03:12.635Z",
+"cote": "Up",
+"prix": 0.1802,
+"parts": 19.1,
+"U": 11,
+"D": 0,
+"cash": -3.6942207199999997,
+"net": -3.69,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.39,
+"restant_s": 107,
+"journal": [
+"192.6s écart 0.22 avec 0,01 % (modèle 0,08 % : 0.468) → achat Up 11.0 parts à 0.1802 (meilleur vendeur seul, 11 parts affichées)",
+"mise x1.74, surcoût 0.25 $"
+],
+"start": 1792933200,
+"slug": "btc-updown-5m-1792933200"
+},
+"2026-10-25T12:58:32.952Z|Down": {
+"heure": "2026-10-25T12:58:32.952Z",
+"cote": "Down",
+"prix": 0.0959,
+"parts": 150.9,
+"U": 0,
+"D": 75.45,
+"cash": -15.268517119999998,
+"net": -15.27,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.311,
+"restant_s": 87,
+"journal": [
+"213.0s écart 0.22 avec 0,01 % (modèle 0,08 % : 0.470) → achat Down 75.5 parts à 0.0959 (meilleur vendeur seul, 75 parts affichées)",
+"mise x2.00, surcoût 0.80 $"
+],
+"start": 1792932900,
+"slug": "btc-updown-5m-1792932900"
+},
+"2026-10-25T12:32:41.159Z|Down": {
+"heure": "2026-10-25T12:32:41.159Z",
+"cote": "Down",
+"prix": 0.2531,
+"parts": 38,
+"U": 0,
+"D": 19,
+"cash": -10.210246399999999,
+"net": -10.21,
+"issue": "une seule jambe",
+"gagnant": "Up",
+"proba0": 0.441,
+"restant_s": 139,
+"journal": [
+"161.2s écart 0.20 avec 0,01 % (modèle 0,08 % : 0.475) → achat Down 19.0 parts à 0.2531 (meilleur vendeur seul, 19 parts affichées)",
+"mise x2.00, surcoût 0.59 $"
+],
+"start": 1792931400,
+"slug": "btc-updown-5m-1792931400"
+},
+"2026-10-25T12:22:20.748Z|Up": {
+"heure": "2026-10-25T12:22:20.748Z",
+"cote": "Up",
+"prix": 0.2531,
+"parts": 5,
+"U": 5,
+"D": 0,
+"cash": -1.266164,
+"net": -1.27,
+"issue": "une seule jambe",
+"gagnant": "Down",
+"proba0": 0.535,
+"restant_s": 159,
+"journal": [
+"140.7s écart 0.29 avec 0,01 % (modèle 0,08 % : 0.509) → achat Up 5.0 parts à 0.2531 (meilleur vendeur seul, 5 parts affichées)",
+"mise x1.00, surcoût 0.00 $"
+],
+"start": 1792930800,
+"slug": "btc-updown-5m-1792930800"
 }
 },
 "resume_bot": {
 "depuis": 1791931340.173,
-"n": 505,
-"gains": 169,
-"pertes": 336,
-"pnl": 12352.58
+"n": 511,
+"gains": 171,
+"pertes": 340,
+"pnl": 12466.13
 },
 "archive": [
 [
@@ -14174,8 +14294,62 @@
 "une seule jambe",
 0.785,
 226
+],
+[
+"2026-10-25T12:22:20.748Z",
+"Up",
+0.2531,
+-1.27,
+"une seule jambe",
+0.535,
+159
+],
+[
+"2026-10-25T12:32:41.159Z",
+"Down",
+0.2531,
+-10.21,
+"une seule jambe",
+0.441,
+139
+],
+[
+"2026-10-25T12:58:32.952Z",
+"Down",
+0.0959,
+-15.27,
+"une seule jambe",
+0.311,
+87
+],
+[
+"2026-10-25T13:03:12.635Z",
+"Up",
+0.1802,
+-3.69,
+"une seule jambe",
+0.39,
+107
+],
+[
+"2026-10-25T13:33:00.175Z",
+"Down",
+0.2842,
+3.58,
+"une seule jambe",
+0.577,
+120
+],
+[
+"2026-10-25T13:51:27.179Z",
+"Up",
+0.397,
+140.41,
+"une seule jambe",
+0.645,
+213
 ]
 ],
-"n_sauves": 505,
-"maj": "2026-10-25 12:25 UTC"
+"n_sauves": 511,
+"maj": "2026-10-25 15:06 UTC"
 }
