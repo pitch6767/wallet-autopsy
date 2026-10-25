@@ -1980,7 +1980,17 @@ export class Bot {
             // 25.10.2026 17:53 (Pitch : « go ») : financement Bybit contre notre côté (sg × financement ≤ −0,0000642, seuil appris sur 10-25.10) — gros trades (≥ 0,50) pris seulement dans ce cas
             const fz = val("bybit_financement", Math.floor(Date.parse(x.heure) / 1000)), sgz = x.cote === "Up" ? 1 : -1, grosOk = !(x.prix != null && x.prix >= 0.5) || (fz != null && sgz * fz <= -0.0000642);
             if (grosOk) { zCompte(N.zero3, x.k.replace(/ BTC$/, " + financement contre la foule BTC"), x.heure, x.net, fz == null, mise, s0);
-              if (gc) zCompte(N.zero3, x.k.replace(/ BTC$/, " + consensus + financement BTC"), x.heure, mc * x.net, fz == null, mc * mise, s0); } }   // 24.10 21:49 (Pitch) : aussi une version sans mise x2 / x3
+              if (gc) zCompte(N.zero3, x.k.replace(/ BTC$/, " + consensus + financement BTC"), x.heure, mc * x.net, fz == null, mc * mise, s0); }
+            // 25.10.2026 20:07 (Pitch : « go ») : élan du perp Bybit — gros trade pas pris si le flux du perp sur 30 s (achats − ventes) / total, de notre côté, est entre −0,366 et 0,085
+            const taz = Math.floor(Date.parse(x.heure) / 1000); let pa = 0, pv = 0, vu = 0;
+            for (let u = taz - 30; u <= taz; u++) { const l = R[u]; if (!l) continue; vu++; pa += +l[C["perp_achats_usd"]] || 0; pv += +l[C["perp_ventes_usd"]] || 0; }
+            const flux30 = vu ? sgz * (pa - pv) / (pa + pv + 1) : null, gros = x.prix != null && x.prix >= 0.5;
+            const elanOk = !gros || (flux30 != null && !(flux30 >= -0.366 && flux30 < 0.0851));
+            if (elanOk) { zCompte(N.zero3, x.k.replace(/ BTC$/, " + élan perp BTC"), x.heure, x.net, flux30 == null, mise, s0);
+              if (gc && grosOk) zCompte(N.zero3, x.k.replace(/ BTC$/, " + consensus + financement + élan perp BTC"), x.heure, mc * x.net, flux30 == null || fz == null, mc * mise, s0); }
+            // 25.10.2026 20:07 (Pitch : « rajoute quand même pour les petites trades un fantôme entre minute 35 et 45 ») : petits trades (0,10-0,50) pris seulement si achetés entre la minute 35 et 45 de l'heure
+            const mn = new Date(taz * 1000).getUTCMinutes(), petit = x.prix != null && x.prix >= 0.10 && x.prix < 0.5;
+            if (!petit || (mn >= 35 && mn < 45)) zCompte(N.zero3, x.k.replace(/ BTC$/, " + petits minute 35-45 BTC"), x.heure, x.net, false, mise, s0); }   // 24.10 21:49 (Pitch) : aussi une version sans mise x2 / x3
         }
         fait[st] = tous; for (const k of Object.keys(fait)) if (+k < s0 - 7200) delete fait[k];
       }
@@ -3479,7 +3489,7 @@ document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("ap
 maj();setInterval(maj,20000);
 </script></body></html>`;
 const PAGE_ZERO3 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 4 — consensus</title>${STYLE}</head><body>
-<h1>Onglet 4 — remise à 0 + versions « consensus » <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 25.10.2026 à 15:00 (heure suisse). Chaque stratégie affichée apparaît trois fois : telle quelle, « + consensus » et « + consensus sans x2 ». Règle (la seule idée confirmée sur les jours du 10 au 19.10, jamais utilisés pour la trouver) : un petit trade (prix 0,10 à 0,50) n'est pas pris si seulement 1 ou 2 trades des stratégies affichées sont sur le même côté du cycle à son heure d'achat ; s'il y en a au moins 10, la mise est doublée (sauf dans « sans x2 »). Gros trades et billets &lt; 0,10 inchangés. Depuis le 25.10 vers 18 h, aussi « + financement contre la foule » (gros trades, prix ≥ 0,50, pris seulement quand le financement Bybit est contre notre côté : la foule paie pour être de l'autre côté) et « + consensus + financement » (les deux règles). Calcul environ 5 min après la fin du cycle. Aucun argent réel.</div>
+<h1>Onglet 4 — remise à 0 + versions « consensus » <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 25.10.2026 à 15:00 (heure suisse). Chaque stratégie affichée apparaît trois fois : telle quelle, « + consensus » et « + consensus sans x2 ». Règle (la seule idée confirmée sur les jours du 10 au 19.10, jamais utilisés pour la trouver) : un petit trade (prix 0,10 à 0,50) n'est pas pris si seulement 1 ou 2 trades des stratégies affichées sont sur le même côté du cycle à son heure d'achat ; s'il y en a au moins 10, la mise est doublée (sauf dans « sans x2 »). Gros trades et billets &lt; 0,10 inchangés. Depuis le 25.10 vers 18 h, aussi « + financement contre la foule » (gros trades, prix ≥ 0,50, pris seulement quand le financement Bybit est contre notre côté : la foule paie pour être de l'autre côté) et « + consensus + financement » (les deux règles). Depuis le 25.10 vers 20 h 15 : « + élan perp » (gros trade pas pris si le flux du perp Bybit sur 30 s est neutre ou contre nous), « + consensus + financement + élan perp » (tout), et « + petits minute 35-45 » (petits trades pris seulement s'ils sont achetés entre la minute 35 et 45 de l'heure ; idée sans explication de marché, à vérifier). Calcul environ 5 min après la fin du cycle. Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <a href="/zero2">Onglet 3 : idées</a> · <b>Onglet 4 : consensus</b></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
