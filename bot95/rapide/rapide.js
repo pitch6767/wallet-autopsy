@@ -9,6 +9,7 @@ const U = process.env.BOT95_URL || "https://bot95.pitch67.workers.dev";
 const TOKEN = process.env.BOT95_RAPIDE_TOKEN || "";
 const G = "https://gamma-api.polymarket.com", CLOB = "https://clob.polymarket.com";
 const DIR = process.env.BOT95_DIR || __dirname;
+const LOCAL_U = process.env.BOT95_LOCAL_URL || "", LOCAL_T = process.env.BOT95_LOCAL_TOKEN || "";   // 26.10.2026 : copie de bot95 à Dublin (facultatif)
 const nowMs = () => performance.timeOrigin + performance.now();          // horloge murale à la microseconde
 const now = () => nowMs() / 1000;
 const log = (...x) => console.log(new Date().toISOString(), ...x);
@@ -1284,6 +1285,8 @@ function fantAchat(start, nom, X, dollars, info) {
   const E = { nomFant: nom, start, cote: X, t: Math.round(nowMs()), a0: a ? a[0] : null, montant: dollars, statut: "achat", ...(info || {}) };
   const R = recDe(start); (R.nv = R.nv || []).push(E);
   if (!a) { E.statut = "pas de vendeur"; return; }
+  // 26.10.2026 : annonce immédiate à la copie de bot95 qui tourne sur ce serveur (signaux en direct vers le bot de trading). Rien si non configuré.
+  if (LOCAL_U && LOCAL_T && nom.endsWith("100 $")) fetch(LOCAL_U + "/api/signal_by1", { method: "POST", headers: { "content-type": "application/json", "x-signal-token": LOCAL_T }, body: JSON.stringify({ start, cote: X, nom, montant: dollars }) }).catch(() => {});
   FANT.push(E);
   setTimeout(() => { let q = 0, c = 0;
     for (const [px, sz] of asksTries(id)) { if (px > a[0] + 0.01 + 1e-9) break; const u = px + FEE7(px); const k = Math.min(sz, (dollars - c) / u); if (k <= 1e-9) break; q += k; c += k * u; }

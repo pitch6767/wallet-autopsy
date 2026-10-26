@@ -497,6 +497,19 @@ export class Bot {
       for (const o of Object.values(sigs)) o.resultat = +o.resultat.toFixed(2);
       return json({ regle: "CUSUM : on ajoute (Brier moteur − Brier carnet − 0,005) par tranche de 3 h, plancher 0 ; alerte au-dessus de 0,03. Aucune décision n'est modifiée.", blocs, regimes, calibration, couverture, signaux: sigs });
     }
+    // ---- 26.10.2026 : copie de Dublin — journal des signaux en direct, et achats BY1 annoncés par le labo rapide (même serveur)
+    if (u.pathname === "/api/signaux_live") return json({ actif: !!this.env.SIGNAL_URL, nums: this.env.SIGNAL_NUMS || "", journal: this._slJ || [], tally: this._slT || {} });
+    if (u.pathname === "/api/signal_by1" && req.method === "POST") {
+      if (!this.env.SIGNAL_URL || !this.env.SIGNAL_TOKEN || req.headers.get("x-signal-token") !== this.env.SIGNAL_TOKEN) return new Response("non", { status: 403 });
+      const d = await req.json().catch(() => ({})), mk = this.mk && this.mk.BTC;
+      if (!mk || mk.start !== +d.start || (d.cote !== "Up" && d.cote !== "Down") || typeof d.nom !== "string" || !d.nom.startsWith("BY1")) return json({ ok: false, raison: "cycle ou données" });
+      const tok = d.cote === "Up" ? mk.up : mk.down, ask = (this.livreTrie(tok, "asks")[0] || [null])[0];
+      if (ask == null) return json({ ok: false, raison: "pas de vendeur" });
+      const dollars = +d.montant || 100, P = { strat: d.nom, actif: "BTC", start: mk.start, end: mk.end, slug: mk.slug, up: mk.up, down: mk.down, cote: d.cote, prix: ask, parts: dollars / ask, restant_s: Math.round(mk.end - now()), heure: new Date().toISOString(), journal: [] };
+      this.nChamps(P, d.nom, "BTC", mk, { cote: d.cote, prix: ask, parts: P.parts });
+      this.slEmettre(P, mk);
+      return json({ ok: true });
+    }
     // ---- bot95 RAPIDE sur le VPS de Dublin (10.10.2026) : sert le code au VPS et reçoit ses mesures (jeton requis, haché ici)
     if (u.pathname.startsWith("/api/rapide/")) {
       const jeton = req.headers.get("x-rapide") || "";
@@ -898,6 +911,7 @@ export class Bot {
         if (minute % 30 === 0) this.state.storage.list({ prefix: `sig:${a}:`, limit: 300 }).then((m2) => { const ks = [...m2.keys()].filter((kk) => +kk.split(":")[2] < minute - 5760).slice(0, 120); if (ks.length) this.state.storage.delete(ks); }).catch(() => {});
       }
       R.lignes.push(ligne);
+      if (a === "BTC") { const HB = (this._sgH = this._sgH || []); HB.push(ligne); if (HB.length > 420) HB.shift(); }   // 26.10.2026 : signaux en direct (copie de Dublin)
     }
   }
   async sigExterne() {
@@ -1158,7 +1172,7 @@ export class Bot {
     if (!m) throw new Error(a + " marché introuvable " + start);
     const outs = JSON.parse(m.outcomes || "[]"), toks = JSON.parse(m.clobTokenIds || "[]");
     const iUp = outs.findIndex((o) => String(o).toLowerCase() === "up");
-    return { slug: e.slug, up: toks[iUp], down: toks[1 - iUp] };
+    return { slug: e.slug, up: toks[iUp], down: toks[1 - iUp], marketId: m.id != null ? String(m.id) : null, conditionId: m.conditionId || null };
   }
   async prixABattreOfficiel(a, mk) {
     // 1) priceToBeat officiel du cycle (publié tard) ; 2) sinon finalPrice officiel du cycle précédent (= prix à battre de celui-ci)
@@ -1780,6 +1794,14 @@ export class Bot {
     // 13.10.2026 21:35 (Pitch : « tes dernières trouvailles avec les autres stratégies du bot ») : on note le déséquilibre du carnet Polymarket
     // de NOTRE jeton au moment de l'achat (5 premiers niveaux, (acheteurs − vendeurs) / total). À la clôture, si > 0, une copie du trade est
     // comptée dans la stratégie fantôme « <nom> + carnet » (H1070). Aucun ordre réel ; la stratégie d'origine est inchangée.
+    this.nChamps(P, strat, a, mk, extra);
+    // 26.10.2026 : copie de Dublin seulement (SIGNAL_URL) — signal en direct vers le bot de trading pour les stratégies choisies
+    if (this.env.SIGNAL_URL && a === "BTC") { try { this.slEmettre(P, mk); } catch (err) { this.erreur("signal live", err); } }
+    try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); }
+    return P;
+  }
+  // champs mesurés au moment de l'achat (carnet, écart, flux, passages, saut Bybit, mise doublée, pression) — extrait de nPos le 26.10.2026
+  nChamps(P, strat, a, mk, extra) {
     if (a === "BTC" && !/ \+ (carnet|carnet pression|ecart serre|carnet ecart serre|calme|contre foule|ecart carnet calme|foule bybit|foule bybit x2)$/.test(strat)) { try { const c = extra && extra.cote;
       if (c === "Up" || c === "Down") { const id = c === "Up" ? mk.up : mk.down, s5 = (k) => this.livreTrie(id, k).slice(0, 5).reduce((x, y) => x + y[1], 0), b = s5("bids"), q = s5("asks");
         if (b + q > 0) P.carnetPour = +((b - q) / (b + q)).toFixed(3);
@@ -1797,8 +1819,81 @@ export class Bot {
           for (const [t2, id2, sd, px, dq] of this._pch || []) { if (t2 < t - 3 || id2 !== mk.up || Math.abs(px - mid) > 0.03 + 1e-9) continue;
             if (sd === 0) { if (dq > 0) ab += dq; else db -= dq; } else { if (dq > 0) aa += dq; else da -= dq; } }
           const tot = ab + db + aa + da; if (tot > 0) P.pressPour = +((c === "Up" ? 1 : -1) * ((ab - db) - (aa - da)) / (tot + 1)).toFixed(3); } } } catch (_) {} }
-    try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); }
-    return P;
+  }
+  // ---- 26.10.2026 (Pitch : « bot95 copié à Dublin ») : SIGNAUX EN DIRECT vers le bot de trading de Dublin (POST SIGNAL_URL, jeton SIGNAL_TOKEN).
+  // Actif seulement dans la copie de bot95 qui tourne à Dublin (variable SIGNAL_URL) ; sur Cloudflare rien ne change.
+  // Numéros envoyés : SIGNAL_NUMS (ex. « 101,201,121,28,119 ») ; le bot de trading n'exécute que les stratégies ACTIVES.
+  // Versions branchées : base (1-34), « + idées » (1xx, SANS la revente à 60 s — décision de Pitch du 26.10), « + idées sans x2 x3 » (2xx).
+  slNoms(P) {   // noms affichés produits par ce trade, connus dès l'achat (miroir de nCopies et des copies méta de nClore ; duo / marché rapide non repris)
+    const out = [], a = P.actif, h = P.heure ? new Date(Date.parse(P.heure) + 2 * 3600e3).getUTCHours() : null, add = (nom, mult) => { if (xlVisible(nom + " " + a)) out.push({ nom, mult }); };
+    const base = P.strat, m0 = / 100 \$$/.test(base) ? 2 : 1, C = [{ nom: base, mult: m0, base: true }];
+    if (P.flux30 != null && P.flux30 <= -0.296 && P.bySautContre === false) { C.push({ nom: base + " + foule bybit", mult: m0 }); if (P.x2 && P.x2.parts > 0) C.push({ nom: base + " + foule bybit x2", mult: 2 * m0 }); }
+    if (FILTRE_HEURES.has(base + "|" + a) && h != null && !(h >= 2 && h < 10)) C.push({ nom: base + " sans 02-10h", mult: m0 });
+    if (P.passages != null && P.passages <= 2) C.push({ nom: base + " + calme", mult: m0 });
+    if (P.flux30 != null && P.flux30 <= -0.296) C.push({ nom: base + " + contre foule", mult: m0 });
+    if (P.passages != null && P.passages <= 2 && P.ecart != null && P.ecart <= 0.011 && P.carnetPour > 0) C.push({ nom: base + " + ecart carnet calme", mult: m0 });
+    if (P.ecart != null && P.ecart <= 0.011) C.push({ nom: base + " + ecart serre", mult: m0 });
+    if (P.carnetPour > 0) { C.push({ nom: base + " + carnet", mult: m0 }); if (P.ecart != null && P.ecart <= 0.011) C.push({ nom: base + " + carnet ecart serre", mult: m0 }); if (P.pressPour > 0) C.push({ nom: base + " + carnet pression", mult: m0 }); }
+    const L = (this._slL = this._slL || { p4c: {}, bil: {} }), cle = P.start + "|" + P.cote, billet = P.prix != null && P.prix < 0.10;
+    for (const c of C) {
+      add(c.nom, c.mult); const k = c.nom + "|" + a, twapOk = c.nom.startsWith("TWAP fin") && P.restant_s != null && P.restant_s >= 40 && P.restant_s <= 90;
+      if (META_TOP20.has(k) && h != null && !(h >= 6 && h < 9)) add(c.nom + " pas 06-09h", c.mult);
+      if (billet && twapOk && !L.bil[cle]) { L.bil[cle] = 1; add("TWAP fin billets 40-90 s", c.mult); }
+      if (PORTEFEUILLE_400.has(k)) {
+        add("PORTEFEUILLE 400", c.mult); if (!billet || twapOk) add("PORTEFEUILLE 600", c.mult);
+        if ((!k.startsWith("BY1") || (P.prix >= 0.50 - 1e-9 && P.prix <= 0.70 + 1e-9)) && !L.p4c[cle]) { L.p4c[cle] = 1; add("PORTEFEUILLE 400 corrige", c.mult); }
+      }
+      if (c.base && CHEF_BASES.has(k) && !(P.passages != null && P.passages <= 2 && !(P.carnetPour > 0 && P.pressPour > 0))) add(c.nom + " chef", c.mult);
+    }
+    for (const x of Object.keys(L.p4c)) if (+x.split("|")[0] < P.start - 3600) delete L.p4c[x];
+    for (const x of Object.keys(L.bil)) if (+x.split("|")[0] < P.start - 3600) delete L.bil[x];
+    return out;
+  }
+  // règles « + idées » au moment de l'achat (mêmes calculs que idTraiter, avec les lignes seconde par seconde gardées en mémoire)
+  slIdees(P, nb) {
+    const R = {}; for (const l of this._sgH || []) R[l[0]] = l;
+    const C = Object.fromEntries(SIG_COLS.map((c, i) => [c, i]));
+    const val = (c, t) => { for (let d = 0; d <= 3; d++) { const l = R[t - d]; if (l && l[C[c]] != null) return +l[C[c]]; } return null; };
+    const med = (v) => { v = v.filter((x) => x != null && isFinite(x)).sort((x, y) => x - y); return v.length ? (v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2) : null; };
+    const EXC = ["bybit_perp", "okx_perp", "binance_spot", "coinbase", "deribit_perp"];
+    const ajust = (c, t) => { const p = val(c, t); if (p == null) return null; const d = []; for (let u = t - 60; u <= t - 5; u++) { const x = val(c, u), b = val("chainlink", u); if (x != null && b != null) d.push(x - b); } return d.length > 10 ? p - med(d) : null; };
+    const cons = (t) => { const v = EXC.map((c) => ajust(c, t)).filter((x) => x != null); return v.length >= 2 ? med(v) : null; };
+    const s0 = P.start, ta = Math.floor(Date.parse(P.heure) / 1000), sg = P.cote === "Up" ? 1 : -1, cl = val("chainlink", ta), pab = val("prix_a_battre", ta);
+    if (cl == null || pab == null) return { garder: true, mult: 1, sans: true };
+    if (P.prix != null && P.prix >= 0.5) {
+      const cA = cons(ta), c10 = cons(ta - 10), lead = cA != null ? sg * (cA - cl) : null, mom10 = cA != null && c10 != null ? sg * (cA - c10) : null;
+      const dif = []; for (let u = ta - 300; u < ta; u++) { const x = val("chainlink", u), b = val("chainlink", u - 1); if (x != null && b != null && x !== b) dif.push(x - b); }
+      const moy = dif.length ? dif.reduce((q, v) => q + v, 0) / dif.length : 0;
+      const sd = dif.length > 20 ? Math.sqrt(Math.max(0, dif.reduce((q, v) => q + v * v, 0) / dif.length - moy * moy)) * Math.sqrt(dif.length / 300) : null;
+      const pc = (t) => { const c2 = cons(t), k2 = val("prix_a_battre", t), rr = s0 + 300 - t; return c2 != null && k2 != null && sd && rr > 0 ? phi(sg * (c2 - k2) / (sd * Math.sqrt(rr))) : null; };
+      const mid = (t) => { const b = val("pm_up_achat", t), x = val("pm_up_vente", t); if (b == null || x == null) return null; const m = (x + b) / 2; return sg > 0 ? m : 1 - m; };
+      const p0 = pc(ta), p5 = pc(ta - 5), mA = mid(ta), m5 = mid(ta - 5), lag5 = p0 != null && p5 != null && mA != null && m5 != null ? (p0 - p5) - (mA - m5) : null;
+      return { garder: (lead != null && mom10 != null && lead >= 3.8 && mom10 >= 0) || (lag5 != null && lag5 >= 0.10), mult: 1, lead, mom10, lag5 };
+    }
+    let mult = 1;
+    if (nb >= 10) { mult = 2; const me = sg > 0 ? "up" : "down", op = sg > 0 ? "down" : "up"; let ea = 0, ev = 0, oa = 0, ov = 0;
+      for (let u = ta - 10; u <= ta; u++) { const l = R[u]; if (!l) continue; ea += +l[C[`pm_${me}_echange_achat`]] || 0; ev += +l[C[`pm_${me}_echange_vente`]] || 0; oa += +l[C[`pm_${op}_echange_achat`]] || 0; ov += +l[C[`pm_${op}_echange_vente`]] || 0; }
+      if (((ea - ev) - (oa - ov)) / (ea + ev + oa + ov + 1) <= -0.3) mult = 3; }
+    return { garder: true, mult, nb };
+  }
+  slEmettre(P, mk) {
+    if (!P || P.stoppee || !mk || !mk.end || mk.end * 1000 < Date.now() + 1000 || (P.cote !== "Up" && P.cote !== "Down")) return;
+    const noms = this.slNoms(P), T = (this._slT = this._slT || {}), cy = (T[P.start] = T[P.start] || { Up: 0, Down: 0 });
+    cy[P.cote] += noms.length; for (const x of Object.keys(T)) if (+x < P.start - 900) delete T[x];
+    const nums = String(this.env.SIGNAL_NUMS || "").split(",").map((x) => +x.trim()).filter((x) => x > 0);
+    const tok = P.cote === "Up" ? mk.up : mk.down, ask = (this.livreTrie(tok, "asks")[0] || [null])[0];
+    for (const n of nums) {
+      const b = CATALOGUE.find((c) => c.n === n % 100), d = b && noms.find((x) => x.nom === b.nom), v = Math.floor(n / 100);
+      if (!d) continue;
+      const J = (this._slJ = this._slJ || []), note = (o) => { J.unshift({ at: new Date().toISOString(), num: n, nom: d.nom, depuis: P.strat, cote: P.cote, prix: ask, ...o }); J.length = Math.min(J.length, 100); };
+      if (ask == null) { note({ statut: "pas de vendeur" }); continue; }
+      let mult = d.mult;
+      if (v === 1 || v === 2) { const rI = this.slIdees(P, cy[P.cote]); if (!rI.garder) { note({ statut: "écarté par « + idées » (gros trade)", ...rI }); continue; } if (v === 1) mult *= rI.mult; }
+      else if (v !== 0) { note({ statut: "version pas encore branchée" }); continue; }
+      const corps = { id: `${n}|${P.start}|${d.nom}|${P.strat}|${P.heure}`, num: n, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask, mult, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok, endTs: mk.end * 1000, question: mk.slug, t: Date.now() };
+      fetch(this.env.SIGNAL_URL, { method: "POST", headers: { "content-type": "application/json", "x-signal-token": this.env.SIGNAL_TOKEN || "" }, body: JSON.stringify(corps) })
+        .then((r) => r.json()).then((j) => note({ statut: "envoyé", mult, reponse: j && j.statut })).catch((err) => note({ statut: "envoi raté : " + err.message, mult }));
+    }
   }
   // ---- 12.10.2026 19:10 (Pitch : « un fantôme pour cela ») : CONSENSUS K2 (étude H1053, règle figée, commit 1c6d089).
   // Quand une des 10 stratégies BTC gagnantes du 12.10 achète, on compte les AUTRES stratégies BTC qui ont déjà acheté le même côté
