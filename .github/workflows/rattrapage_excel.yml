@@ -1,0 +1,16 @@
+name: Rattrapage Excel onglets 3 et 4 (une fois)
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  r:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sS -m 600 -X POST "https://bot95.pitch67.workers.dev/api/excel_rattrapage?avant=1792998700" > bot95/rattrapage_excel.json; cat bot95/rattrapage_excel.json
+          sleep 60
+          curl -sS -m 300 "https://bot95.pitch67.workers.dev/excel3" -o /tmp/o3.xlsx; curl -sS -m 300 "https://bot95.pitch67.workers.dev/excel4" -o /tmp/o4.xlsx
+          cp /tmp/o3.xlsx bot95/xl_onglet3.xlsx; cp /tmp/o4.xlsx bot95/xl_onglet4.xlsx; ls -l bot95/xl_onglet*.xlsx
+          git config user.name r; git config user.email bot@users.noreply.github.com
+          git add bot95/rattrapage_excel.json bot95/xl_onglet3.xlsx bot95/xl_onglet4.xlsx && git commit -qm "rattrapage excel [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
