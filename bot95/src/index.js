@@ -350,6 +350,7 @@ export class Bot {
       if (!this.e.V1) this.e.V1 = { capital: V1.CAPITAL, mise: V1.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, entrees: 0, pos: null, attente: [], trades: [], issues: {}, depuis: now() };
     });
     this.ready.then(() => this.menageFond()).catch((err) => this.erreur("menage", err));
+    ZHOOK = this;
   }
   // 23.10.2026 : suite du ménage en arrière-plan (archives raz:, hist: et zero:archive: des stratégies non liées aux stratégies affichées)
   async menageFond() {
@@ -687,6 +688,13 @@ export class Bot {
       const Q = {}; for (const k of Object.keys(this.N.strats)) if (xlVisible(k)) { const L = []; for (const v of (await this.state.storage.list({ prefix: "xl:" + k + "|" })).values()) L.push(...v); L.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)); if (L.length) Q[k] = L; }
       const corps = await xlClasseur(Q, ZERO_DEPUIS);
       return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:]/g, "").replace("T", "_") + '.xlsx"', "cache-control": "no-store" } });
+    }
+    if (u.pathname === "/excel3" || u.pathname === "/excel4") {   // 26.10.2026 : trades des stratégies et de leurs versions, onglet 3 (idées) ou 4 (consensus et autres)
+      const pre = u.pathname === "/excel3" ? "xl3:" : "xl4:", Q = {};
+      for (const [kk, v] of await this.state.storage.list({ prefix: pre })) { const k = kk.slice(pre.length, kk.lastIndexOf("|")); (Q[k] = Q[k] || []).push(...v); }
+      for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => (a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0));
+      const corps = await xlClasseur(Q, pre === "xl3:" ? ZERO2_DEPUIS : ZERO3_DEPUIS);
+      return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_onglet' + (pre === "xl3:" ? "3" : "4") + "_" + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:]/g, "").replace("T", "_") + '.xlsx"', "cache-control": "no-store" } });
     }
     if (u.pathname === "/api/xl_compte") { const out = {}; for (const k of Object.keys(this.N.strats)) if (xlVisible(k)) { let n = 0, p = 0; for (const v of (await this.state.storage.list({ prefix: "xl:" + k + "|" })).values()) { n += v.length; p += v.filter((l) => l[3] != null).length; } out[k] = { lignes: n, avecParts: p, zero: ((this.N.zero || {})[k] || {}).n || 0 }; }
       return json({ strats: out, nStratsMemoire: Object.keys(this.N.strats).length, menage: await this.state.storage.get("menage:2310b"), effaces: await this.state.storage.get("menage:2310:n") }); }
@@ -1912,6 +1920,7 @@ export class Bot {
     // 24.10.2026 21:37 (Pitch : « un autre onglet où tu mets à 0 nos stratégies existantes et rajoute une version avec toutes tes idées pour chaque stratégie »)
     try { if (P.heure && P.actif === "BTC" && Date.parse(P.heure) >= Date.parse(ZERO2_DEPUIS) && xlVisible(P.strat + " " + P.actif) && P.start) {
       const N = this.N; N.zero2 = N.zero2 || {}; N.idq = N.idq || {};
+      this._zx = { cote: P.cote, prix: P.prix };
       zCompte(N.zero2, P.strat + " " + P.actif, P.heure, P.net, false, (P.prix || 0) * (P.parts || 0), P.start);
       if (Date.parse(P.heure) >= Date.parse(ZERO3_DEPUIS)) { N.zero3 = N.zero3 || {}; zCompte(N.zero3, P.strat + " " + P.actif, P.heure, P.net, false, (P.prix || 0) * (P.parts || 0), P.start); }
       (N.idq[P.start] = N.idq[P.start] || []).push({ k: P.strat + " " + P.actif, cote: P.cote, heure: P.heure, prix: P.prix, parts: P.parts, net: P.net, gagne: P.gagnant ? P.gagnant === P.cote : P.net > 0 });
@@ -1924,6 +1933,11 @@ export class Bot {
   //  petits (< 0,50) : mise x2 si ≥ 10 trades des stratégies affichées sur le même côté du cycle à l'heure d'achat, x3 si en plus la foule Polymarket a vendu notre jeton (10 s, ≤ −0,3) ;
   //  revente à T−60 s (tous) si Chainlink est de notre côté mais les futures Bybit (ramenés au niveau Chainlink) de l'autre côté d'au moins 3 $ : vente au meilleur acheteur, frais 7 % × p × (1 − p).
   //  Sans données seconde par seconde pour un trade : trade gardé tel quel (compté dans « sans données »).
+  xlZ(pre, k, heure, net, mise, ctx) {
+    const kx = pre + k + "|" + heure.slice(0, 10), pr = ctx.prix || null, lx = [heure, ctx.cote || null, pr, pr ? +(mise / pr).toFixed(3) : null, +(+net).toFixed(4), ""];
+    const QH = (this._qh = this._qh || {});
+    QH[kx] = (QH[kx] || Promise.resolve()).then(() => this.state.storage.get(kx)).then((L) => { L = L || []; L.push(lx); return this.state.storage.put(kx, L); }).catch((err) => this.erreur("excel onglet " + kx, err));
+  }
   idTraiter() {
     if (this._idEnCours) return; const N = this.N, mures = Object.keys(N.idq || {}).filter((st) => +st + 600 < now());
     if (!mures.length) return; this._idEnCours = true;
@@ -1942,6 +1956,7 @@ export class Bot {
         const fait = (N.idfait = N.idfait || {}); const deja = fait[st] || [];
         const tous = [...deja, ...L.map((x) => ({ cote: x.cote, heure: x.heure, prix: x.prix, gagne: x.gagne, k: x.k }))];
         for (const x of L) {
+          this._zx = { cote: x.cote, prix: x.prix };
           const ta = Math.floor(Date.parse(x.heure) / 1000), sg = x.cote === "Up" ? 1 : -1, cl = val("chainlink", ta), pab = val("prix_a_battre", ta);
           let mult = 1, garder = true, net = x.net, sans = false;
           const cout = (x.parts || 0) * (x.gagne ? 1 : 0) - x.net;
@@ -2024,7 +2039,7 @@ export class Bot {
               const p0 = ask != null && ask > 0.005 && ask < 0.995 ? ask : e.prix; if (!p0) continue;
               if (n === "6b" && !(p0 < 0.10)) continue;
               const q = 50 / (p0 + 0.07 * p0 * (1 - p0)), net = q * (g.gagne ? 1 : 0) - 50, nomM = n === "D3" ? "DIVERSITÉ 3 BTC" : n === "6b" ? "CONSENSUS 6 billets BTC" : "CONSENSUS " + n + " BTC";
-              N.zero = N.zero || {}; zCompte(N.zero, nomM, e.heure, net, ask == null, 50, s0);
+              this._zx = { cote, prix: p0 }; N.zero = N.zero || {}; zCompte(N.zero, nomM, e.heure, net, ask == null, 50, s0);
               N.zero2 = N.zero2 || {}; zCompte(N.zero2, nomM, e.heure, net, ask == null, 50, s0);
               N.zero3 = N.zero3 || {}; zCompte(N.zero3, nomM, e.heure, net, ask == null, 50, s0);
             } }
@@ -3495,7 +3510,9 @@ const ZERO2_DEPUIS = "2026-10-24T20:00:00Z";     // 24.10.2026 22:00 heure suiss
 // b6 : billets < 0,10 pas pris si moins de 6 ; bcl : billets pas pris après hausse Chainlink de +2,7 à +12,5 $ en 30 s vers nous. Stratégies absentes (BY1) : aucune idée ne les aide.
 const SUR_MESURE = {"PORTEFEUILLE 400 BTC": ["x2", "b6", "bcl"], "PORTEFEUILLE 400 corrige BTC": ["p6", "x2", "b6", "bcl"], "PORTEFEUILLE 600 BTC": ["x2"], "TWAP fin + carnet BTC": ["p6", "x2", "elan", "p750", "b6"], "TWAP fin + carnet ecart serre BTC": ["p6", "x2", "elan", "p750", "b6"], "TWAP fin anti-saut + carnet BTC": ["p6", "x2", "elan", "p750", "b6"], "TWAP fin anti-saut + carnet ecart serre BTC": ["p6", "x2", "elan", "b6"], "TWAP fin prevision Chainlink + carnet BTC": ["x2"], "TWAP fin prevision Chainlink + carnet ecart serre BTC": ["x2"], "TWAP fin quantiles + carnet BTC": ["p6", "x2", "elan"], "TWAP fin quantiles + carnet ecart serre BTC": ["p6", "x2", "elan"], "TWAP fin quantiles + ecart serre BTC": ["p6", "x2", "bcl"], "TWAP fin quantiles + foule bybit x2 BTC": ["x2", "bcl"], "TWAP fin quantiles BTC": ["p12", "p6", "x2", "p750", "bcl"], "TWAP fin sauts + carnet BTC": ["p6", "x2", "p750", "bcl"], "TWAP fin sauts + carnet ecart serre BTC": ["x2", "bcl"], "TWAP fin sauts + foule bybit x2 BTC": ["x2", "bcl"], "TWAP fin sauts BTC": ["x2", "bcl"], "V2-F incertitude 0,01 % + foule bybit x2 BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige : V2-F + pas les deux baissent + carnet BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC": ["p12", "p6", "x2", "elan", "bcl"], "corrige : V2-F ecart qui grandit + carnet BTC": ["p12", "x2", "elan", "b6", "bcl"], "corrige : V2-F ecart qui grandit + carnet ecart serre BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige : desaccord 20 + carnet BTC": ["p12", "x2", "b6", "bcl"], "corrige : desaccord 20 + carnet ecart serre BTC": ["p12", "x2", "b6", "bcl"], "corrige : desaccord 20 + foule bybit x2 BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige marge mesuree : V2-F + foule bybit x2 BTC": ["p12", "p6", "x2", "p750", "b6", "bcl"]};
 const ZERO3_DEPUIS = "2026-10-25T14:00:00Z";     // 25.10.2026 15:00 heure suisse : onglet 4, versions « + consensus »
+let ZHOOK = null;   // 26.10.2026 (Pitch : « les trades des stratégies, fichiers Excel onglet 3 et 4 ») : chaque trade compté dans l'onglet 3 / 4 est aussi écrit ligne par ligne
 function zCompte(Z, k, heure, net, sans, mise, start) {
+  try { if (ZHOOK && ZHOOK.N && (Z === ZHOOK.N.zero2 || Z === ZHOOK.N.zero3)) ZHOOK.xlZ(Z === ZHOOK.N.zero2 ? "xl3:" : "xl4:", k, heure, net, mise, ZHOOK._zx || {}); } catch (_) {}
   const z = (Z[k] = Z[k] || { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {}, sansDonnees: 0 });
   const ms = Date.parse(heure), jz = new Date(ms + decalSuisse(ms)).toISOString().slice(0, 10); z.parJour[jz] = (z.parJour[jz] || 0) + net;
   z.n++; z.pnl += net; z.cum += net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, net); if (sans) z.sansDonnees = (z.sansDonnees || 0) + 1; if (mise) z.mise = (z.mise || 0) + mise; if (start && mise) { const cy = (z.cy = z.cy || {}); cy[start] = (cy[start] || 0) + mise; z.miseMaxCycle = Math.max(z.miseMaxCycle || 0, cy[start]); for (const c of Object.keys(cy)) if (+c < start - 3600) delete cy[c]; }
@@ -3517,7 +3534,7 @@ document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("ap
 maj();setInterval(maj,20000);
 </script></body></html>`;
 const PAGE_ZERO2 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 3 — idées</title>${STYLE}</head><body>
-<h1>Onglet 3 — remise à 0 + versions « idées » <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 24.10.2026 à 22:00 (heure suisse). Chaque stratégie affichée apparaît deux fois : telle quelle, et « + idées ». Les lignes « + idées » sont calculées environ 5 min après la fin de chaque cycle, avec seulement ce qui était connu au moment de l'achat. Gros trades (prix ≥ 0,50) : gardés seulement si les bourses sont en avance sur Chainlink d'au moins 3,8 $ et montent vers nous, ou si le jeton Polymarket est en retard d'au moins 10 pts sur les bourses. Petits trades : mise x2 si au moins 10 trades des stratégies affichées sur le même côté du cycle, x3 si en plus la foule Polymarket vient de vendre notre jeton (la version « + idées sans x2 x3 » garde la mise normale). Revente à 60 s de la fin si Chainlink est pour nous mais les futures Bybit contre nous d'au moins 3 $ (frais compris). Aucun argent réel.</div>
+<h1>Onglet 3 — remise à 0 + versions « idées » <span class="badge">mode fantôme</span></h1><div class="mu"><a href="/excel3" style="font-weight:600">📥 Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, à jour à chaque ouverture ; écrits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de zéro le 24.10.2026 à 22:00 (heure suisse). Chaque stratégie affichée apparaît deux fois : telle quelle, et « + idées ». Les lignes « + idées » sont calculées environ 5 min après la fin de chaque cycle, avec seulement ce qui était connu au moment de l'achat. Gros trades (prix ≥ 0,50) : gardés seulement si les bourses sont en avance sur Chainlink d'au moins 3,8 $ et montent vers nous, ou si le jeton Polymarket est en retard d'au moins 10 pts sur les bourses. Petits trades : mise x2 si au moins 10 trades des stratégies affichées sur le même côté du cycle, x3 si en plus la foule Polymarket vient de vendre notre jeton (la version « + idées sans x2 x3 » garde la mise normale). Revente à 60 s de la fin si Chainlink est pour nous mais les futures Bybit contre nous d'au moins 3 $ (frais compris). Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <b>Onglet 3 : idées</b> · <a href="/zero3">Onglet 4 : consensus</a></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
@@ -3531,7 +3548,7 @@ document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("ap
 maj();setInterval(maj,20000);
 </script></body></html>`;
 const PAGE_ZERO3 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 4 — consensus</title>${STYLE}</head><body>
-<h1>Onglet 4 — remise à 0 + versions « consensus » <span class="badge">mode fantôme</span></h1><div class="mu">Compteurs repartis de zéro le 25.10.2026 à 15:00 (heure suisse). Chaque stratégie affichée apparaît trois fois : telle quelle, « + consensus » et « + consensus sans x2 ». Règle (la seule idée confirmée sur les jours du 10 au 19.10, jamais utilisés pour la trouver) : un petit trade (prix 0,10 à 0,50) n'est pas pris si seulement 1 ou 2 trades des stratégies affichées sont sur le même côté du cycle à son heure d'achat ; s'il y en a au moins 10, la mise est doublée (sauf dans « sans x2 »). Gros trades et billets &lt; 0,10 inchangés. Depuis le 25.10 vers 18 h, aussi « + financement contre la foule » (gros trades, prix ≥ 0,50, pris seulement quand le financement Bybit est contre notre côté : la foule paie pour être de l'autre côté) et « + consensus + financement » (les deux règles). Depuis le 25.10 vers 20 h 15 : « + élan perp » (gros trade pas pris si le flux du perp Bybit sur 30 s est neutre ou contre nous), « + consensus + financement + élan perp » (tout), et « + petits minute 35-45 » (petits trades pris seulement s'ils sont achetés entre la minute 35 et 45 de l'heure ; idée sans explication de marché, à vérifier). Depuis le 25.10 vers 21 h : « + sur mesure » — chaque stratégie n'applique que les idées qui l'aident sur les 4 périodes du 10 au 25.10 (BY1 : aucune). Calcul environ 5 min après la fin du cycle. Aucun argent réel.</div>
+<h1>Onglet 4 — remise à 0 + versions « consensus » <span class="badge">mode fantôme</span></h1><div class="mu"><a href="/excel4" style="font-weight:600">📥 Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, à jour à chaque ouverture ; écrits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de zéro le 25.10.2026 à 15:00 (heure suisse). Chaque stratégie affichée apparaît trois fois : telle quelle, « + consensus » et « + consensus sans x2 ». Règle (la seule idée confirmée sur les jours du 10 au 19.10, jamais utilisés pour la trouver) : un petit trade (prix 0,10 à 0,50) n'est pas pris si seulement 1 ou 2 trades des stratégies affichées sont sur le même côté du cycle à son heure d'achat ; s'il y en a au moins 10, la mise est doublée (sauf dans « sans x2 »). Gros trades et billets &lt; 0,10 inchangés. Depuis le 25.10 vers 18 h, aussi « + financement contre la foule » (gros trades, prix ≥ 0,50, pris seulement quand le financement Bybit est contre notre côté : la foule paie pour être de l'autre côté) et « + consensus + financement » (les deux règles). Depuis le 25.10 vers 20 h 15 : « + élan perp » (gros trade pas pris si le flux du perp Bybit sur 30 s est neutre ou contre nous), « + consensus + financement + élan perp » (tout), et « + petits minute 35-45 » (petits trades pris seulement s'ils sont achetés entre la minute 35 et 45 de l'heure ; idée sans explication de marché, à vérifier). Depuis le 25.10 vers 21 h : « + sur mesure » — chaque stratégie n'applique que les idées qui l'aident sur les 4 périodes du 10 au 25.10 (BY1 : aucune). Calcul environ 5 min après la fin du cycle. Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <a href="/zero2">Onglet 3 : idées</a> · <b>Onglet 4 : consensus</b></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
