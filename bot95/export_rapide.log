@@ -1,88 +1,21 @@
 + git config user.name rapide
 + git config user.email bot@users.noreply.github.com
 + python3 -
-++ cat /tmp/jours
-+ for J in $(cat /tmp/jours)
-+ B=dr-2026-10-23
-+ W=/tmp/w-2026-10-23
-+ mkdir -p /tmp/w-2026-10-23
-+ cd /tmp/w-2026-10-23
-+ git init -q
-+ git config user.name rapide
-+ git config user.email bot@users.noreply.github.com
-+ set +x
-+ git fetch -q --depth 1 origin dr-2026-10-23
-+ git checkout -q FETCH_HEAD
-+ git checkout -q -B dr-2026-10-23
-+ python3 - 2026-10-23
-2026-10-23 nouveaux cycles 0
-+ git add cycles
-+ git commit -q --amend -m 'cycles bot rapide 2026-10-23'
-+ for k in 1 2 3
-+ git push -q -f origin dr-2026-10-23
-+ break
-+ cd /
-+ for J in $(cat /tmp/jours)
-+ B=dr-2026-10-24
-+ W=/tmp/w-2026-10-24
-+ mkdir -p /tmp/w-2026-10-24
-+ cd /tmp/w-2026-10-24
-+ git init -q
-+ git config user.name rapide
-+ git config user.email bot@users.noreply.github.com
-+ set +x
-+ git fetch -q --depth 1 origin dr-2026-10-24
-+ git checkout -q FETCH_HEAD
-+ git checkout -q -B dr-2026-10-24
-+ python3 - 2026-10-24
-2026-10-24 nouveaux cycles 0
-+ git add cycles
-+ git commit -q --amend -m 'cycles bot rapide 2026-10-24'
-+ for k in 1 2 3
-+ git push -q -f origin dr-2026-10-24
-+ break
-+ cd /
-+ for J in $(cat /tmp/jours)
-+ B=dr-2026-10-25
-+ W=/tmp/w-2026-10-25
-+ mkdir -p /tmp/w-2026-10-25
-+ cd /tmp/w-2026-10-25
-+ git init -q
-+ git config user.name rapide
-+ git config user.email bot@users.noreply.github.com
-+ set +x
-+ git fetch -q --depth 1 origin dr-2026-10-25
-+ git checkout -q FETCH_HEAD
-+ git checkout -q -B dr-2026-10-25
-+ python3 - 2026-10-25
-2026-10-25 nouveaux cycles 8
-+ git add cycles
-+ git commit -q --amend -m 'cycles bot rapide 2026-10-25'
-+ for k in 1 2 3
-+ git push -q -f origin dr-2026-10-25
-+ break
-+ cd /
-+ for J in $(cat /tmp/jours)
-+ B=dr-2026-10-26
-+ W=/tmp/w-2026-10-26
-+ mkdir -p /tmp/w-2026-10-26
-+ cd /tmp/w-2026-10-26
-+ git init -q
-+ git config user.name rapide
-+ git config user.email bot@users.noreply.github.com
-+ set +x
-+ git fetch -q --depth 1 origin dr-2026-10-26
-+ git checkout -q -B dr-2026-10-26
-+ python3 - 2026-10-26
-2026-10-26 nouveaux cycles 59
-+ git add cycles
-+ git commit -q --amend -m 'cycles bot rapide 2026-10-26'
-+ git commit -q -m 'cycles bot rapide 2026-10-26'
-+ for k in 1 2 3
-+ git push -q -f origin dr-2026-10-26
-remote: 
-remote: Create a pull request for 'dr-2026-10-26' on GitHub by visiting:        
-remote:      https://github.com/pitch6767/wallet-autopsy/pull/new/dr-2026-10-26        
-remote: 
-+ break
-+ cd /
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+  File "/usr/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/urllib/request.py", line 493, in open
+    response = meth(req, response)
+  File "/usr/lib/python3.14/urllib/request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "/usr/lib/python3.14/urllib/request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/usr/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.14/urllib/request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 500: Internal Server Error
