@@ -689,6 +689,24 @@ export class Bot {
       const corps = await xlClasseur(Q, ZERO_DEPUIS);
       return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:]/g, "").replace("T", "_") + '.xlsx"', "cache-control": "no-store" } });
     }
+    if (u.pathname === "/api/excel_rattrapage" && req.method === "POST") {   // 26.10.2026 : réécrit les lignes Excel des onglets 3 et 4 pour les cycles déjà comptés avant l'ajout des fichiers (une seule fois)
+      const avant = +(u.searchParams.get("avant") || 0); if (!avant || (await this.state.storage.get("xlrattrapage"))) return json({ ok: false, deja: true });
+      await this.state.storage.put("xlrattrapage", 1);
+      const vis = Object.keys(this.N.strats).filter((k) => xlVisible(k)), file = {};
+      let nOrig = 0;
+      for (const k of vis) for (const v of (await this.state.storage.list({ prefix: "xl:" + k + "|" })).values()) for (const l of v) {
+        const ms = Date.parse(l[0]); if (!(ms >= Date.parse(ZERO2_DEPUIS))) continue; const st = Math.floor(ms / 300000) * 300; if (st + 300 >= avant - 60) continue;
+        const mise = (l[2] || 0) * (l[3] || 0);
+        this.xlZ("xl3:", k, l[0], l[4], mise, { cote: l[1], prix: l[2] }); if (ms >= Date.parse(ZERO3_DEPUIS)) this.xlZ("xl4:", k, l[0], l[4], mise, { cote: l[1], prix: l[2] }); nOrig++;
+        if (st + 600 < avant) (file[st] = file[st] || []).push({ k, cote: l[1], heure: l[0], prix: l[2], parts: l[3], net: l[4], gagne: l[4] > 0 });
+      }
+      // versions : même calcul qu'idTraiter, sur des compteurs jetables (les compteurs affichés ne bougent pas)
+      await this.state.blockConcurrencyWhile(async () => {   // rien d'autre ne tourne pendant le rattrapage (sinon des trades en direct iraient dans les compteurs jetables)
+        const vrai = this.N; this.N = { ...vrai, zero: {}, zero2: {}, zero3: {}, idq: file, idfait: {}, consPris: {} }; this._idEnCours = false;
+        try { this.idTraiter(); await new Promise((r) => { const w = () => (this._idEnCours ? setTimeout(w, 200) : r()); setTimeout(w, 200); }); } finally { this.N = vrai; }
+      });
+      return json({ ok: true, originaux: nOrig, cycles: Object.keys(file).length });
+    }
     if (u.pathname === "/excel3" || u.pathname === "/excel4") {   // 26.10.2026 : trades des stratégies et de leurs versions, onglet 3 (idées) ou 4 (consensus et autres)
       const pre = u.pathname === "/excel3" ? "xl3:" : "xl4:", Q = {};
       for (const [kk, v] of await this.state.storage.list({ prefix: pre })) { const k = kk.slice(pre.length, kk.lastIndexOf("|")); (Q[k] = Q[k] || []).push(...v); }
