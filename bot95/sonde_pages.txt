@@ -1,41 +1,41 @@
 == /
-code 200 taille 10017 temps 0.356975s
+code 200 taille 10017 temps 0.233090s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media (prefers-color-
 == /nouveaux
-code 302 taille 0 temps 0.273322s
+code 302 taille 0 temps 0.196150s
 
 == /zero
-code 200 taille 4908 temps 0.387541s
+code 200 taille 4908 temps 0.208173s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes — remise à 0</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @me
 == /zero2
-code 200 taille 5998 temps 0.360109s
+code 200 taille 5998 temps 0.190963s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 3 — idées</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media (p
 == /zero3
-code 200 taille 6543 temps 0.228082s
+code 200 taille 6727 temps 0.255183s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 4 — consensus</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media
 == /api/nouveaux
-code 200 taille 236520 temps 0.315607s
+code 200 taille 236530 temps 0.226583s
 {"depuis":1791633049.024,"typesDesaccord":{},"markout":{"mm prudent BTC":{"remplissages":334,"0.1s":-3.63,"0.5s":-3.63,"1s":-3.49,"3s":-3.35,"10s":-4.24},"mm prudent ETH":{"remplissages":291,"0.1s":-4.44,"0.5s":-5.12,"1s":-5.06,"3s":-4.18,"10s":-3.53}},"ordres":{"desaccord 10 BTC":{"essais":177,"gag
 == /api/zero
-code 200 taille 12567 temps 0.263520s
-{"depuis":"2026-10-19T09:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 BTC","n":1141,"gains":594,"pertes":547,"pnl":24482.26,"pertesTot":-28109.32,"pire":-111.78,"cum":24482.259999999987,"pic":24482.259999999987,"creux":1283.31,"serie":0,"serieMax":8,"parJour":{"2026-10-19":624.11,"2026-10-20":3045.98,
+code 200 taille 12562 temps 0.139221s
+{"depuis":"2026-10-19T09:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 BTC","n":1143,"gains":594,"pertes":549,"pnl":24364.39,"pertesTot":-28227.19,"pire":-111.78,"cum":24364.38999999999,"pic":24482.259999999987,"creux":1283.31,"serie":2,"serieMax":8,"parJour":{"2026-10-19":624.11,"2026-10-20":3045.98,"
 == /api/zero2
-code 200 taille 39044 temps 0.279527s
+code 200 taille 39523 temps 0.227829s
 {"depuis":"2026-10-24T20:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","n":193,"gains":98,"pertes":95,"pnl":23173.25,"pertesTot":-5856.1,"pire":-319.02,"cum":23173.251006760012,"pic":23173.251006760012,"creux":810.58,"serie":0,"serieMax":7,"parJour":{"2026-10-24":137.97,"2026-10-25":17162
 == /api/zero3
-code 200 taille 107037 temps 0.422715s
-{"depuis":"2026-10-25T14:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + consensus BTC","n":117,"gains":64,"pertes":53,"pnl":6043.31,"pertesTot":-3038.06,"pire":-212.68,"cum":6043.31,"pic":6043.31,"creux":617.31,"serie":0,"serieMax":6,"parJour":{"2026-10-25":1764.91,"2026-10-26":4278.4},"sansDonnees":0
+code 200 taille 110298 temps 0.283804s
+{"depuis":"2026-10-25T14:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","n":95,"gains":49,"pertes":46,"pnl":7323.89,"pertesTot":-3085.41,"pire":-319.02,"cum":7323.8866,"pic":7323.8866,"creux":810.58,"serie":0,"serieMax":6,"parJour":{"2026-10-25":1412.01,"2026-10-26":5911.88},"sansDonnees":
 == /api/etat
-code 200 taille 893175 temps 0.736386s
-{"mode":"fantôme","reste":142,"e":{"capital":182.67999999999998,"mise":58.663333333333334,"reserve":17.326666666666664,"pnl":-17.320000000000004,"gains":17,"pertes":1,"pause":false,"positions":[],"attente":[],"trades":[{"actif":"ETH","start":1792030800,"end":1792031100,"slug":"eth-updown-5m-1792030
+code 200 taille 892451 temps 0.493177s
+{"mode":"fantôme","reste":173,"e":{"capital":182.67999999999998,"mise":58.663333333333334,"reserve":17.326666666666664,"pnl":-17.320000000000004,"gains":17,"pertes":1,"pause":false,"positions":[],"attente":[],"trades":[{"actif":"ETH","start":1792030800,"end":1792031100,"slug":"eth-updown-5m-1792030
 == /api/classement
-code 200 taille 18123 temps 0.381367s
+code 200 taille 18121 temps 0.310363s
 {"jours":["2026-10-10","2026-10-11","2026-10-12","2026-10-13","2026-10-14","2026-10-15","2026-10-16","2026-10-17","2026-10-18","2026-10-19","2026-10-20","2026-10-21","2026-10-22","2026-10-23","2026-10-24","2026-10-25","2026-10-26"],"participants":{"2026-10-10":2,"2026-10-11":2,"2026-10-12":2,"2026-1
