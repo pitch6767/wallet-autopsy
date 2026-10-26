@@ -1,0 +1,41 @@
+# 26.10.2026 — accès opérateur de Claude au bot de trading (https://72-11-157-70.sslip.io).
+# Dépôt public : les réponses sont CHIFFRÉES avec la clé publique ops/claude_pub.pem (seul Claude peut les lire).
+# Jeton : secret GitHub BTCBOT_OPS_TOKEN (jamais affiché). Rien n'est écrit en clair dans les journaux.
+name: Ops bot de trading
+on:
+  workflow_dispatch:
+    inputs:
+      requetes:
+        description: "Une requête par ligne : METHODE /api/chemin [corps JSON]"
+        required: true
+        default: "GET /api/bot/state"
+permissions:
+  contents: write
+concurrency: btcbot-ops
+jobs:
+  ops:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Requêtes
+        env:
+          T: ${{ secrets.BTCBOT_OPS_TOKEN }}
+          REQ: ${{ github.event.inputs.requetes }}
+        run: |
+          U=https://72-11-157-70.sslip.io
+          R=$(mktemp); : > $R
+          [ -n "$T" ] || echo "ATTENTION : secret BTCBOT_OPS_TOKEN absent" >> $R
+          printf '%s\n' "$REQ" | while IFS= read -r ligne; do
+            [ -z "$ligne" ] && continue
+            m=${ligne%% *}; reste=${ligne#* }; p=${reste%% *}; b=""; [ "$reste" != "$p" ] && b=${reste#* }
+            echo "=== $m $p $(date -u +%FT%TZ)" >> $R
+            if [ -n "$b" ]; then curl -sS -m 60 -X "$m" -H "x-ops-token: $T" -H "content-type: application/json" -d "$b" -w "\nHTTP %{http_code}\n" "$U$p" >> $R 2>&1
+            else curl -sS -m 60 -X "$m" -H "x-ops-token: $T" -w "\nHTTP %{http_code}\n" "$U$p" >> $R 2>&1; fi
+          done
+          K=$(mktemp); openssl rand -hex 32 > $K
+          gzip -9 -c $R | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:$K -out ops/reponses.enc
+          openssl pkeyutl -encrypt -pubin -inkey ops/claude_pub.pem -pkeyopt rsa_padding_mode:oaep -in $K -out ops/cle.enc
+          rm -f $R $K
+          git config user.name ops; git config user.email ops@users.noreply.github.com
+          git add ops/reponses.enc ops/cle.enc; git commit -q -m "ops $(date -u +%FT%TZ) [skip ci]" || true
+          for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
