@@ -5,14 +5,16 @@
 # Usage : bash installer.sh <BOT_SIGNAL_TOKEN>   (le même jeton que dans /etc/btcbot.env du bot de trading)
 set -euo pipefail
 JETON="${1:?jeton manquant}"
-NODE=/opt/bot95-rapide/node/bin/node; NPM=/opt/bot95-rapide/node/bin/npm
-[ -x "$NODE" ] || { echo "Node du labo rapide introuvable ($NODE)"; exit 1; }
+[ -x /opt/bot95-rapide/node/bin/node ] || { echo "Node du labo rapide introuvable"; exit 1; }
 id bot95d >/dev/null 2>&1 || useradd --system --create-home --home-dir /opt/bot95-dublin --shell /usr/sbin/nologin bot95d
 mkdir -p /opt/bot95-dublin/etat
+# copie privée de Node (le dossier du labo rapide n'est pas lisible par bot95d)
+rm -rf /opt/bot95-dublin/node; cp -a /opt/bot95-rapide/node /opt/bot95-dublin/node
+NODE=/opt/bot95-dublin/node/bin/node; NPM=/opt/bot95-dublin/node/bin/npm
 B=https://raw.githubusercontent.com/pitch6767/wallet-autopsy/main/bot95/dublin
 curl -fsSL $B/package.json -o /opt/bot95-dublin/package.json
 curl -fsSL $B/lanceur.mjs -o /opt/bot95-dublin/lanceur.mjs
-cd /opt/bot95-dublin && PATH=/opt/bot95-rapide/node/bin:$PATH $NPM install --no-audit --no-fund --omit=dev
+cd /opt/bot95-dublin && PATH=/opt/bot95-dublin/node/bin:$PATH $NPM install --no-audit --no-fund --omit=dev
 printf 'BOT_SIGNAL_TOKEN=%s\nSIGNAL_NUMS=101,201,121,28,119\nBOT95_DUBLIN_DIR=/opt/bot95-dublin\n' "$JETON" > /etc/bot95-dublin.env
 chown -R bot95d:bot95d /opt/bot95-dublin; chown root:bot95d /etc/bot95-dublin.env; chmod 640 /etc/bot95-dublin.env
 cat > /etc/systemd/system/bot95-dublin.service <<SVC
