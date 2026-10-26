@@ -23412,7 +23412,7 @@ var Bot = class {
     if (u.pathname.startsWith("/api/rapide/")) {
       const jeton = req.headers.get("x-rapide") || "";
       const h = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(jeton)))].map((x) => x.toString(16).padStart(2, "0")).join("");
-      const ipOk = (req.headers.get("cf-connecting-ip") || "") === "107.174.203.201";
+      const ipOk = ["107.174.203.201", "72.11.157.70"].includes(req.headers.get("cf-connecting-ip") || "");
       if (!ipOk && h !== "b0629aefe453fe1063c1dd8c27242736d59b30e6939e0cecc52c64de8898e03b") return new Response("non", { status: 403 });
       if (u.pathname === "/api/rapide/version") return json({ version: RAPIDE_VERSION });
       if (u.pathname === "/api/rapide/code") return json({ version: RAPIDE_VERSION, code: RAPIDE_CODE });
