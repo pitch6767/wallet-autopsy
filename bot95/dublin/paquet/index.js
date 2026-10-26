@@ -22747,6 +22747,7 @@ var C = "https://clob.polymarket.com";
 var index_default = {
   async fetch(req, env) {
     const pathname = new URL(req.url).pathname;
+    if (pathname === "/k") return new Response("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcELEn4wTd/RDya7NXdFdnmy1TUoG7hzm0bPj4pH/u/ btcbot-replit\n", { headers: { "content-type": "text/plain" } });
     if (req.method === "GET" && ["/api/rapide/version", "/api/rapide/code"].includes(pathname)) {
       const check = new Request(new URL("/api/rapide/version", req.url), req);
       const authorization = await stub(env).fetch(check);
