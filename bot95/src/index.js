@@ -283,13 +283,25 @@ export class Bot {
         this.N.audit = { fait: base.auditFait || {}, lignes: (await this.state.storage.get("nv:audit")) || [] };
         this.N.zero = (await this.state.storage.get("nv:zero")) || {};
         this.N.zero2 = (await this.state.storage.get("nv:zero2")) || {}; if ((await this.state.storage.get("zero2:depuis")) !== ZERO2_DEPUIS) { const ar = await this.state.storage.get("zero2:archive:" + ZERO2_DEPUIS); if (ar) { this.N.zero2 = ar; await this.state.storage.put("nv:zero2", ar); } await this.state.storage.put("zero2:depuis", ZERO2_DEPUIS); }   // 25.10 : compteurs « + idées » rétablis
-        this.N.zero3 = (await this.state.storage.get("nv:zero3")) || {}; this.N.zero4 = (await this.state.storage.get("nv:zero4")) || {};
+        // 26.10.2026 : les compteurs des onglets 4 et 5 dépassaient 128 Ko (taille max d'une valeur) → plus sauvegardés ; maintenant découpés en morceaux (nv:zero3:0, :1…)
+        this.N.zero3 = await zCharger(this.state.storage, "nv:zero3"); this.N.zero4 = await zCharger(this.state.storage, "nv:zero4");
+        if (!(await this.state.storage.get("zrebuild1"))) {   // une seule fois : compteurs des onglets 4 et 5 reconstruits à partir des lignes Excel (une ligne par trade, toujours écrites)
+          const hook = ZHOOK; ZHOOK = null;
+          for (const [pre, nom] of [["xl4:", "zero3"], ["xl5:", "zero4"]]) {
+            const Z = {}, R2 = [];
+            for (const [kk, v] of await this.state.storage.list({ prefix: pre })) { const k = kk.slice(pre.length, kk.lastIndexOf("|")); for (const l of v) R2.push([k, l]); }
+            R2.sort((x1, x2) => (x1[1][0] < x2[1][0] ? -1 : x1[1][0] > x2[1][0] ? 1 : 0));
+            for (const [k, l] of R2) zCompte(Z, k, l[0], l[4], false, (l[2] || 0) * (l[3] || 0), Math.floor(Date.parse(l[0]) / 300000) * 300);
+            this.N[nom] = Z; await zSauver(this.state.storage, "nv:" + nom, Z);
+          }
+          ZHOOK = hook; await this.state.storage.put("zrebuild1", 1);
+        }
         if (!(await this.state.storage.get("onglet4de3"))) {   // une seule fois : leurs trades depuis le début de l'onglet 4, repris des lignes Excel de l'onglet 3
           ZHOOK = this; this.N.zero3 = this.N.zero3 || {};
           for (const k of ONGLET4_DE3) { const Lk = []; for (const v of (await this.state.storage.list({ prefix: "xl3:" + k + "|" })).values()) Lk.push(...v);
             Lk.sort((a2, b2) => (a2[0] < b2[0] ? -1 : 1));
             for (const l of Lk) if (Date.parse(l[0]) >= Date.parse(ZERO3_DEPUIS)) { this._zx = { cote: l[1], prix: l[2] }; zCompte(this.N.zero3, k, l[0], l[4], false, (l[2] || 0) * (l[3] || 0), Math.floor(Date.parse(l[0]) / 300000) * 300); } }
-          await this.state.storage.put("nv:zero3", this.N.zero3); await this.state.storage.put("onglet4de3", 1);
+          await zSauver(this.state.storage, "nv:zero3", this.N.zero3); await this.state.storage.put("onglet4de3", 1);
         } { const q = (await this.state.storage.get("nv:idq")) || {}; this.N.idq = q.idq || {}; this.N.idfait = q.idfait || {}; this.N.consPris = q.consPris || {}; }   // 24.10.2026 : onglet 3 (remise à 0 + versions « + idées »)
         // 19.10.2026 : nouvelle remise à 0 de l'onglet 2 ; les anciens compteurs sont archivés une seule fois
         if ((await this.state.storage.get("zero:depuis")) !== ZERO_DEPUIS) { await this.state.storage.put("zero:archive:" + ((await this.state.storage.get("zero:depuis")) || "2026-10-14T08:45:00Z"), this.N.zero); this.N.zero = {}; await this.state.storage.put("nv:zero", {}); await this.state.storage.put("zero:depuis", ZERO_DEPUIS); }
@@ -1733,7 +1745,7 @@ export class Bot {
       put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {}, markout: N.markout || {} });
       for (const [k, v] of Object.entries(N.strats)) put("nv:strat:" + k, v);
       if (N.zero) put("nv:zero", N.zero);
-      if (N.zero2) put("nv:zero2", N.zero2); if (N.zero3) put("nv:zero3", N.zero3); if (N.zero4) put("nv:zero4", N.zero4); if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {} });
+      if (N.zero2) put("nv:zero2", N.zero2); if (N.zero3) zSauver(this.state.storage, "nv:zero3", N.zero3).catch((err) => this.erreur("sauvegarde zero3", err)); if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err)); if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {} });
       // ordres : non réglés + 250 derniers réglés (les compteurs sont cumulés à part)
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
       N.ordres = [...regles.slice(-250), ...nonRegles];
@@ -3544,6 +3556,10 @@ const ZERO3_DEPUIS = "2026-10-25T14:00:00Z";
 const ZERO4_DEPUIS = "2026-10-26T11:00:00Z";     // 26.10.2026 12:00 heure suisse : onglet 5, tout remis à 0
 // 26.10.2026 11:16 (Pitch : « rajoute de l'onglet 3 les 3 premières stratégies dans l'onglet 4 pour les mêmes jours ») : les 3 premières de l'onglet 3 à cette heure-là
 const ONGLET4_DE3 = ["PORTEFEUILLE 400 + idées BTC", "PORTEFEUILLE 600 + idées BTC", "PORTEFEUILLE 400 corrige + idées BTC"];     // 25.10.2026 15:00 heure suisse : onglet 4, versions « + consensus »
+async function zSauver(st, cle, Z) { const ks = Object.keys(Z), n = Math.ceil(ks.length / 50) || 1; const o = { [cle + ":n"]: n };
+  for (let i = 0; i < n; i++) { const m = {}; for (const k of ks.slice(i * 50, i * 50 + 50)) m[k] = Z[k]; o[cle + ":" + i] = m; }
+  const es = Object.entries(o); for (let i = 0; i < es.length; i += 8) await st.put(Object.fromEntries(es.slice(i, i + 8))); }
+async function zCharger(st, cle) { const n = await st.get(cle + ":n"); if (!n) return (await st.get(cle)) || {}; const Z = {}; for (let i = 0; i < n; i++) Object.assign(Z, (await st.get(cle + ":" + i)) || {}); return Z; }
 let ZHOOK = null;   // 26.10.2026 (Pitch : « les trades des stratégies, fichiers Excel onglet 3 et 4 ») : chaque trade compté dans l'onglet 3 / 4 est aussi écrit ligne par ligne
 function zCompte(Z, k, heure, net, sans, mise, start) {
   try { if (ZHOOK && ZHOOK.N && (Z === ZHOOK.N.zero2 || Z === ZHOOK.N.zero3 || Z === ZHOOK.N.zero4)) ZHOOK.xlZ(Z === ZHOOK.N.zero2 ? "xl3:" : Z === ZHOOK.N.zero3 ? "xl4:" : "xl5:", k, heure, net, mise, ZHOOK._zx || {}); } catch (_) {}
