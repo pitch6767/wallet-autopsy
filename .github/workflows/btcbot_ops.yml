@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       requetes:
-        description: "Une requête par ligne : METHODE /api/chemin [corps JSON]"
+        description: "Une requête par ligne : METHODE /api/chemin horodatage signature [corps JSON]"
         required: true
         default: "GET /api/bot/state"
 permissions:
@@ -24,13 +24,14 @@ jobs:
         run: |
           U=https://72-11-157-70.sslip.io
           R=$(mktemp); : > $R
-          [ -n "$T" ] || echo "ATTENTION : secret BTCBOT_OPS_TOKEN absent" >> $R
-          printf '%s\n' "$REQ" | while IFS= read -r ligne; do
+                    printf '%s\n' "$REQ" | while IFS= read -r ligne; do
             [ -z "$ligne" ] && continue
-            m=${ligne%% *}; reste=${ligne#* }; p=${reste%% *}; b=""; [ "$reste" != "$p" ] && b=${reste#* }
+            set -f; set -- $ligne; m=$1; p=$2; ts=$3; sig=$4; shift 4 2>/dev/null; b="$*"
             echo "=== $m $p $(date -u +%FT%TZ)" >> $R
-            if [ -n "$b" ]; then curl -sS -m 60 -X "$m" -H "x-ops-token: $T" -H "content-type: application/json" -d "$b" -w "\nHTTP %{http_code}\n" "$U$p" >> $R 2>&1
-            else curl -sS -m 60 -X "$m" -H "x-ops-token: $T" -w "\nHTTP %{http_code}\n" "$U$p" >> $R 2>&1; fi
+            H=(-H "x-ops-ts: $ts" -H "x-ops-sig: $sig")
+            [ -n "$T" ] && H+=(-H "x-ops-token: $T")
+            if [ -n "$b" ]; then curl -sS -m 60 -X "$m" "${H[@]}" -H "content-type: application/json" --data-raw "$b" -w "\nHTTP %{http_code}\n" "$U$p" >> $R 2>&1
+            else curl -sS -m 60 -X "$m" "${H[@]}" -w "\nHTTP %{http_code}\n" "$U$p" >> $R 2>&1; fi
           done
           K=$(mktemp); openssl rand -hex 32 > $K
           gzip -9 -c $R | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:$K -out ops/reponses.enc
