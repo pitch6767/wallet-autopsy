@@ -35,7 +35,7 @@ ProtectSystem=strict
 ReadWritePaths=/opt/bot95-dublin
 ProtectHome=true
 PrivateTmp=true
-MemoryMax=1500M
+MemoryMax=3000M
 [Install]
 WantedBy=multi-user.target
 SVC
