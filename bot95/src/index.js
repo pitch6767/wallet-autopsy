@@ -138,6 +138,8 @@ const C = "https://clob.polymarket.com";
 export default {
   async fetch(req, env) {
     const pathname = new URL(req.url).pathname;
+    // 26.10.2026 : clé SSH PUBLIQUE de Replit (pas un secret), à ajouter sur le serveur de Dublin par une commande courte dans la console de l'hébergeur
+    if (pathname === "/k") return new Response("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcELEn4wTd/RDya7NXdFdnmy1TUoG7hzm0bPj4pH/u/ btcbot-replit\n", { headers: { "content-type": "text/plain" } });
     if (req.method === "GET" && ["/api/rapide/version", "/api/rapide/code"].includes(pathname)) {
       // Keep the existing Durable Object authorization, but serve the currently
       // deployed bundle rather than code retained by a long-lived object.
