@@ -23026,6 +23026,31 @@ var Bot = class {
         }
         this.N.zero3 = await zCharger(this.state.storage, "nv:zero3");
         this.N.zero4 = await zCharger(this.state.storage, "nv:zero4");
+        this.N.zero5 = await zCharger(this.state.storage, "nv:zero5");
+        if (!await this.state.storage.get("zero5rattrapage")) {
+          try {
+            const Z5 = {}, R5 = [], enAtt = new Set(Object.keys(this.N.idq || {}).map(Number));
+            for (const n of ZERO5_NUMS) {
+              const b = catalogue_default.find((c) => c.n === n % 100), c5 = catalogue_default.find((c) => c.n === n), v = Math.floor(n / 100);
+              if (!b || !c5) continue;
+              const src = v === 0 ? "xl:" + b.nom + " BTC" : v === 1 ? "xl3:" + b.nom + " + id\xE9es BTC" : v === 2 ? "xl3:" + b.nom + " + id\xE9es sans x2 x3 BTC" : null;
+              if (!src) continue;
+              for (const j of ["2026-10-26", "2026-10-27"]) for (const l of await this.state.storage.get(src + "|" + j) || []) {
+                const ms = Date.parse(l[0]);
+                if (!(ms >= Date.parse(ZERO5_DEPUIS))) continue;
+                if (enAtt.has(Math.floor(ms / 3e5) * 300)) continue;
+                R5.push([c5.nom + " BTC", l]);
+              }
+            }
+            R5.sort((x1, x2) => x1[1][0] < x2[1][0] ? -1 : x1[1][0] > x2[1][0] ? 1 : 0);
+            for (const [k, l] of R5) zCompte(Z5, k, l[0], +l[4] || 0, false, (l[2] || 0) * (l[3] || 0), Math.floor(Date.parse(l[0]) / 3e5) * 300);
+            this.N.zero5 = Z5;
+            await zSauver(this.state.storage, "nv:zero5", Z5);
+            await this.state.storage.put("zero5rattrapage", R5.length || 1);
+          } catch (err) {
+            this.erreur("rattrapage onglet 6", err);
+          }
+        }
         if (!await this.state.storage.get("zrebuild1")) {
           const hook = ZHOOK;
           ZHOOK = null;
@@ -23932,6 +23957,12 @@ var Bot = class {
     }
     if (u.pathname === "/api/catalogue") return json({ maj: "2026-10-26", strategies: catalogue_default });
     if (u.pathname === "/numeros") return new Response(PAGE_NUMEROS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+    if (u.pathname === "/api/zero5") {
+      const Z = this.N.zero5 || {};
+      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...z, cy: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
+      return json({ depuis: ZERO5_DEPUIS, nums: ZERO5_NUMS, strats: L, total: +L.reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
+    }
+    if (u.pathname === "/zero5") return new Response(PAGE_ZERO5, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero4") return new Response(PAGE_ZERO4, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero3") return new Response(PAGE_ZERO3, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero2") return new Response(PAGE_ZERO2, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -25718,6 +25749,7 @@ var Bot = class {
       if (N.zero) put("nv:zero", N.zero);
       if (N.zero2) put("nv:zero2", N.zero2);
       if (N.zero3) zSauver(this.state.storage, "nv:zero3", N.zero3).catch((err) => this.erreur("sauvegarde zero3", err));
+      if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err));
       if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err));
       if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {} });
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
@@ -26403,6 +26435,17 @@ var Bot = class {
                   net = q * (b - 0.07 * b * (1 - b)) + ((x.parts || 0) - q) * (x.gagne ? 1 : 0) - cout;
                 }
               }
+            }
+          }
+          if (Date.parse(x.heure) >= Date.parse(ZERO5_DEPUIS)) {
+            N.zero5 = N.zero5 || {};
+            const mise5 = (x.prix || 0) * (x.parts || 0);
+            for (const n of ZERO5_NUMS) {
+              const b = catalogue_default.find((c) => c.n === n % 100), v = Math.floor(n / 100), c5 = catalogue_default.find((c) => c.n === n);
+              if (!b || !c5 || x.k !== b.nom + " BTC") continue;
+              if (v === 0) zCompte(N.zero5, c5.nom + " BTC", x.heure, x.net, sans, mise5, s0);
+              else if (v === 1 && garder) zCompte(N.zero5, c5.nom + " BTC", x.heure, mult * x.net, sans, mult * mise5, s0);
+              else if (v === 2 && garder) zCompte(N.zero5, c5.nom + " BTC", x.heure, x.net, sans, mise5, s0);
             }
           }
           if (Date.parse(x.heure) >= Date.parse(ZERO4_DEPUIS)) {
@@ -28891,6 +28934,8 @@ __name(xlClasseur, "xlClasseur");
 var ZERO2_DEPUIS = "2026-10-24T20:00:00Z";
 var SUR_MESURE = { "PORTEFEUILLE 400 BTC": ["x2", "b6", "bcl"], "PORTEFEUILLE 400 corrige BTC": ["p6", "x2", "b6", "bcl"], "PORTEFEUILLE 600 BTC": ["x2"], "TWAP fin + carnet BTC": ["p6", "x2", "elan", "p750", "b6"], "TWAP fin + carnet ecart serre BTC": ["p6", "x2", "elan", "p750", "b6"], "TWAP fin anti-saut + carnet BTC": ["p6", "x2", "elan", "p750", "b6"], "TWAP fin anti-saut + carnet ecart serre BTC": ["p6", "x2", "elan", "b6"], "TWAP fin prevision Chainlink + carnet BTC": ["x2"], "TWAP fin prevision Chainlink + carnet ecart serre BTC": ["x2"], "TWAP fin quantiles + carnet BTC": ["p6", "x2", "elan"], "TWAP fin quantiles + carnet ecart serre BTC": ["p6", "x2", "elan"], "TWAP fin quantiles + ecart serre BTC": ["p6", "x2", "bcl"], "TWAP fin quantiles + foule bybit x2 BTC": ["x2", "bcl"], "TWAP fin quantiles BTC": ["p12", "p6", "x2", "p750", "bcl"], "TWAP fin sauts + carnet BTC": ["p6", "x2", "p750", "bcl"], "TWAP fin sauts + carnet ecart serre BTC": ["x2", "bcl"], "TWAP fin sauts + foule bybit x2 BTC": ["x2", "bcl"], "TWAP fin sauts BTC": ["x2", "bcl"], "V2-F incertitude 0,01 % + foule bybit x2 BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige : V2-F + pas les deux baissent + carnet BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC": ["p12", "p6", "x2", "elan", "bcl"], "corrige : V2-F ecart qui grandit + carnet BTC": ["p12", "x2", "elan", "b6", "bcl"], "corrige : V2-F ecart qui grandit + carnet ecart serre BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige : desaccord 20 + carnet BTC": ["p12", "x2", "b6", "bcl"], "corrige : desaccord 20 + carnet ecart serre BTC": ["p12", "x2", "b6", "bcl"], "corrige : desaccord 20 + foule bybit x2 BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige marge mesuree : V2-F + foule bybit x2 BTC": ["p12", "p6", "x2", "p750", "b6", "bcl"] };
 var ZERO3_DEPUIS = "2026-10-25T14:00:00Z";
+var ZERO5_DEPUIS = "2026-10-26T20:52:00Z";
+var ZERO5_NUMS = [101, 201, 121, 28, 119];
 var ZERO4_DEPUIS = "2026-10-26T11:00:00Z";
 var ONGLET4_DE3 = ["PORTEFEUILLE 400 + id\xE9es BTC", "PORTEFEUILLE 600 + id\xE9es BTC", "PORTEFEUILLE 400 corrige + id\xE9es BTC"];
 async function zSauver(st, cle, Z) {
@@ -29010,11 +29055,25 @@ fetch("/api/catalogue").then(r=>r.json()).then(d=>{C=d.strategies;aff();});docum
 <\/script></body></html>`;
 var PAGE_ZERO4 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 5 \u2014 tout \xE0 0</title>${STYLE}</head><body>
 <h1>Onglet 5 \u2014 tout remis \xE0 0 le 26.10 \xE0 12:00 <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel5" style="font-weight:600">\u{1F4E5} Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, \xE0 jour \xE0 chaque ouverture ; \xE9crits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 26.10.2026 \xE0 12:00 (heure suisse) pour toutes les lignes des onglets 3 et 4 (strat\xE9gies, versions \xAB + id\xE9es \xBB, \xAB + consensus \xBB, financement, \xE9lan perp, minute 35-45, sur mesure, CONSENSUS 6 / 8, DIVERSIT\xC9 3, CONSENSUS 6 billets), plus \xAB + id\xE9es sans r\xE8gles \xE9chou\xE9es \xBB (m\xEAmes mises x2 / x3 que \xAB + id\xE9es \xBB, sans le filtre des gros trades ni la revente \xE0 60 s, qui ont \xE9chou\xE9 sur 10-19.10). Aucun argent r\xE9el.</div>
-<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <a href="/zero3">Onglet 4 : consensus</a> \xB7 <b>Onglet 5 : tout \xE0 0</b></div>
+<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <a href="/zero3">Onglet 4 : consensus</a> \xB7 <b>Onglet 5 : tout \xE0 0</b> \xB7 <a href="/zero5">Onglet 6 : bot de trading</a></div>
 <div id="app" style="margin-top:12px">Chargement\u2026</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero4",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
+let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" \xB7 "+S.length+" strat\xE9gies (" + S.filter(x=>x.n>0).length + " ont d\xE9j\xE0 un trade r\xE9gl\xE9) \xB7 total strat\xE9gies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> \xB7 total de toutes les versions : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> \xB7 cycles en attente de calcul : "+d.enAttente+"</div></div>";
+if(!S.length)h+="<div class='card'>Aucun trade r\xE9gl\xE9 depuis la remise \xE0 0 pour l'instant.</div>";
+else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Mise moyenne par trade</th><th>Total mis\xE9</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
+maj();setInterval(maj,20000);
+<\/script></body></html>`;
+var PAGE_ZERO5 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 6 \u2014 bot de trading</title>${STYLE}</head><body>
+<h1>Onglet 6 \u2014 strat\xE9gies choisies pour le bot de trading <span class="badge">mode fant\xF4me</span></h1><div class="mu">Seulement les num\xE9ros choisis pour le bot de trading (101, 201, 121, 28, 119), compt\xE9s depuis le d\xE9marrage du paper le 26.10.2026 \xE0 21:52 (heure suisse), avec les r\xE8gles du bot : versions \xAB + id\xE9es \xBB SANS la revente \xE0 60 s, gard\xE9es jusqu'au r\xE8glement. Mise de base 50 $ (x2 / x3 des id\xE9es compris). Calcul environ 10 min apr\xE8s la fin de chaque cycle. \xC0 comparer avec le bot de trading : https://72-11-157-70.sslip.io/</div>
+<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <a href="/zero3">Onglet 4 : consensus</a> \xB7 <a href="/zero4">Onglet 5 : tout \xE0 0</a> \xB7 <b>Onglet 6 : bot de trading</b></div>
+<div id="app" style="margin-top:12px">Chargement\u2026</div>
+<script>
+const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
+async function maj(){try{const d=await (await fetch("/api/zero5",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" \xB7 "+S.length+" strat\xE9gies (" + S.filter(x=>x.n>0).length + " ont d\xE9j\xE0 un trade r\xE9gl\xE9) \xB7 total strat\xE9gies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> \xB7 total de toutes les versions : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> \xB7 cycles en attente de calcul : "+d.enAttente+"</div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade r\xE9gl\xE9 depuis la remise \xE0 0 pour l'instant.</div>";
 else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Mise moyenne par trade</th><th>Total mis\xE9</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
