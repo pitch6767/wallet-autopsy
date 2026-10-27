@@ -23937,29 +23937,29 @@ var Bot = class {
         if (!Z[k] && !STOPPEES.has(base + "|" + k.slice(k.lastIndexOf(" ") + 1)) && !ARRET_18.has(base + "|" + k.slice(k.lastIndexOf(" ") + 1)) && ((v.n || 0) > 0 || (v.trades || []).length > 0)) Z[k] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 };
       }
       for (const k of Object.keys(Z)) if (ARRET_18.has(k.replace(/ ([A-Z]+)$/, "|$1"))) delete Z[k];
-      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...z, parJour: Object.fromEntries(Object.entries(z.parJour || (z.n > 0 ? { "2026-10-14": z.pnl } : {})).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
+      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || (z.n > 0 ? { "2026-10-14": z.pnl } : {})).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
       return json({ depuis: ZERO_DEPUIS, strats: L, total: +L.reduce((a, b) => a + b.pnl, 0).toFixed(2) });
     }
     if (u.pathname === "/api/zero2") {
       const Z = this.N.zero2 || {};
-      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...z, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
+      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
       return json({ depuis: ZERO2_DEPUIS, strats: L, total: +L.filter((x) => !x.nom.includes(" + id\xE9es")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + id\xE9es")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
     }
     if (u.pathname === "/api/zero3") {
       const Z = this.N.zero3 || {};
-      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...z, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
+      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
       return json({ depuis: ZERO3_DEPUIS, strats: L, total: +L.filter((x) => !x.nom.includes(" + consensus")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + consensus BTC")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
     }
     if (u.pathname === "/api/zero4") {
       const Z = this.N.zero4 || {};
-      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...z, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
+      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
       return json({ depuis: ZERO4_DEPUIS, strats: L, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
     }
-    if (u.pathname === "/api/catalogue") return json({ maj: "2026-10-26", strategies: catalogue_default });
+    if (u.pathname === "/api/catalogue") return json({ maj: "2026-10-27", strategies: catalogue_default.map((c) => ({ ...c, ...infoOrdres(c.nom + " BTC") })) });
     if (u.pathname === "/numeros") return new Response(PAGE_NUMEROS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/api/zero5") {
       const Z = this.N.zero5 || {};
-      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...z, cy: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
+      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: void 0, cy: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
       return json({ depuis: ZERO5_DEPUIS, nums: ZERO5_NUMS, strats: L, total: +L.reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
     }
     if (u.pathname === "/zero5") return new Response(PAGE_ZERO5, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -28966,6 +28966,28 @@ async function zCharger(st, cle) {
 }
 __name(zCharger, "zCharger");
 var ZHOOK = null;
+var ORDRES_VUS = { "1": 7, "5": 2, "6": 1, "8": 1, "2": 3, "14": 2, "7": 2, "12": 2, "15": 2, "9": 1, "13": 2, "10": 2, "11": 2, "16": 1, "17": 1, "4": 11, "20": 1, "18": 1, "21": 1, "19": 1, "22": 1, "23": 1, "24": 1, "3": 4, "25": 1, "26": 1, "27": 1, "28": 1, "29": 1, "30": 1 };
+function multTexte(nom) {
+  const m = [];
+  if (/^PORTEFEUILLE (400|600)/.test(nom)) m.push("BY1 \xE0 100 $ = x2, \xAB foule bybit x2 \xBB = x2");
+  else {
+    if (/ 100 \$/.test(nom)) m.push("mise 100 $ = x2");
+    if (nom.includes("foule bybit x2")) m.push("x2 si foule contre nous");
+  }
+  if (nom.includes(" + id\xE9es") && !nom.includes("sans x2 x3")) m.push("id\xE9es, petits trades (< 0,50) : x2 si \u2265 10 strat\xE9gies du m\xEAme c\xF4t\xE9, x3 si en plus la foule vend");
+  if ((nom.includes(" + consensus") || nom.includes("+ consensus +")) && !nom.includes("sans x2")) m.push("consensus, petits trades (0,10-0,50) : x2 si \u2265 10 strat\xE9gies du m\xEAme c\xF4t\xE9");
+  if (nom.includes(" + sur mesure")) {
+    const b = nom.replace(" + sur mesure", "");
+    if ((SUR_MESURE[b + " BTC"] || []).includes("x2")) m.push("sur mesure, petits trades : x2 si \u2265 10 strat\xE9gies du m\xEAme c\xF4t\xE9");
+  }
+  return m.length ? m.join(" ; ") : "aucun (mise fixe)";
+}
+__name(multTexte, "multTexte");
+function infoOrdres(nom, z) {
+  const n = numDe(nom), vu = n ? ORDRES_VUS[String(n % 100)] : null, live = z && z.ordresMaxCycle || 0, o = Math.max(vu || 0, live);
+  return { ordres: o ? o > 1 ? "plusieurs (jusqu'\xE0 " + o + ")" : "1" : "\u2014", mult: multTexte(String(nom).replace(/ BTC$/, "")) };
+}
+__name(infoOrdres, "infoOrdres");
 function zCompte(Z, k, heure, net, sans, mise, start) {
   try {
     if (ZHOOK && ZHOOK.N && (Z === ZHOOK.N.zero2 || Z === ZHOOK.N.zero3 || Z === ZHOOK.N.zero4)) ZHOOK.xlZ(Z === ZHOOK.N.zero2 ? "xl3:" : Z === ZHOOK.N.zero3 ? "xl4:" : "xl5:", k, heure, net, mise, ZHOOK._zx || {});
@@ -28989,6 +29011,12 @@ function zCompte(Z, k, heure, net, sans, mise, start) {
   z.pire = Math.min(z.pire, net);
   if (sans) z.sansDonnees = (z.sansDonnees || 0) + 1;
   if (mise) z.mise = (z.mise || 0) + mise;
+  if (start) {
+    const cn = z.cn = z.cn || {};
+    cn[start] = (cn[start] || 0) + 1;
+    z.ordresMaxCycle = Math.max(z.ordresMaxCycle || 0, cn[start]);
+    for (const c of Object.keys(cn)) if (+c < start - 3600) delete cn[c];
+  }
   if (start && mise) {
     const cy = z.cy = z.cy || {};
     cy[start] = (cy[start] || 0) + mise;
@@ -29023,8 +29051,8 @@ const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" \xB7 "+S.length+" strat\xE9gies (" + S.filter(x=>x.n>0).length + " ont d\xE9j\xE0 un trade r\xE9gl\xE9) \xB7 total : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b></div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade r\xE9gl\xE9 depuis la remise \xE0 0 pour l'instant.</div>";
-else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"\u2014")+"</td><td style='font-size:.85em'>"+(x.mult||"\u2014")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 <\/script></body></html>`;
@@ -29044,8 +29072,8 @@ const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero2",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" \xB7 "+S.length+" strat\xE9gies (" + S.filter(x=>x.n>0).length + " ont d\xE9j\xE0 un trade r\xE9gl\xE9) \xB7 total strat\xE9gies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> \xB7 total versions \xAB + id\xE9es \xBB : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> \xB7 cycles en attente de calcul : "+d.enAttente+"</div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade r\xE9gl\xE9 depuis la remise \xE0 0 pour l'instant.</div>";
-else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Mise moyenne par trade</th><th>Total mis\xE9</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Mise moyenne par trade</th><th>Total mis\xE9</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"\u2014")+"</td><td style='font-size:.85em'>"+(x.mult||"\u2014")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 <\/script></body></html>`;
@@ -29065,8 +29093,8 @@ const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero3",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" \xB7 "+S.length+" strat\xE9gies (" + S.filter(x=>x.n>0).length + " ont d\xE9j\xE0 un trade r\xE9gl\xE9) \xB7 total strat\xE9gies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> \xB7 total versions \xAB + consensus \xBB : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> \xB7 cycles en attente de calcul : "+d.enAttente+"</div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade r\xE9gl\xE9 depuis la remise \xE0 0 pour l'instant.</div>";
-else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Mise moyenne par trade</th><th>Total mis\xE9</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Mise moyenne par trade</th><th>Total mis\xE9</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"\u2014")+"</td><td style='font-size:.85em'>"+(x.mult||"\u2014")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 <\/script></body></html>`;
@@ -29078,7 +29106,7 @@ var PAGE_NUMEROS = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><
 <script>
 let C=[];const e=(t)=>String(t).replace(/[&<>]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;"})[c]);
 function aff(){const q=document.getElementById("q").value.trim().toLowerCase();const L=!q?C.filter(c=>c.n<100):/^d+$/.test(q)?C.filter(c=>String(c.n)===q):C.filter(c=>c.nom.toLowerCase().includes(q));
-document.getElementById("r").innerHTML=(L.length?"":"<p>Aucune strat\xE9gie.</p>")+L.map(c=>"<div class='c'><b>n\xB0 "+c.n+" \u2014 "+e(c.nom)+"</b><br>"+e(c.desc)+"</div>").join("")+(!q?"<p class='mu'>Tapez un num\xE9ro (ex. 109, 431) pour voir une version.</p>":"");}
+document.getElementById("r").innerHTML=(L.length?"":"<p>Aucune strat\xE9gie.</p>")+L.map(c=>"<div class='c'><b>n\xB0 "+c.n+" \u2014 "+e(c.nom)+"</b><br><span style='color:#7dd3a8'>Ordres par cycle : "+e(c.ordres)+" \xB7 Multiplicateur : "+e(c.mult)+"</span><br>"+e(c.desc)+"</div>").join("")+(!q?"<p class='mu'>Tapez un num\xE9ro (ex. 109, 431) pour voir une version.</p>":"");}
 fetch("/api/catalogue").then(r=>r.json()).then(d=>{C=d.strategies;aff();});document.getElementById("q").oninput=aff;
 <\/script></body></html>`;
 var PAGE_ZERO4 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 5 \u2014 tout \xE0 0</title>${STYLE}</head><body>
@@ -29097,8 +29125,8 @@ const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero4",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" \xB7 "+S.length+" strat\xE9gies (" + S.filter(x=>x.n>0).length + " ont d\xE9j\xE0 un trade r\xE9gl\xE9) \xB7 total strat\xE9gies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> \xB7 total de toutes les versions : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> \xB7 cycles en attente de calcul : "+d.enAttente+"</div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade r\xE9gl\xE9 depuis la remise \xE0 0 pour l'instant.</div>";
-else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Mise moyenne par trade</th><th>Total mis\xE9</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Mise moyenne par trade</th><th>Total mis\xE9</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"\u2014")+"</td><td style='font-size:.85em'>"+(x.mult||"\u2014")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 <\/script></body></html>`;
@@ -29118,8 +29146,8 @@ const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero5",{cache:"no-store"})).json();const S=d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" \xB7 "+S.length+" strat\xE9gies (" + S.filter(x=>x.n>0).length + " ont d\xE9j\xE0 un trade r\xE9gl\xE9) \xB7 total strat\xE9gies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> \xB7 total de toutes les versions : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> \xB7 cycles en attente de calcul : "+d.enAttente+"</div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade r\xE9gl\xE9 depuis la remise \xE0 0 pour l'instant.</div>";
-else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Mise moyenne par trade</th><th>Total mis\xE9</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+else h+="<div class='card'><h2>Classement depuis la remise \xE0 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Strat\xE9gie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Mise moyenne par trade</th><th>Total mis\xE9</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"\u2014")+"</td><td style='font-size:.85em'>"+(x.mult||"\u2014")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 <\/script></body></html>`;
