@@ -3537,7 +3537,14 @@ function nRisqueVue(r) { const h = { ...(r.hist || {}) }; if (r.serie > 0) h[r.s
 const PAGE_N = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes</title>${STYLE}</head><body>
 <h1>Nouvelles stratégies — mode fantôme</h1>
 <div class="mu">Aucun argent réel. Depuis le 07.10 à 15h, seulement sur BTC (ETH abandonné, ses anciens résultats restent visibles) : V1, V1 + assurance (6/9/12 et 4/7/10), désaccord 20 et ses variantes (V2 B à H…). Le 09.10, les stratégies à plus de 500 $ de pertes ont été supprimées (trades sauvés sur GitHub). Toutes les autres stratégies sont arrêtées ; leurs résultats restent visibles, figés, dans « Stratégies arrêtées ».</div>
-<div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <b>Onglet 1 : depuis le début</b> · <a href="/zero">Onglet 2 : remise à 0 →</a></div><div id="classement" style="margin-top:12px"></div><div id="app" style="margin-top:12px">Chargement…</div>
+<div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <b>Onglet 1 : depuis le début</b> · <a href="/zero">Onglet 2 : remise à 0 →</a></div><div id="classement" style="margin-top:12px"></div><div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom de stratégie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n° "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();</script>
+<div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+x.toFixed(2)+" $";const fc=(x)=>"<span class='"+(x>=0?"ok":"ko")+"'>"+f(x)+"</span>";
 const ser=(h)=>{const e=Object.entries(h||{}).map(([l,n])=>[+l,n]).sort((a,b)=>b[0]-a[0]);return e.length?e.map(([l,n])=>l+" de suite : "+n+" fois").join(" · "):"aucune perte";};
@@ -3703,6 +3710,13 @@ const ZERO_DEPUIS = "2026-10-19T09:00:00Z";      // 19.10.2026 11:00 heure suiss
 const PAGE_ZERO = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes — remise à 0</title>${STYLE}</head><body>
 <h1>Fantômes — remise à 0 <span class="badge">mode fantôme</span></h1><div class="mu"><a href="/excel" style="font-weight:600">📥 Fichier Excel : tous les trades de chaque stratégie (une ligne par trade, à jour à chaque ouverture)</a></div><div class="mu">Compteurs repartis de zéro le 19.10.2026 à 11:00 (heure suisse) : seuls les trades ouverts depuis comptent. Capital conseillé = 2 × creux max + 2 mises de 50 $ (comme l'onglet 1). Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <b>Stratégies fantômes : remise à 0</b> · <a href="/zero2">Onglet 3 : idées</a> · <a href="/zero3">Onglet 4 : consensus</a></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom de stratégie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n° "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();</script>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
@@ -3717,6 +3731,13 @@ maj();setInterval(maj,20000);
 const PAGE_ZERO2 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 3 — idées</title>${STYLE}</head><body>
 <h1>Onglet 3 — remise à 0 + versions « idées » <span class="badge">mode fantôme</span></h1><div class="mu"><a href="/excel3" style="font-weight:600">📥 Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, à jour à chaque ouverture ; écrits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de zéro le 24.10.2026 à 22:00 (heure suisse). Chaque stratégie affichée apparaît deux fois : telle quelle, et « + idées ». Les lignes « + idées » sont calculées environ 5 min après la fin de chaque cycle, avec seulement ce qui était connu au moment de l'achat. Gros trades (prix ≥ 0,50) : gardés seulement si les bourses sont en avance sur Chainlink d'au moins 3,8 $ et montent vers nous, ou si le jeton Polymarket est en retard d'au moins 10 pts sur les bourses. Petits trades : mise x2 si au moins 10 trades des stratégies affichées sur le même côté du cycle, x3 si en plus la foule Polymarket vient de vendre notre jeton (la version « + idées sans x2 x3 » garde la mise normale). Revente à 60 s de la fin si Chainlink est pour nous mais les futures Bybit contre nous d'au moins 3 $ (frais compris). Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <b>Onglet 3 : idées</b> · <a href="/zero3">Onglet 4 : consensus</a></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom de stratégie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n° "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();</script>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
@@ -3731,6 +3752,13 @@ maj();setInterval(maj,20000);
 const PAGE_ZERO3 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 4 — consensus</title>${STYLE}</head><body>
 <h1>Onglet 4 — remise à 0 + versions « consensus » <span class="badge">mode fantôme</span></h1><div class="mu"><a href="/excel4" style="font-weight:600">📥 Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, à jour à chaque ouverture ; écrits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de zéro le 25.10.2026 à 15:00 (heure suisse). Chaque stratégie affichée apparaît trois fois : telle quelle, « + consensus » et « + consensus sans x2 ». Règle (la seule idée confirmée sur les jours du 10 au 19.10, jamais utilisés pour la trouver) : un petit trade (prix 0,10 à 0,50) n'est pas pris si seulement 1 ou 2 trades des stratégies affichées sont sur le même côté du cycle à son heure d'achat ; s'il y en a au moins 10, la mise est doublée (sauf dans « sans x2 »). Gros trades et billets &lt; 0,10 inchangés. Depuis le 25.10 vers 18 h, aussi « + financement contre la foule » (gros trades, prix ≥ 0,50, pris seulement quand le financement Bybit est contre notre côté : la foule paie pour être de l'autre côté) et « + consensus + financement » (les deux règles). Depuis le 25.10 vers 20 h 15 : « + élan perp » (gros trade pas pris si le flux du perp Bybit sur 30 s est neutre ou contre nous), « + consensus + financement + élan perp » (tout), et « + petits minute 35-45 » (petits trades pris seulement s'ils sont achetés entre la minute 35 et 45 de l'heure ; idée sans explication de marché, à vérifier). Depuis le 25.10 vers 21 h : « + sur mesure » — chaque stratégie n'applique que les idées qui l'aident sur les 4 périodes du 10 au 25.10 (BY1 : aucune). Depuis le 26.10 : les 3 premières lignes de l'onglet 3 (PORTEFEUILLE 400 + idées, PORTEFEUILLE 600 + idées, PORTEFEUILLE 400 corrige + idées), comptées ici depuis le 25.10 15:00. Calcul environ 5 min après la fin du cycle. Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <a href="/zero2">Onglet 3 : idées</a> · <b>Onglet 4 : consensus</b> · <a href="/zero4">Onglet 5 : tout à 0</a></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom de stratégie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n° "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();</script>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
@@ -3756,6 +3784,13 @@ fetch("/api/catalogue").then(r=>r.json()).then(d=>{C=d.strategies;aff();});docum
 const PAGE_ZERO4 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 5 — tout à 0</title>${STYLE}</head><body>
 <h1>Onglet 5 — tout remis à 0 le 26.10 à 12:00 <span class="badge">mode fantôme</span></h1><div class="mu"><a href="/excel5" style="font-weight:600">📥 Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, à jour à chaque ouverture ; écrits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de zéro le 26.10.2026 à 12:00 (heure suisse) pour toutes les lignes des onglets 3 et 4 (stratégies, versions « + idées », « + consensus », financement, élan perp, minute 35-45, sur mesure, CONSENSUS 6 / 8, DIVERSITÉ 3, CONSENSUS 6 billets), plus « + idées sans règles échouées » (mêmes mises x2 / x3 que « + idées », sans le filtre des gros trades ni la revente à 60 s, qui ont échoué sur 10-19.10). Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <a href="/zero2">Onglet 3 : idées</a> · <a href="/zero3">Onglet 4 : consensus</a> · <b>Onglet 5 : tout à 0</b> · <a href="/zero5">Onglet 6 : bot de trading</a></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom de stratégie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n° "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();</script>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
@@ -3770,6 +3805,13 @@ maj();setInterval(maj,20000);
 const PAGE_ZERO5 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 6 — bot de trading</title>${STYLE}</head><body>
 <h1>Onglet 6 — stratégies choisies pour le bot de trading <span class="badge">mode fantôme</span></h1><div class="mu">Seulement les numéros choisis pour le bot de trading (101, 201, 121, 28, 119), comptés depuis le démarrage du paper le 26.10.2026 à 21:52 (heure suisse), avec les règles du bot : versions « + idées » SANS la revente à 60 s, gardées jusqu'au règlement. Mise de base 50 $ (x2 / x3 des idées compris). Calcul environ 10 min après la fin de chaque cycle. À comparer avec le bot de trading : https://72-11-157-70.sslip.io/</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <a href="/zero2">Onglet 3 : idées</a> · <a href="/zero3">Onglet 4 : consensus</a> · <a href="/zero4">Onglet 5 : tout à 0</a> · <b>Onglet 6 : bot de trading</b></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom de stratégie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n° "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();</script>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
