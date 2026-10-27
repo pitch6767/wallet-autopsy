@@ -28695,7 +28695,14 @@ __name(nRisqueVue, "nRisqueVue");
 var PAGE_N = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fant\xF4mes</title>${STYLE}</head><body>
 <h1>Nouvelles strat\xE9gies \u2014 mode fant\xF4me</h1>
 <div class="mu">Aucun argent r\xE9el. Depuis le 07.10 \xE0 15h, seulement sur BTC (ETH abandonn\xE9, ses anciens r\xE9sultats restent visibles) : V1, V1 + assurance (6/9/12 et 4/7/10), d\xE9saccord 20 et ses variantes (V2 B \xE0 H\u2026). Le 09.10, les strat\xE9gies \xE0 plus de 500 $ de pertes ont \xE9t\xE9 supprim\xE9es (trades sauv\xE9s sur GitHub). Toutes les autres strat\xE9gies sont arr\xEAt\xE9es ; leurs r\xE9sultats restent visibles, fig\xE9s, dans \xAB Strat\xE9gies arr\xEAt\xE9es \xBB.</div>
-<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <b>Onglet 1 : depuis le d\xE9but</b> \xB7 <a href="/zero">Onglet 2 : remise \xE0 0 \u2192</a></div><div id="classement" style="margin-top:12px"></div><div id="app" style="margin-top:12px">Chargement\u2026</div>
+<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <b>Onglet 1 : depuis le d\xE9but</b> \xB7 <a href="/zero">Onglet 2 : remise \xE0 0 \u2192</a></div><div id="classement" style="margin-top:12px"></div><div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n\xB0 "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();<\/script>
+<div id="app" style="margin-top:12px">Chargement\u2026</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+x.toFixed(2)+" $";const fc=(x)=>"<span class='"+(x>=0?"ok":"ko")+"'>"+f(x)+"</span>";
 const ser=(h)=>{const e=Object.entries(h||{}).map(([l,n])=>[+l,n]).sort((a,b)=>b[0]-a[0]);return e.length?e.map(([l,n])=>l+" de suite : "+n+" fois").join(" \xB7 "):"aucune perte";};
@@ -29003,6 +29010,13 @@ var ZERO_DEPUIS = "2026-10-19T09:00:00Z";
 var PAGE_ZERO = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fant\xF4mes \u2014 remise \xE0 0</title>${STYLE}</head><body>
 <h1>Fant\xF4mes \u2014 remise \xE0 0 <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel" style="font-weight:600">\u{1F4E5} Fichier Excel : tous les trades de chaque strat\xE9gie (une ligne par trade, \xE0 jour \xE0 chaque ouverture)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 19.10.2026 \xE0 11:00 (heure suisse) : seuls les trades ouverts depuis comptent. Capital conseill\xE9 = 2 \xD7 creux max + 2 mises de 50 $ (comme l'onglet 1). Aucun argent r\xE9el.</div>
 <div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <b>Strat\xE9gies fant\xF4mes : remise \xE0 0</b> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <a href="/zero3">Onglet 4 : consensus</a></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n\xB0 "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();<\/script>
 <div id="app" style="margin-top:12px">Chargement\u2026</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
@@ -29017,6 +29031,13 @@ maj();setInterval(maj,20000);
 var PAGE_ZERO2 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 3 \u2014 id\xE9es</title>${STYLE}</head><body>
 <h1>Onglet 3 \u2014 remise \xE0 0 + versions \xAB id\xE9es \xBB <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel3" style="font-weight:600">\u{1F4E5} Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, \xE0 jour \xE0 chaque ouverture ; \xE9crits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 24.10.2026 \xE0 22:00 (heure suisse). Chaque strat\xE9gie affich\xE9e appara\xEEt deux fois : telle quelle, et \xAB + id\xE9es \xBB. Les lignes \xAB + id\xE9es \xBB sont calcul\xE9es environ 5 min apr\xE8s la fin de chaque cycle, avec seulement ce qui \xE9tait connu au moment de l'achat. Gros trades (prix \u2265 0,50) : gard\xE9s seulement si les bourses sont en avance sur Chainlink d'au moins 3,8 $ et montent vers nous, ou si le jeton Polymarket est en retard d'au moins 10 pts sur les bourses. Petits trades : mise x2 si au moins 10 trades des strat\xE9gies affich\xE9es sur le m\xEAme c\xF4t\xE9 du cycle, x3 si en plus la foule Polymarket vient de vendre notre jeton (la version \xAB + id\xE9es sans x2 x3 \xBB garde la mise normale). Revente \xE0 60 s de la fin si Chainlink est pour nous mais les futures Bybit contre nous d'au moins 3 $ (frais compris). Aucun argent r\xE9el.</div>
 <div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <b>Onglet 3 : id\xE9es</b> \xB7 <a href="/zero3">Onglet 4 : consensus</a></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n\xB0 "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();<\/script>
 <div id="app" style="margin-top:12px">Chargement\u2026</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
@@ -29031,6 +29052,13 @@ maj();setInterval(maj,20000);
 var PAGE_ZERO3 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 4 \u2014 consensus</title>${STYLE}</head><body>
 <h1>Onglet 4 \u2014 remise \xE0 0 + versions \xAB consensus \xBB <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel4" style="font-weight:600">\u{1F4E5} Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, \xE0 jour \xE0 chaque ouverture ; \xE9crits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 25.10.2026 \xE0 15:00 (heure suisse). Chaque strat\xE9gie affich\xE9e appara\xEEt trois fois : telle quelle, \xAB + consensus \xBB et \xAB + consensus sans x2 \xBB. R\xE8gle (la seule id\xE9e confirm\xE9e sur les jours du 10 au 19.10, jamais utilis\xE9s pour la trouver) : un petit trade (prix 0,10 \xE0 0,50) n'est pas pris si seulement 1 ou 2 trades des strat\xE9gies affich\xE9es sont sur le m\xEAme c\xF4t\xE9 du cycle \xE0 son heure d'achat ; s'il y en a au moins 10, la mise est doubl\xE9e (sauf dans \xAB sans x2 \xBB). Gros trades et billets &lt; 0,10 inchang\xE9s. Depuis le 25.10 vers 18 h, aussi \xAB + financement contre la foule \xBB (gros trades, prix \u2265 0,50, pris seulement quand le financement Bybit est contre notre c\xF4t\xE9 : la foule paie pour \xEAtre de l'autre c\xF4t\xE9) et \xAB + consensus + financement \xBB (les deux r\xE8gles). Depuis le 25.10 vers 20 h 15 : \xAB + \xE9lan perp \xBB (gros trade pas pris si le flux du perp Bybit sur 30 s est neutre ou contre nous), \xAB + consensus + financement + \xE9lan perp \xBB (tout), et \xAB + petits minute 35-45 \xBB (petits trades pris seulement s'ils sont achet\xE9s entre la minute 35 et 45 de l'heure ; id\xE9e sans explication de march\xE9, \xE0 v\xE9rifier). Depuis le 25.10 vers 21 h : \xAB + sur mesure \xBB \u2014 chaque strat\xE9gie n'applique que les id\xE9es qui l'aident sur les 4 p\xE9riodes du 10 au 25.10 (BY1 : aucune). Depuis le 26.10 : les 3 premi\xE8res lignes de l'onglet 3 (PORTEFEUILLE 400 + id\xE9es, PORTEFEUILLE 600 + id\xE9es, PORTEFEUILLE 400 corrige + id\xE9es), compt\xE9es ici depuis le 25.10 15:00. Calcul environ 5 min apr\xE8s la fin du cycle. Aucun argent r\xE9el.</div>
 <div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <b>Onglet 4 : consensus</b> \xB7 <a href="/zero4">Onglet 5 : tout \xE0 0</a></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n\xB0 "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();<\/script>
 <div id="app" style="margin-top:12px">Chargement\u2026</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
@@ -29056,6 +29084,13 @@ fetch("/api/catalogue").then(r=>r.json()).then(d=>{C=d.strategies;aff();});docum
 var PAGE_ZERO4 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 5 \u2014 tout \xE0 0</title>${STYLE}</head><body>
 <h1>Onglet 5 \u2014 tout remis \xE0 0 le 26.10 \xE0 12:00 <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel5" style="font-weight:600">\u{1F4E5} Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, \xE0 jour \xE0 chaque ouverture ; \xE9crits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 26.10.2026 \xE0 12:00 (heure suisse) pour toutes les lignes des onglets 3 et 4 (strat\xE9gies, versions \xAB + id\xE9es \xBB, \xAB + consensus \xBB, financement, \xE9lan perp, minute 35-45, sur mesure, CONSENSUS 6 / 8, DIVERSIT\xC9 3, CONSENSUS 6 billets), plus \xAB + id\xE9es sans r\xE8gles \xE9chou\xE9es \xBB (m\xEAmes mises x2 / x3 que \xAB + id\xE9es \xBB, sans le filtre des gros trades ni la revente \xE0 60 s, qui ont \xE9chou\xE9 sur 10-19.10). Aucun argent r\xE9el.</div>
 <div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <a href="/zero3">Onglet 4 : consensus</a> \xB7 <b>Onglet 5 : tout \xE0 0</b> \xB7 <a href="/zero5">Onglet 6 : bot de trading</a></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n\xB0 "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();<\/script>
 <div id="app" style="margin-top:12px">Chargement\u2026</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
@@ -29070,6 +29105,13 @@ maj();setInterval(maj,20000);
 var PAGE_ZERO5 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 6 \u2014 bot de trading</title>${STYLE}</head><body>
 <h1>Onglet 6 \u2014 strat\xE9gies choisies pour le bot de trading <span class="badge">mode fant\xF4me</span></h1><div class="mu">Seulement les num\xE9ros choisis pour le bot de trading (101, 201, 121, 28, 119), compt\xE9s depuis le d\xE9marrage du paper le 26.10.2026 \xE0 21:52 (heure suisse), avec les r\xE8gles du bot : versions \xAB + id\xE9es \xBB SANS la revente \xE0 60 s, gard\xE9es jusqu'au r\xE8glement. Mise de base 50 $ (x2 / x3 des id\xE9es compris). Calcul environ 10 min apr\xE8s la fin de chaque cycle. \xC0 comparer avec le bot de trading : https://72-11-157-70.sslip.io/</div>
 <div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <a href="/zero3">Onglet 4 : consensus</a> \xB7 <a href="/zero4">Onglet 5 : tout \xE0 0</a> \xB7 <b>Onglet 6 : bot de trading</b></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span></div>
+<script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
+function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
+document.querySelectorAll("#app table tr").forEach((tr)=>{if(tr.querySelector("th")){tr.style.display="";return;}const t=tr.textContent.toLowerCase();
+const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n\xB0 "+q+" ")):t.includes(q));tr.style.display=ok?"":"none";if(ok&&q)n++;});
+document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
+i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();<\/script>
 <div id="app" style="margin-top:12px">Chargement\u2026</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
