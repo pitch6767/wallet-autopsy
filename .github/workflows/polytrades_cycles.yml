@@ -1,0 +1,51 @@
+# 28.10.2026 — vérification de réalisme : transactions publiques Polymarket des cycles BTC 5 min donnés (lecture seule).
+name: Transactions Polymarket par cycle (lecture seule)
+on:
+  workflow_dispatch:
+    inputs:
+      cycles: { description: "débuts de cycle (secondes UTC) séparés par des virgules", required: true }
+      sortie: { description: "nom du fichier", default: "verif" }
+permissions:
+  contents: write
+jobs:
+  h:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 1 }
+      - env:
+          CY: ${{ inputs.cycles }}
+          OUT: ${{ inputs.sortie }}
+        run: |
+          mkdir -p bot95/verif
+          python3 - <<'P'
+          import json, time, gzip, os, urllib.request
+          from concurrent.futures import ThreadPoolExecutor
+          G = "https://gamma-api.polymarket.com"; D = "https://data-api.polymarket.com"
+          def get(u):
+              for k in range(6):
+                  try: return json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "bot95-verif"}), timeout=60).read())
+                  except Exception as e:
+                      if "404" in str(e) or "400" in str(e): return None
+                      time.sleep(5 if "429" in str(e) else 1.5 * (k + 1))
+              return None
+          def un(st):
+              ev = get(f"{G}/events?slug=btc-updown-5m-{st}")
+              if not ev: return st, None
+              m = ev[0]["markets"][0]; cid = m.get("conditionId"); T = []; off = 0
+              while off <= 20000:
+                  r = get(f"{D}/trades?market={cid}&limit=500&offset={off}&takerOnly=true")
+                  if not r: break
+                  T += [[x.get("timestamp"), x.get("side"), x.get("outcome"), x.get("price"), x.get("size")] for x in r]
+                  if len(r) < 500: break
+                  off += 500
+              return st, {"outcomes": m.get("outcomes"), "prix_fin": m.get("outcomePrices"), "trades": T}
+          cy = [int(x) for x in os.environ["CY"].split(",") if x.strip()]
+          with ThreadPoolExecutor(6) as ex: R = dict(ex.map(un, cy))
+          with gzip.open(f"bot95/verif/{os.environ['OUT']}.json.gz", "wt") as f: json.dump({"format": "[timestamp_s, BUY/SELL, outcome, prix, parts] (preneurs seulement)", "cycles": {str(k): v for k, v in R.items()}}, f)
+          print("cycles", len(R), "sans marché", sum(1 for v in R.values() if not v), "transactions", sum(len(v["trades"]) for v in R.values() if v))
+          P
+          git config user.name verif; git config user.email bot@users.noreply.github.com
+          git add bot95/verif; git commit -q -m "verif transactions Polymarket [skip ci]" || true
+          for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
