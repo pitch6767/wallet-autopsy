@@ -23084,6 +23084,49 @@ var Bot = class {
           await zSauver(this.state.storage, "nv:zero3", this.N.zero3);
           await this.state.storage.put("onglet4de3", 1);
         }
+        if (!await this.state.storage.get("corrBY1misemax")) {
+          try {
+            const by1 = /* @__PURE__ */ new Set(), rap = [];
+            for (const nom of ["BY1 Bybit premier 100 $ BTC", "BY1 contre-elan calme 100 $ BTC"]) {
+              for (const v of (await this.state.storage.list({ prefix: "xl:" + nom + "|" })).values()) for (const l of v) if (l && l[0]) by1.add(String(l[0]).slice(0, 19) + "|" + String(l[1]).toLowerCase());
+              for (const l of await this.state.storage.get("hist:" + nom) || []) if (l && l[0]) by1.add(String(l[0]).slice(0, 19) + "|" + String(l[1]).toLowerCase());
+            }
+            const refaire = /* @__PURE__ */ __name(async (pre, Z, tab, depuis) => {
+              if (!Z) return;
+              for (const k of Object.keys(Z)) {
+                if (!k.startsWith("PORTEFEUILLE")) continue;
+                const cy = {};
+                for (const v of (await this.state.storage.list({ prefix: pre + k + "|" })).values()) for (const l of v) {
+                  if (!l || !l[0] || depuis && Date.parse(l[0]) < Date.parse(depuis) || by1.has(String(l[0]).slice(0, 19) + "|" + String(l[1]).toLowerCase())) continue;
+                  const st = Math.floor(Date.parse(l[0]) / 3e5) * 300;
+                  cy[st] = (cy[st] || 0) + (l[2] || 0) * (l[3] || 0);
+                }
+                const m = Math.max(0, ...Object.values(cy)), z = Z[k];
+                if (by1.size && m > 0 && z && z.miseMaxCycle && m < z.miseMaxCycle - 0.5) {
+                  rap.push([tab, k, +z.miseMaxCycle.toFixed(2), +m.toFixed(2)]);
+                  z.miseMaxCycle = m;
+                }
+              }
+            }, "refaire");
+            await refaire("xl3:", this.N.zero2, "onglet 3");
+            await refaire("xl4:", this.N.zero3, "onglet 4");
+            await refaire("xl5:", this.N.zero4, "onglet 5");
+            if (this.N.zero5) {
+              for (const k of Object.keys(this.N.zero5)) {
+                if (!k.startsWith("PORTEFEUILLE")) continue;
+                const tmp = { [k]: this.N.zero5[k] };
+                await refaire("xl3:", tmp, "onglet 6", ZERO5_DEPUIS);
+              }
+            }
+            this.N.zero2 && await this.state.storage.put("nv:zero2", this.N.zero2);
+            await zSauver(this.state.storage, "nv:zero3", this.N.zero3 || {});
+            await zSauver(this.state.storage, "nv:zero4", this.N.zero4 || {});
+            await zSauver(this.state.storage, "nv:zero5", this.N.zero5 || {});
+            await this.state.storage.put("corrBY1misemax", { at: (/* @__PURE__ */ new Date()).toISOString(), by1: by1.size, rap });
+          } catch (err) {
+            this.erreur("correction mise max BY1", err);
+          }
+        }
         {
           const q = await this.state.storage.get("nv:idq") || {};
           this.N.idq = q.idq || {};
@@ -23242,6 +23285,7 @@ var Bot = class {
     const u = new URL(req.url);
     const json = /* @__PURE__ */ __name((x) => Response.json(x, { headers: { "cache-control": "no-store" } }), "json");
     if (u.pathname === "/api/etat") return json(this.vue());
+    if (u.pathname === "/api/corr_misemax") return json(await this.state.storage.get("corrBY1misemax") || null);
     if (u.pathname === "/api/duo") {
       const D = this.duo || {};
       return json({ seuil: DUO_SEUIL, regle: DUO_REGLE, minutes: (D.min || []).length, cycles: Object.fromEntries(Object.entries(D.reg || {}).slice(-24).map(([k, v]) => [k, v == null ? null : { vol_pct_min: +(v * 100).toFixed(4), regime: v < DUO_SEUIL ? "calme" : "rapide" }])) });
