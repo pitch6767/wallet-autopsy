@@ -1,0 +1,40 @@
+# 28.10.2026 (option 2, accord de Pitch) : moteur de signaux seul « bot95-signaux », en ombre (aucune clé, aucun ordre)
+name: Deploy bot95-signaux
+on:
+  push:
+    branches: [main]
+    paths: [bot95/src/**, bot95/wrangler.signaux.jsonc, .github/workflows/bot95_signaux.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: { group: bot95-signaux, cancel-in-progress: false }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deployer et controler
+        run: |
+          set +e
+          cd bot95
+          npm install --no-audit --no-fund > /tmp/npm.log 2>&1; tail -3 /tmp/npm.log
+          npx -y wrangler@4 deploy -c wrangler.signaux.jsonc > /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log
+          U=https://bot95-signaux.pitch67.workers.dev
+          F=/tmp/c.log
+          sleep 15
+          echo "== cle_signaux" >> $F; curl -sS -m 20 -w "\nHTTP %{http_code} %{time_total}s\n" $U/api/cle_signaux >> $F 2>&1
+          echo "== flux_signaux (GET)" >> $F; curl -sS -m 20 -w "\nHTTP %{http_code}\n" $U/api/flux_signaux >> $F 2>&1
+          echo "== /api/etat (doit etre 404)" >> $F; curl -sS -m 20 -o /dev/null -w "HTTP %{http_code}\n" $U/api/etat >> $F 2>&1
+          echo "== / (doit etre 404)" >> $F; curl -sS -m 20 -o /dev/null -w "HTTP %{http_code}\n" $U/ >> $F 2>&1
+          for k in 1 2; do sleep 45; echo "== statut $k" >> $F; curl -sS -m 20 $U/api/statut | head -c 2500 >> $F 2>&1; echo >> $F; done
+          { echo "deploiement $(date -u +%FT%TZ)"; tail -15 /tmp/d.log; cat $F; } > controle_signaux.txt
+          cd ..; git config user.name controle; git config user.email bot@users.noreply.github.com
+          git add bot95/controle_signaux.txt; git commit -q -m "Controle bot95-signaux [skip ci]"; for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push -q && break; sleep 7; done
+          grep -q "code sortie: 0" /tmp/d.log

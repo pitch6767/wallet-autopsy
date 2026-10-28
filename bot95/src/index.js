@@ -139,6 +139,9 @@ const C = "https://clob.polymarket.com";
 
 export default {
   async fetch(req, env) {
+    // 28.10.2026 (option 2, accord de Pitch) : moteur de signaux seul (worker bot95-signaux, MOTEUR="signaux") — tout va directement à l'objet,
+    // qui ne répond qu'aux signaux, au réveil et à un état minimal. Sans MOTEUR (bot95) : rien ne change.
+    if (env.MOTEUR === "signaux") return stub(env).fetch(req);
     const pathname = new URL(req.url).pathname;
     // 28.10.2026 : objet surchargé (« Durable Object is overloaded ») — les envois du labo rapide sont mis en pause ici, avant l'objet,
     // le temps qu'il récupère. Le labo garde ses données et les renverra (il réessaie tout seul).
@@ -277,6 +280,7 @@ export class Sonde {
 export class Bot {
   constructor(state, env) {
     this.state = state; this.env = env;
+    this.SG = env.MOTEUR === "signaux";   // 28.10.2026 : moteur de signaux seul (aucune écriture sauf la clé de signature)
     this.f = {}; this.sec = {}; this.liq = {}; this.deseq = {}; this.livre = {}; this.mk = {};
     for (const a of Object.keys(ACTIFS)) { this.f[a] = {}; this.sec[a] = new Map(); this.liq[a] = []; this.deseq[a] = 0; this.livre[a] = { b: new Map(), a: new Map() }; }
     this.ws = {};
@@ -286,7 +290,7 @@ export class Bot {
     this._v1t = {}; this._sgA = {}; this._okxB = {}; this.mkNx = {};
     this.ready = this.state.blockConcurrencyWhile(async () => {
       // stockage découpé (une valeur ne doit pas dépasser 128 Ko) : nv:base, nv:strat:<nom>, nv:ordres, nv:audit
-      const base = await this.state.storage.get("nv:base");
+      const base = this.SG ? null : await this.state.storage.get("nv:base");
       if (base) {
         this.N = { ...base, strats: {} };
         const st2 = await this.state.storage.list({ prefix: "nv:strat:" });
@@ -347,18 +351,18 @@ export class Bot {
         { const q = (await this.state.storage.get("nv:idq")) || {}; this.N.idq = q.idq || {}; this.N.idfait = q.idfait || {}; this.N.consPris = q.consPris || {}; }   // 24.10.2026 : onglet 3 (remise à 0 + versions « + idées »)
         // 19.10.2026 : nouvelle remise à 0 de l'onglet 2 ; les anciens compteurs sont archivés une seule fois
         if ((await this.state.storage.get("zero:depuis")) !== ZERO_DEPUIS) { await this.state.storage.put("zero:archive:" + ((await this.state.storage.get("zero:depuis")) || "2026-10-14T08:45:00Z"), this.N.zero); this.N.zero = {}; await this.state.storage.put("nv:zero", {}); await this.state.storage.put("zero:depuis", ZERO_DEPUIS); }
-      } else this.N = (await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
+      } else this.N = (this.SG ? null : await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
       for (const [ancien, neuf] of [["assurance", "assurance 6/9/12"], ["mm", "mm actuel"]]) {
         for (const k of Object.keys(this.N.strats)) if (k.startsWith(ancien + " ") && k.split(" ").length === 2) { this.N.strats[neuf + " " + k.split(" ")[1]] = this.N.strats[k]; delete this.N.strats[k]; }
         for (const P of [...this.N.ouvertes, ...this.N.attente]) if (P.strat === ancien) P.strat = neuf;
       }
       for (const [k, v] of Object.entries(this.N.strats)) { nAlleger(v);   // 17.10.2026 : voir nAlleger
         if ((STOPPEES.has(k.replace(/ ([A-Z]+)$/, "|$1")) || ARRET_18.has(k.replace(/ ([A-Z]+)$/, "|$1"))) && (v.trades || []).length > 5) v.trades.length = 5; }   // 23.10.2026 : aussi les stratégies enlevées (mémoire de nouveau proche de la limite → erreur 1101)   // stratégies arrêtées (non affichées) : 5 derniers trades en mémoire, tout reste sur GitHub et dans hist:
-      for (const k of NV.SUPPRIMEES) { delete this.N.strats[k]; await this.state.storage.delete(["nv:strat:" + k, "hist:" + k]); }
+      if (!this.SG) for (const k of NV.SUPPRIMEES) { delete this.N.strats[k]; await this.state.storage.delete(["nv:strat:" + k, "hist:" + k]); }
       // 23.10.2026 21:06 (Pitch : « enlève de tes mémoires toutes les stratégies qui ne sont pas liées à celles actuelles ») : on garde les stratégies affichées,
       // leurs stratégies de base et celles de PORTEFEUILLE 400 ; les autres sont effacées de la mémoire et du stockage (leurs trades restent sur GitHub, bot95/sauvegarde)
       // 2e passage (23.10 21:25) : les vieilles stratégies jamais affichées depuis la remise à 0 (ETH, desaccord 10/15, mm…) partent aussi
-      if ((await this.state.storage.get("menage:2310b")) !== 1) {
+      if (!this.SG && (await this.state.storage.get("menage:2310b")) !== 1) {
         const garder = xlLiees(Object.keys(this.N.strats).filter((k) => ((this.N.zero || {})[k] || {}).n > 0)), del = [];
         for (const k of Object.keys(this.N.strats)) if (!garder.has(k)) { delete this.N.strats[k]; del.push("nv:strat:" + k, "hist:" + k); }
         for (const k of Object.keys(this.N.zero || {})) if (!garder.has(k)) delete this.N.zero[k];
@@ -368,7 +372,7 @@ export class Bot {
       }
       // 23.10.2026 (Pitch : « un lien sur une feuille Excel… une trade une écriture ») : journal xl:<stratégie>|<jour UTC> = une ligne par trade réglé
       // [heure, côté, prix, parts, résultat, issue]. Reprise unique des trades depuis la remise à 0 (archive hist:), parts complétées par les trades en mémoire.
-      if ((await this.state.storage.get("xl:migre")) !== 1) {
+      if (!this.SG && (await this.state.storage.get("xl:migre")) !== 1) {
         const o = {};
         for (const [k, v] of Object.entries(this.N.strats)) { if (!xlVisible(k)) continue;
           const H = (await this.state.storage.get("hist:" + k)) || [], parts = {};
@@ -399,9 +403,9 @@ export class Bot {
       }
       const garde = (P) => !NV.SUPPRIMEES.includes(P.strat + " " + P.actif);
       this.N.ouvertes = (this.N.ouvertes || []).filter(garde); this.N.attente = (this.N.attente || []).filter(garde);
-      this.BL = (await this.state.storage.get("blink")) || { depuis: now(), evts: [] };
-      this.duo = (await this.state.storage.get("duo")) || { min: [], reg: {} };
-      this.e = (await this.state.storage.get("etat2")) || {
+      this.BL = (this.SG ? null : await this.state.storage.get("blink")) || { depuis: now(), evts: [] };
+      this.duo = (this.SG ? null : await this.state.storage.get("duo")) || { min: [], reg: {} };
+      this.e = (this.SG ? null : await this.state.storage.get("etat2")) || {
         capital: CFG.CAPITAL, mise: CFG.MISE, reserve: 0, pnl: 0, gains: 0, pertes: 0, pause: false,
         positions: [], attente: [], trades: [], vetos: {}, candidats: {}, parActif: {}, refus: [], verif: [], depuis: now(),
       };
@@ -438,6 +442,10 @@ export class Bot {
     this.demarrer();
     const u = new URL(req.url);
     const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } });
+    if (this.SG && !["/api/cle_signaux", "/api/flux_signaux", "/api/reveil"].includes(u.pathname)) {   // moteur de signaux seul : rien d'autre
+      if (u.pathname === "/api/sante" || u.pathname === "/api/statut") return json(this.sgStatut());
+      return new Response("introuvable (moteur de signaux seul)", { status: 404 });
+    }
     if (u.pathname === "/api/etat") return json(this.vue());
     if (u.pathname === "/api/corr_misemax") return json((await this.state.storage.get("corrBY1misemax")) || null);
     if (u.pathname === "/api/duo") { const D = this.duo || {}; return json({ seuil: DUO_SEUIL, regle: DUO_REGLE, minutes: (D.min || []).length, cycles: Object.fromEntries(Object.entries(D.reg || {}).slice(-24).map(([k, v]) => [k, v == null ? null : { vol_pct_min: +(v * 100).toFixed(4), regime: v < DUO_SEUIL ? "calme" : "rapide" }])) }); }
@@ -868,9 +876,9 @@ export class Bot {
       const minute = Math.floor(t / 60);
       const R = ((this._rec = this._rec || {})[a] = this._rec[a] || { minute, lignes: [] });
       if (R.minute !== minute) {
-        if (R.lignes.length) this.state.storage.put(`rec:${a}:${R.minute}`, { colonnes: REC_COLS, lignes: R.lignes }).catch(() => {});
+        if (R.lignes.length && !this.SG) this.state.storage.put(`rec:${a}:${R.minute}`, { colonnes: REC_COLS, lignes: R.lignes }).catch(() => {});
         R.minute = minute; R.lignes = [];
-        if (minute % 30 === 0) this.state.storage.list({ prefix: `rec:${a}:`, limit: 200 }).then((m2) => { const ks = [...m2.keys()].filter((k) => +k.split(":")[2] < minute - 2880).slice(0, 120); if (ks.length) this.state.storage.delete(ks); }).catch(() => {});
+        if (minute % 30 === 0 && !this.SG) this.state.storage.list({ prefix: `rec:${a}:`, limit: 200 }).then((m2) => { const ks = [...m2.keys()].filter((k) => +k.split(":")[2] < minute - 2880).slice(0, 120); if (ks.length) this.state.storage.delete(ks); }).catch(() => {});
       }
       R.lignes.push(ligne);
     }
@@ -958,9 +966,9 @@ export class Bot {
       const minute = Math.floor(t / 60);
       const R = ((this._sgR = this._sgR || {})[a] = this._sgR[a] || { minute, lignes: [] });
       if (R.minute !== minute) {
-        if (R.lignes.length) this.state.storage.put(`sig:${a}:${R.minute}`, { colonnes: SIG_COLS, lignes: R.lignes }).catch(() => {});
+        if (R.lignes.length && !this.SG) this.state.storage.put(`sig:${a}:${R.minute}`, { colonnes: SIG_COLS, lignes: R.lignes }).catch(() => {});
         R.minute = minute; R.lignes = [];
-        if (minute % 30 === 0) this.state.storage.list({ prefix: `sig:${a}:`, limit: 300 }).then((m2) => { const ks = [...m2.keys()].filter((kk) => +kk.split(":")[2] < minute - 5760).slice(0, 120); if (ks.length) this.state.storage.delete(ks); }).catch(() => {});
+        if (minute % 30 === 0 && !this.SG) this.state.storage.list({ prefix: `sig:${a}:`, limit: 300 }).then((m2) => { const ks = [...m2.keys()].filter((kk) => +kk.split(":")[2] < minute - 5760).slice(0, 120); if (ks.length) this.state.storage.delete(ks); }).catch(() => {});
       }
       R.lignes.push(ligne);
       if (a === "BTC") { const HB = (this._sgH = this._sgH || []); HB.push(ligne); if (HB.length > 420) HB.shift(); }   // 26.10.2026 : signaux en direct (copie de Dublin)
@@ -984,6 +992,7 @@ export class Bot {
     // 28.10.2026 (allègement) : boîte noire 100 ms (bbR, 10 fois par seconde) arrêtée — ne servait qu'à la V1 (arrêtée), à m97 et à leadPhoto (arrêtés)
   }
   bbSauver(pos, type) {
+    if (this.SG) return;
     try {
       const a = pos.actif || "BTC", R = (this.bbR || {})[a];
       if (!R || !R.length) return;
@@ -1006,7 +1015,7 @@ export class Bot {
     this.diag.erreurs.unshift(`${new Date().toISOString().slice(11, 19)} ${ou}: ${String((err && err.message) || err).slice(0, 140)}`);
     this.diag.erreurs.length = Math.min(this.diag.erreurs.length, 20);
   }
-  async sauver() { await this.state.storage.put("etat2", this.e); }
+  async sauver() { if (this.SG) return; await this.state.storage.put("etat2", this.e); }
 
   // ------------------------------------------------------------------ flux
   ageMax(src) { const t = now(); let m = 0; for (const a of LISTE) { const x = this.f[a][src]; if (src === "cb" && !ACTIFS[a].spot) continue; m = Math.max(m, x ? t - x.t : 1e9); } return m; }
@@ -1057,7 +1066,7 @@ export class Bot {
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surCl(m), "PING", 5000);
     // MIGRATION CHAINLINK (11.10.2026) : nouveau flux PolyBolt en PARALLÈLE (ombre). Il ne nourrit le moteur que si le réglage CHAINLINK_SOURCE
     // vaut "polybolt" ou "auto" (absent = "rtds" : moteur inchangé). L'ancien flux RTDS doit fermer vers le 23.10.2026.
-    if (!this.pbCreds && !this._pbDem && (!this._pbT || t - this._pbT > 120)) {
+    if (!this.SG && !this.pbCreds && !this._pbDem && (!this._pbT || t - this._pbT > 120)) {
       this._pbDem = true; this._pbT = t;
       identifiantsLecture(this.state.storage).then((c) => { this.pbCreds = c; }).catch((e) => this.erreur("polybolt identifiants", e)).finally(() => { this._pbDem = false; });
     }
@@ -1095,6 +1104,7 @@ export class Bot {
 
   // enregistreur au message près : [ms, code, valeur1, valeur2] ; actif 10 min par heure ; blocs de 15 s « evt:<bloc> », gardés 24 h
   evt(code, x, y) {
+    if (this.SG) return;
     const ms = Date.now(), min = Math.floor(ms / 60000);
     if (min % 60 >= 10) { if (this._evB && this._evB.l.length) this.evtFlush(); return; }
     const bloc = Math.floor(ms / 15000);
@@ -1252,7 +1262,7 @@ export class Bot {
     try { this.contraTick(); } catch (err) { this.erreur("contrarien", err); }
     const t = now(), start = Math.floor(t / 300) * 300, tleft = start + 300 - t;
     // 11.10.2026 : aller-retour Cloudflare → serveur Polymarket, toutes les 15 s, pour le comparer au VPS de Dublin (mesure seulement)
-    if (t - (this._rttT || 0) > 15) { this._rttT = t; const t0 = Date.now(); fetch(C + "/time").then((r) => r.text()).then(() => { (this.rttClob = this.rttClob || []).push(Date.now() - t0); if (this.rttClob.length > 500) this.rttClob.shift(); }).catch(() => {}); }
+    if (!this.SG && t - (this._rttT || 0) > 15) { this._rttT = t; const t0 = Date.now(); fetch(C + "/time").then((r) => r.text()).then(() => { (this.rttClob = this.rttClob || []).push(Date.now() - t0); if (this.rttClob.length > 500) this.rttClob.shift(); }).catch(() => {}); }
     await Promise.all(LISTE.map(async (a) => {
       let mk = this.mk[a];
       if (!mk || mk.start !== start) {
@@ -1791,7 +1801,7 @@ export class Bot {
   // Une position = parts Up (U) et Down (D) détenues + trésorerie (cash). Règlement : cash + U si Up gagne, + D si Down gagne.
   nStrat(k) { return (this.N.strats[k] = this.N.strats[k] || { depuis: now(), pnl: 0, n: 0, gains: 0, pertes: 0, issues: {}, trades: [] }); }
   nSauver() {
-    if (this._nsv) return;
+    if (this._nsv || this.SG) return;
     this._nsv = setTimeout(() => {
       this._nsv = null;
       const N = this.N, put = (k, v) => { const [c, j] = aChange(k, v); if (!c) return; DEJA_ECRIT.delete(k); this.state.storage.put(k, v).then(() => { if (j != null) DEJA_ECRIT.set(k, j); }).catch((err) => this.erreur("sauvegarde " + k, err)); };
@@ -1911,6 +1921,17 @@ export class Bot {
   // 28.10.2026 (Pitch : « oui go ») : flux des signaux en direct vers le bot de trading (connexion permanente sortante du bot vers Cloudflare)
   // 28.10.2026 (audit) : chaque signal est SIGNÉ (ECDSA P-256) avec une clé privée créée ici et gardée dans le stockage privé de l'objet ;
   // le bot vérifie la signature avec la clé publique (/api/cle_signaux) et refuse tout signal non signé ou de plus de 10 s.
+  // 28.10.2026 (option 2) : état minimal du moteur de signaux seul (MOTEUR="signaux") — /api/sante et /api/statut
+  sgStatut() {
+    const t = now(), f = this.f.BTC || {}, age = (k) => (f[k] ? +(t - f[k].t).toFixed(2) : null), mk = this.mk.BTC || {};
+    let marge = null; try { marge = this.margeMesuree("BTC"); } catch (_) {}
+    return { moteur: "signaux", heure: new Date().toISOString(), nums: this.env.SIGNAL_NUMS || "", clients: this.state.getWebSockets("signaux").length,
+      ages_s: { perp: age("perp"), okx: age("okx"), bn: age("bn"), cb: age("cb"), cl: age("cl") },
+      flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])),
+      cycle: { start: mk.start || null, slug: mk.slug || null, prixABattre: mk.strike ?? null, source: mk.strikeSrc || null },
+      ouvertes: (this.N.ouvertes || []).length, strategies: Object.keys(this.N.strats || {}).length, reglements: this.RG ? this.RG.lignes.length : 0, margeMesureeBTC: marge,
+      minutesDuo: ((this.duo || {}).min || []).length, reconnexions: this.diag.reconnexions, erreurs: this.diag.erreurs, journal: (this._slJ || []).slice(0, 50) };
+  }
   async slCle() {
     if (this._slCle) return this._slCle;
     let jwk = await this.state.storage.get("cle:signaux:privee");
@@ -2016,7 +2037,7 @@ export class Bot {
   duoMinute() {
     const t = now(), m = Math.floor(t / 60), x = this.f.BTC && this.f.BTC.cb; if (!x || !x.p || t - x.t > 30) return;
     const D = (this.duo = this.duo || { min: [], reg: {} }); D.min = D.min || []; D.reg = D.reg || {};
-    if (!D.min.length || D.min[D.min.length - 1][0] !== m) { D.min.push([m, x.p]); while (D.min.length > 75) D.min.shift(); this.state.storage.put("duo", D).catch(() => {}); }
+    if (!D.min.length || D.min[D.min.length - 1][0] !== m) { D.min.push([m, x.p]); while (D.min.length > 75) D.min.shift(); if (!this.SG) this.state.storage.put("duo", D).catch(() => {}); }
     else D.min[D.min.length - 1][1] = x.p;
     const st = Math.floor(t / 300) * 300;
     if (D.reg[st] === undefined && t - st < 30) {
@@ -2025,7 +2046,7 @@ export class Bot {
       if (r.length >= 40) { const mu = r.reduce((a, b) => a + b, 0) / r.length; D.reg[st] = Math.sqrt(r.reduce((a, b) => a + (b - mu) ** 2, 0) / (r.length - 1)); }
       else D.reg[st] = null;
       for (const k of Object.keys(D.reg)) if (+k < st - 6 * 3600) delete D.reg[k];
-      this.state.storage.put("duo", D).catch(() => {});
+      if (!this.SG) this.state.storage.put("duo", D).catch(() => {});
     }
   }
   // 19.10.2026 21:48 (Pitch : « oui ») : fantôme « contrarien 5 min + 1 h ». Règle figée (étude sur 90 jours Coinbase + 27 jours de prix Polymarket) :
@@ -2108,7 +2129,7 @@ export class Bot {
     S2.trades.unshift(P); S2.trades.length = Math.min(S2.trades.length, 60);
     nAlleger(S2);   // 17.10.2026 : mémoire du Durable Object dépassée → les vieux trades gardés en mémoire perdent leurs gros champs de diagnostic
     // 14.10.2026 (Pitch : « 2e onglet tout à 0 ») : compteurs repartis de zéro pour les trades ouverts depuis ZERO_DEPUIS (calcul au fil de l'eau, rien n'est relu)
-    try { if (P.heure && Date.parse(P.heure) >= Date.parse(ZERO_DEPUIS)) { const Z = (this.N.zero = this.N.zero || {}), k = P.strat + " " + P.actif, z = (Z[k] = Z[k] || { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 });
+    try { if (!this.SG && P.heure && Date.parse(P.heure) >= Date.parse(ZERO_DEPUIS)) { const Z = (this.N.zero = this.N.zero || {}), k = P.strat + " " + P.actif, z = (Z[k] = Z[k] || { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 });
       const jz = new Date(Date.parse(P.heure) + 2 * 3600e3).toISOString().slice(0, 10); z.parJour = z.parJour || (z.n > 0 ? { "2026-10-14": z.pnl } : {}); z.parJour[jz] = (z.parJour[jz] || 0) + P.net;
       z.n++; z.pnl += P.net; z.cum += P.net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, P.net);
       if (P.net >= 0) { z.gains++; z.serie = 0; } else { z.pertes++; z.pertesTot += P.net; z.serie++; z.serieMax = Math.max(z.serieMax, z.serie); } } } catch (_) {}
@@ -2116,11 +2137,11 @@ export class Bot {
     const kh = "hist:" + P.strat + " " + P.actif, ligne = [P.heure, P.cote || null, P.prix ?? null, P.net, issue, P.proba0 ?? null, P.restant_s ?? null];
     // 18.10.2026 : écritures de l'archive mises en file par stratégie (avant : deux trades réglés ensemble se marchaient dessus et l'un était perdu)
     const QH = (this._qh = this._qh || {});
-    QH[kh] = (QH[kh] || Promise.resolve()).then(() => this.state.storage.get(kh)).then((L) => { L = L || []; L.push(ligne); if (L.length > 1500) L.splice(0, L.length - 1500); return this.state.storage.put(kh, L); }).catch((err) => this.erreur("archive " + kh, err));
-    if (P.heure && xlVisible(P.strat + " " + P.actif)) { const kx = "xl:" + P.strat + " " + P.actif + "|" + P.heure.slice(0, 10), lx = [P.heure, P.cote || null, P.prix ?? null, P.parts ?? null, P.net, issue];
+    if (!this.SG) QH[kh] = (QH[kh] || Promise.resolve()).then(() => this.state.storage.get(kh)).then((L) => { L = L || []; L.push(ligne); if (L.length > 1500) L.splice(0, L.length - 1500); return this.state.storage.put(kh, L); }).catch((err) => this.erreur("archive " + kh, err));
+    if (!this.SG && P.heure && xlVisible(P.strat + " " + P.actif)) { const kx = "xl:" + P.strat + " " + P.actif + "|" + P.heure.slice(0, 10), lx = [P.heure, P.cote || null, P.prix ?? null, P.parts ?? null, P.net, issue];
       QH[kx] = (QH[kx] || Promise.resolve()).then(() => this.state.storage.get(kx)).then((L) => { L = L || []; L.push(lx); return this.state.storage.put(kx, L); }).catch((err) => this.erreur("excel " + kx, err)); }   // 23.10.2026 : une trade = une ligne du fichier Excel
     // 24.10.2026 21:37 (Pitch : « un autre onglet où tu mets à 0 nos stratégies existantes et rajoute une version avec toutes tes idées pour chaque stratégie »)
-    try { if (P.heure && P.actif === "BTC" && Date.parse(P.heure) >= Date.parse(ZERO2_DEPUIS) && xlVisible(P.strat + " " + P.actif) && P.start) {
+    try { if (!this.SG && P.heure && P.actif === "BTC" && Date.parse(P.heure) >= Date.parse(ZERO2_DEPUIS) && xlVisible(P.strat + " " + P.actif) && P.start) {
       const N = this.N; N.zero2 = N.zero2 || {}; N.idq = N.idq || {};
       this._zx = { cote: P.cote, prix: P.prix };
       zCompte(N.zero2, P.strat + " " + P.actif, P.heure, P.net, false, (P.prix || 0) * (P.parts || 0), P.start);
@@ -2136,12 +2157,13 @@ export class Bot {
   //  revente à T−60 s (tous) si Chainlink est de notre côté mais les futures Bybit (ramenés au niveau Chainlink) de l'autre côté d'au moins 3 $ : vente au meilleur acheteur, frais 7 % × p × (1 − p).
   //  Sans données seconde par seconde pour un trade : trade gardé tel quel (compté dans « sans données »).
   xlZ(pre, k, heure, net, mise, ctx) {
+    if (this.SG) return;
     const kx = pre + k + "|" + heure.slice(0, 10), pr = ctx.prix || null, lx = [heure, ctx.cote || null, pr, pr ? +(mise / pr).toFixed(3) : null, +(+net).toFixed(4), ""];
     const QH = (this._qh = this._qh || {});
     QH[kx] = (QH[kx] || Promise.resolve()).then(() => this.state.storage.get(kx)).then((L) => { L = L || []; L.push(lx); return this.state.storage.put(kx, L); }).catch((err) => this.erreur("excel onglet " + kx, err));
   }
   idTraiter() {
-    if (this._idEnCours) return; const N = this.N, mures = Object.keys(N.idq || {}).filter((st) => +st + 600 < now());
+    if (this._idEnCours || this.SG) return; const N = this.N, mures = Object.keys(N.idq || {}).filter((st) => +st + 600 < now());
     if (!mures.length) return; this._idEnCours = true;
     (async () => {
       for (const st of mures) {
@@ -2641,7 +2663,7 @@ export class Bot {
     }
   }
   blkSauver() {
-    if (this._bsv) return;
+    if (this._bsv || this.SG) return;
     this._bsv = setTimeout(() => { this._bsv = null; this.state.storage.put("blink", this.BL).catch((err) => this.erreur("sauvegarde blink", err)); }, 2000);
   }
   async blkRegler() {
@@ -3038,6 +3060,7 @@ export class Bot {
     }
   }
   vitesseJournal(S) {
+    if (this.SG) return;
     const cle = "vit:" + Math.floor(S.start / 3600);
     const go = async () => {
       const C = (this._vitJ = this._vitJ || {});
@@ -3075,6 +3098,7 @@ export class Bot {
     this.nSauver(); return r;
   }
   v2fxJournal(S) {
+    if (this.SG) return;
     const cle = "v2fx:" + Math.floor(S.start / 3600);
     const go = async () => {
       const C = (this._v2fx = this._v2fx || {});
@@ -3140,6 +3164,7 @@ export class Bot {
   // ---- « qui a bougé en premier » (07.10.2026) : au 1er désaccord >= 0,20 du cycle, on sauve la boîte noire (10 s à 100 ms :
   // Bybit, OKX, Binance, Coinbase, Chainlink, carnet Bybit, flux, liquidations, carnets et retraits Polymarket), puis 10 s après.
   leadPhoto(a, mk, pu, tleft, ua, da) {
+    if (this.SG) return;
     const L = ((this._lead = this._lead || {})[a] = this._lead[a] && this._lead[a].start === mk.start ? this._lead[a] : { start: mk.start, fait: false });
     const sauver = (phase, extra) => {
       const R = (this.bbR || {})[a]; if (!R || !R.length) return;
@@ -3271,6 +3296,7 @@ export class Bot {
   // À la décision : prix limite et montant. 50 / 250 ms plus tard : quelle quantité le carnet sert encore à ce prix ou mieux ?
   // Au même instant : prix du côté opposé (pour tester « acheter l'inverse quand on est servi »). Puis valeur 1 s et 5 s après.
   nTenter(strat, a, mk, up, limite, usd, fair) {
+    if (this.SG) return;   // ordres fantômes à 50/250 ms : mesure seulement, jamais lus par une stratégie
     const id = up ? mk.up : mk.down, autre = up ? mk.down : mk.up, t0 = now();
     const O = { strat, a, start: mk.start, end: mk.end, slug: mk.slug, cote: up ? "Up" : "Down", limite: +(+limite).toFixed(3), usd: +(+usd).toFixed(2), fair: +(+fair).toFixed(3), t0: +t0.toFixed(2),
       ask0: (this.livreTrie(id, "asks")[0] || [null])[0], restant: +(mk.end - t0).toFixed(0) };
@@ -3357,6 +3383,7 @@ export class Bot {
     } catch (_) { return {}; }
   }
   twJournal(cle, S) {
+    if (this.SG) return;
     const go = async () => {
       const J = ((this._twj = this._twj || {})[cle] = this._twj[cle] || (await this.state.storage.get(cle)) || []);
       if (!J.some((x) => x.start === S.start && x.nom === S.nom)) J.push({ ...S });
@@ -3367,6 +3394,7 @@ export class Bot {
   }
   // journal de tous les signaux « TWAP fin confirmé Chainlink » (achetés ou abandonnés), pour la comparaison avec TWAP fin original
   twcJournal(S) {
+    if (this.SG) return;
     const go = async () => {
       const J = (this.TWC = this.TWC || (await this.state.storage.get("twc")) || []);
       if (!J.some((x) => x.start === S.start && (x.nom || "") === (S.nom || ""))) J.push({ ...S });
@@ -3379,7 +3407,7 @@ export class Bot {
   async nReglements() {
     const t = now(), cur = Math.floor(t / 300) * 300;
     if (t - (this._rgT || 0) < 30) return; this._rgT = t;
-    const RG = (this.RG = this.RG || (await this.state.storage.get("regl")) || { lignes: [], attente: {} });
+    const RG = (this.RG = this.RG || (this.SG ? null : await this.state.storage.get("regl")) || { lignes: [], attente: {} });
     let chg = false;   // 28.10.2026 (allègement) : sauvegarde seulement si quelque chose a changé (avant : ~6 Mo réécrits toutes les 30 s)
     for (const a of ["BTC"]) {
       const st = cur - 300, k = a + st;
@@ -3414,16 +3442,16 @@ export class Bot {
     RG.lignes.length = Math.min(RG.lignes.length, 2500);
     // lignes de plus de ~25 h : observations brutes retirées (déjà sauvegardées sur GitHub toutes les 30 min) ; résultat, prix à battre, final, notreK gardés
     for (let i = 300; i < RG.lignes.length; i++) { const x = RG.lignes[i]; if (x.obsDebut || x.obsFin || x.brut) { delete x.obsDebut; delete x.obsFin; delete x.brut; } }
-    this.state.storage.put("regl", RG).catch((err) => this.erreur("sauvegarde regl", err));
+    if (!this.SG) this.state.storage.put("regl", RG).catch((err) => this.erreur("sauvegarde regl", err));
   }
 
   // ---- règlement : résultat officiel Polymarket (20 s après la fin)
   async nRegler() {
-    try { await this.nAudit(); } catch (_) {}
+    if (!this.SG) try { await this.nAudit(); } catch (_) {}
     try { await this.nReglements(); } catch (err) { this.erreur("règlements", err); }
     // résultat des ordres fantômes
     const cacheG = this._cacheG = this._cacheG || {};
-    for (const O of (this.N.ordres || [])) {
+    for (const O of (this.SG ? [] : (this.N.ordres || []))) {
       if (O.gagne != null || now() < O.end + 25) continue;
       try {
         if (!(O.slug in cacheG)) {
@@ -3456,7 +3484,7 @@ export class Bot {
     }
     this.N.attente = garder;
     this.nSauver();
-    try { await this.blkRegler(); } catch (err) { this.erreur("qui converge règlement", err); }
+    if (!this.SG) try { await this.blkRegler(); } catch (err) { this.erreur("qui converge règlement", err); }
   }
 
   nVue() {

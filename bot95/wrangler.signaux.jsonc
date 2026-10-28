@@ -1,0 +1,15 @@
+// 28.10.2026 (option 2, accord de Pitch) : moteur de signaux SEUL, en ombre à côté de bot95 — même code (src/index.js), MOTEUR="signaux".
+// Il calcule et diffuse (signés) les signaux SIGNAL_NUMS ; aucun stockage sauf sa clé de signature ; aucune clé de portefeuille, aucun ordre.
+// Le bot de trading ne l'écoute qu'en observation (FLUX_OBSERVATION_URL) et n'exécute jamais ce qu'il émet.
+{
+  "name": "bot95-signaux",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "durable_objects": { "bindings": [{ "name": "BOT", "class_name": "Bot" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Bot"] }, { "tag": "v2", "new_sqlite_classes": ["Sonde"] }, { "tag": "maker-realism-20261012", "new_sqlite_classes": ["RealismStore"] }],
+  "vars": { "MOTEUR": "signaux", "MODE_REEL": "non", "SIGNAL_FLUX": "oui", "SIGNAL_NUMS": "101,201,121,28,119" },
+  // réveil chaque minute (comme bot95) : relance l'objet s'il a été arrêté ; l'alarme de 1 s le garde ensuite en marche
+  "triggers": { "crons": ["* * * * *"] }
+}
