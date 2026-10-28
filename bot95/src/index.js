@@ -3748,10 +3748,10 @@ async function zCharger(st, cle) { const n = await st.get(cle + ":n"); if (!n) r
 let ZHOOK = null;   // 26.10.2026 (Pitch : « les trades des stratégies, fichiers Excel onglet 3 et 4 ») : chaque trade compté dans l'onglet 3 / 4 est aussi écrit ligne par ligne
 // 27.10.2026 (Pitch : « voir dans chaque stratégie si plusieurs ordres possibles et s'il y a multiplicateur »)
 // ordres max par cycle vus du 19 au 25.10 pour chaque stratégie de base (n° 1 à 30), puis compteur en direct dans les onglets
-const ORDRES_VUS = {"1": 7, "5": 2, "6": 1, "8": 1, "2": 3, "14": 2, "7": 2, "12": 2, "15": 2, "9": 1, "13": 2, "10": 2, "11": 2, "16": 1, "17": 1, "4": 11, "20": 1, "18": 1, "21": 1, "19": 1, "22": 1, "23": 1, "24": 1, "3": 4, "25": 1, "26": 1, "27": 1, "28": 1, "29": 1, "30": 1};
+const ORDRES_VUS = {"1": 3, "5": 2, "6": 1, "8": 1, "2": 2, "14": 2, "7": 2, "12": 2, "15": 2, "9": 1, "13": 2, "10": 2, "11": 2, "16": 1, "17": 1, "20": 1, "18": 1, "21": 1, "19": 1, "22": 1, "23": 1, "24": 1, "3": 3, "25": 1, "26": 1, "27": 1, "28": 1, "29": 1, "30": 1};   // 28.10.2026 : recalculé sans BY1 pour les PORTEFEUILLE ; n° 4 (BY1) retiré
 function multTexte(nom) {
   const m = [];
-  if (/^PORTEFEUILLE (400|600)/.test(nom)) m.push("BY1 à 100 $ = x2, « foule bybit x2 » = x2");
+  if (/^PORTEFEUILLE (400|600)/.test(nom)) m.push("« foule bybit x2 » = x2 (BY1 retiré le 28.10)");
   else { if (/ 100 \$/.test(nom)) m.push("mise 100 $ = x2"); if (nom.includes("foule bybit x2")) m.push("x2 si foule contre nous"); }
   if (nom.includes(" + idées") && !nom.includes("sans x2 x3")) m.push("idées, petits trades (< 0,50) : x2 si ≥ 10 stratégies du même côté, x3 si en plus la foule vend");
   if ((nom.includes(" + consensus") || nom.includes("+ consensus +")) && !nom.includes("sans x2")) m.push("consensus, petits trades (0,10-0,50) : x2 si ≥ 10 stratégies du même côté");
