@@ -981,24 +981,7 @@ export class Bot {
     const t = now();
     try { this.enregistrer(t); } catch (_) {}
     try { this.signaux(t); } catch (err) { this.erreur("signaux", err); }
-    for (const a of V1.ACTIFS) {
-      const L = this.livre[a], mk = this.mk[a] || {};
-      const b = [...L.b].map(([p, q2]) => [+p, q2]).sort((x, y) => y[0] - x[0]), k = [...L.a].map(([p, q2]) => [+p, q2]).sort((x, y) => x[0] - y[0]);
-      const mid = b.length && k.length ? (b[0][0] + k[0][0]) / 2 : null;
-      const prof = (cote, bps) => mid ? Math.round(cote.filter(([p]) => Math.abs(p / mid - 1) * 1e4 <= bps).reduce((s2, [p, q2]) => s2 + p * q2, 0)) : null;
-      const px = (src) => (this.f[a][src] ? this.f[a][src].p : null);
-      const ac = this.bbAcc(a);
-      const pmTop = (id, cote) => this.livreTrie(id, cote).slice(0, 3).map(([p, s2]) => [p, Math.round(s2)]);
-      const pmF = (id) => { if (!id) return null; const z = this.pmAcc(id), r = Object.values(z).map(Math.round); for (const kk of Object.keys(z)) z[kk] = 0; return r; };
-      const ligne = [+t.toFixed(2), px("perp"), px("okx"), px("cb"), px("bn"), px("cl"),
-        b.length ? b[0][0] : null, k.length ? k[0][0] : null, prof(b, 1), prof(k, 1), prof(b, 3), prof(k, 3), prof(b, 5), prof(k, 5), prof(b, 10), prof(k, 10), b.length, k.length,
-        Math.round(ac.ach), Math.round(ac.ven), Math.round(ac.max_ach), Math.round(ac.max_ven), ac.n, Math.round(ac.liq_longs), Math.round(ac.liq_courts),
-        mk.up ? pmTop(mk.up, "bids") : null, mk.up ? pmTop(mk.up, "asks") : null, mk.down ? pmTop(mk.down, "bids") : null, mk.down ? pmTop(mk.down, "asks") : null,
-        pmF(mk.up), pmF(mk.down)];
-      for (const kk of Object.keys(ac)) ac[kk] = 0;
-      const R = ((this.bbR = this.bbR || {})[a] = this.bbR[a] || []);
-      R.push(ligne); if (R.length > 100) R.shift();
-    }
+    // 28.10.2026 (allègement) : boîte noire 100 ms (bbR, 10 fois par seconde) arrêtée — ne servait qu'à la V1 (arrêtée), à m97 et à leadPhoto (arrêtés)
   }
   bbSauver(pos, type) {
     try {
@@ -1040,7 +1023,8 @@ export class Bot {
     const muet = (k) => t - (this.ws[k + "_msg"] || this.ws[k + "_ouvert"] || 0);
     if (!this.ws.perp || (muet("perp") > 20 && depuis("perp") > 20)) {
       for (const a of Object.keys(ACTIFS)) this.livre[a] = { b: new Map(), a: new Map() };
-      const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`, `orderbook.50.${ACTIFS[a].bybit}`, `allLiquidation.${ACTIFS[a].bybit}`]);
+      // 28.10.2026 (Pitch) : carnet Bybit 50 niveaux et liquidations coupés (~50 messages/s) — ne servaient qu'à l'ancien Bot 95, à la V1 et aux enregistrements ; aucune stratégie ne les lit
+      const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`]);
       this.connecter("perp", "https://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args })], (m) => this.surPerp(m), JSON.stringify({ op: "ping" }), 10000);
     }
     if (!this.ws.cb || (muet("cb") > 30 && depuis("cb") > 30)) {
@@ -1307,19 +1291,8 @@ export class Bot {
     }
     if (t - (this._nr || 0) > 15) { this._nr = t; await this.nRegler(); }
     if (t - (this._v1r || 0) > 15 || V1.ACTIFS.some((a) => { const P = this.v1Etat(a).pos; return P && t >= P.end; })) { this._v1r = t; for (const a of V1.ACTIFS) await this.v1Regler(a); }
-    // carnets des marchés dans leur fenêtre d'achat ou avec une position ouverte
-    const actifs = LISTE.filter((a) => { const mk = this.mk[a]; return mk.slug && tleft >= 1 && (tleft <= WMAX(a) || this.e.positions.some((p) => p.actif === a && p.start === start)); });
-    if (!actifs.length) return;
-    let books;
-    try { books = await this.carnets(actifs.flatMap((a) => [this.mk[a].up, this.mk[a].down])); } catch (err) { this.erreur("carnets", err); return; }
-    for (const a of actifs) {
-      const mk = this.mk[a], bu = books[mk.up], bd = books[mk.down];
-      if (!bu || !bd) continue;
-      const pos = this.e.positions.find((p) => p.actif === a && p.start === start);
-      if (pos) this.surveiller(a, pos, tleft, pos.fav === "Up" ? bu : bd);
-      else if (!mk.entre) this.decider(a, mk, tleft, bu, bd);
-    }
-    await this.sauver();
+    // 28.10.2026 (Pitch : « oui si pas utilisée dans les 25 meilleures ») : l'ancien « Bot 95 » (decider / surveiller, carnets REST chaque seconde,
+    // sauvegarde etat2 ~1 Mo chaque seconde en fin de cycle) est arrêté. Il n'apparaît dans aucun onglet ni classement, et aucune stratégie ne l'utilise.
   }
 
   calcul(a, mk, tleft, favUp) {
@@ -1505,7 +1478,7 @@ export class Bot {
         if (apres < avant) this.noterFlux(c.asset_id, "retrait_" + (c.side === "BUY" ? "achat" : "vente"), (avant - apres) * +c.price, t);
         { const z = this.pmAcc(c.asset_id), cs = c.side === "BUY" ? "achat" : "vente"; if (apres < avant) z["retrait_" + cs] += (avant - apres) * +c.price; else z["ajout_" + cs] += (apres - avant) * +c.price;
           const z2 = this.sigP(c.asset_id); if (apres < avant) z2["retrait_" + cs] += (avant - apres) * +c.price; else z2["ajout_" + cs] += (apres - avant) * +c.price; }
-        apres ? cote.set(+c.price, apres) : cote.delete(+c.price); L.tRecu = t; L.tsPoly = ts || null;
+        apres ? cote.set(+c.price, apres) : cote.delete(+c.price); L.v = (L.v || 0) + 1; L.tRecu = t; L.tsPoly = ts || null;
         { const R = (this._pch = this._pch || []); R.push([t, c.asset_id, c.side === "BUY" ? 0 : 1, +c.price, apres - avant]); while (R.length && R[0][0] < t - 5) R.shift(); }
       }
     } else if (ev === "last_trade_price") {
@@ -1653,7 +1626,10 @@ export class Bot {
     return p0 && p5 ? p0 - p5 : null;
   }
 
-  livreTrie(id, cote) { const L = this.pb[id]; if (!L) return []; return [...L[cote]].filter((x) => x[1] > 0).sort((x, y) => (cote === "asks" ? x[0] - y[0] : y[0] - x[0])); }
+  // 28.10.2026 (allègement) : le carnet trié est gardé en cache tant qu'il ne change pas (avant : recopié et retrié ~16 fois par message). Même résultat.
+  livreTrie(id, cote) { const L = this.pb[id]; if (!L) return []; const M = L[cote], C = (L._tri = L._tri || {}), c = C[cote];
+    if (c && c.m === M && c.v === (L.v || 0)) return c.r.slice();
+    const r = [...M].filter((x) => x[1] > 0).sort((x, y) => (cote === "asks" ? x[0] - y[0] : y[0] - x[0])); C[cote] = { m: M, v: L.v || 0, r }; return r.slice(); }
 
   v1Eval(source, tsSource, a = "BTC") {
     const V = this.v1Etat(a), mk = this.mk[a];
@@ -1663,6 +1639,8 @@ export class Bot {
     const pu = this.probaV1(a, mk);
     if (pu == null) return;
     try { this.nEval(a, mk, pu); } catch (err) { this.erreur("fantômes", err); }
+    // 28.10.2026 (Pitch) : V1 arrêtée (ni entrées, ni assurance, ni copies V1) — absente des onglets et des 25 meilleures ; nEval (toutes les stratégies affichées) continue
+    if (!(V.pos && V.pos.start === mk.start && !V.pos.fini)) return;
     const delai = tsSource ? t - tsSource : null;
     let pos = V.pos && V.pos.start === mk.start && !V.pos.fini ? V.pos : null;
     if (!pos) {
@@ -1814,7 +1792,7 @@ export class Bot {
     if (this._nsv) return;
     this._nsv = setTimeout(() => {
       this._nsv = null;
-      const N = this.N, put = (k, v) => this.state.storage.put(k, v).catch((err) => this.erreur("sauvegarde " + k, err));
+      const N = this.N, put = (k, v) => { const [c, j] = aChange(k, v); if (!c) return; DEJA_ECRIT.delete(k); this.state.storage.put(k, v).then(() => { if (j != null) DEJA_ECRIT.set(k, j); }).catch((err) => this.erreur("sauvegarde " + k, err)); };
       put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {}, markout: N.markout || {} });
       for (const [k, v] of Object.entries(N.strats)) put("nv:strat:" + k, v);
       if (N.zero) put("nv:zero", N.zero);
@@ -2390,7 +2368,7 @@ export class Bot {
     const t = now(), tleft = mk.end - t;
     (this._puA = this._puA || {})[a] = pu;
     try { this.nManq(a, mk, pu, t, tleft); } catch (_) {}
-    try { this.m97(a, mk, pu, tleft); } catch (err) { this.erreur("moments 97", err); }
+    // 28.10.2026 (allègement) : m97 arrêté (seulement /api/m97 ; REST Binance 5000 niveaux + options Deribit 2 fois par cycle)
     for (const P of this.N.ouvertes) if (P.strat.startsWith("assurance") && P.actif === a && P.start === mk.start && !P.fini) this.gGerer(P, pu);
     for (const P of this.N.ouvertes) if (P.famille === "desaccordG" && P.actif === a && P.start === mk.start) { try { this.dGerer(P, pu); } catch (_) {} }
     // ---- 2. fin de cycle : acheter 0,70-0,90 quand le modèle est très sûr, garder jusqu'à la fin
@@ -2425,7 +2403,7 @@ export class Bot {
       if (!NV.ACTIVES.includes(nom)) continue;
       if (this.N.ouvertes.some((P) => P.strat === nom && P.actif === a && P.start === mk.start) || ((this._dsF || {})[nom + a] === mk.start)) continue;
       const nuit = (NV.DESACCORD.NUIT || {})[nom];
-      if (nuit) { const hz = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", hour12: false }).format(new Date()) % 24; if (hz >= nuit[0] && hz < nuit[1]) continue; }
+      if (nuit) { const hz = heureZurich(); if (hz >= nuit[0] && hz < nuit[1]) continue; }
       for (const up of [true, false]) {
         const id = up ? mk.up : mk.down, ask = this.livreTrie(id, "asks")[0], fair = up ? pu : 1 - pu;
         if (!ask || ask[0] < 0.03 || ask[0] > 0.97 || fair - ask[0] < ecart) continue;
@@ -2632,7 +2610,7 @@ export class Bot {
   }
   // fantômes du 07.10.2026 (figés) : désaccord 20, attendre 3 s ou 10 s, acheter 50 $ au meilleur vendeur SEULEMENT si Polymarket a rejoint le modèle ; variantes sans la nuit (00h-08h suisse)
   blinkAcheter(a, mk, e, h, id, k, fair, tleft) {
-    const hz = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", hour12: false }).format(new Date()) % 24;
+    const hz = heureZurich();
     for (const nom of [`desaccord 20 Poly rejoint ${h} s`, `desaccord 20 Poly rejoint ${h} s sans nuit`]) {
       if (!NV.ACTIVES.includes(nom) || (nom.endsWith("sans nuit") && hz < 8)) continue;
       if (k[0] < 0.03 || k[0] > 0.97) continue;
@@ -2646,7 +2624,7 @@ export class Bot {
   }
   // fantômes du 07.10.2026 soir (figés) : désaccord 20 + bourses dans notre sens sur les 3 s AVANT l'entrée, achat immédiat 50 $ ; variantes sans la nuit
   filtreBourses(a, mk, e, id, k, fair, tleft) {
-    const hz = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", hour12: false }).format(new Date()) % 24;
+    const hz = heureZurich();
     const v = (x) => x || 0, bn = v(e.bn3), pe = v(e.perp3);
     const R = { "desaccord 20 Binance avec nous": bn > 0, "desaccord 20 Binance ou perp avec nous": bn > 0 || pe > 0,
       "desaccord 20 aucune bourse contre + sortie 10 s": Math.min(bn, pe, v(e.okx3), v(e.cb3)) >= 0 };
@@ -2927,11 +2905,11 @@ export class Bot {
       this.nNote(P, `le modèle est passé de ${P.proba0} à ${fair.toFixed(3)} → revente de ${v.vendu.toFixed(1)} parts pour ${v.recu.toFixed(2)} $ (${tleft.toFixed(0)} s restantes)`); this.nSauver();
     }
     if (tleft < 5) return;
-    try { this.leadPhoto(a, mk, pu, tleft, ua, da); } catch (_) {}
+    // 28.10.2026 (allègement) : leadPhoto arrêté (seulement /api/lead)
     const il_y_a = (sec) => { for (let i = H.r.length - 1; i >= 0; i--) if (t - H.r[i].t >= sec) return H.r[i]; return null; };
     // V5 / V6 (07.10.2026, figés) : gain attendu par dollar au prix EXÉCUTABLE pour 50 $ (carnet jusqu'à +5 c), au lieu d'un écart fixe.
     // V5 : gain attendu >= +50 % par dollar et modèle >= prix + 5 c. V6 loterie : prix exécutable <= 0,10 et modèle >= 2 × prix.
-    for (const up of [true, false]) {
+    if (NV.ACTIVES.includes("V5 gain attendu") || NV.ACTIVES.includes("V6 loterie")) for (const up of [true, false]) {   // 28.10.2026 : rien à calculer si V5 et V6 sont arrêtées
       const id = up ? mk.up : mk.down, k = up ? ua : da, fair = up ? pu : 1 - pu;
       if (k[0] < 0.02 || k[0] > 0.90) continue;
       const r = this.nAcheter(id, 50 / k[0], k[0] + 0.05); if (r.parts < 5) continue;
@@ -3022,7 +3000,7 @@ export class Bot {
     try { this.v2fxIncertitude(a, mk, H, tleft, ua, da, il_y_a, t); } catch (err) { this.erreur("V2-F 0,01 %", err); }
     // 10.10.2026 14:08 (Pitch) : trois variantes de désaccord pour la diversité (figées), premier signal du cycle, meilleur vendeur seul
     try { this.diversite(a, mk, H, pu, tleft, ua, da, t); } catch (err) { this.erreur("diversité", err); }
-    try { this.vitesseSuivre(a, mk, H, t); } catch (err) { this.erreur("vitesse", err); }
+    // 28.10.2026 (allègement) : suivi « vitesse » arrêté (seulement /api/vitesse)
   }
   // ---- 10.10.2026 : trois variantes expérimentales de V2-F (figées, aucune modification des autres fantômes). Achat au SEUL meilleur vendeur,
   // limité à la quantité affichée et à 50 $. Une décision par cycle. Chaque opportunité, achetée ou refusée, est journalisée avec l'heure des données.
@@ -3036,6 +3014,7 @@ export class Bot {
   // âge des données au moment de la décision, puis ce qui reste achetable au même prix ou mieux 0,1 / 0,25 / 0,5 / 1 / 2 s plus tard.
   // Mesure seulement : ne change aucune décision.
   vitesseNoter(nom, a, mk, up, k, t, extra) {
+    return;   // 28.10.2026 (allègement) : enregistrement « vitesse » arrêté (seulement /api/vitesse, liste jamais purgée)
     const H = this._v2h && this._v2h[a]; if (!H || H.start !== mk.start) return;
     const id = up ? mk.up : mk.down, L = this.pb[id] || {}, f = this.f[a] || {}, cl = ((this._clBrut || {})[a] || []).slice(-1)[0] || [];
     const age = (x) => (x && x.t ? +(t - x.t).toFixed(3) : null);
@@ -3399,16 +3378,17 @@ export class Bot {
     const t = now(), cur = Math.floor(t / 300) * 300;
     if (t - (this._rgT || 0) < 30) return; this._rgT = t;
     const RG = (this.RG = this.RG || (await this.state.storage.get("regl")) || { lignes: [], attente: {} });
+    let chg = false;   // 28.10.2026 (allègement) : sauvegarde seulement si quelque chose a changé (avant : ~6 Mo réécrits toutes les 30 s)
     for (const a of ["BTC"]) {
       const st = cur - 300, k = a + st;
       if (!RG.attente[k] && !RG.lignes.some((x) => x.a === a && x.start === st)) {
         const B = (this._clBrut || {})[a] || [], fen = (c) => B.filter((x) => Math.abs(x[0] - c) <= 15).map((x) => [+(x[0] - c).toFixed(3), +(x[1] - c).toFixed(3), +(x[2] - c).toFixed(3), x[3]]);
-        RG.attente[k] = { a, start: st, obsDebut: fen(st), obsFin: fen(st + 300), notreK: ((this._kPrec || {})[a + st] || {}).k ?? null, sourceK: ((this._kPrec || {})[a + st] || {}).src ?? null, kVuApres_s: ((this._kPrec || {})[a + st] || {}).vu ?? null, kAvant: ((this._kPrec || {})[a + st] || {}).avant ?? null, kSerie: ((this._kPrec || {})[a + st] || {}).serie ?? null, kSite: ((this._kPrec || {})[a + st] || {}).site ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
+        chg = true; RG.attente[k] = { a, start: st, obsDebut: fen(st), obsFin: fen(st + 300), notreK: ((this._kPrec || {})[a + st] || {}).k ?? null, sourceK: ((this._kPrec || {})[a + st] || {}).src ?? null, kVuApres_s: ((this._kPrec || {})[a + st] || {}).vu ?? null, kAvant: ((this._kPrec || {})[a + st] || {}).avant ?? null, kSerie: ((this._kPrec || {})[a + st] || {}).serie ?? null, kSite: ((this._kPrec || {})[a + st] || {}).site ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
       }
     }
     let n = 0;
     for (const [k, L] of Object.entries(RG.attente)) {
-      if (t > L.start + 300 + 900) { RG.lignes.unshift({ ...L, gagnant: null, ptb: null, final: null, abandon: true }); delete RG.attente[k]; continue; }
+      if (t > L.start + 300 + 900) { chg = true; RG.lignes.unshift({ ...L, gagnant: null, ptb: null, final: null, abandon: true }); delete RG.attente[k]; continue; }
       if (n++ >= 2) break;
       try {
         const ev = await (await fetch(`${G}/events?slug=${L.a.toLowerCase()}-updown-5m-${L.start}`)).json();
@@ -3424,11 +3404,14 @@ export class Bot {
         } catch (_) {}
         const fin = meta.finalPrice != null ? +meta.finalPrice : cp;
         if (fin == null && t < L.start + 300 + 300) continue;
-        RG.lignes.unshift({ ...L, gagnant: outs[px.indexOf(1)], ptb: meta.priceToBeat != null ? +meta.priceToBeat : op, final: fin, ouvertureApi: op, clotureApi: cp, vu: Math.round(t - L.start - 300) });
+        chg = true; RG.lignes.unshift({ ...L, gagnant: outs[px.indexOf(1)], ptb: meta.priceToBeat != null ? +meta.priceToBeat : op, final: fin, ouvertureApi: op, clotureApi: cp, vu: Math.round(t - L.start - 300) });
         delete RG.attente[k];
       } catch (_) {}
     }
+    if (!chg) return;
     RG.lignes.length = Math.min(RG.lignes.length, 2500);
+    // lignes de plus de ~25 h : observations brutes retirées (déjà sauvegardées sur GitHub toutes les 30 min) ; résultat, prix à battre, final, notreK gardés
+    for (let i = 300; i < RG.lignes.length; i++) { const x = RG.lignes[i]; if (x.obsDebut || x.obsFin || x.brut) { delete x.obsDebut; delete x.obsFin; delete x.brut; } }
     this.state.storage.put("regl", RG).catch((err) => this.erreur("sauvegarde regl", err));
   }
 
@@ -3763,10 +3746,17 @@ const ZERO5_NUMS = [101, 201, 121, 28, 119];     // stratégies choisies par Pit
 const ZERO4_DEPUIS = "2026-10-26T11:00:00Z";     // 26.10.2026 12:00 heure suisse : onglet 5, tout remis à 0
 // 26.10.2026 11:16 (Pitch : « rajoute de l'onglet 3 les 3 premières stratégies dans l'onglet 4 pour les mêmes jours ») : les 3 premières de l'onglet 3 à cette heure-là
 const ONGLET4_DE3 = ["PORTEFEUILLE 400 + idées BTC", "PORTEFEUILLE 600 + idées BTC", "PORTEFEUILLE 400 corrige + idées BTC"];     // 25.10.2026 15:00 heure suisse : onglet 4, versions « + consensus »
+// 28.10.2026 (allègement) : on ne réécrit une valeur que si elle a changé depuis la dernière sauvegarde réussie (même contenu sur disque, beaucoup moins d'écritures)
+const DEJA_ECRIT = new Map();
+function aChange(k, v) { let j; try { j = JSON.stringify(v); } catch (_) { return [true, null]; } return [DEJA_ECRIT.get(k) !== j, j]; }
 async function zSauver(st, cle, Z) { const ks = Object.keys(Z), n = Math.ceil(ks.length / 50) || 1; const o = { [cle + ":n"]: n };
   for (let i = 0; i < n; i++) { const m = {}; for (const k of ks.slice(i * 50, i * 50 + 50)) m[k] = Z[k]; o[cle + ":" + i] = m; }
-  const es = Object.entries(o); for (let i = 0; i < es.length; i += 8) await st.put(Object.fromEntries(es.slice(i, i + 8))); }
+  const es = []; for (const [k, v] of Object.entries(o)) { const [c, j] = aChange(k, v); if (c) es.push([k, v, j]); }
+  for (let i = 0; i < es.length; i += 8) { const lot = es.slice(i, i + 8); await st.put(Object.fromEntries(lot.map((x) => [x[0], x[1]]))); for (const x of lot) if (x[2] != null) DEJA_ECRIT.set(x[0], x[2]); } }
 async function zCharger(st, cle) { const n = await st.get(cle + ":n"); if (!n) return (await st.get(cle)) || {}; const Z = {}; for (let i = 0; i < n; i++) Object.assign(Z, (await st.get(cle + ":" + i)) || {}); return Z; }
+// 28.10.2026 (allègement) : heure suisse calculée une fois par minute (avant : un formateur Intl créé à chaque message du carnet)
+const _HZ = { m: -1, h: 0 };
+function heureZurich() { const m = Math.floor(Date.now() / 60000); if (m !== _HZ.m) { _HZ.m = m; _HZ.h = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", hour12: false }).format(new Date()) % 24; } return _HZ.h; }
 let ZHOOK = null;   // 26.10.2026 (Pitch : « les trades des stratégies, fichiers Excel onglet 3 et 4 ») : chaque trade compté dans l'onglet 3 / 4 est aussi écrit ligne par ligne
 // 27.10.2026 (Pitch : « voir dans chaque stratégie si plusieurs ordres possibles et s'il y a multiplicateur »)
 // ordres max par cycle vus du 19 au 25.10 pour chaque stratégie de base (n° 1 à 30), puis compteur en direct dans les onglets
