@@ -1926,7 +1926,7 @@ export class Bot {
     }).catch((err) => this.erreur("signature signal", err));
     return W.length;
   }
-  async webSocketMessage(ws, msg) { try { if (msg === "ping") ws.send("pong"); } catch (_) {} }
+  async webSocketMessage(ws, msg) { try { if (msg === "ping") ws.send("pong"); else if (typeof msg === "string" && msg.startsWith("heure:")) ws.send("heure:" + msg.slice(6) + ":" + Date.now()); } catch (_) {} }   // 28.10.2026 : mesure du décalage d'horloge Cloudflare ↔ bot
   async webSocketClose(ws, code) { try { ws.close(code || 1000, "fin"); } catch (_) {} }
   async webSocketError() {}
   slEmettre(P, mk) {
