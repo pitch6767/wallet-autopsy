@@ -514,8 +514,9 @@ export class Bot {
       return json({ regle: "CUSUM : on ajoute (Brier moteur − Brier carnet − 0,005) par tranche de 3 h, plancher 0 ; alerte au-dessus de 0,03. Aucune décision n'est modifiée.", blocs, regimes, calibration, couverture, signaux: sigs });
     }
     // ---- 26.10.2026 : copie de Dublin — journal des signaux en direct, et achats BY1 annoncés par le labo rapide (même serveur)
+    if (u.pathname === "/api/cle_signaux") return json({ alg: "ECDSA P-256 SHA-256", cle: (await this.slCle()).pub });
     if (u.pathname === "/api/flux_signaux") {   // connexion permanente du bot de trading (lecture seule : il ne fait que recevoir les décisions)
-      if ((req.headers.get("upgrade") || "").toLowerCase() !== "websocket") return json({ clients: this.state.getWebSockets("signaux").length, nums: this.env.SIGNAL_NUMS || "", actif: !!this.env.SIGNAL_FLUX, journal: (this._slJ || []).slice(0, 200) });
+      if ((req.headers.get("upgrade") || "").toLowerCase() !== "websocket") return json({ clients: this.state.getWebSockets("signaux").length, actif: !!this.env.SIGNAL_FLUX });
       const pair = new WebSocketPair(); this.state.acceptWebSocket(pair[1], ["signaux"]); pair[1].send(JSON.stringify({ type: "bonjour", nums: this.env.SIGNAL_NUMS || "", t: Date.now() }));
       return new Response(null, { status: 101, webSocket: pair[0] });
     }
@@ -1905,7 +1906,25 @@ export class Bot {
     return { garder: true, mult, nb };
   }
   // 28.10.2026 (Pitch : « oui go ») : flux des signaux en direct vers le bot de trading (connexion permanente sortante du bot vers Cloudflare)
-  slDiffuser(corps) { let n = 0; const m = JSON.stringify({ type: "signal", signal: corps }); for (const ws of this.state.getWebSockets("signaux")) { try { ws.send(m); n++; } catch (_) {} } return n; }
+  // 28.10.2026 (audit) : chaque signal est SIGNÉ (ECDSA P-256) avec une clé privée créée ici et gardée dans le stockage privé de l'objet ;
+  // le bot vérifie la signature avec la clé publique (/api/cle_signaux) et refuse tout signal non signé ou de plus de 10 s.
+  async slCle() {
+    if (this._slCle) return this._slCle;
+    let jwk = await this.state.storage.get("cle:signaux:privee");
+    if (!jwk) { const kp = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]); jwk = await crypto.subtle.exportKey("jwk", kp.privateKey); await this.state.storage.put("cle:signaux:privee", jwk); }
+    const priv = await crypto.subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+    const pub = { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y };
+    return (this._slCle = { priv, pub });
+  }
+  slDiffuser(corps) {
+    const W = this.state.getWebSockets("signaux"); if (!W.length) return 0;
+    const txt = JSON.stringify(corps);
+    this.slCle().then((k) => crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, k.priv, new TextEncoder().encode(txt))).then((sg) => {
+      const m = JSON.stringify({ type: "signal", corps: txt, sig: btoa(String.fromCharCode(...new Uint8Array(sg))) });
+      for (const ws of this.state.getWebSockets("signaux")) { try { ws.send(m); } catch (_) {} }
+    }).catch((err) => this.erreur("signature signal", err));
+    return W.length;
+  }
   async webSocketMessage(ws, msg) { try { if (msg === "ping") ws.send("pong"); } catch (_) {} }
   async webSocketClose(ws, code) { try { ws.close(code || 1000, "fin"); } catch (_) {} }
   async webSocketError() {}
