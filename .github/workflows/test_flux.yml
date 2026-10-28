@@ -4,13 +4,14 @@ permissions: { contents: write }
 jobs:
   t:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - run: |
           U=https://bot95.pitch67.workers.dev
           F=$GITHUB_WORKSPACE/bot95/test_flux.txt
           echo "== etat" > $F; curl -sS -m 20 -o /dev/null -w "HTTP %{http_code} %{time_total}s\n" $U/api/etat >> $F 2>&1
+          for p in / /numeros /zero5 /api/zero5 /api/zero2 /api/zero3 /api/zero4 /api/classement /api/corr_misemax /api/memoire; do echo "== $p" >> $F; curl -sS -m 15 -o /tmp/b -w "HTTP %{http_code} %{size_download} o %{time_total}s\n" "$U$p" >> $F 2>&1; head -c 150 /tmp/b >> $F; echo >> $F; done
           echo "== GET flux" >> $F; curl -sS -m 20 -w "\nHTTP %{http_code} %{time_total}s\n" $U/api/flux_signaux 2>&1 | head -c 700 >> $F
           echo "== upgrade" >> $F; curl -sS -m 8 -i -H "Connection: Upgrade" -H "Upgrade: websocket" -H "Sec-WebSocket-Version: 13" -H "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" $U/api/flux_signaux -o /tmp/up.txt 2>>$F; head -c 600 /tmp/up.txt >> $F
           git config user.name t; git config user.email t@users.noreply.github.com; git add bot95/test_flux.txt; git commit -qm "test flux [skip ci]"; git pull --rebase -q; git push -q
