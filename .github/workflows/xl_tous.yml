@@ -1,0 +1,16 @@
+name: Excel - tous les onglets (lecture seule)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  x:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          U=https://bot95.pitch67.workers.dev
+          for p in excel excel3 excel4 excel5; do curl -sS -m 300 "$U/$p" -o bot95/xl_$p.xlsx; ls -l bot95/xl_$p.xlsx; done
+          git config user.name sonde; git config user.email bot@users.noreply.github.com
+          git add bot95/xl_excel*.xlsx; git commit -q -m "Excel : tous les onglets [skip ci]" || true
+          for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
