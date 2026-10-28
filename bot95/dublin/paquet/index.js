@@ -23422,7 +23422,11 @@ var Bot = class {
       for (const o of Object.values(sigs)) o.resultat = +o.resultat.toFixed(2);
       return json({ regle: "CUSUM : on ajoute (Brier moteur \u2212 Brier carnet \u2212 0,005) par tranche de 3 h, plancher 0 ; alerte au-dessus de 0,03. Aucune d\xE9cision n'est modifi\xE9e.", blocs, regimes, calibration, couverture, signaux: sigs });
     }
-    if (u.pathname === "/api/signaux_live") return json({ actif: !!this.env.SIGNAL_URL, nums: this.env.SIGNAL_NUMS || "", journal: this._slJ || [], tally: this._slT || {} });
+    if (u.pathname === "/api/signaux_live") {
+      const hist = {};
+      for (const k of ["PORTEFEUILLE 400 BTC", "PORTEFEUILLE 600 BTC", "TWAP fin sauts + foule bybit x2 BTC", "V2-F incertitude 0,01 % + carnet BTC", "BY1 contre-elan calme 100 $ BTC"]) hist[k] = (await this.state.storage.get("hist:" + k) || []).filter((l) => l[0] >= "2026-10-26T20");
+      return json({ actif: !!this.env.SIGNAL_URL, nums: this.env.SIGNAL_NUMS || "", journal: this._slJ || [], tally: this._slT || {}, hist });
+    }
     if (u.pathname === "/api/signal_by1" && req.method === "POST") {
       if (!this.env.SIGNAL_URL || !this.env.SIGNAL_TOKEN || req.headers.get("x-signal-token") !== this.env.SIGNAL_TOKEN) return new Response("non", { status: 403 });
       const d = await req.json().catch(() => ({})), mk = this.mk && this.mk.BTC;
@@ -25987,7 +25991,7 @@ var Bot = class {
       if (!d) continue;
       const J = this._slJ = this._slJ || [], note = /* @__PURE__ */ __name((o) => {
         J.unshift({ at: (/* @__PURE__ */ new Date()).toISOString(), num: n, nom: d.nom, depuis: P.strat, cote: P.cote, prix: ask, ...o });
-        J.length = Math.min(J.length, 100);
+        J.length = Math.min(J.length, 1500);
       }, "note");
       if (ask == null) {
         note({ statut: "pas de vendeur" });
