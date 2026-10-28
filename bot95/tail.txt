@@ -1,13 +1,55 @@
-12
-{"t": 1793207363153, "outcome": "internalError", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
-{"t": 1793207374108, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "79963", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
-{"t": 1793207374258, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
-{"t": 1793207412892, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/cycle?start=1793207100", "meth": "POST", "len": "1003340", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
-{"t": 1793207417989, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/cycle?start=1793207100", "meth": "POST", "len": "1003340", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
-{"t": 1793207423116, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/cycle?start=1793207100", "meth": "POST", "len": "1003340", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
-{"t": 1793207423344, "outcome": "internalError", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
-{"t": 1793207434103, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "79490", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
-{"t": 1793207434238, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
-{"t": 1793207483387, "outcome": "internalError", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
-{"t": 1793207494099, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "79538", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
-{"t": 1793207494258, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
+13
+{"t": 1793221103576, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": []}
+{"t": 1793221103424, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": []}
+{"t": 1793221114445, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "1374115", "ev": ["request", "response"], "ex": []}
+{"t": 1793221114835, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
+{"t": 1793221163475, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": []}
+{"t": 1793221174427, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "1374120", "ev": ["request", "response"], "ex": []}
+{"t": 1793221174854, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
+{"t": 1793221212074, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/cycle?start=1793220900", "meth": "POST", "len": "826352", "ev": ["request", "response"], "ex": []}
+{"t": 1793221217260, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/cycle?start=1793220900", "meth": "POST", "len": "826352", "ev": ["request", "response"], "ex": []}
+{"t": 1793221222334, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/cycle?start=1793220900", "meth": "POST", "len": "826352", "ev": ["request", "response"], "ex": []}
+{"t": 1793221223540, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": []}
+{"t": 1793221234431, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "1373727", "ev": ["request", "response"], "ex": []}
+{"t": 1793221234853, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
+
+ ⛅️ wrangler 4.155.0
+────────────────────
+Created:     2026-10-28T20:40:31.070Z
+Author:      pitch67@gmail.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) c58f3ac7-cbc0-43da-a9c1-800cde5887a6
+                 Created:  2026-10-28T20:40:29.853Z
+                     Tag:  -
+                 Message:  -
+                 Created:  2026-10-28T18:02:39.663Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-10-28T19:46:22.041Z
+Author:      pitch67@gmail.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) 5bbf2e9d-622e-405f-a40c-b1feebdc094a
+                 Created:  2026-10-28T19:46:20.948Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-10-28T20:28:48.796Z
+Author:      pitch67@gmail.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) f0b67791-3bbd-48ca-a299-c34807e6ab5c
+                 Created:  2026-10-28T20:28:47.885Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-10-28T20:40:31.070Z
+Author:      pitch67@gmail.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) c58f3ac7-cbc0-43da-a9c1-800cde5887a6
+                 Created:  2026-10-28T20:40:29.853Z
+                     Tag:  -
+                 Message:  -
