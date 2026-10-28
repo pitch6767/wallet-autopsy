@@ -1,23 +1,13 @@
-22
-{"t": 1793020905805, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/zero4", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020908266, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/zero4", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020908782, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/favicon.ico", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020913790, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "17604", "ev": ["request", "response"], "ex": []}
-{"t": 1793020917316, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/zero", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020917813, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/zero", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020917948, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/favicon.ico", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020924705, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020937839, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/zero", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020943494, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": []}
-{"t": 1793020946162, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": []}
-{"t": 1793020957840, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/zero", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020966307, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/excel", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020973847, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "11451", "ev": ["request", "response"], "ex": []}
-{"t": 1793020977853, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/zero", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020984680, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793020997819, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/zero", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793021003316, "outcome": "ok", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": []}
-{"t": 1793021017835, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/zero", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793021033856, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "11454", "ev": ["request", "response"], "ex": []}
-{"t": 1793021037852, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/zero", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
-{"t": 1793021044684, "outcome": "ok", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": []}
+12
+{"t": 1793207363153, "outcome": "internalError", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
+{"t": 1793207374108, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "79963", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
+{"t": 1793207374258, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
+{"t": 1793207412892, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/cycle?start=1793207100", "meth": "POST", "len": "1003340", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
+{"t": 1793207417989, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/cycle?start=1793207100", "meth": "POST", "len": "1003340", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
+{"t": 1793207423116, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/cycle?start=1793207100", "meth": "POST", "len": "1003340", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
+{"t": 1793207423344, "outcome": "internalError", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
+{"t": 1793207434103, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "79490", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
+{"t": 1793207434238, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
+{"t": 1793207483387, "outcome": "internalError", "url": "", "meth": null, "len": null, "ev": ["cron", "scheduledTime"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
+{"t": 1793207494099, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/donnees", "meth": "POST", "len": "79538", "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long.", "Durable Object is overloaded. Requests queued for too long."]}
+{"t": 1793207494258, "outcome": "exception", "url": "https://bot95.pitch67.workers.dev/api/rapide/version", "meth": "GET", "len": null, "ev": ["request", "response"], "ex": ["Durable Object is overloaded. Requests queued for too long."]}
