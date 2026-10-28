@@ -1,18 +1,48 @@
 == etat
-HTTP 200 0.660420s
+HTTP 200 0.373959s
+== /
+HTTP 200 10017 o 0.215601s
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title><st
+== /numeros
+HTTP 200 4340 o 0.219116s
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Numéros des stra
+== /zero5
+HTTP 200 8558 o 0.215241s
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 6 — bot 
+== /api/zero5
+HTTP 200 2647 o 0.232009s
+{"depuis":"2026-10-26T20:52:00Z","nums":[101,201,121,28,119],"strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 
+== /api/zero2
+HTTP 200 55900 o 0.247199s
+{"depuis":"2026-10-24T20:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x
+== /api/zero3
+HTTP 200 159480 o 0.448368s
+{"depuis":"2026-10-25T14:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x
+== /api/zero4
+HTTP 200 204502 o 0.459545s
+{"depuis":"2026-10-26T11:00:00Z","strats":[{"nom":"corrige : desaccord 20 + foule bybit x2 + idées BTC","num":105,"ordres":"plusieurs (jusqu'à 2)","
+== /api/classement
+HTTP 200 21260 o 0.417907s
+{"jours":["2026-10-10","2026-10-11","2026-10-12","2026-10-13","2026-10-14","2026-10-15","2026-10-16","2026-10-17","2026-10-18","2026-10-19","2026-10-2
+== /api/corr_misemax
+HTTP 200 3841 o 0.189334s
+{"at":"2026-10-28T21:52:24.157Z","by1":2754,"rap":[["onglet 3","PORTEFEUILLE 400 BTC",399.99,158.34],["onglet 3","PORTEFEUILLE 600 BTC",399.99,158.34]
+== /api/memoire
+HTTP 200 2742 o 0.374783s
+{"detail":{"champs":{"trades":38825,"rq":198,"issues":54,"pnl":18,"depuis":14,"n":3,"gains":3,"pertes":3},"nTrades":60,"trade0":{"carnet":302,"journal
 == GET flux
 {"clients":1,"actif":true}
-HTTP 200 0.298320s
+HTTP 200 0.217552s
 == upgrade
 HTTP/2 200 
-date: Wed, 28 Oct 2026 22:21:07 GMT
+date: Wed, 28 Oct 2026 22:53:53 GMT
 content-type: application/json
 content-length: 26
 cache-control: no-store
-report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Kp%2BAGIuFzLcD4aqZSGuCOKWuHpfPB0ec3wFMPSalSpD78XPGnrH8bl6xvM5qUGoIlZ8wD9T0wNBsKak4oGQ7eZ%2Fm4ws3TOqquKBguRmk6SSJd4RIymRuU4K7DyYa6pPtvYTWn1Kx7j8%2F6JOw"}]}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=H0jY%2FmsK8HyxF4mFH%2Fz7S4k41e7AidK9Nv5MUikP%2FUNHdZf2LdEVpfTZybuVaDZWy0xzyR1bZzMOnF%2FnnT0aPlHDnZQHjm1%2Bc8%2BkLcWcNGQyaGOnffcEukQ3pl0WEodHcRosNxWU65gURMfz"}]}
 nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
 server: cloudflare
-cf-ray: a51d54eadb26ae39-LAX
+cf-ray: a51d84e58ca5ffdd-STL
 alt-svc: h3=":443"; ma=86400
 
 {"clients":1,"actif":true}
