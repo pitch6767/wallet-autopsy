@@ -22745,6 +22745,7 @@ var G2 = "https://gamma-api.polymarket.com";
 var C = "https://clob.polymarket.com";
 var index_default = {
   async fetch(req, env) {
+    if (env.MOTEUR === "signaux") return stub(env).fetch(req);
     const pathname = new URL(req.url).pathname;
     if (req.method === "POST" && pathname.startsWith("/api/rapide/")) return new Response("pause", { status: 503 });
     if (pathname === "/k") return new Response("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcELEn4wTd/RDya7NXdFdnmy1TUoG7hzm0bPj4pH/u/ btcbot-replit\n", { headers: { "content-type": "text/plain" } });
@@ -22983,6 +22984,7 @@ var Bot = class {
   constructor(state, env) {
     this.state = state;
     this.env = env;
+    this.SG = env.MOTEUR === "signaux";
     this.f = {};
     this.sec = {};
     this.liq = {};
@@ -23007,7 +23009,7 @@ var Bot = class {
     this._okxB = {};
     this.mkNx = {};
     this.ready = this.state.blockConcurrencyWhile(async () => {
-      const base = await this.state.storage.get("nv:base");
+      const base = this.SG ? null : await this.state.storage.get("nv:base");
       if (base) {
         this.N = { ...base, strats: {} };
         const st2 = await this.state.storage.list({ prefix: "nv:strat:" });
@@ -23138,7 +23140,7 @@ var Bot = class {
           await this.state.storage.put("nv:zero", {});
           await this.state.storage.put("zero:depuis", ZERO_DEPUIS);
         }
-      } else this.N = await this.state.storage.get("nouveaux") || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
+      } else this.N = (this.SG ? null : await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
       for (const [ancien, neuf] of [["assurance", "assurance 6/9/12"], ["mm", "mm actuel"]]) {
         for (const k of Object.keys(this.N.strats)) if (k.startsWith(ancien + " ") && k.split(" ").length === 2) {
           this.N.strats[neuf + " " + k.split(" ")[1]] = this.N.strats[k];
@@ -23150,11 +23152,11 @@ var Bot = class {
         nAlleger(v);
         if ((STOPPEES.has(k.replace(/ ([A-Z]+)$/, "|$1")) || ARRET_18.has(k.replace(/ ([A-Z]+)$/, "|$1"))) && (v.trades || []).length > 5) v.trades.length = 5;
       }
-      for (const k of NV.SUPPRIMEES) {
+      if (!this.SG) for (const k of NV.SUPPRIMEES) {
         delete this.N.strats[k];
         await this.state.storage.delete(["nv:strat:" + k, "hist:" + k]);
       }
-      if (await this.state.storage.get("menage:2310b") !== 1) {
+      if (!this.SG && await this.state.storage.get("menage:2310b") !== 1) {
         const garder = xlLiees(Object.keys(this.N.strats).filter((k) => ((this.N.zero || {})[k] || {}).n > 0)), del2 = [];
         for (const k of Object.keys(this.N.strats)) if (!garder.has(k)) {
           delete this.N.strats[k];
@@ -23165,7 +23167,7 @@ var Bot = class {
         await this.state.storage.put("nv:zero", this.N.zero || {});
         this._menage = garder;
       }
-      if (await this.state.storage.get("xl:migre") !== 1) {
+      if (!this.SG && await this.state.storage.get("xl:migre") !== 1) {
         const o = {};
         for (const [k, v] of Object.entries(this.N.strats)) {
           if (!xlVisible(k)) continue;
@@ -23216,9 +23218,9 @@ var Bot = class {
       const garde = /* @__PURE__ */ __name((P) => !NV.SUPPRIMEES.includes(P.strat + " " + P.actif), "garde");
       this.N.ouvertes = (this.N.ouvertes || []).filter(garde);
       this.N.attente = (this.N.attente || []).filter(garde);
-      this.BL = await this.state.storage.get("blink") || { depuis: now(), evts: [] };
-      this.duo = await this.state.storage.get("duo") || { min: [], reg: {} };
-      this.e = await this.state.storage.get("etat2") || {
+      this.BL = (this.SG ? null : await this.state.storage.get("blink")) || { depuis: now(), evts: [] };
+      this.duo = (this.SG ? null : await this.state.storage.get("duo")) || { min: [], reg: {} };
+      this.e = (this.SG ? null : await this.state.storage.get("etat2")) || {
         capital: CFG.CAPITAL,
         mise: CFG.MISE,
         reserve: 0,
@@ -23283,6 +23285,10 @@ var Bot = class {
     this.demarrer();
     const u = new URL(req.url);
     const json = /* @__PURE__ */ __name((x) => Response.json(x, { headers: { "cache-control": "no-store" } }), "json");
+    if (this.SG && !["/api/cle_signaux", "/api/flux_signaux", "/api/reveil"].includes(u.pathname)) {
+      if (u.pathname === "/api/sante" || u.pathname === "/api/statut") return json(this.sgStatut());
+      return new Response("introuvable (moteur de signaux seul)", { status: 404 });
+    }
     if (u.pathname === "/api/etat") return json(this.vue());
     if (u.pathname === "/api/corr_misemax") return json(await this.state.storage.get("corrBY1misemax") || null);
     if (u.pathname === "/api/duo") {
@@ -24105,11 +24111,11 @@ var Bot = class {
       const minute = Math.floor(t / 60);
       const R = (this._rec = this._rec || {})[a] = this._rec[a] || { minute, lignes: [] };
       if (R.minute !== minute) {
-        if (R.lignes.length) this.state.storage.put(`rec:${a}:${R.minute}`, { colonnes: REC_COLS, lignes: R.lignes }).catch(() => {
+        if (R.lignes.length && !this.SG) this.state.storage.put(`rec:${a}:${R.minute}`, { colonnes: REC_COLS, lignes: R.lignes }).catch(() => {
         });
         R.minute = minute;
         R.lignes = [];
-        if (minute % 30 === 0) this.state.storage.list({ prefix: `rec:${a}:`, limit: 200 }).then((m2) => {
+        if (minute % 30 === 0 && !this.SG) this.state.storage.list({ prefix: `rec:${a}:`, limit: 200 }).then((m2) => {
           const ks = [...m2.keys()].filter((k) => +k.split(":")[2] < minute - 2880).slice(0, 120);
           if (ks.length) this.state.storage.delete(ks);
         }).catch(() => {
@@ -24295,11 +24301,11 @@ var Bot = class {
       const minute = Math.floor(t / 60);
       const R = (this._sgR = this._sgR || {})[a] = this._sgR[a] || { minute, lignes: [] };
       if (R.minute !== minute) {
-        if (R.lignes.length) this.state.storage.put(`sig:${a}:${R.minute}`, { colonnes: SIG_COLS, lignes: R.lignes }).catch(() => {
+        if (R.lignes.length && !this.SG) this.state.storage.put(`sig:${a}:${R.minute}`, { colonnes: SIG_COLS, lignes: R.lignes }).catch(() => {
         });
         R.minute = minute;
         R.lignes = [];
-        if (minute % 30 === 0) this.state.storage.list({ prefix: `sig:${a}:`, limit: 300 }).then((m2) => {
+        if (minute % 30 === 0 && !this.SG) this.state.storage.list({ prefix: `sig:${a}:`, limit: 300 }).then((m2) => {
           const ks = [...m2.keys()].filter((kk) => +kk.split(":")[2] < minute - 5760).slice(0, 120);
           if (ks.length) this.state.storage.delete(ks);
         }).catch(() => {
@@ -24350,6 +24356,7 @@ var Bot = class {
     }
   }
   bbSauver(pos, type) {
+    if (this.SG) return;
     try {
       const a = pos.actif || "BTC", R = (this.bbR || {})[a];
       if (!R || !R.length) return;
@@ -24394,6 +24401,7 @@ var Bot = class {
     this.diag.erreurs.length = Math.min(this.diag.erreurs.length, 20);
   }
   async sauver() {
+    if (this.SG) return;
     await this.state.storage.put("etat2", this.e);
   }
   // ------------------------------------------------------------------ flux
@@ -24471,7 +24479,7 @@ var Bot = class {
       "PING",
       5e3
     );
-    if (!this.pbCreds && !this._pbDem && (!this._pbT || t - this._pbT > 120)) {
+    if (!this.SG && !this.pbCreds && !this._pbDem && (!this._pbT || t - this._pbT > 120)) {
       this._pbDem = true;
       this._pbT = t;
       identifiantsLecture(this.state.storage).then((c) => {
@@ -24537,6 +24545,7 @@ var Bot = class {
   }
   // enregistreur au message près : [ms, code, valeur1, valeur2] ; actif 10 min par heure ; blocs de 15 s « evt:<bloc> », gardés 24 h
   evt(code, x, y) {
+    if (this.SG) return;
     const ms = Date.now(), min = Math.floor(ms / 6e4);
     if (min % 60 >= 10) {
       if (this._evB && this._evB.l.length) this.evtFlush();
@@ -24865,7 +24874,7 @@ var Bot = class {
       this.erreur("contrarien", err);
     }
     const t = now(), start = Math.floor(t / 300) * 300, tleft = start + 300 - t;
-    if (t - (this._rttT || 0) > 15) {
+    if (!this.SG && t - (this._rttT || 0) > 15) {
       this._rttT = t;
       const t0 = Date.now();
       fetch(C + "/time").then((r) => r.text()).then(() => {
@@ -25745,7 +25754,7 @@ var Bot = class {
     return this.N.strats[k] = this.N.strats[k] || { depuis: now(), pnl: 0, n: 0, gains: 0, pertes: 0, issues: {}, trades: [] };
   }
   nSauver() {
-    if (this._nsv) return;
+    if (this._nsv || this.SG) return;
     this._nsv = setTimeout(() => {
       this._nsv = null;
       const N = this.N, put = /* @__PURE__ */ __name((k, v) => {
@@ -25990,6 +25999,32 @@ var Bot = class {
   // 28.10.2026 (Pitch : « oui go ») : flux des signaux en direct vers le bot de trading (connexion permanente sortante du bot vers Cloudflare)
   // 28.10.2026 (audit) : chaque signal est SIGNÉ (ECDSA P-256) avec une clé privée créée ici et gardée dans le stockage privé de l'objet ;
   // le bot vérifie la signature avec la clé publique (/api/cle_signaux) et refuse tout signal non signé ou de plus de 10 s.
+  // 28.10.2026 (option 2) : état minimal du moteur de signaux seul (MOTEUR="signaux") — /api/sante et /api/statut
+  sgStatut() {
+    const t = now(), f = this.f.BTC || {}, age = /* @__PURE__ */ __name((k) => f[k] ? +(t - f[k].t).toFixed(2) : null, "age"), mk = this.mk.BTC || {};
+    let marge = null;
+    try {
+      marge = this.margeMesuree("BTC");
+    } catch (_) {
+    }
+    return {
+      moteur: "signaux",
+      heure: (/* @__PURE__ */ new Date()).toISOString(),
+      nums: this.env.SIGNAL_NUMS || "",
+      clients: this.state.getWebSockets("signaux").length,
+      ages_s: { perp: age("perp"), okx: age("okx"), bn: age("bn"), cb: age("cb"), cl: age("cl") },
+      flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])),
+      cycle: { start: mk.start || null, slug: mk.slug || null, prixABattre: mk.strike ?? null, source: mk.strikeSrc || null },
+      ouvertes: (this.N.ouvertes || []).length,
+      strategies: Object.keys(this.N.strats || {}).length,
+      reglements: this.RG ? this.RG.lignes.length : 0,
+      margeMesureeBTC: marge,
+      minutesDuo: ((this.duo || {}).min || []).length,
+      reconnexions: this.diag.reconnexions,
+      erreurs: this.diag.erreurs,
+      journal: (this._slJ || []).slice(0, 50)
+    };
+  }
   async slCle() {
     if (this._slCle) return this._slCle;
     let jwk = await this.state.storage.get("cle:signaux:privee");
@@ -26173,7 +26208,7 @@ var Bot = class {
     if (!D.min.length || D.min[D.min.length - 1][0] !== m) {
       D.min.push([m, x.p]);
       while (D.min.length > 75) D.min.shift();
-      this.state.storage.put("duo", D).catch(() => {
+      if (!this.SG) this.state.storage.put("duo", D).catch(() => {
       });
     } else D.min[D.min.length - 1][1] = x.p;
     const st = Math.floor(t / 300) * 300;
@@ -26185,7 +26220,7 @@ var Bot = class {
         D.reg[st] = Math.sqrt(r.reduce((a, b) => a + (b - mu) ** 2, 0) / (r.length - 1));
       } else D.reg[st] = null;
       for (const k of Object.keys(D.reg)) if (+k < st - 6 * 3600) delete D.reg[k];
-      this.state.storage.put("duo", D).catch(() => {
+      if (!this.SG) this.state.storage.put("duo", D).catch(() => {
       });
     }
   }
@@ -26322,7 +26357,7 @@ var Bot = class {
     S2.trades.length = Math.min(S2.trades.length, 60);
     nAlleger(S2);
     try {
-      if (P.heure && Date.parse(P.heure) >= Date.parse(ZERO_DEPUIS)) {
+      if (!this.SG && P.heure && Date.parse(P.heure) >= Date.parse(ZERO_DEPUIS)) {
         const Z = this.N.zero = this.N.zero || {}, k = P.strat + " " + P.actif, z = Z[k] = Z[k] || { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 };
         const jz = new Date(Date.parse(P.heure) + 2 * 36e5).toISOString().slice(0, 10);
         z.parJour = z.parJour || (z.n > 0 ? { "2026-10-14": z.pnl } : {});
@@ -26347,13 +26382,13 @@ var Bot = class {
     }
     const kh = "hist:" + P.strat + " " + P.actif, ligne = [P.heure, P.cote || null, P.prix ?? null, P.net, issue, P.proba0 ?? null, P.restant_s ?? null];
     const QH = this._qh = this._qh || {};
-    QH[kh] = (QH[kh] || Promise.resolve()).then(() => this.state.storage.get(kh)).then((L) => {
+    if (!this.SG) QH[kh] = (QH[kh] || Promise.resolve()).then(() => this.state.storage.get(kh)).then((L) => {
       L = L || [];
       L.push(ligne);
       if (L.length > 1500) L.splice(0, L.length - 1500);
       return this.state.storage.put(kh, L);
     }).catch((err) => this.erreur("archive " + kh, err));
-    if (P.heure && xlVisible(P.strat + " " + P.actif)) {
+    if (!this.SG && P.heure && xlVisible(P.strat + " " + P.actif)) {
       const kx = "xl:" + P.strat + " " + P.actif + "|" + P.heure.slice(0, 10), lx = [P.heure, P.cote || null, P.prix ?? null, P.parts ?? null, P.net, issue];
       QH[kx] = (QH[kx] || Promise.resolve()).then(() => this.state.storage.get(kx)).then((L) => {
         L = L || [];
@@ -26362,7 +26397,7 @@ var Bot = class {
       }).catch((err) => this.erreur("excel " + kx, err));
     }
     try {
-      if (P.heure && P.actif === "BTC" && Date.parse(P.heure) >= Date.parse(ZERO2_DEPUIS) && xlVisible(P.strat + " " + P.actif) && P.start) {
+      if (!this.SG && P.heure && P.actif === "BTC" && Date.parse(P.heure) >= Date.parse(ZERO2_DEPUIS) && xlVisible(P.strat + " " + P.actif) && P.start) {
         const N = this.N;
         N.zero2 = N.zero2 || {};
         N.idq = N.idq || {};
@@ -26387,6 +26422,7 @@ var Bot = class {
   //  revente à T−60 s (tous) si Chainlink est de notre côté mais les futures Bybit (ramenés au niveau Chainlink) de l'autre côté d'au moins 3 $ : vente au meilleur acheteur, frais 7 % × p × (1 − p).
   //  Sans données seconde par seconde pour un trade : trade gardé tel quel (compté dans « sans données »).
   xlZ(pre, k, heure, net, mise, ctx) {
+    if (this.SG) return;
     const kx = pre + k + "|" + heure.slice(0, 10), pr = ctx.prix || null, lx = [heure, ctx.cote || null, pr, pr ? +(mise / pr).toFixed(3) : null, +(+net).toFixed(4), ""];
     const QH = this._qh = this._qh || {};
     QH[kx] = (QH[kx] || Promise.resolve()).then(() => this.state.storage.get(kx)).then((L) => {
@@ -26396,7 +26432,7 @@ var Bot = class {
     }).catch((err) => this.erreur("excel onglet " + kx, err));
   }
   idTraiter() {
-    if (this._idEnCours) return;
+    if (this._idEnCours || this.SG) return;
     const N = this.N, mures = Object.keys(N.idq || {}).filter((st) => +st + 600 < now());
     if (!mures.length) return;
     this._idEnCours = true;
@@ -27219,7 +27255,7 @@ var Bot = class {
     }
   }
   blkSauver() {
-    if (this._bsv) return;
+    if (this._bsv || this.SG) return;
     this._bsv = setTimeout(() => {
       this._bsv = null;
       this.state.storage.put("blink", this.BL).catch((err) => this.erreur("sauvegarde blink", err));
@@ -27833,6 +27869,7 @@ var Bot = class {
     }
   }
   vitesseJournal(S) {
+    if (this.SG) return;
     const cle = "vit:" + Math.floor(S.start / 3600);
     const go = /* @__PURE__ */ __name(async () => {
       const C2 = this._vitJ = this._vitJ || {};
@@ -27883,6 +27920,7 @@ var Bot = class {
     return r;
   }
   v2fxJournal(S) {
+    if (this.SG) return;
     const cle = "v2fx:" + Math.floor(S.start / 3600);
     const go = /* @__PURE__ */ __name(async () => {
       const C2 = this._v2fx = this._v2fx || {};
@@ -27989,6 +28027,7 @@ var Bot = class {
   // ---- « qui a bougé en premier » (07.10.2026) : au 1er désaccord >= 0,20 du cycle, on sauve la boîte noire (10 s à 100 ms :
   // Bybit, OKX, Binance, Coinbase, Chainlink, carnet Bybit, flux, liquidations, carnets et retraits Polymarket), puis 10 s après.
   leadPhoto(a, mk, pu, tleft, ua, da) {
+    if (this.SG) return;
     const L = (this._lead = this._lead || {})[a] = this._lead[a] && this._lead[a].start === mk.start ? this._lead[a] : { start: mk.start, fait: false };
     const sauver = /* @__PURE__ */ __name((phase, extra) => {
       const R = (this.bbR || {})[a];
@@ -28196,6 +28235,7 @@ var Bot = class {
   // À la décision : prix limite et montant. 50 / 250 ms plus tard : quelle quantité le carnet sert encore à ce prix ou mieux ?
   // Au même instant : prix du côté opposé (pour tester « acheter l'inverse quand on est servi »). Puis valeur 1 s et 5 s après.
   nTenter(strat, a, mk, up, limite, usd, fair) {
+    if (this.SG) return;
     const id = up ? mk.up : mk.down, autre = up ? mk.down : mk.up, t0 = now();
     const O = {
       strat,
@@ -28391,6 +28431,7 @@ var Bot = class {
     }
   }
   twJournal(cle, S) {
+    if (this.SG) return;
     const go = /* @__PURE__ */ __name(async () => {
       const J = (this._twj = this._twj || {})[cle] = this._twj[cle] || await this.state.storage.get(cle) || [];
       if (!J.some((x) => x.start === S.start && x.nom === S.nom)) J.push({ ...S });
@@ -28401,6 +28442,7 @@ var Bot = class {
   }
   // journal de tous les signaux « TWAP fin confirmé Chainlink » (achetés ou abandonnés), pour la comparaison avec TWAP fin original
   twcJournal(S) {
+    if (this.SG) return;
     const go = /* @__PURE__ */ __name(async () => {
       const J = this.TWC = this.TWC || await this.state.storage.get("twc") || [];
       if (!J.some((x) => x.start === S.start && (x.nom || "") === (S.nom || ""))) J.push({ ...S });
@@ -28413,7 +28455,7 @@ var Bot = class {
     const t = now(), cur = Math.floor(t / 300) * 300;
     if (t - (this._rgT || 0) < 30) return;
     this._rgT = t;
-    const RG = this.RG = this.RG || await this.state.storage.get("regl") || { lignes: [], attente: {} };
+    const RG = this.RG = this.RG || (this.SG ? null : await this.state.storage.get("regl")) || { lignes: [], attente: {} };
     let chg = false;
     for (const a of ["BTC"]) {
       const st = cur - 300, k = a + st;
@@ -28469,11 +28511,11 @@ var Bot = class {
         delete x.brut;
       }
     }
-    this.state.storage.put("regl", RG).catch((err) => this.erreur("sauvegarde regl", err));
+    if (!this.SG) this.state.storage.put("regl", RG).catch((err) => this.erreur("sauvegarde regl", err));
   }
   // ---- règlement : résultat officiel Polymarket (20 s après la fin)
   async nRegler() {
-    try {
+    if (!this.SG) try {
       await this.nAudit();
     } catch (_) {
     }
@@ -28483,7 +28525,7 @@ var Bot = class {
       this.erreur("r\xE8glements", err);
     }
     const cacheG = this._cacheG = this._cacheG || {};
-    for (const O of this.N.ordres || []) {
+    for (const O of this.SG ? [] : this.N.ordres || []) {
       if (O.gagne != null || now() < O.end + 25) continue;
       try {
         if (!(O.slug in cacheG)) {
@@ -28531,7 +28573,7 @@ var Bot = class {
     }
     this.N.attente = garder;
     this.nSauver();
-    try {
+    if (!this.SG) try {
       await this.blkRegler();
     } catch (err) {
       this.erreur("qui converge r\xE8glement", err);
