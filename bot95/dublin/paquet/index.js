@@ -23422,6 +23422,13 @@ var Bot = class {
       for (const o of Object.values(sigs)) o.resultat = +o.resultat.toFixed(2);
       return json({ regle: "CUSUM : on ajoute (Brier moteur \u2212 Brier carnet \u2212 0,005) par tranche de 3 h, plancher 0 ; alerte au-dessus de 0,03. Aucune d\xE9cision n'est modifi\xE9e.", blocs, regimes, calibration, couverture, signaux: sigs });
     }
+    if (u.pathname === "/api/flux_signaux") {
+      if ((req.headers.get("upgrade") || "").toLowerCase() !== "websocket") return json({ clients: this.state.getWebSockets("signaux").length, nums: this.env.SIGNAL_NUMS || "", actif: !!this.env.SIGNAL_FLUX, journal: (this._slJ || []).slice(0, 200) });
+      const pair = new WebSocketPair();
+      this.state.acceptWebSocket(pair[1], ["signaux"]);
+      pair[1].send(JSON.stringify({ type: "bonjour", nums: this.env.SIGNAL_NUMS || "", t: Date.now() }));
+      return new Response(null, { status: 101, webSocket: pair[0] });
+    }
     if (u.pathname === "/api/signaux_live") {
       const hist = {};
       for (const k of ["PORTEFEUILLE 400 BTC", "PORTEFEUILLE 600 BTC", "TWAP fin sauts + foule bybit x2 BTC", "V2-F incertitude 0,01 % + carnet BTC", "BY1 contre-elan calme 100 $ BTC"]) hist[k] = (await this.state.storage.get("hist:" + k) || []).filter((l) => l[0] >= "2026-10-26T20");
@@ -25804,7 +25811,7 @@ var Bot = class {
     }
     this.N.ouvertes.push(P);
     this.nChamps(P, strat, a, mk, extra);
-    if (this.env.SIGNAL_URL && a === "BTC") {
+    if ((this.env.SIGNAL_URL || this.env.SIGNAL_FLUX) && a === "BTC") {
       try {
         this.slEmettre(P, mk);
       } catch (err) {
@@ -25986,6 +25993,33 @@ var Bot = class {
     }
     return { garder: true, mult, nb };
   }
+  // 28.10.2026 (Pitch : « oui go ») : flux des signaux en direct vers le bot de trading (connexion permanente sortante du bot vers Cloudflare)
+  slDiffuser(corps) {
+    let n = 0;
+    const m = JSON.stringify({ type: "signal", signal: corps });
+    for (const ws of this.state.getWebSockets("signaux")) {
+      try {
+        ws.send(m);
+        n++;
+      } catch (_) {
+      }
+    }
+    return n;
+  }
+  async webSocketMessage(ws, msg) {
+    try {
+      if (msg === "ping") ws.send("pong");
+    } catch (_) {
+    }
+  }
+  async webSocketClose(ws, code) {
+    try {
+      ws.close(code || 1e3, "fin");
+    } catch (_) {
+    }
+  }
+  async webSocketError() {
+  }
   slEmettre(P, mk) {
     if (!P || P.stoppee || !mk || !mk.end || mk.end * 1e3 < Date.now() + 1e3 || P.cote !== "Up" && P.cote !== "Down") return;
     const noms = this.slNoms(P), T = this._slT = this._slT || {}, cy = T[P.start] = T[P.start] || { Up: 0, Down: 0 };
@@ -26017,7 +26051,8 @@ var Bot = class {
         continue;
       }
       const corps = { id: `${n}|${P.start}|${d.nom}|${P.strat}|${P.heure}`, num: n, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask, mult, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok, endTs: mk.end * 1e3, question: mk.slug, t: Date.now() };
-      fetch(this.env.SIGNAL_URL, { method: "POST", headers: { "content-type": "application/json", "x-signal-token": this.env.SIGNAL_TOKEN || "" }, body: JSON.stringify(corps) }).then((r) => r.json()).then((j) => note({ statut: "envoy\xE9", mult, reponse: j && j.statut })).catch((err) => note({ statut: "envoi rat\xE9 : " + err.message, mult }));
+      if (this.env.SIGNAL_URL) fetch(this.env.SIGNAL_URL, { method: "POST", headers: { "content-type": "application/json", "x-signal-token": this.env.SIGNAL_TOKEN || "" }, body: JSON.stringify(corps) }).then((r) => r.json()).then((j) => note({ statut: "envoy\xE9", mult, reponse: j && j.statut })).catch((err) => note({ statut: "envoi rat\xE9 : " + err.message, mult }));
+      else note({ statut: "diffus\xE9", mult, clients: this.slDiffuser(corps) });
     }
   }
   // ---- 12.10.2026 19:10 (Pitch : « un fantôme pour cela ») : CONSENSUS K2 (étude H1053, règle figée, commit 1c6d089).
@@ -26193,6 +26228,10 @@ var Bot = class {
     this.nSauver();
   }
   nClore(P, issue) {
+    if (P.actif === "BTC" && String(P.strat || "").startsWith("BY1")) {
+      this.N.ouvertes = (this.N.ouvertes || []).filter((x) => x !== P);
+      return;
+    }
     P.fini = true;
     P.issue = issue;
     P.net = +P.cash.toFixed(2);
