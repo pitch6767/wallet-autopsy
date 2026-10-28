@@ -26029,9 +26029,11 @@ var Bot = class {
   async webSocketMessage(ws, msg) {
     try {
       if (msg === "ping") ws.send("pong");
+      else if (typeof msg === "string" && msg.startsWith("heure:")) ws.send("heure:" + msg.slice(6) + ":" + Date.now());
     } catch (_) {
     }
   }
+  // 28.10.2026 : mesure du décalage d'horloge Cloudflare ↔ bot
   async webSocketClose(ws, code) {
     try {
       ws.close(code || 1e3, "fin");
