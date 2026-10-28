@@ -22741,7 +22741,6 @@ var CFG = {
   // jours ouvrés, UTC
 };
 var V1 = { ACTIFS: ["BTC"], REEL: ["BTC"], OKX: { BTC: "BTC-USDT-SWAP", ETH: "ETH-USDT-SWAP" }, ACTIF: "BTC", MARGE: 0.08, PMIN: 0.55, PMAX: 0.56, OPP_MAX: 0.43, STOP_REL: 0.15, ELAN_S: 5, TP: 0.9, CAPITAL: 200, MISE: 50 };
-var WMAX = /* @__PURE__ */ __name((a) => Math.max(...ACTIFS[a].regles.map((r) => r.W)), "WMAX");
 var G2 = "https://gamma-api.polymarket.com";
 var C = "https://clob.polymarket.com";
 var index_default = {
@@ -24349,58 +24348,6 @@ var Bot = class {
     } catch (err) {
       this.erreur("signaux", err);
     }
-    for (const a of V1.ACTIFS) {
-      const L = this.livre[a], mk = this.mk[a] || {};
-      const b = [...L.b].map(([p, q2]) => [+p, q2]).sort((x, y) => y[0] - x[0]), k = [...L.a].map(([p, q2]) => [+p, q2]).sort((x, y) => x[0] - y[0]);
-      const mid = b.length && k.length ? (b[0][0] + k[0][0]) / 2 : null;
-      const prof = /* @__PURE__ */ __name((cote, bps) => mid ? Math.round(cote.filter(([p]) => Math.abs(p / mid - 1) * 1e4 <= bps).reduce((s2, [p, q2]) => s2 + p * q2, 0)) : null, "prof");
-      const px = /* @__PURE__ */ __name((src) => this.f[a][src] ? this.f[a][src].p : null, "px");
-      const ac = this.bbAcc(a);
-      const pmTop = /* @__PURE__ */ __name((id, cote) => this.livreTrie(id, cote).slice(0, 3).map(([p, s2]) => [p, Math.round(s2)]), "pmTop");
-      const pmF = /* @__PURE__ */ __name((id) => {
-        if (!id) return null;
-        const z = this.pmAcc(id), r = Object.values(z).map(Math.round);
-        for (const kk of Object.keys(z)) z[kk] = 0;
-        return r;
-      }, "pmF");
-      const ligne = [
-        +t.toFixed(2),
-        px("perp"),
-        px("okx"),
-        px("cb"),
-        px("bn"),
-        px("cl"),
-        b.length ? b[0][0] : null,
-        k.length ? k[0][0] : null,
-        prof(b, 1),
-        prof(k, 1),
-        prof(b, 3),
-        prof(k, 3),
-        prof(b, 5),
-        prof(k, 5),
-        prof(b, 10),
-        prof(k, 10),
-        b.length,
-        k.length,
-        Math.round(ac.ach),
-        Math.round(ac.ven),
-        Math.round(ac.max_ach),
-        Math.round(ac.max_ven),
-        ac.n,
-        Math.round(ac.liq_longs),
-        Math.round(ac.liq_courts),
-        mk.up ? pmTop(mk.up, "bids") : null,
-        mk.up ? pmTop(mk.up, "asks") : null,
-        mk.down ? pmTop(mk.down, "bids") : null,
-        mk.down ? pmTop(mk.down, "asks") : null,
-        pmF(mk.up),
-        pmF(mk.down)
-      ];
-      for (const kk of Object.keys(ac)) ac[kk] = 0;
-      const R = (this.bbR = this.bbR || {})[a] = this.bbR[a] || [];
-      R.push(ligne);
-      if (R.length > 100) R.shift();
-    }
   }
   bbSauver(pos, type) {
     try {
@@ -24477,7 +24424,7 @@ var Bot = class {
     const muet = /* @__PURE__ */ __name((k) => t - (this.ws[k + "_msg"] || this.ws[k + "_ouvert"] || 0), "muet");
     if (!this.ws.perp || muet("perp") > 20 && depuis("perp") > 20) {
       for (const a of Object.keys(ACTIFS)) this.livre[a] = { b: /* @__PURE__ */ new Map(), a: /* @__PURE__ */ new Map() };
-      const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`, `orderbook.50.${ACTIFS[a].bybit}`, `allLiquidation.${ACTIFS[a].bybit}`]);
+      const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`]);
       this.connecter("perp", "https://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args })], (m) => this.surPerp(m), JSON.stringify({ op: "ping" }), 1e4);
     }
     if (!this.ws.cb || muet("cb") > 30 && depuis("cb") > 30) {
@@ -25009,26 +24956,6 @@ var Bot = class {
       this._v1r = t;
       for (const a of V1.ACTIFS) await this.v1Regler(a);
     }
-    const actifs = LISTE.filter((a) => {
-      const mk = this.mk[a];
-      return mk.slug && tleft >= 1 && (tleft <= WMAX(a) || this.e.positions.some((p) => p.actif === a && p.start === start));
-    });
-    if (!actifs.length) return;
-    let books;
-    try {
-      books = await this.carnets(actifs.flatMap((a) => [this.mk[a].up, this.mk[a].down]));
-    } catch (err) {
-      this.erreur("carnets", err);
-      return;
-    }
-    for (const a of actifs) {
-      const mk = this.mk[a], bu = books[mk.up], bd = books[mk.down];
-      if (!bu || !bd) continue;
-      const pos = this.e.positions.find((p) => p.actif === a && p.start === start);
-      if (pos) this.surveiller(a, pos, tleft, pos.fav === "Up" ? bu : bd);
-      else if (!mk.entre) this.decider(a, mk, tleft, bu, bd);
-    }
-    await this.sauver();
   }
   calcul(a, mk, tleft, favUp) {
     const K = mk.strike, cl = this.f[a].cl, S = cl && cl.p;
@@ -25276,6 +25203,7 @@ var Bot = class {
           else z2["ajout_" + cs] += (apres - avant) * +c.price;
         }
         apres ? cote.set(+c.price, apres) : cote.delete(+c.price);
+        L.v = (L.v || 0) + 1;
         L.tRecu = t;
         L.tsPoly = ts || null;
         {
@@ -25481,10 +25409,15 @@ var Bot = class {
     if (o0 && o5 && (this.sourceRapideA || {})[a] === "okx") return o0 - o5;
     return p0 && p5 ? p0 - p5 : null;
   }
+  // 28.10.2026 (allègement) : le carnet trié est gardé en cache tant qu'il ne change pas (avant : recopié et retrié ~16 fois par message). Même résultat.
   livreTrie(id, cote) {
     const L = this.pb[id];
     if (!L) return [];
-    return [...L[cote]].filter((x) => x[1] > 0).sort((x, y) => cote === "asks" ? x[0] - y[0] : y[0] - x[0]);
+    const M = L[cote], C2 = L._tri = L._tri || {}, c = C2[cote];
+    if (c && c.m === M && c.v === (L.v || 0)) return c.r.slice();
+    const r = [...M].filter((x) => x[1] > 0).sort((x, y) => cote === "asks" ? x[0] - y[0] : y[0] - x[0]);
+    C2[cote] = { m: M, v: L.v || 0, r };
+    return r.slice();
   }
   v1Eval(source, tsSource, a = "BTC") {
     const V = this.v1Etat(a), mk = this.mk[a];
@@ -25498,6 +25431,7 @@ var Bot = class {
     } catch (err) {
       this.erreur("fant\xF4mes", err);
     }
+    if (!(V.pos && V.pos.start === mk.start && !V.pos.fini)) return;
     const delai = tsSource ? t - tsSource : null;
     let pos = V.pos && V.pos.start === mk.start && !V.pos.fini ? V.pos : null;
     if (!pos) {
@@ -25808,7 +25742,14 @@ var Bot = class {
     if (this._nsv) return;
     this._nsv = setTimeout(() => {
       this._nsv = null;
-      const N = this.N, put = /* @__PURE__ */ __name((k, v) => this.state.storage.put(k, v).catch((err) => this.erreur("sauvegarde " + k, err)), "put");
+      const N = this.N, put = /* @__PURE__ */ __name((k, v) => {
+        const [c, j] = aChange(k, v);
+        if (!c) return;
+        DEJA_ECRIT.delete(k);
+        this.state.storage.put(k, v).then(() => {
+          if (j != null) DEJA_ECRIT.set(k, j);
+        }).catch((err) => this.erreur("sauvegarde " + k, err));
+      }, "put");
       put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {}, markout: N.markout || {} });
       for (const [k, v] of Object.entries(N.strats)) put("nv:strat:" + k, v);
       if (N.zero) put("nv:zero", N.zero);
@@ -26862,11 +26803,6 @@ var Bot = class {
       this.nManq(a, mk, pu, t, tleft);
     } catch (_) {
     }
-    try {
-      this.m97(a, mk, pu, tleft);
-    } catch (err) {
-      this.erreur("moments 97", err);
-    }
     for (const P of this.N.ouvertes) if (P.strat.startsWith("assurance") && P.actif === a && P.start === mk.start && !P.fini) this.gGerer(P, pu);
     for (const P of this.N.ouvertes) if (P.famille === "desaccordG" && P.actif === a && P.start === mk.start) {
       try {
@@ -26939,7 +26875,7 @@ var Bot = class {
       if (this.N.ouvertes.some((P) => P.strat === nom && P.actif === a && P.start === mk.start) || (this._dsF || {})[nom + a] === mk.start) continue;
       const nuit = (NV.DESACCORD.NUIT || {})[nom];
       if (nuit) {
-        const hz = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", hour12: false }).format(/* @__PURE__ */ new Date()) % 24;
+        const hz = heureZurich();
         if (hz >= nuit[0] && hz < nuit[1]) continue;
       }
       for (const up of [true, false]) {
@@ -27239,7 +27175,7 @@ var Bot = class {
   }
   // fantômes du 07.10.2026 (figés) : désaccord 20, attendre 3 s ou 10 s, acheter 50 $ au meilleur vendeur SEULEMENT si Polymarket a rejoint le modèle ; variantes sans la nuit (00h-08h suisse)
   blinkAcheter(a, mk, e, h, id, k, fair, tleft) {
-    const hz = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", hour12: false }).format(/* @__PURE__ */ new Date()) % 24;
+    const hz = heureZurich();
     for (const nom of [`desaccord 20 Poly rejoint ${h} s`, `desaccord 20 Poly rejoint ${h} s sans nuit`]) {
       if (!NV.ACTIVES.includes(nom) || nom.endsWith("sans nuit") && hz < 8) continue;
       if (k[0] < 0.03 || k[0] > 0.97) continue;
@@ -27256,7 +27192,7 @@ var Bot = class {
   }
   // fantômes du 07.10.2026 soir (figés) : désaccord 20 + bourses dans notre sens sur les 3 s AVANT l'entrée, achat immédiat 50 $ ; variantes sans la nuit
   filtreBourses(a, mk, e, id, k, fair, tleft) {
-    const hz = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", hour12: false }).format(/* @__PURE__ */ new Date()) % 24;
+    const hz = heureZurich();
     const v = /* @__PURE__ */ __name((x) => x || 0, "v"), bn = v(e.bn3), pe = v(e.perp3);
     const R = {
       "desaccord 20 Binance avec nous": bn > 0,
@@ -27685,15 +27621,11 @@ var Bot = class {
       this.nSauver();
     }
     if (tleft < 5) return;
-    try {
-      this.leadPhoto(a, mk, pu, tleft, ua, da);
-    } catch (_) {
-    }
     const il_y_a = /* @__PURE__ */ __name((sec) => {
       for (let i = H.r.length - 1; i >= 0; i--) if (t - H.r[i].t >= sec) return H.r[i];
       return null;
     }, "il_y_a");
-    for (const up of [true, false]) {
+    if (NV.ACTIVES.includes("V5 gain attendu") || NV.ACTIVES.includes("V6 loterie")) for (const up of [true, false]) {
       const id = up ? mk.up : mk.down, k = up ? ua : da, fair = up ? pu : 1 - pu;
       if (k[0] < 0.02 || k[0] > 0.9) continue;
       const r = this.nAcheter(id, 50 / k[0], k[0] + 0.05);
@@ -27824,11 +27756,6 @@ var Bot = class {
     } catch (err) {
       this.erreur("diversit\xE9", err);
     }
-    try {
-      this.vitesseSuivre(a, mk, H, t);
-    } catch (err) {
-      this.erreur("vitesse", err);
-    }
   }
   // ---- 10.10.2026 : trois variantes expérimentales de V2-F (figées, aucune modification des autres fantômes). Achat au SEUL meilleur vendeur,
   // limité à la quantité affichée et à 50 $. Une décision par cycle. Chaque opportunité, achetée ou refusée, est journalisée avec l'heure des données.
@@ -27851,6 +27778,7 @@ var Bot = class {
   // âge des données au moment de la décision, puis ce qui reste achetable au même prix ou mieux 0,1 / 0,25 / 0,5 / 1 / 2 s plus tard.
   // Mesure seulement : ne change aucune décision.
   vitesseNoter(nom, a, mk, up, k, t, extra) {
+    return;
     const H = this._v2h && this._v2h[a];
     if (!H || H.start !== mk.start) return;
     const id = up ? mk.up : mk.down, L = this.pb[id] || {}, f = this.f[a] || {}, cl = ((this._clBrut || {})[a] || []).slice(-1)[0] || [];
@@ -28480,16 +28408,19 @@ var Bot = class {
     if (t - (this._rgT || 0) < 30) return;
     this._rgT = t;
     const RG = this.RG = this.RG || await this.state.storage.get("regl") || { lignes: [], attente: {} };
+    let chg = false;
     for (const a of ["BTC"]) {
       const st = cur - 300, k = a + st;
       if (!RG.attente[k] && !RG.lignes.some((x) => x.a === a && x.start === st)) {
         const B = (this._clBrut || {})[a] || [], fen = /* @__PURE__ */ __name((c) => B.filter((x) => Math.abs(x[0] - c) <= 15).map((x) => [+(x[0] - c).toFixed(3), +(x[1] - c).toFixed(3), +(x[2] - c).toFixed(3), x[3]]), "fen");
+        chg = true;
         RG.attente[k] = { a, start: st, obsDebut: fen(st), obsFin: fen(st + 300), notreK: ((this._kPrec || {})[a + st] || {}).k ?? null, sourceK: ((this._kPrec || {})[a + st] || {}).src ?? null, kVuApres_s: ((this._kPrec || {})[a + st] || {}).vu ?? null, kAvant: ((this._kPrec || {})[a + st] || {}).avant ?? null, kSerie: ((this._kPrec || {})[a + st] || {}).serie ?? null, kSite: ((this._kPrec || {})[a + st] || {}).site ?? null, notreClDebut: this.prixA(a, "cl", st), notreClFin: this.prixA(a, "cl", st + 300), notrePerpFin: this.prixA(a, "perp", st + 300) };
       }
     }
     let n = 0;
     for (const [k, L] of Object.entries(RG.attente)) {
       if (t > L.start + 300 + 900) {
+        chg = true;
         RG.lignes.unshift({ ...L, gagnant: null, ptb: null, final: null, abandon: true });
         delete RG.attente[k];
         continue;
@@ -28516,12 +28447,22 @@ var Bot = class {
         }
         const fin = meta.finalPrice != null ? +meta.finalPrice : cp;
         if (fin == null && t < L.start + 300 + 300) continue;
+        chg = true;
         RG.lignes.unshift({ ...L, gagnant: outs[px.indexOf(1)], ptb: meta.priceToBeat != null ? +meta.priceToBeat : op, final: fin, ouvertureApi: op, clotureApi: cp, vu: Math.round(t - L.start - 300) });
         delete RG.attente[k];
       } catch (_) {
       }
     }
+    if (!chg) return;
     RG.lignes.length = Math.min(RG.lignes.length, 2500);
+    for (let i = 300; i < RG.lignes.length; i++) {
+      const x = RG.lignes[i];
+      if (x.obsDebut || x.obsFin || x.brut) {
+        delete x.obsDebut;
+        delete x.obsFin;
+        delete x.brut;
+      }
+    }
     this.state.storage.put("regl", RG).catch((err) => this.erreur("sauvegarde regl", err));
   }
   // ---- règlement : résultat officiel Polymarket (20 s après la fin)
@@ -29070,6 +29011,17 @@ var ZERO5_DEPUIS = "2026-10-26T20:52:00Z";
 var ZERO5_NUMS = [101, 201, 121, 28, 119];
 var ZERO4_DEPUIS = "2026-10-26T11:00:00Z";
 var ONGLET4_DE3 = ["PORTEFEUILLE 400 + id\xE9es BTC", "PORTEFEUILLE 600 + id\xE9es BTC", "PORTEFEUILLE 400 corrige + id\xE9es BTC"];
+var DEJA_ECRIT = /* @__PURE__ */ new Map();
+function aChange(k, v) {
+  let j;
+  try {
+    j = JSON.stringify(v);
+  } catch (_) {
+    return [true, null];
+  }
+  return [DEJA_ECRIT.get(k) !== j, j];
+}
+__name(aChange, "aChange");
 async function zSauver(st, cle, Z) {
   const ks = Object.keys(Z), n = Math.ceil(ks.length / 50) || 1;
   const o = { [cle + ":n"]: n };
@@ -29078,8 +29030,16 @@ async function zSauver(st, cle, Z) {
     for (const k of ks.slice(i * 50, i * 50 + 50)) m[k] = Z[k];
     o[cle + ":" + i] = m;
   }
-  const es = Object.entries(o);
-  for (let i = 0; i < es.length; i += 8) await st.put(Object.fromEntries(es.slice(i, i + 8)));
+  const es = [];
+  for (const [k, v] of Object.entries(o)) {
+    const [c, j] = aChange(k, v);
+    if (c) es.push([k, v, j]);
+  }
+  for (let i = 0; i < es.length; i += 8) {
+    const lot = es.slice(i, i + 8);
+    await st.put(Object.fromEntries(lot.map((x) => [x[0], x[1]])));
+    for (const x of lot) if (x[2] != null) DEJA_ECRIT.set(x[0], x[2]);
+  }
 }
 __name(zSauver, "zSauver");
 async function zCharger(st, cle) {
@@ -29090,6 +29050,16 @@ async function zCharger(st, cle) {
   return Z;
 }
 __name(zCharger, "zCharger");
+var _HZ = { m: -1, h: 0 };
+function heureZurich() {
+  const m = Math.floor(Date.now() / 6e4);
+  if (m !== _HZ.m) {
+    _HZ.m = m;
+    _HZ.h = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", hour12: false }).format(/* @__PURE__ */ new Date()) % 24;
+  }
+  return _HZ.h;
+}
+__name(heureZurich, "heureZurich");
 var ZHOOK = null;
 var ORDRES_VUS = { "1": 3, "5": 2, "6": 1, "8": 1, "2": 2, "14": 2, "7": 2, "12": 2, "15": 2, "9": 1, "13": 2, "10": 2, "11": 2, "16": 1, "17": 1, "20": 1, "18": 1, "21": 1, "19": 1, "22": 1, "23": 1, "24": 1, "3": 3, "25": 1, "26": 1, "27": 1, "28": 1, "29": 1, "30": 1 };
 function multTexte(nom) {
