@@ -22559,7 +22559,7 @@ var ACTIFS = {
   BNB: { bybit: "BNBUSDT", spot: null, regles: [{ W: 30, pmin: 0.95, pmax: 0.999, z: 2.5 }] },
   HYPE: { bybit: "HYPEUSDT", spot: null, regles: [{ W: 60, pmin: 0.95, pmax: 0.999, z: 3 }] }
 };
-var LISTE = Object.keys(ACTIFS);
+var LISTE = ["BTC"];
 var NV = {
   ASSUR: {
     RETRAIT: 0.03,
@@ -22572,8 +22572,8 @@ var NV = {
   // 07.10.2026 (décision de Pitch) : on ne garde que V1, assurance et désaccord 20 — tout le reste est arrêté (résultats figés sur la page)
   // 07.10.2026 (décision de Pitch) : on oublie ETH — plus aucun trade ETH (les données ETH restent enregistrées)
   TRADE: ["BTC"],
-  CORRIGE_ACTIFS: ["BTC", "ETH"],
-  // cohorte « corrigé » aussi testée sur ETH (09.10.2026)
+  CORRIGE_ACTIFS: ["BTC"],
+  // 28.10.2026 : BTC seulement (allègement)                // cohorte « corrigé » aussi testée sur ETH (09.10.2026)
   ACTIVES: ["consensus K2", "consensus K5", "consensus K9", "consensus K5 anti-bete", "desaccord 20 sans nuit", "desaccord confirme perp", "V2-B hors 60-89 s", "V2-C perp", "V2-D perp 120-269 s", "V2-E persistant", "V2-F ecart qui grandit", "V2-F + pas les deux baissent", "V2-F + plus de 120 s", "V2-G jury des bourses", "V2-H veto complet", "V2-F miroir 1 s", "V2-F incertitude 0,01 %", "V2-F pause memoire", "desaccord 30", "desaccord 20 60-180 s", "desaccord 20 jeton 0,35-0,65", "desaccord 20 Poly rejoint 10 s sans nuit", "desaccord 20 Binance avec nous", "desaccord 20 Binance avec nous sans nuit", "desaccord 20 Binance ou perp avec nous", "desaccord 20 Binance ou perp avec nous sans nuit", "desaccord 30 zone 0,15-0,35", "desaccord 30 zone 0,15-0,35 + Binance et perp", "desaccord 30 zone + sortie modele -10", "desaccord 30 zone + Binance et perp + sortie modele -10", "desaccord 30 0,15-0,60 + perp + ecart qui grandit", "desaccord 30 zone + modele monte", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse", "desaccord 30 zone + Binance et perp + sortie modele -10 + pas Poly qui baisse + taille 25/50", "corrige : V2-F + garde-fou", "TWAP fin", "TWAP fin sauts", "TWAP fin correction spot-perp", "TWAP fin confirme Chainlink 0,5 s", "TWAP fin anti-saut", "TWAP fin prevision Chainlink", "TWAP fin quantiles", "corrige marge mesuree : V2-F", "corrige : desaccord 20", "corrige : V2-F ecart qui grandit", "corrige : V2-F + pas les deux baissent", "corrige : zone + Binance et perp + sortie -10", "CP10 couverture posee", "JC5 couverture preneur", "JC10 couverture preneur", "X2 baisse 30 min et 5 min Up", "B3 favori fin de cycle 3 sigma", "CP5 couverture posee", "billet + favori si recul 20 c", "FG150 contre les gros", "FG300 contre les gros", "petit a petit 10 $", "petit a petit 10 puis 5 $", "petit a petit selon le saut", "PB seul", "PB seul + Poly immobile", "BY1 Bybit premier 10 $", "BY1 Bybit premier 100 $", "BY1 contre-elan calme 10 $", "BY1 contre-elan calme 100 $", "BY1 pression contre 10 $", "billet elan retourne", "E1 elan frais favori", "E2 elan contraire billet", "E3 volatilite haute favori", "E4 fenetre 00 et 30 billet", "OI monte Up"],
   // 09.10.2026 : stratégies à plus de 500 $ de pertes (et leurs lignes sœurs) — supprimées du bot et de la page ; trades sauvés dans bot95/sauvegarde sur GitHub
   SUPPRIMEES: ["V5 gain attendu BTC", "V5 gain attendu ETH", "V6 loterie BTC", "V6 loterie ETH", "desaccord 10 +convergence BTC", "desaccord 10 +convergence ETH", "desaccord 10 +demi ETH", "desaccord 10 +freeroll BTC", "desaccord 10 +freeroll ETH", "desaccord 10 +validation ETH", "desaccord 10 +validation+inversion ETH", "desaccord 10 +verrou BTC", "desaccord 10 +verrou ETH", "desaccord 10 ETH", "desaccord 15 +convergence BTC", "desaccord 15 +convergence ETH", "desaccord 15 +demi ETH", "desaccord 15 +freeroll BTC", "desaccord 15 +freeroll ETH", "desaccord 15 +validation ETH", "desaccord 15 +validation+inversion ETH", "desaccord 15 +verrou BTC", "desaccord 15 +verrou ETH", "desaccord 15 ETH", "desaccord 20 +convergence BTC", "desaccord 20 +convergence ETH", "desaccord 20 +demi BTC", "desaccord 20 +demi ETH", "desaccord 20 +freeroll BTC", "desaccord 20 +freeroll ETH", "desaccord 20 +validation BTC", "desaccord 20 +validation ETH", "desaccord 20 +validation+inversion BTC", "desaccord 20 +validation+inversion ETH", "desaccord 20 +verrou BTC", "desaccord 20 +verrou ETH", "desaccord 20 ETH", "desaccord 20 Poly rejoint 3 s BTC", "desaccord 20 Poly rejoint 3 s sans nuit BTC", "desaccord combine 2.5 +convergence BTC", "desaccord combine 2.5 +convergence ETH", "desaccord combine 2.5 +freeroll ETH", "desaccord combine 2.5 +validation+inversion ETH", "desaccord combine 2.5 +verrou BTC", "desaccord combine 2.5 +verrou ETH", "desaccord combine 2.5 ETH", "desaccord combine 4 +convergence BTC", "desaccord combine 4 +convergence ETH", "desaccord combine 4 +freeroll ETH", "desaccord combine 4 +validation+inversion ETH", "desaccord combine 4 +verrou ETH", "desaccord combine 4 ETH", "desaccord confirme BTC", "desaccord confirme ETH", "desaccord croise 10 +convergence BTC", "desaccord croise 10 +convergence ETH", "desaccord croise 10 +freeroll BTC", "desaccord croise 10 +freeroll ETH", "desaccord croise 10 +validation+inversion ETH", "desaccord croise 10 +verrou BTC", "desaccord croise 10 +verrou ETH", "desaccord croise 10 ETH", "desaccord maker 10 +convergence BTC", "desaccord maker 10 +freeroll BTC", "desaccord maker 10 +validation+inversion BTC", "desaccord maker 10 +verrou BTC", "desaccord maker 10 BTC", "inverse desaccord 10 BTC", "inverse desaccord 15 BTC", "V2-F + pas les deux baissent + volatilite >= 2 BTC", "desaccord 20 aucune bourse contre + sortie 10 s BTC", "desaccord 20 aucune bourse contre + sortie 10 s sans nuit BTC", "desaccord 20 Poly rejoint 10 s BTC", "assurance 6/9/12 BTC", "assurance 6/9/12 ETH", "assurance 4/7/10 BTC", "assurance 4/7/10 ETH", "desaccord 20 BTC"],
@@ -22740,7 +22740,7 @@ var CFG = {
   ANNONCES: [[12 * 60 + 28, 12 * 60 + 40], [13 * 60 + 58, 14 * 60 + 10], [17 * 60 + 58, 18 * 60 + 10]]
   // jours ouvrés, UTC
 };
-var V1 = { ACTIFS: ["BTC", "ETH"], REEL: ["BTC"], OKX: { BTC: "BTC-USDT-SWAP", ETH: "ETH-USDT-SWAP" }, ACTIF: "BTC", MARGE: 0.08, PMIN: 0.55, PMAX: 0.56, OPP_MAX: 0.43, STOP_REL: 0.15, ELAN_S: 5, TP: 0.9, CAPITAL: 200, MISE: 50 };
+var V1 = { ACTIFS: ["BTC"], REEL: ["BTC"], OKX: { BTC: "BTC-USDT-SWAP", ETH: "ETH-USDT-SWAP" }, ACTIF: "BTC", MARGE: 0.08, PMIN: 0.55, PMAX: 0.56, OPP_MAX: 0.43, STOP_REL: 0.15, ELAN_S: 5, TP: 0.9, CAPITAL: 200, MISE: 50 };
 var WMAX = /* @__PURE__ */ __name((a) => Math.max(...ACTIFS[a].regles.map((r) => r.W)), "WMAX");
 var G2 = "https://gamma-api.polymarket.com";
 var C = "https://clob.polymarket.com";
@@ -22990,7 +22990,7 @@ var Bot = class {
     this.deseq = {};
     this.livre = {};
     this.mk = {};
-    for (const a of LISTE) {
+    for (const a of Object.keys(ACTIFS)) {
       this.f[a] = {};
       this.sec[a] = /* @__PURE__ */ new Map();
       this.liq[a] = [];
@@ -24432,7 +24432,7 @@ var Bot = class {
       });
     const muet = /* @__PURE__ */ __name((k) => t - (this.ws[k + "_msg"] || this.ws[k + "_ouvert"] || 0), "muet");
     if (!this.ws.perp || muet("perp") > 20 && depuis("perp") > 20) {
-      for (const a of LISTE) this.livre[a] = { b: /* @__PURE__ */ new Map(), a: /* @__PURE__ */ new Map() };
+      for (const a of Object.keys(ACTIFS)) this.livre[a] = { b: /* @__PURE__ */ new Map(), a: /* @__PURE__ */ new Map() };
       const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`, `orderbook.50.${ACTIFS[a].bybit}`, `allLiquidation.${ACTIFS[a].bybit}`]);
       this.connecter("perp", "https://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args })], (m) => this.surPerp(m), JSON.stringify({ op: "ping" }), 1e4);
     }
@@ -28436,7 +28436,7 @@ var Bot = class {
     if (t - (this._rgT || 0) < 30) return;
     this._rgT = t;
     const RG = this.RG = this.RG || await this.state.storage.get("regl") || { lignes: [], attente: {} };
-    for (const a of ["BTC", "ETH"]) {
+    for (const a of ["BTC"]) {
       const st = cur - 300, k = a + st;
       if (!RG.attente[k] && !RG.lignes.some((x) => x.a === a && x.start === st)) {
         const B = (this._clBrut || {})[a] || [], fen = /* @__PURE__ */ __name((c) => B.filter((x) => Math.abs(x[0] - c) <= 15).map((x) => [+(x[0] - c).toFixed(3), +(x[1] - c).toFixed(3), +(x[2] - c).toFixed(3), x[3]]), "fen");
