@@ -325,7 +325,26 @@ export class Bot {
             Lk.sort((a2, b2) => (a2[0] < b2[0] ? -1 : 1));
             for (const l of Lk) if (Date.parse(l[0]) >= Date.parse(ZERO3_DEPUIS)) { this._zx = { cote: l[1], prix: l[2] }; zCompte(this.N.zero3, k, l[0], l[4], false, (l[2] || 0) * (l[3] || 0), Math.floor(Date.parse(l[0]) / 300000) * 300); } }
           await zSauver(this.state.storage, "nv:zero3", this.N.zero3); await this.state.storage.put("onglet4de3", 1);
-        } { const q = (await this.state.storage.get("nv:idq")) || {}; this.N.idq = q.idq || {}; this.N.idfait = q.idfait || {}; this.N.consPris = q.consPris || {}; }   // 24.10.2026 : onglet 3 (remise à 0 + versions « + idées »)
+        }
+        if (!(await this.state.storage.get("corrBY1misemax"))) {   // 28.10.2026 (Pitch : « corrige le montant en $ des trades max sur les stratégies qui avaient BY1 ») : une seule fois,
+          // la mise max par cycle des PORTEFEUILLE (toutes versions) est recalculée depuis les lignes Excel SANS les trades BY1 (même seconde, même côté qu'un trade BY1 100 $)
+          try { const by1 = new Set(), rap = [];
+            for (const nom of ["BY1 Bybit premier 100 $ BTC", "BY1 contre-elan calme 100 $ BTC"]) {
+              for (const v of (await this.state.storage.list({ prefix: "xl:" + nom + "|" })).values()) for (const l of v) if (l && l[0]) by1.add(String(l[0]).slice(0, 19) + "|" + String(l[1]).toLowerCase());
+              for (const l of (await this.state.storage.get("hist:" + nom)) || []) if (l && l[0]) by1.add(String(l[0]).slice(0, 19) + "|" + String(l[1]).toLowerCase()); }
+            const refaire = async (pre, Z, tab, depuis) => { if (!Z) return; for (const k of Object.keys(Z)) { if (!k.startsWith("PORTEFEUILLE")) continue;
+                const cy = {}; for (const v of (await this.state.storage.list({ prefix: pre + k + "|" })).values()) for (const l of v) {
+                  if (!l || !l[0] || (depuis && Date.parse(l[0]) < Date.parse(depuis)) || by1.has(String(l[0]).slice(0, 19) + "|" + String(l[1]).toLowerCase())) continue;
+                  const st = Math.floor(Date.parse(l[0]) / 300000) * 300; cy[st] = (cy[st] || 0) + (l[2] || 0) * (l[3] || 0); }
+                const m = Math.max(0, ...Object.values(cy)), z = Z[k];
+                if (by1.size && m > 0 && z && z.miseMaxCycle && m < z.miseMaxCycle - 0.5) { rap.push([tab, k, +z.miseMaxCycle.toFixed(2), +m.toFixed(2)]); z.miseMaxCycle = m; } } };
+            await refaire("xl3:", this.N.zero2, "onglet 3"); await refaire("xl4:", this.N.zero3, "onglet 4"); await refaire("xl5:", this.N.zero4, "onglet 5");
+            if (this.N.zero5) {
+              for (const k of Object.keys(this.N.zero5)) { if (!k.startsWith("PORTEFEUILLE")) continue; const tmp = { [k]: this.N.zero5[k] }; await refaire("xl3:", tmp, "onglet 6", ZERO5_DEPUIS); } }
+            this.N.zero2 && (await this.state.storage.put("nv:zero2", this.N.zero2)); await zSauver(this.state.storage, "nv:zero3", this.N.zero3 || {}); await zSauver(this.state.storage, "nv:zero4", this.N.zero4 || {}); await zSauver(this.state.storage, "nv:zero5", this.N.zero5 || {});
+            await this.state.storage.put("corrBY1misemax", { at: new Date().toISOString(), by1: by1.size, rap });
+          } catch (err) { this.erreur("correction mise max BY1", err); } }
+        { const q = (await this.state.storage.get("nv:idq")) || {}; this.N.idq = q.idq || {}; this.N.idfait = q.idfait || {}; this.N.consPris = q.consPris || {}; }   // 24.10.2026 : onglet 3 (remise à 0 + versions « + idées »)
         // 19.10.2026 : nouvelle remise à 0 de l'onglet 2 ; les anciens compteurs sont archivés une seule fois
         if ((await this.state.storage.get("zero:depuis")) !== ZERO_DEPUIS) { await this.state.storage.put("zero:archive:" + ((await this.state.storage.get("zero:depuis")) || "2026-10-14T08:45:00Z"), this.N.zero); this.N.zero = {}; await this.state.storage.put("nv:zero", {}); await this.state.storage.put("zero:depuis", ZERO_DEPUIS); }
       } else this.N = (await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
@@ -420,6 +439,7 @@ export class Bot {
     const u = new URL(req.url);
     const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } });
     if (u.pathname === "/api/etat") return json(this.vue());
+    if (u.pathname === "/api/corr_misemax") return json((await this.state.storage.get("corrBY1misemax")) || null);
     if (u.pathname === "/api/duo") { const D = this.duo || {}; return json({ seuil: DUO_SEUIL, regle: DUO_REGLE, minutes: (D.min || []).length, cycles: Object.fromEntries(Object.entries(D.reg || {}).slice(-24).map(([k, v]) => [k, v == null ? null : { vol_pct_min: +(v * 100).toFixed(4), regime: v < DUO_SEUIL ? "calme" : "rapide" }])) }); }
     // 18.10.2026 (Pitch : « check toutes les stratégies ») : recalcul des fantômes de Dublin depuis les enregistrements bruts de chaque cycle
     // (doublons retirés, gagnants officiels). Remplace leurs compteurs, leur archive et leur onglet « remise à 0 ». Aucune stratégie modifiée.
