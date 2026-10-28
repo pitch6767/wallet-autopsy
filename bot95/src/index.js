@@ -511,7 +511,9 @@ export class Bot {
       return json({ regle: "CUSUM : on ajoute (Brier moteur − Brier carnet − 0,005) par tranche de 3 h, plancher 0 ; alerte au-dessus de 0,03. Aucune décision n'est modifiée.", blocs, regimes, calibration, couverture, signaux: sigs });
     }
     // ---- 26.10.2026 : copie de Dublin — journal des signaux en direct, et achats BY1 annoncés par le labo rapide (même serveur)
-    if (u.pathname === "/api/signaux_live") return json({ actif: !!this.env.SIGNAL_URL, nums: this.env.SIGNAL_NUMS || "", journal: this._slJ || [], tally: this._slT || {} });
+    if (u.pathname === "/api/signaux_live") {   // 28.10.2026 : + archive des trades fantômes de la copie (comparaison avec Cloudflare et le bot)
+      const hist = {}; for (const k of ["PORTEFEUILLE 400 BTC", "PORTEFEUILLE 600 BTC", "TWAP fin sauts + foule bybit x2 BTC", "V2-F incertitude 0,01 % + carnet BTC", "BY1 contre-elan calme 100 $ BTC"]) hist[k] = ((await this.state.storage.get("hist:" + k)) || []).filter((l) => l[0] >= "2026-10-26T20");
+      return json({ actif: !!this.env.SIGNAL_URL, nums: this.env.SIGNAL_NUMS || "", journal: this._slJ || [], tally: this._slT || {}, hist }); }
     if (u.pathname === "/api/signal_by1" && req.method === "POST") {
       if (!this.env.SIGNAL_URL || !this.env.SIGNAL_TOKEN || req.headers.get("x-signal-token") !== this.env.SIGNAL_TOKEN) return new Response("non", { status: 403 });
       const d = await req.json().catch(() => ({})), mk = this.mk && this.mk.BTC;
@@ -1902,7 +1904,7 @@ export class Bot {
     for (const n of nums) {
       const b = CATALOGUE.find((c) => c.n === n % 100), d = b && noms.find((x) => x.nom === b.nom), v = Math.floor(n / 100);
       if (!d) continue;
-      const J = (this._slJ = this._slJ || []), note = (o) => { J.unshift({ at: new Date().toISOString(), num: n, nom: d.nom, depuis: P.strat, cote: P.cote, prix: ask, ...o }); J.length = Math.min(J.length, 100); };
+      const J = (this._slJ = this._slJ || []), note = (o) => { J.unshift({ at: new Date().toISOString(), num: n, nom: d.nom, depuis: P.strat, cote: P.cote, prix: ask, ...o }); J.length = Math.min(J.length, 1500); };
       if (ask == null) { note({ statut: "pas de vendeur" }); continue; }
       let mult = d.mult;
       if (v === 1 || v === 2) { const rI = this.slIdees(P, cy[P.cote]); if (!rI.garder) { note({ statut: "écarté par « + idées » (gros trade)", ...rI }); continue; } if (v === 1) mult *= rI.mult; }
