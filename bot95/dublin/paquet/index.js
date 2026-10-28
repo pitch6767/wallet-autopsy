@@ -23425,7 +23425,14 @@ var Bot = class {
     if (u.pathname === "/api/signaux_live") {
       const hist = {};
       for (const k of ["PORTEFEUILLE 400 BTC", "PORTEFEUILLE 600 BTC", "TWAP fin sauts + foule bybit x2 BTC", "V2-F incertitude 0,01 % + carnet BTC", "BY1 contre-elan calme 100 $ BTC"]) hist[k] = (await this.state.storage.get("hist:" + k) || []).filter((l) => l[0] >= "2026-10-26T20");
-      return json({ actif: !!this.env.SIGNAL_URL, nums: this.env.SIGNAL_NUMS || "", journal: this._slJ || [], tally: this._slT || {}, hist });
+      let diag = null;
+      try {
+        const V = this.vue(), b = V.actifs.find((x) => x.a === "BTC") || {};
+        diag = { ageCl: b.ageCl, agePerp: b.agePerp, ageSpot: b.ageSpot, latPolyMed: V.v1.latPolyMed, latPolyP90: V.v1.latPolyP90, latDecMed: V.v1.latDecMed, latDecP90: V.v1.latDecP90, polyOk: V.v1.polyOk, heure: (/* @__PURE__ */ new Date()).toISOString() };
+      } catch (err) {
+        diag = { erreur: String(err) };
+      }
+      return json({ actif: !!this.env.SIGNAL_URL, nums: this.env.SIGNAL_NUMS || "", journal: this._slJ || [], tally: this._slT || {}, hist, diag });
     }
     if (u.pathname === "/api/signal_by1" && req.method === "POST") {
       if (!this.env.SIGNAL_URL || !this.env.SIGNAL_TOKEN || req.headers.get("x-signal-token") !== this.env.SIGNAL_TOKEN) return new Response("non", { status: 403 });
