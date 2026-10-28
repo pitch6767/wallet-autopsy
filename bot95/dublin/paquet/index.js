@@ -24487,17 +24487,14 @@ var Bot = class {
     if (this.ws[nom + "_en_cours"]) return;
     this.ws[nom + "_en_cours"] = true;
     try {
-      try {
-        this.ws[nom] && this.ws[nom].close();
-      } catch (_) {
-      }
-      this.ws[nom] = null;
+      const ancien = this.ws[nom];
       const r = await fetch(url, { headers: { Upgrade: "websocket" } });
       const ws = r.webSocket;
       if (!ws) throw new Error("pas de websocket (HTTP " + r.status + ")");
       ws.accept();
       ws.addEventListener("message", (ev) => {
         if (typeof ev.data !== "string" || ev.data === "PONG" || ev.data === "PING" || ev.data === "pong") return;
+        if (this.ws[nom] && this.ws[nom] !== ws && this.ws[nom + "_ouvert"] > (ws._ouvert || 0)) return;
         this.ws[nom + "_msg"] = now();
         try {
           surMsg(JSON.parse(ev.data));
@@ -24510,7 +24507,7 @@ var Bot = class {
       ws.addEventListener("close", (ev) => {
         clearInterval(ws.pinger);
         fin();
-        this.erreur("flux " + nom + " ferm\xE9", "code " + ev.code);
+        if (!ws._remplace) this.erreur("flux " + nom + " ferm\xE9", "code " + ev.code);
       });
       ws.addEventListener("error", fin);
       for (const a of abos || []) ws.send(a);
@@ -24521,8 +24518,17 @@ var Bot = class {
           clearInterval(ws.pinger);
         }
       }, periode || 5e3);
+      ws._ouvert = now();
       this.ws[nom] = ws;
-      this.ws[nom + "_ouvert"] = now();
+      this.ws[nom + "_ouvert"] = ws._ouvert;
+      if (ancien && ancien !== ws) {
+        ancien._remplace = true;
+        clearInterval(ancien.pinger);
+        try {
+          ancien.close();
+        } catch (_) {
+        }
+      }
       this.diag.reconnexions[nom] = (this.diag.reconnexions[nom] || 0) + 1;
     } catch (err) {
       this.erreur("flux " + nom, err);
