@@ -6,6 +6,6 @@
   "workers_dev": true,
   "durable_objects": { "bindings": [{ "name": "BOT", "class_name": "Bot" }, { "name": "SONDE", "class_name": "Sonde" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Bot"] }, { "tag": "v2", "new_sqlite_classes": ["Sonde"] }, { "tag": "maker-realism-20261012", "new_sqlite_classes": ["RealismStore"] }],
-  "vars": { "MODE_REEL": "non", "MISE_REEL": "50" },
+  "vars": { "MODE_REEL": "non", "MISE_REEL": "50", "SIGNAL_FLUX": "oui", "SIGNAL_NUMS": "101,201,121,28,119" },
   "triggers": { "crons": ["* * * * *"] }
 }

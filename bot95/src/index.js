@@ -514,6 +514,11 @@ export class Bot {
       return json({ regle: "CUSUM : on ajoute (Brier moteur − Brier carnet − 0,005) par tranche de 3 h, plancher 0 ; alerte au-dessus de 0,03. Aucune décision n'est modifiée.", blocs, regimes, calibration, couverture, signaux: sigs });
     }
     // ---- 26.10.2026 : copie de Dublin — journal des signaux en direct, et achats BY1 annoncés par le labo rapide (même serveur)
+    if (u.pathname === "/api/flux_signaux") {   // connexion permanente du bot de trading (lecture seule : il ne fait que recevoir les décisions)
+      if ((req.headers.get("upgrade") || "").toLowerCase() !== "websocket") return json({ clients: this.state.getWebSockets("signaux").length, nums: this.env.SIGNAL_NUMS || "", actif: !!this.env.SIGNAL_FLUX, journal: (this._slJ || []).slice(0, 200) });
+      const pair = new WebSocketPair(); this.state.acceptWebSocket(pair[1], ["signaux"]); pair[1].send(JSON.stringify({ type: "bonjour", nums: this.env.SIGNAL_NUMS || "", t: Date.now() }));
+      return new Response(null, { status: 101, webSocket: pair[0] });
+    }
     if (u.pathname === "/api/signaux_live") {   // 28.10.2026 : + archive des trades fantômes de la copie (comparaison avec Cloudflare et le bot)
       const hist = {}; for (const k of ["PORTEFEUILLE 400 BTC", "PORTEFEUILLE 600 BTC", "TWAP fin sauts + foule bybit x2 BTC", "V2-F incertitude 0,01 % + carnet BTC", "BY1 contre-elan calme 100 $ BTC"]) hist[k] = ((await this.state.storage.get("hist:" + k)) || []).filter((l) => l[0] >= "2026-10-26T20");
       let diag = null; try { const V = this.vue(), b = V.actifs.find((x) => x.a === "BTC") || {}; diag = { ageCl: b.ageCl, agePerp: b.agePerp, ageSpot: b.ageSpot, latPolyMed: V.v1.latPolyMed, latPolyP90: V.v1.latPolyP90, latDecMed: V.v1.latDecMed, latDecP90: V.v1.latDecP90, polyOk: V.v1.polyOk, heure: new Date().toISOString() }; } catch (err) { diag = { erreur: String(err) }; }
@@ -1819,7 +1824,7 @@ export class Bot {
     // comptée dans la stratégie fantôme « <nom> + carnet » (H1070). Aucun ordre réel ; la stratégie d'origine est inchangée.
     this.nChamps(P, strat, a, mk, extra);
     // 26.10.2026 : copie de Dublin seulement (SIGNAL_URL) — signal en direct vers le bot de trading pour les stratégies choisies
-    if (this.env.SIGNAL_URL && a === "BTC") { try { this.slEmettre(P, mk); } catch (err) { this.erreur("signal live", err); } }
+    if ((this.env.SIGNAL_URL || this.env.SIGNAL_FLUX) && a === "BTC") { try { this.slEmettre(P, mk); } catch (err) { this.erreur("signal live", err); } }
     try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); }
     return P;
   }
@@ -1899,6 +1904,11 @@ export class Bot {
       if (((ea - ev) - (oa - ov)) / (ea + ev + oa + ov + 1) <= -0.3) mult = 3; }
     return { garder: true, mult, nb };
   }
+  // 28.10.2026 (Pitch : « oui go ») : flux des signaux en direct vers le bot de trading (connexion permanente sortante du bot vers Cloudflare)
+  slDiffuser(corps) { let n = 0; const m = JSON.stringify({ type: "signal", signal: corps }); for (const ws of this.state.getWebSockets("signaux")) { try { ws.send(m); n++; } catch (_) {} } return n; }
+  async webSocketMessage(ws, msg) { try { if (msg === "ping") ws.send("pong"); } catch (_) {} }
+  async webSocketClose(ws, code) { try { ws.close(code || 1000, "fin"); } catch (_) {} }
+  async webSocketError() {}
   slEmettre(P, mk) {
     if (!P || P.stoppee || !mk || !mk.end || mk.end * 1000 < Date.now() + 1000 || (P.cote !== "Up" && P.cote !== "Down")) return;
     const noms = this.slNoms(P), T = (this._slT = this._slT || {}), cy = (T[P.start] = T[P.start] || { Up: 0, Down: 0 });
@@ -1914,8 +1924,9 @@ export class Bot {
       if (v === 1 || v === 2) { const rI = this.slIdees(P, cy[P.cote]); if (!rI.garder) { note({ statut: "écarté par « + idées » (gros trade)", ...rI }); continue; } if (v === 1) mult *= rI.mult; }
       else if (v !== 0) { note({ statut: "version pas encore branchée" }); continue; }
       const corps = { id: `${n}|${P.start}|${d.nom}|${P.strat}|${P.heure}`, num: n, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask, mult, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok, endTs: mk.end * 1000, question: mk.slug, t: Date.now() };
-      fetch(this.env.SIGNAL_URL, { method: "POST", headers: { "content-type": "application/json", "x-signal-token": this.env.SIGNAL_TOKEN || "" }, body: JSON.stringify(corps) })
+      if (this.env.SIGNAL_URL) fetch(this.env.SIGNAL_URL, { method: "POST", headers: { "content-type": "application/json", "x-signal-token": this.env.SIGNAL_TOKEN || "" }, body: JSON.stringify(corps) })
         .then((r) => r.json()).then((j) => note({ statut: "envoyé", mult, reponse: j && j.statut })).catch((err) => note({ statut: "envoi raté : " + err.message, mult }));
+      else note({ statut: "diffusé", mult, clients: this.slDiffuser(corps) });
     }
   }
   // ---- 12.10.2026 19:10 (Pitch : « un fantôme pour cela ») : CONSENSUS K2 (étude H1053, règle figée, commit 1c6d089).
@@ -2023,6 +2034,9 @@ export class Bot {
     this.nSauver();
   }
   nClore(P, issue) {
+    // 28.10.2026 (Pitch : « Tu enlèves BY1 à toutes les stratégies… pas besoin de renommer… tu l'enlèves elle seule aussi ») :
+    // les trades BY1 (calculés au labo rapide, en retard sur Cloudflare) ne comptent plus nulle part : ni seuls, ni dans les PORTEFEUILLE, ni dans les copies.
+    if (P.actif === "BTC" && String(P.strat || "").startsWith("BY1")) { this.N.ouvertes = (this.N.ouvertes || []).filter((x) => x !== P); return; }
     P.fini = true; P.issue = issue; P.net = +P.cash.toFixed(2);
     if (!P.copieDuo && DUO_REGLE[P.strat + "|" + P.actif]) { try { const v = this.duo && this.duo.reg ? this.duo.reg[P.start] : null;
       if (v != null && (v < DUO_SEUIL ? "calme" : "rapide") === DUO_REGLE[P.strat + "|" + P.actif])
