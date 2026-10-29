@@ -1,86 +1,84 @@
 == etat
-HTTP 200 0.836607s
+HTTP 200 1.423212s
 == /
-HTTP 200 10017 o 0.196637s
+HTTP 200 10017 o 0.282680s
 BY1: 0
 == /numeros
-HTTP 200 4340 o 0.190800s
+HTTP 200 4340 o 0.303968s
 BY1: 0
 == /nouveaux
-HTTP 200 8011 o 0.410547s
+HTTP 200 8011 o 0.469687s
 BY1: 0
 == /onglet1-archive
-HTTP 200 30206 o 0.221606s
+HTTP 200 30206 o 0.348347s
 BY1: 0
 == /zero
-HTTP 200 8011 o 0.190855s
+HTTP 200 8011 o 0.283223s
 BY1: 0
 == /zero2
-HTTP 200 9101 o 0.195697s
+HTTP 200 9101 o 0.286575s
 BY1: 0
 == /zero3
-HTTP 200 9860 o 0.203484s
+HTTP 200 9860 o 0.223001s
 BY1: 0
 == /zero4
-HTTP 200 8791 o 0.173879s
+HTTP 200 8791 o 0.228774s
 BY1: 0
 == /zero5
-HTTP 200 8558 o 0.171843s
+HTTP 200 8558 o 0.227163s
 BY1: 0
 == /api/zero
-HTTP 200 16486 o 0.190102s
+HTTP 200 16428 o 0.351281s
 BY1: 0
 == /api/zero2
-HTTP 200 57166 o 0.211428s
+HTTP 200 56515 o 0.281145s
 BY1: 0
 == /api/zero3
-HTTP 200 162947 o 0.428306s
+HTTP 200 161364 o 0.461597s
 BY1: 0
 == /api/zero4
-HTTP 200 209343 o 0.436372s
+HTTP 200 207529 o 0.544966s
 BY1: 0
 == /api/zero5
-HTTP 200 2782 o 0.199486s
+HTTP 200 2775 o 0.202938s
 BY1: 0
 == /api/catalogue
-HTTP 200 282389 o 0.541312s
+HTTP 200 282389 o 0.986710s
 BY1: 0
 == /api/classement
-HTTP 200 20808 o 0.331167s
+HTTP 200 20814 o 0.387384s
 BY1: 0
 == /api/nouveaux
-HTTP 200 241676 o 0.250600s
-BY1: 10
-a petit selon le saut","PB seul","PB seul + Poly immobile","BY1 Bybit premier 10 $","BY1 Bybit premier 100 $","BY1 contre-e
-a petit selon le saut","PB seul","PB seul + Poly immobile","BY1 Bybit premier 10 $","BY1 Bybit premier 100 $","BY1 contre-e
+HTTP 200 243071 o 0.967442s
+BY1: 0
 == /api/corr_misemax
-HTTP 200 3841 o 0.194868s
+HTTP 200 3841 o 0.246176s
 BY1: 0
 == /excel
-HTTP 200 1263577 o 1.828754s
+HTTP 200 1270503 o 2.506554s
 BY1: 0
 == /excel3
-HTTP 200 1877399 o 2.122174s
+HTTP 200 1896380 o 2.835201s
 BY1: 0
 == /excel4
-HTTP 200 4150219 o 5.547749s
+HTTP 200 4196121 o 10.635950s
 BY1: 0
 == /excel5
-HTTP 200 4376749 o 5.142742s
+HTTP 200 4438644 o 6.341293s
 BY1: 0
 == GET flux
-{"clients":0,"actif":true}
-HTTP 200 0.217565s
+{"clients":1,"actif":true}
+HTTP 200 0.219440s
 == upgrade
 HTTP/2 200 
-date: Thu, 29 Oct 2026 08:56:28 GMT
+date: Thu, 29 Oct 2026 10:25:26 GMT
 content-type: application/json
 content-length: 26
 cache-control: no-store
-report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=JR7ZpkgelIqqaGeL0Z1z1Dq7lC5Dgq1JLOew%2BAMiSKA375uBpoljcNQtYfPIpLGZ%2FZEbh4Gsg8xqUWnY%2FNzE%2FSPyvOt%2B7A1Q%2FtxX9XUOqygLGgVXk%2BH5KVCwjhDF61iijS4FEe62%2FABWO9XR"}]}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=YI2Xahq9fhyJV1R6g7iA0lJuOjjAVvDozi8nFJg17xUuVP60KtBkpqB4DM%2FVkr1dfVvgugQLy%2FCGjHQkxoBHV1jQYk9WCzdO%2Bh%2FO35iJ0fs0HSVNbfLPjIhLR%2B6%2FH32pBCSXLAA0jNSgMwzN"}]}
 nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
 server: cloudflare
-cf-ray: a520f798acd4a207-MSP
+cf-ray: a52179e8de92cba2-LAX
 alt-svc: h3=":443"; ma=86400
 
-{"clients":0,"actif":true}
+{"clients":1,"actif":true}
