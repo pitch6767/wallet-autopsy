@@ -348,7 +348,7 @@ export class Bot {
             this.N.zero2 && (await this.state.storage.put("nv:zero2", this.N.zero2)); await zSauver(this.state.storage, "nv:zero3", this.N.zero3 || {}); await zSauver(this.state.storage, "nv:zero4", this.N.zero4 || {}); await zSauver(this.state.storage, "nv:zero5", this.N.zero5 || {});
             await this.state.storage.put("corrBY1misemax", { at: new Date().toISOString(), by1: by1.size, rap });
           } catch (err) { this.erreur("correction mise max BY1", err); } }
-        { const q = (await this.state.storage.get("nv:idq")) || {}; this.N.idq = q.idq || {}; this.N.idfait = q.idfait || {}; this.N.consPris = q.consPris || {}; }   // 24.10.2026 : onglet 3 (remise à 0 + versions « + idées »)
+        { const q = (await this.state.storage.get("nv:idq")) || {}; this.N.idq = q.idq || {}; this.N.idfait = q.idfait || {}; this.N.consPris = q.consPris || {}; this.N.slDec = q.slDec || {}; }   // 24.10.2026 : onglet 3 (remise à 0 + versions « + idées »)
         // 19.10.2026 : nouvelle remise à 0 de l'onglet 2 ; les anciens compteurs sont archivés une seule fois
         if ((await this.state.storage.get("zero:depuis")) !== ZERO_DEPUIS) { await this.state.storage.put("zero:archive:" + ((await this.state.storage.get("zero:depuis")) || "2026-10-14T08:45:00Z"), this.N.zero); this.N.zero = {}; await this.state.storage.put("nv:zero", {}); await this.state.storage.put("zero:depuis", ZERO_DEPUIS); }
       } else this.N = (this.SG ? null : await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
@@ -1808,7 +1808,7 @@ export class Bot {
       put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {}, markout: N.markout || {} });
       for (const [k, v] of Object.entries(N.strats)) put("nv:strat:" + k, v);
       if (N.zero) put("nv:zero", N.zero);
-      if (N.zero2) put("nv:zero2", N.zero2); if (N.zero3) zSauver(this.state.storage, "nv:zero3", N.zero3).catch((err) => this.erreur("sauvegarde zero3", err)); if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err)); if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err)); if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {} });
+      if (N.zero2) put("nv:zero2", N.zero2); if (N.zero3) zSauver(this.state.storage, "nv:zero3", N.zero3).catch((err) => this.erreur("sauvegarde zero3", err)); if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err)); if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err)); if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {}, slDec: N.slDec || {} });
       // ordres : non réglés + 250 derniers réglés (les compteurs sont cumulés à part)
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
       N.ordres = [...regles.slice(-250), ...nonRegles];
@@ -1962,9 +1962,12 @@ export class Bot {
       const b = CATALOGUE.find((c) => c.n === n % 100), d = b && noms.find((x) => x.nom === b.nom), v = Math.floor(n / 100);
       if (!d) continue;
       const J = (this._slJ = this._slJ || []), note = (o) => { J.unshift({ at: new Date().toISOString(), num: n, nom: d.nom, depuis: P.strat, cote: P.cote, prix: ask, ...o }); J.length = Math.min(J.length, 1500); };
-      if (ask == null) { note({ statut: "pas de vendeur" }); continue; }
-      let mult = d.mult;
-      if (v === 1 || v === 2) { const rI = this.slIdees(P, cy[P.cote]); if (!rI.garder) { note({ statut: "écarté par « + idées » (gros trade)", ...rI }); continue; } if (v === 1) mult *= rI.mult; }
+      // 29.10.2026 (Pitch : « onglet 6 = ce que je veux trader ») : la décision prise À L'ENVOI est gardée pour l'onglet 6 (sans regarder la suite)
+      const SD = (this.N.slDec = this.N.slDec || {}), dk = n + "|" + P.start + "|" + P.cote + "|" + P.heure, dec = (g, m) => { SD[dk] = [g ? 1 : 0, m]; };
+      if (ask == null) { note({ statut: "pas de vendeur" }); dec(false, 0); continue; }
+      let mult = d.mult, mI = 1;
+      if (v === 1 || v === 2) { const rI = this.slIdees(P, cy[P.cote]); if (!rI.garder) { note({ statut: "écarté par « + idées » (gros trade)", ...rI }); dec(false, 0); continue; } if (v === 1) { mult *= rI.mult; mI = rI.mult; } }
+      dec(true, mI); if (Math.random() < 0.02) for (const x of Object.keys(SD)) if (+x.split("|")[1] < P.start - 7200) delete SD[x];
       else if (v !== 0) { note({ statut: "version pas encore branchée" }); continue; }
       const corps = { id: `${n}|${P.start}|${d.nom}|${P.strat}|${P.heure}`, num: n, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask, mult, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok, endTs: mk.end * 1000, question: mk.slug, t: Date.now() };
       if (this.env.SIGNAL_URL) fetch(this.env.SIGNAL_URL, { method: "POST", headers: { "content-type": "application/json", "x-signal-token": this.env.SIGNAL_TOKEN || "" }, body: JSON.stringify(corps) })
@@ -2215,6 +2218,10 @@ export class Bot {
           if (Date.parse(x.heure) >= Date.parse(ZERO5_DEPUIS)) { N.zero5 = N.zero5 || {}; const mise5 = (x.prix || 0) * (x.parts || 0);
             for (const n of ZERO5_NUMS) { const b = CATALOGUE.find((c) => c.n === n % 100), v = Math.floor(n / 100), c5 = CATALOGUE.find((c) => c.n === n);
               if (!b || !c5 || x.k !== b.nom + " BTC") continue;
+              // décision prise à l'envoi du signal (sans données postérieures) ; sinon (trade d'avant le 29.10) règle recalculée comme avant
+              const D6 = (N.slDec || {})[n + "|" + s0 + "|" + x.cote + "|" + x.heure];
+              if (D6) { N.slDecVus = (N.slDecVus || 0) + 1; if (D6[0]) zCompte(N.zero5, c5.nom + " BTC", x.heure, (v === 1 ? D6[1] : 1) * x.net, sans, (v === 1 ? D6[1] : 1) * mise5, s0); continue; }
+              N.slDecManquants = (N.slDecManquants || 0) + 1;
               if (v === 0) zCompte(N.zero5, c5.nom + " BTC", x.heure, x.net, sans, mise5, s0);
               else if (v === 1 && garder) zCompte(N.zero5, c5.nom + " BTC", x.heure, mult * x.net, sans, mult * mise5, s0);
               else if (v === 2 && garder) zCompte(N.zero5, c5.nom + " BTC", x.heure, x.net, sans, mise5, s0); } }
