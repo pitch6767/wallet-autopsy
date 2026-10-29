@@ -1,84 +1,84 @@
 == etat
-HTTP 200 1.423212s
+HTTP 200 1.212877s
 == /
-HTTP 200 10017 o 0.282680s
+HTTP 200 10017 o 0.223614s
 BY1: 0
 == /numeros
-HTTP 200 4340 o 0.303968s
+HTTP 200 4340 o 0.357357s
 BY1: 0
 == /nouveaux
-HTTP 200 8011 o 0.469687s
+HTTP 200 8011 o 0.384299s
 BY1: 0
 == /onglet1-archive
-HTTP 200 30206 o 0.348347s
+HTTP 200 30206 o 0.206820s
 BY1: 0
 == /zero
-HTTP 200 8011 o 0.283223s
+HTTP 200 8011 o 0.208211s
 BY1: 0
 == /zero2
-HTTP 200 9101 o 0.286575s
+HTTP 200 9101 o 0.181009s
 BY1: 0
 == /zero3
-HTTP 200 9860 o 0.223001s
+HTTP 200 9860 o 0.200294s
 BY1: 0
 == /zero4
-HTTP 200 8791 o 0.228774s
+HTTP 200 8791 o 0.167988s
 BY1: 0
 == /zero5
-HTTP 200 8558 o 0.227163s
+HTTP 200 8558 o 0.208068s
 BY1: 0
 == /api/zero
-HTTP 200 16428 o 0.351281s
+HTTP 200 16424 o 0.438722s
 BY1: 0
 == /api/zero2
-HTTP 200 56515 o 0.281145s
+HTTP 200 55501 o 0.208655s
 BY1: 0
 == /api/zero3
-HTTP 200 161364 o 0.461597s
+HTTP 200 160333 o 0.367490s
 BY1: 0
 == /api/zero4
-HTTP 200 207529 o 0.544966s
+HTTP 200 206153 o 0.494851s
 BY1: 0
 == /api/zero5
-HTTP 200 2775 o 0.202938s
+HTTP 200 2774 o 0.199545s
 BY1: 0
 == /api/catalogue
-HTTP 200 282389 o 0.986710s
+HTTP 200 282389 o 0.498752s
 BY1: 0
 == /api/classement
-HTTP 200 20814 o 0.387384s
+HTTP 200 20812 o 0.354516s
 BY1: 0
 == /api/nouveaux
-HTTP 200 243071 o 0.967442s
+HTTP 200 232489 o 0.584104s
 BY1: 0
 == /api/corr_misemax
-HTTP 200 3841 o 0.246176s
+HTTP 200 3841 o 0.198165s
 BY1: 0
 == /excel
-HTTP 200 1270503 o 2.506554s
+HTTP 200 1271303 o 2.558425s
 BY1: 0
 == /excel3
-HTTP 200 1896380 o 2.835201s
+HTTP 200 1897496 o 2.415572s
 BY1: 0
 == /excel4
-HTTP 200 4196121 o 10.635950s
+HTTP 200 4197304 o 5.556092s
 BY1: 0
 == /excel5
-HTTP 200 4438644 o 6.341293s
+HTTP 200 4440330 o 5.170556s
 BY1: 0
-== GET flux
+{"ok":true,"adresse":"0xA61c3fe3e803bE6575A286835c0c2dd89Ed02852","cle":true}== GET flux
 {"clients":1,"actif":true}
-HTTP 200 0.219440s
+HTTP 200 0.190497s
 == upgrade
 HTTP/2 200 
-date: Thu, 29 Oct 2026 10:25:26 GMT
+date: Thu, 29 Oct 2026 10:30:47 GMT
 content-type: application/json
 content-length: 26
 cache-control: no-store
-report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=YI2Xahq9fhyJV1R6g7iA0lJuOjjAVvDozi8nFJg17xUuVP60KtBkpqB4DM%2FVkr1dfVvgugQLy%2FCGjHQkxoBHV1jQYk9WCzdO%2Bh%2FO35iJ0fs0HSVNbfLPjIhLR%2B6%2FH32pBCSXLAA0jNSgMwzN"}]}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=%2FOhGskumFTejEPa6mZ0K%2FKV%2BEjezoapVx14unwbDVxFnbboGSRlL%2Bz0W5JLvz%2Fm9eMVsk1RFSCm08fNowSME24eX9HF66VLilD2EckuTWhgBLXwDo%2F1WokAmrySQWiUrBWZN7oOLIWq%2FqPMB"}]}
 nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
 server: cloudflare
-cf-ray: a52179e8de92cba2-LAX
+cf-ray: a52181c2f9c49007-MSP
 alt-svc: h3=":443"; ma=86400
 
 {"clients":1,"actif":true}
