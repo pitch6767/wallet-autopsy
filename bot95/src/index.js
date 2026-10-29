@@ -308,7 +308,7 @@ export class Bot {
         this.N.zero = (await this.state.storage.get("nv:zero")) || {};
         this.N.zero2 = (await this.state.storage.get("nv:zero2")) || {}; if ((await this.state.storage.get("zero2:depuis")) !== ZERO2_DEPUIS) { const ar = await this.state.storage.get("zero2:archive:" + ZERO2_DEPUIS); if (ar) { this.N.zero2 = ar; await this.state.storage.put("nv:zero2", ar); } await this.state.storage.put("zero2:depuis", ZERO2_DEPUIS); }   // 25.10 : compteurs « + idées » rétablis
         // 26.10.2026 : les compteurs des onglets 4 et 5 dépassaient 128 Ko (taille max d'une valeur) → plus sauvegardés ; maintenant découpés en morceaux (nv:zero3:0, :1…)
-        this.N.zero3 = await zCharger(this.state.storage, "nv:zero3"); this.N.zero4 = await zCharger(this.state.storage, "nv:zero4"); this.N.zero5 = await zCharger(this.state.storage, "nv:zero5");
+        this.N.zero3 = await zCharger(this.state.storage, "nv:zero3"); this.N.zero4 = await zCharger(this.state.storage, "nv:zero4"); this.N.zero5 = await zCharger(this.state.storage, "nv:zero5"); this.B5 = (await this.state.storage.get("bot5")) || null;
         if (!(await this.state.storage.get("zero5rattrapage"))) {   // 27.10.2026 : une seule fois, onglet 6 rattrapé depuis les lignes Excel (21:52 → mise en ligne ; revente éventuelle à 60 s incluse dans ce rattrapage, rare)
           try { const Z5 = {}, R5 = [], enAtt = new Set(Object.keys(this.N.idq || {}).map(Number));
             for (const n of ZERO5_NUMS) { const b = CATALOGUE.find((c) => c.n === n % 100), c5 = CATALOGUE.find((c) => c.n === n), v = Math.floor(n / 100); if (!b || !c5) continue;
@@ -853,9 +853,13 @@ export class Bot {
       return json({ depuis: ZERO4_DEPUIS, strats: L, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => (x.nom.includes(" + ") )).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length }); }
     if (u.pathname === "/api/catalogue") return json({ maj: "2026-10-27", strategies: CATALOGUE.map((c) => ({ ...c, ...infoOrdres(c.nom + " BTC") })) });
     if (u.pathname === "/numeros") return new Response(PAGE_NUMEROS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
-    if (u.pathname === "/api/zero5") { const Z = this.N.zero5 || {};
-      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: undefined, cy: undefined, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
-      return json({ depuis: ZERO5_DEPUIS, nums: ZERO5_NUMS, strats: L, total: +L.reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length , decisionsEnvoi: { utilisees: this.N.slDecVus || 0, manquantes: this.N.slDecManquants || 0 } }); }
+    if (u.pathname === "/api/zero5") { const Z0 = this.N.zero5 || {}, B = this.B5, Z = {};
+      // 29.10.2026 : exactement les cases du bot de trading, dans leur ordre (lignes vides tant qu'aucun trade n'est réglé)
+      const vide = () => ({ n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {}, sansDonnees: 0 });
+      const cases = B && B.choisies ? B.choisies : ZERO5_NUMS.map((n) => ({ n, mise: 50, active: false }));
+      for (const c of cases) { const c5 = CATALOGUE.find((x) => x.n === c.n), nom = c5 ? c5.nom + " BTC" : "n° " + c.n; Z[nom] = { ...(Z0[nom] || vide()), _case: c }; }
+      const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: z._case.n, miseBot: z._case.mise, active: z._case.active, depuisBot: B && B.depuis ? B.depuis[z._case.n] : ZERO5_DEPUIS, ...infoOrdres(nom, z), ...z, _case: undefined, cn: undefined, cy: undefined, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
+      return json({ depuis: ZERO5_DEPUIS, nums: cases.map((c) => c.n), botMaj: B && B.maj, strats: L, total: +L.reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length , decisionsEnvoi: { utilisees: this.N.slDecVus || 0, manquantes: this.N.slDecManquants || 0 } }); }
     if (u.pathname === "/zero5") return new Response(PAGE_ZERO5, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero4") return new Response(PAGE_ZERO4, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero3") return new Response(PAGE_ZERO3, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -1029,8 +1033,30 @@ export class Bot {
   async alarm() {
     await this.ready;
     try { await this.tick(); } catch (err) { this.erreur("tick", err); }
+    if (!this.SG && (!this._b5T || Date.now() - this._b5T > 60000)) { this._b5T = Date.now(); this.botStratsMaj().catch((err) => this.erreur("strategies du bot", err)); }
     this.ouvrirFlux();
     await this.state.storage.setAlarm(Date.now() + 1000);
+  }
+  // 29.10.2026 17:19 (Pitch : « l'onglet 6 reflète à 100 % l'onglet Stratégies du bot ») : lecture des 15 cases du bot de trading
+  // chaque minute (lecture seule, jeton opérateur en secret Cloudflare). Une stratégie nouvelle est comptée dès son apparition,
+  // à la mise de sa case (résultat de bot95 calculé pour 50 $ × mise ÷ 50).
+  async botStratsMaj() {
+    if (!this.env.BOT_OPS_TOKEN) return;
+    const r = await fetch("https://72-11-157-70.sslip.io/api/bot/strategies", { headers: { "x-ops-token": this.env.BOT_OPS_TOKEN } });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const d = await r.json(); if (!Array.isArray(d.choisies)) return;
+    const B = this.B5 || { depuis: Object.fromEntries(ZERO5_NUMS.map((n) => [n, ZERO5_DEPUIS])) }, h = new Date().toISOString();
+    const ch = d.choisies.map((c) => ({ n: +c.n, nom: c.nom, mise: +c.mise || 50, active: !!c.active }));
+    for (const c of ch) if (!B.depuis[c.n]) B.depuis[c.n] = h;
+    const avant = JSON.stringify(B.choisies || []); B.choisies = ch; B.maj = h; this.B5 = B;
+    if (avant !== JSON.stringify(ch) || !this._b5Sauve) { this._b5Sauve = 1; await this.state.storage.put("bot5", B); }
+  }
+  nums5() { return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS; }
+  /** Facteur de mise de l'onglet 6 pour le n° et l'heure du trade (0 = pas compté : stratégie pas encore dans le bot). */
+  f5(n, heure) {
+    const B = this.B5; if (!B || !B.choisies) return ZERO5_NUMS.includes(n) ? 1 : 0;
+    const c = B.choisies.find((x) => x.n === n), d = B.depuis[n]; if (!c || !d || Date.parse(heure) < Date.parse(d)) return 0;
+    return c.mise / 50;
   }
   erreur(ou, err) {
     this.diag.erreurs.unshift(`${new Date().toISOString().slice(11, 19)} ${ou}: ${String((err && err.message) || err).slice(0, 140)}`);
@@ -2288,15 +2314,16 @@ export class Bot {
           // 27.10.2026 (Pitch : « un onglet des stratégies choisies pour le bot de trading ») : onglet 6 = les numéros du bot de trading, depuis le démarrage du paper,
           // avec les règles du bot : « + idées » SANS revente à 60 s, « + idées sans x2 x3 » sans revente, versions de base telles quelles.
           if (Date.parse(x.heure) >= Date.parse(ZERO5_DEPUIS)) { N.zero5 = N.zero5 || {}; const mise5 = (x.prix || 0) * (x.parts || 0);
-            for (const n of ZERO5_NUMS) { const b = CATALOGUE.find((c) => c.n === n % 100), v = Math.floor(n / 100), c5 = CATALOGUE.find((c) => c.n === n);
-              if (!b || !c5 || x.k !== b.nom + " BTC") continue;
+            for (const n of this.nums5()) { const b = CATALOGUE.find((c) => c.n === n % 100), v = Math.floor(n / 100), c5 = CATALOGUE.find((c) => c.n === n);
+              if ([31, 32, 35].includes(n) || !b || !c5 || x.k !== b.nom + " BTC") continue;
+              const f5 = this.f5(n, x.heure); if (!f5) continue;
               // décision prise à l'envoi du signal (sans données postérieures) ; sinon (trade d'avant le 29.10) règle recalculée comme avant
               const D6 = (N.slDec || {})[n + "|" + s0 + "|" + x.cote + "|" + x.heure];
-              if (D6) { N.slDecVus = (N.slDecVus || 0) + 1; if (D6[0]) zCompte(N.zero5, c5.nom + " BTC", x.heure, (v === 1 ? D6[1] : 1) * x.net, sans, (v === 1 ? D6[1] : 1) * mise5, s0); continue; }
+              if (D6) { N.slDecVus = (N.slDecVus || 0) + 1; if (D6[0]) zCompte(N.zero5, c5.nom + " BTC", x.heure, f5 * (v === 1 ? D6[1] : 1) * x.net, sans, f5 * (v === 1 ? D6[1] : 1) * mise5, s0); continue; }
               N.slDecManquants = (N.slDecManquants || 0) + 1;
-              if (v === 0) zCompte(N.zero5, c5.nom + " BTC", x.heure, x.net, sans, mise5, s0);
-              else if (v === 1 && garder) zCompte(N.zero5, c5.nom + " BTC", x.heure, mult * x.net, sans, mult * mise5, s0);
-              else if (v === 2 && garder) zCompte(N.zero5, c5.nom + " BTC", x.heure, x.net, sans, mise5, s0); } }
+              if (v === 0) zCompte(N.zero5, c5.nom + " BTC", x.heure, f5 * x.net, sans, f5 * mise5, s0);
+              else if (v === 1 && garder) zCompte(N.zero5, c5.nom + " BTC", x.heure, f5 * mult * x.net, sans, f5 * mult * mise5, s0);
+              else if (v === 2 && garder) zCompte(N.zero5, c5.nom + " BTC", x.heure, f5 * x.net, sans, f5 * mise5, s0); } }
           if (Date.parse(x.heure) >= Date.parse(ZERO4_DEPUIS)) { N.zero4 = N.zero4 || {}; zCompte(N.zero4, x.k.replace(/ BTC$/, " + idées sans règles échouées BTC"), x.heure, mult * x.net, sans, mult * (x.prix || 0) * (x.parts || 0), s0); }
           if (garder) { zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0); if (ONGLET4_DE3.includes(x.k.replace(/ BTC$/, " + idées BTC")) && Date.parse(x.heure) >= Date.parse(ZERO3_DEPUIS)) { N.zero3 = N.zero3 || {}; zCompte(N.zero3, x.k.replace(/ BTC$/, " + idées BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0); } zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées sans x2 x3 BTC"), x.heure, net, sans, (x.prix || 0) * (x.parts || 0), s0); }
           // 25.10.2026 14:57 (Pitch : « don't stop those, create other onglet ») : onglet 4, versions « + consensus » (seule idée confirmée sur 10-19.10) :
@@ -2344,14 +2371,18 @@ export class Bot {
             // CONSENSUS 6 billets = CONSENSUS 6 seulement si le prix d'achat est sous 0,10
             const famille = (k) => !k ? "?" : k.startsWith("BY1") ? "BY1" : k.includes("foule bybit x2") ? "x2" : k.startsWith("TWAP") ? "TWAP" : k.startsWith("PORTEFEUILLE") ? "PF" : "corrige";
             let eDiv = null; { const vu = new Set(); for (const y of Lc) { vu.add(famille(y.k)); if (vu.size >= 3) { eDiv = y; break; } } }
-            for (const n of [6, 8, "D3", "6b"]) {
+            // 29.10.2026 : « R » = n° 35 TWAP rafale 10 s (première décision TWAP fin de ce côté), compté seulement dans l'onglet 6
+            for (const n of [6, 8, "D3", "6b", "R"]) {
               const cle = st + "|" + cote + "|" + n; if (CP[cle]) continue;
-              const e = n === "D3" ? eDiv : Lc[(n === "6b" ? 6 : n) - 1]; if (!e) continue; CP[cle] = 1;
+              const e = n === "D3" ? eDiv : n === "R" ? Lc.find((y) => y.k && y.k.startsWith("TWAP fin")) : Lc[(n === "6b" ? 6 : n) - 1]; if (!e) continue; CP[cle] = 1;
               const te = Math.floor(Date.parse(e.heure) / 1000) + 1;
               const uv = val("pm_up_vente", te), ub = val("pm_up_achat", te), ask = cote === "Up" ? uv : (ub != null ? 1 - ub : null);
               const p0 = ask != null && ask > 0.005 && ask < 0.995 ? ask : e.prix; if (!p0) continue;
               if (n === "6b" && !(p0 < 0.10)) continue;
               const q = 50 / (p0 + 0.07 * p0 * (1 - p0)), net = q * (g.gagne ? 1 : 0) - 50, nomM = n === "D3" ? "DIVERSITÉ 3 BTC" : n === "6b" ? "CONSENSUS 6 billets BTC" : "CONSENSUS " + n + " BTC";
+              const n5 = n === 6 ? 31 : n === 8 ? 32 : n === "R" ? 35 : 0, f5 = n5 ? this.f5(n5, e.heure) : 0;
+              if (f5) { N.zero5 = N.zero5 || {}; this._zx = { cote, prix: p0 }; zCompte(N.zero5, n === "R" ? "TWAP rafale 10 s BTC" : nomM, e.heure, f5 * net, ask == null, f5 * 50, s0); }
+              if (n === "R") continue;
               this._zx = { cote, prix: p0 }; N.zero = N.zero || {}; zCompte(N.zero, nomM, e.heure, net, ask == null, 50, s0);
               N.zero2 = N.zero2 || {}; zCompte(N.zero2, nomM, e.heure, net, ask == null, 50, s0);
               N.zero3 = N.zero3 || {}; zCompte(N.zero3, nomM, e.heure, net, ask == null, 50, s0);
@@ -3856,7 +3887,7 @@ const ZERO2_DEPUIS = "2026-10-24T20:00:00Z";     // 24.10.2026 22:00 heure suiss
 const SUR_MESURE = {"PORTEFEUILLE 400 BTC": ["x2", "b6", "bcl"], "PORTEFEUILLE 400 corrige BTC": ["p6", "x2", "b6", "bcl"], "PORTEFEUILLE 600 BTC": ["x2"], "TWAP fin + carnet BTC": ["p6", "x2", "elan", "p750", "b6"], "TWAP fin + carnet ecart serre BTC": ["p6", "x2", "elan", "p750", "b6"], "TWAP fin anti-saut + carnet BTC": ["p6", "x2", "elan", "p750", "b6"], "TWAP fin anti-saut + carnet ecart serre BTC": ["p6", "x2", "elan", "b6"], "TWAP fin prevision Chainlink + carnet BTC": ["x2"], "TWAP fin prevision Chainlink + carnet ecart serre BTC": ["x2"], "TWAP fin quantiles + carnet BTC": ["p6", "x2", "elan"], "TWAP fin quantiles + carnet ecart serre BTC": ["p6", "x2", "elan"], "TWAP fin quantiles + ecart serre BTC": ["p6", "x2", "bcl"], "TWAP fin quantiles + foule bybit x2 BTC": ["x2", "bcl"], "TWAP fin quantiles BTC": ["p12", "p6", "x2", "p750", "bcl"], "TWAP fin sauts + carnet BTC": ["p6", "x2", "p750", "bcl"], "TWAP fin sauts + carnet ecart serre BTC": ["x2", "bcl"], "TWAP fin sauts + foule bybit x2 BTC": ["x2", "bcl"], "TWAP fin sauts BTC": ["x2", "bcl"], "V2-F incertitude 0,01 % + foule bybit x2 BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige : V2-F + pas les deux baissent + carnet BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC": ["p12", "p6", "x2", "elan", "bcl"], "corrige : V2-F ecart qui grandit + carnet BTC": ["p12", "x2", "elan", "b6", "bcl"], "corrige : V2-F ecart qui grandit + carnet ecart serre BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige : desaccord 20 + carnet BTC": ["p12", "x2", "b6", "bcl"], "corrige : desaccord 20 + carnet ecart serre BTC": ["p12", "x2", "b6", "bcl"], "corrige : desaccord 20 + foule bybit x2 BTC": ["p12", "p6", "x2", "elan", "b6", "bcl"], "corrige marge mesuree : V2-F + foule bybit x2 BTC": ["p12", "p6", "x2", "p750", "b6", "bcl"]};
 const ZERO3_DEPUIS = "2026-10-25T14:00:00Z";
 const ZERO5_DEPUIS = "2026-10-26T20:52:00Z";     // 26.10.2026 21:52 heure suisse : démarrage du paper du bot de trading (onglet 6)
-const ZERO5_NUMS = [101];     // = stratégies ACTIVES du bot de trading (29.10.2026 17:01, Pitch : à remettre à jour à chaque changement)
+const ZERO5_NUMS = [101, 201, 121, 28, 119];     // numéros comptés depuis le 26.10 21:52 ; depuis le 29.10 la liste vient du bot de trading (botStratsMaj)
 const ZERO4_DEPUIS = "2026-10-26T11:00:00Z";     // 26.10.2026 12:00 heure suisse : onglet 5, tout remis à 0
 // 26.10.2026 11:16 (Pitch : « rajoute de l'onglet 3 les 3 premières stratégies dans l'onglet 4 pour les mêmes jours ») : les 3 premières de l'onglet 3 à cette heure-là
 const ONGLET4_DE3 = ["PORTEFEUILLE 400 + idées BTC", "PORTEFEUILLE 600 + idées BTC", "PORTEFEUILLE 400 corrige + idées BTC"];     // 25.10.2026 15:00 heure suisse : onglet 4, versions « + consensus »
@@ -4042,17 +4073,17 @@ document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("ap
 maj();setInterval(maj,20000);
 </script></body></html>`;
 const PAGE_ZERO5 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 6 — bot de trading</title>${STYLE}</head><body>
-<h1>Onglet 6 — stratégies choisies pour le bot de trading <span class="badge">mode fantôme</span></h1><div class="mu">Seulement les numéros choisis pour le bot de trading (101, 201, 121, 28, 119), comptés depuis le démarrage du paper le 26.10.2026 à 21:52 (heure suisse), avec les règles du bot : versions « + idées » SANS la revente à 60 s, gardées jusqu'au règlement. Mise de base 50 $ (x2 / x3 des idées compris). Calcul environ 10 min après la fin de chaque cycle. À comparer avec le bot de trading : https://72-11-157-70.sslip.io/</div>
+<h1>Onglet 6 — stratégies choisies pour le bot de trading <span class="badge">mode fantôme</span></h1><div class="mu">Exactement les 15 cases de l'onglet Stratégies du bot de trading (lu chaque minute), à la mise de chaque case (x2 / x3 des idées compris). Chaque stratégie est comptée depuis son arrivée dans le bot (101, 201, 121, 28, 119 : depuis le 26.10.2026 21:52), avec les règles du bot : gardée jusqu'au règlement, sans revente. Calcul environ 10 min après la fin de chaque cycle. À comparer avec le bot de trading : https://72-11-157-70.sslip.io/</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <a href="/zero2">Onglet 3 : idées</a> · <a href="/zero3">Onglet 4 : consensus</a> · <a href="/zero4">Onglet 5 : tout à 0</a> · <b>Onglet 6 : bot de trading</b></div>
-<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom de stratégie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur résultat total</option><option value="rend">Trier : meilleur résultat par $ de capital (résultat ÷ mise max sur un cycle)</option><option value="mise">Trier : moins de capital par trade</option><option value="cycle">Trier : moins de capital par cycle</option><option value="creux">Trier : plus petit creux</option></select> <label class="mu">mise max par cycle ≤ <input id="miseMax" inputmode="decimal" placeholder="$" style="width:5em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label> <label class="mu">résultat min <input id="pnlMin" inputmode="decimal" placeholder="$" style="width:6em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom de stratégie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="bot">Ordre des cases du bot</option><option value="pnl">Trier : meilleur résultat total</option><option value="rend">Trier : meilleur résultat par $ de capital (résultat ÷ mise max sur un cycle)</option><option value="mise">Trier : moins de capital par trade</option><option value="cycle">Trier : moins de capital par cycle</option><option value="creux">Trier : plus petit creux</option></select> <label class="mu">mise max par cycle ≤ <input id="miseMax" inputmode="decimal" placeholder="$" style="width:5em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label> <label class="mu">résultat min <input id="pnlMin" inputmode="decimal" placeholder="$" style="width:6em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label>
 <script>(function(){const t=document.getElementById("tri"),m=document.getElementById("miseMax"),p=document.getElementById("pnlMin");
-try{t.value=sessionStorage.getItem("tri")||"pnl";m.value=sessionStorage.getItem("miseMax")||"";p.value=sessionStorage.getItem("pnlMin")||""}catch(e){}
+try{t.value=sessionStorage.getItem("tri5")||"bot";m.value=sessionStorage.getItem("miseMax")||"";p.value=sessionStorage.getItem("pnlMin")||""}catch(e){}
 const moy=(x)=>x.n?(x.mise||0)/x.n:null;
 window.trier=function(L){const mm=parseFloat(m.value),pm=parseFloat(p.value),k=t.value;
 let R=L.filter((x)=>(!(mm>0)||(x.miseMaxCycle>0&&x.miseMaxCycle<=mm))&&(isNaN(pm)||x.pnl>=pm));
-const v={pnl:(x)=>-x.pnl,rend:(x)=>x.miseMaxCycle>0?-x.pnl/x.miseMaxCycle:1e18,mise:(x)=>moy(x)??1e18,cycle:(x)=>x.miseMaxCycle||1e18,creux:(x)=>x.creux??1e18}[k]||((x)=>-x.pnl);
+if(k==="bot")return R;const v={pnl:(x)=>-x.pnl,rend:(x)=>x.miseMaxCycle>0?-x.pnl/x.miseMaxCycle:1e18,mise:(x)=>moy(x)??1e18,cycle:(x)=>x.miseMaxCycle||1e18,creux:(x)=>x.creux??1e18}[k]||((x)=>-x.pnl);
 return R.slice().sort((a,b)=>v(a)-v(b)||b.pnl-a.pnl);};
-const go=()=>{try{sessionStorage.setItem("tri",t.value);sessionStorage.setItem("miseMax",m.value);sessionStorage.setItem("pnlMin",p.value)}catch(e){}if(window.maj)window.maj();};
+const go=()=>{try{sessionStorage.setItem("tri5",t.value);sessionStorage.setItem("miseMax",m.value);sessionStorage.setItem("pnlMin",p.value)}catch(e){}if(window.maj)window.maj();};
 t.addEventListener("change",go);m.addEventListener("input",go);p.addEventListener("input",go);})();</script></div>
 <script>(function(){const i=document.getElementById("cherche");try{i.value=sessionStorage.getItem("cherche")||""}catch(e){}
 function f(){const q=i.value.trim().toLowerCase();try{sessionStorage.setItem("cherche",q)}catch(e){}let n=0;
@@ -4064,10 +4095,10 @@ i.addEventListener("input",f);window.addEventListener("load",()=>{const a=docume
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero5",{cache:"no-store"})).json();const S=window.trier?window.trier(d.strats):d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
-let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH")+" · "+S.length+" stratégies (" + S.filter(x=>x.n>0).length + " ont déjà un trade réglé) · total stratégies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> · total de toutes les versions : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> · cycles en attente de calcul : "+d.enAttente+"</div></div>";
+let h="<div class='card'><div class='mu'>Cases du bot lues à "+(d.botMaj?new Date(d.botMaj).toLocaleTimeString("fr-CH"):"— (pas encore lues)")+" · "+S.length+" stratégies (" + S.filter(x=>x.n>0).length + " ont déjà un trade réglé) · total stratégies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> · total de toutes les versions : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> · cycles en attente de calcul : "+d.enAttente+"</div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade réglé depuis la remise à 0 pour l'instant.</div>";
-else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Stratégie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th><th>Mise moyenne par trade</th><th>Total misé</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseillé</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n° "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"—")+"</td><td style='font-size:.85em'>"+(x.mult||"—")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+else h+="<div class='card'><h2>Stratégies du bot de trading</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Case</th><th>Active</th><th>Mise du bot</th><th>Comptée depuis</th><th>Stratégie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th><th>Mise moyenne par trade</th><th>Total misé</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseillé</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(d.nums.indexOf(x.num)+1)+"</td><td>"+(x.active?"<b class='ok'>oui</b>":"non")+"</td><td>"+(x.miseBot||50)+" $</td><td>"+(x.depuisBot?new Date(x.depuisBot).toLocaleString("fr-CH",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"—")+"</td><td>"+(x.num?"<b>n° "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"—")+"</td><td style='font-size:.85em'>"+(x.mult||"—")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.mise||0)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pertesTot)+"</td><td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*(x.miseBot||50))/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 </script></body></html>`;
