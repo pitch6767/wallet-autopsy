@@ -1,48 +1,48 @@
 == etat
-HTTP 200 0.373959s
+HTTP 200 0.768393s
 == /
-HTTP 200 10017 o 0.215601s
+HTTP 200 10017 o 0.186374s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title><st
 == /numeros
-HTTP 200 4340 o 0.219116s
+HTTP 200 4340 o 0.181035s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Numéros des stra
 == /zero5
-HTTP 200 8558 o 0.215241s
+HTTP 200 8558 o 0.183578s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 6 — bot 
 == /api/zero5
-HTTP 200 2647 o 0.232009s
+HTTP 200 2757 o 0.194482s
 {"depuis":"2026-10-26T20:52:00Z","nums":[101,201,121,28,119],"strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 
 == /api/zero2
-HTTP 200 55900 o 0.247199s
+HTTP 200 59028 o 0.193230s
 {"depuis":"2026-10-24T20:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x
 == /api/zero3
-HTTP 200 159480 o 0.448368s
+HTTP 200 168741 o 0.729932s
 {"depuis":"2026-10-25T14:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x
 == /api/zero4
-HTTP 200 204502 o 0.459545s
+HTTP 200 216227 o 0.201130s
 {"depuis":"2026-10-26T11:00:00Z","strats":[{"nom":"corrige : desaccord 20 + foule bybit x2 + idées BTC","num":105,"ordres":"plusieurs (jusqu'à 2)","
 == /api/classement
-HTTP 200 21260 o 0.417907s
+HTTP 200 21200 o 0.310441s
 {"jours":["2026-10-10","2026-10-11","2026-10-12","2026-10-13","2026-10-14","2026-10-15","2026-10-16","2026-10-17","2026-10-18","2026-10-19","2026-10-2
 == /api/corr_misemax
-HTTP 200 3841 o 0.189334s
+HTTP 200 3841 o 0.176409s
 {"at":"2026-10-28T21:52:24.157Z","by1":2754,"rap":[["onglet 3","PORTEFEUILLE 400 BTC",399.99,158.34],["onglet 3","PORTEFEUILLE 600 BTC",399.99,158.34]
 == /api/memoire
-HTTP 200 2742 o 0.374783s
-{"detail":{"champs":{"trades":38825,"rq":198,"issues":54,"pnl":18,"depuis":14,"n":3,"gains":3,"pertes":3},"nTrades":60,"trade0":{"carnet":302,"journal
+HTTP 200 2795 o 0.538992s
+{"detail":{"champs":{"trades":38950,"rq":204,"issues":54,"pnl":18,"depuis":14,"n":3,"gains":3,"pertes":3},"nTrades":60,"trade0":{"carnet":405,"journal
 == GET flux
 {"clients":1,"actif":true}
-HTTP 200 0.217552s
+HTTP 200 0.209569s
 == upgrade
 HTTP/2 200 
-date: Wed, 28 Oct 2026 22:53:53 GMT
+date: Thu, 29 Oct 2026 06:24:24 GMT
 content-type: application/json
 content-length: 26
 cache-control: no-store
-report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=H0jY%2FmsK8HyxF4mFH%2Fz7S4k41e7AidK9Nv5MUikP%2FUNHdZf2LdEVpfTZybuVaDZWy0xzyR1bZzMOnF%2FnnT0aPlHDnZQHjm1%2Bc8%2BkLcWcNGQyaGOnffcEukQ3pl0WEodHcRosNxWU65gURMfz"}]}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=HBq4y5jAgOraAAr6fEze6v35%2BeX3mGGfVdISc7ImzIkWz%2BlcRfA5nAmteF1xKV4U6c2ueyw9GdLqcmNUiPOkTLjlCm7Dg4NWZc08iz%2BMkRaBCwsZ11HDSsGd3pdfG31f32f0WzFl%2F5FIAc0a"}]}
 nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
 server: cloudflare
-cf-ray: a51d84e58ca5ffdd-STL
+cf-ray: a52018d95d829bd0-MSP
 alt-svc: h3=":443"; ma=86400
 
 {"clients":1,"actif":true}
