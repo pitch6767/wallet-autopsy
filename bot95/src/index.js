@@ -143,6 +143,13 @@ export default {
     // qui ne répond qu'aux signaux, au réveil et à un état minimal. Sans MOTEUR (bot95) : rien ne change.
     if (env.MOTEUR === "signaux") return stub(env).fetch(req);
     const pathname = new URL(req.url).pathname;
+    // 29.10.2026 (Pitch : « on utilise Cloudflare pour Binance ») : relais du flux public Binance pour le moteur local de Dublin
+    // (Binance refuse le serveur de Dublin : 451). Seul le serveur de Dublin peut l'utiliser. Rien n'est stocké, aucun objet n'est réveillé.
+    if (pathname.startsWith("/relais/binance/")) {
+      if ((req.headers.get("cf-connecting-ip") || "") !== "72.11.157.70") return new Response("interdit", { status: 403 });
+      const u = new URL(req.url), cible = "https://stream.binance.com:443/" + pathname.slice("/relais/binance/".length) + u.search;
+      return fetch(cible, { headers: { Upgrade: "websocket" } });
+    }
     // 28.10.2026 : objet surchargé (« Durable Object is overloaded ») — les envois du labo rapide sont mis en pause ici, avant l'objet,
     // le temps qu'il récupère. Le labo garde ses données et les renverra (il réessaie tout seul).
     if (req.method === "POST" && pathname.startsWith("/api/rapide/")) return new Response("pause", { status: 503 });
