@@ -1,4 +1,4 @@
-deploiement 2026-10-28T22:51:20Z
+deploiement 2026-10-29T06:33:09Z
 Binding                                     Resource                  
 env.BOT (Bot)                               Durable Object            
 env.MOTEUR ("signaux")                      Environment Variable      
@@ -6,25 +6,25 @@ env.MODE_REEL ("non")                       Environment Variable
 env.SIGNAL_FLUX ("oui")                     Environment Variable      
 env.SIGNAL_NUMS ("101,201,121,28,119")      Environment Variable      
 
-Uploaded bot95-signaux (1.79 sec)
-Deployed bot95-signaux triggers (0.97 sec)
+Uploaded bot95-signaux (3.41 sec)
+Deployed bot95-signaux triggers (0.91 sec)
   https://bot95-signaux.pitch67.workers.dev
   schedule: * * * * *
-Current Version ID: f0643023-5f47-4452-a751-1a1fea8562a9
+Current Version ID: 52006fbb-6670-40c7-a93a-1986da4def55
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 == cle_signaux
 {"alg":"ECDSA P-256 SHA-256","cle":{"kty":"EC","crv":"P-256","x":"8plaAFPlb5b7JBEjG0hVOWS-UTwqbHcfOloJa-OjrVU","y":"dzXFP3hNZtpb31YQodmKyUi4qjWod9GFu1qMgs6f290"}}
-HTTP 200 0.561101s
+HTTP 200 0.260991s
 == flux_signaux (GET)
-{"clients":0,"actif":true}
+{"clients":1,"actif":true}
 HTTP 200
 == /api/etat (doit etre 404)
 HTTP 404
 == / (doit etre 404)
 HTTP 404
 == statut 1
-{"moteur":"signaux","heure":"2026-10-28T22:50:35.009Z","nums":"101,201,121,28,119","clients":0,"ages_s":{"perp":0.69,"okx":0.12,"bn":0.28,"cb":0.17,"cl":0.45},"flux":{"perp":true,"okx":true,"bn":true,"cb":true,"cl":true,"poly":true,"act":true},"cycle":{"start":1793227800,"slug":"btc-updown-5m-1793227800","prixABattre":81201.48043573347,"source":"crypto-price"},"ouvertes":0,"strategies":0,"reglements":0,"margeMesureeBTC":12,"minutesDuo":2,"reconnexions":{"act":1,"cl":1,"cb":1,"perp":1,"okx":1,"bn":1,"poly":2},"erreurs":[],"journal":[]}
+{"moteur":"signaux","heure":"2026-10-29T06:32:23.724Z","nums":"101,201,121,28,119","clients":1,"ages_s":{"perp":0.32,"okx":0.23,"bn":0.84,"cb":0.01,"cl":1.46},"flux":{"perp":true,"okx":true,"bn":true,"cb":true,"cl":true,"poly":true,"act":true},"cycle":{"start":1793255400,"slug":"btc-updown-5m-1793255400","prixABattre":80005.61051943082,"source":"moyenne Chainlink 60 s"},"ouvertes":0,"strategies":29,"reglements":65,"margeMesureeBTC":16.453035863003503,"minutesDuo":75,"reconnexions":{"cl":6,"poly":139,"act":26,"cb":1,"okx":1,"perp":2,"bn":1},"erreurs":["06:26:28 flux poly fermé: code 1013","06:22:09 flux poly fermé: code 1013","06:15:33 flux cl fermé: code 1006","06:07:46 flux poly fermé: code 1013","05:18:53 flux poly fermé: code 1013","04:58:11 flux poly fermé: code 1006","04:57:52 flux poly fermé: code 1013","03:55:20 flux poly fermé: code 1013","03:55:17 flux perp fermé: code 1006","03:37:11 flux poly fermé: code 1013","02:30:52 flux poly fermé: code 1013","01:26:43 BTC: BTC prix d'ouverture HTTP 400"],"journal":[{"at":"2026-10-29T06:25:34.480Z","num":201,"nom":"PORTEFEUILLE 400","depuis":"V2-F incertitude 0,01 %","cote":"Down","prix":0.45,"statut":"diffusé","mult":1,"clients":1},{"at":"2026-10-29T06:25:34.480Z","num":101,"nom":"PORTEFEUILLE 400","depuis":"V2-F incertitude 0,01 %","cote":"Down","prix":0.45,"statut":"diffusé","mult":1,"clients":1},{"at":"2026-10-29T06:09:18.092Z","num":119,"nom":"TWAP fin quantiles + carnet ecart serre","depuis":"TWAP fin quantiles","cote":"Down","prix":0.16,"statut":"diffusé","mult":3,"clients":1},{"at":"2026-10-29T06:09:18.092Z","num":121,"nom":"TWAP fin sauts + carnet","depuis":"TWAP fin sauts","cote":"Down","prix":0.16,"statut":"diffusé","mult":3,"clients":1},{"at":"2026-10-29T06:09:18.092Z","num":201,"nom":"PORTEFEUILLE 400","depuis":"TWAP fin sauts","cote":"Down","prix":0.16,"statut":"diffusé","mult":2,"clients":1},{"at":"2026-10-29T06:09:18.092Z","num":101,"nom":"PORTEFEUILLE 400","depuis":"TWAP fin sauts","cote":"Down","prix":0.16,"statut":"diffusé","mult":6,"clients":1},{"at":"2026-10-29T05:44:01.292Z","num":119,"nom":"TWAP fin quantiles + carnet ecart serre","depuis":"TWAP fin quantiles","cote":"Up","prix":0.2,"statut":"diffusé","mult":1,"clients":1},{"at":"2026-10-29T05:44:01.292Z","num":121,"nom":"TWAP fin sauts + carnet","depuis":"TWAP fin sauts","cote":"Up","prix":0.2,"statut":"diffusé","mult":1,"clients":1},{"at":"2026-10-29T05:38:35.531Z","num":201,"nom":"PORTEFEUILLE 400","depuis":"V2-F
 == statut 2
-{"moteur":"signaux","heure":"2026-10-28T22:51:20.203Z","nums":"101,201,121,28,119","clients":0,"ages_s":{"perp":5.48,"okx":1.28,"bn":0.11,"cb":0.14,"cl":0.24},"flux":{"perp":true,"okx":true,"bn":true,"cb":true,"cl":true,"poly":true,"act":true},"cycle":{"start":1793227800,"slug":"btc-updown-5m-1793227800","prixABattre":81201.48043573347,"source":"crypto-price"},"ouvertes":0,"strategies":0,"reglements":1,"margeMesureeBTC":12,"minutesDuo":3,"reconnexions":{"act":1,"cl":1,"cb":1,"perp":1,"okx":1,"bn":1,"poly":2},"erreurs":[],"journal":[]}
+{"moteur":"signaux","heure":"2026-10-29T06:33:08.793Z","nums":"101,201,121,28,119","clients":1,"ages_s":{"perp":0.64,"okx":1.12,"bn":0.65,"cb":0.09,"cl":0.41},"flux":{"perp":true,"okx":true,"bn":true,"cb":true,"cl":true,"poly":true,"act":true},"cycle":{"start":1793255400,"slug":"btc-updown-5m-1793255400","prixABattre":80005.61051943082,"source":"moyenne Chainlink 60 s"},"ouvertes":0,"strategies":29,"reglements":65,"margeMesureeBTC":16.453035863003503,"minutesDuo":75,"reconnexions":{"cl":6,"poly":140,"act":26,"cb":1,"okx":1,"perp":2,"bn":1},"erreurs":["06:26:28 flux poly fermé: code 1013","06:22:09 flux poly fermé: code 1013","06:15:33 flux cl fermé: code 1006","06:07:46 flux poly fermé: code 1013","05:18:53 flux poly fermé: code 1013","04:58:11 flux poly fermé: code 1006","04:57:52 flux poly fermé: code 1013","03:55:20 flux poly fermé: code 1013","03:55:17 flux perp fermé: code 1006","03:37:11 flux poly fermé: code 1013","02:30:52 flux poly fermé: code 1013","01:26:43 BTC: BTC prix d'ouverture HTTP 400"],"journal":[{"at":"2026-10-29T06:25:34.480Z","num":201,"nom":"PORTEFEUILLE 400","depuis":"V2-F incertitude 0,01 %","cote":"Down","prix":0.45,"statut":"diffusé","mult":1,"clients":1},{"at":"2026-10-29T06:25:34.480Z","num":101,"nom":"PORTEFEUILLE 400","depuis":"V2-F incertitude 0,01 %","cote":"Down","prix":0.45,"statut":"diffusé","mult":1,"clients":1},{"at":"2026-10-29T06:09:18.092Z","num":119,"nom":"TWAP fin quantiles + carnet ecart serre","depuis":"TWAP fin quantiles","cote":"Down","prix":0.16,"statut":"diffusé","mult":3,"clients":1},{"at":"2026-10-29T06:09:18.092Z","num":121,"nom":"TWAP fin sauts + carnet","depuis":"TWAP fin sauts","cote":"Down","prix":0.16,"statut":"diffusé","mult":3,"clients":1},{"at":"2026-10-29T06:09:18.092Z","num":201,"nom":"PORTEFEUILLE 400","depuis":"TWAP fin sauts","cote":"Down","prix":0.16,"statut":"diffusé","mult":2,"clients":1},{"at":"2026-10-29T06:09:18.092Z","num":101,"nom":"PORTEFEUILLE 400","depuis":"TWAP fin sauts","cote":"Down","prix":0.16,"statut":"diffusé","mult":6,"clients":1},{"at":"2026-10-29T05:44:01.292Z","num":119,"nom":"TWAP fin quantiles + carnet ecart serre","depuis":"TWAP fin quantiles","cote":"Up","prix":0.2,"statut":"diffusé","mult":1,"clients":1},{"at":"2026-10-29T05:44:01.292Z","num":121,"nom":"TWAP fin sauts + carnet","depuis":"TWAP fin sauts","cote":"Up","prix":0.2,"statut":"diffusé","mult":1,"clients":1},{"at":"2026-10-29T05:38:35.531Z","num":201,"nom":"PORTEFEUILLE 400","depuis":"V2-F
