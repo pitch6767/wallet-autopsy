@@ -24480,7 +24480,7 @@ var Bot = class {
       for (const id of Object.keys(this.pb)) if (!jetons.includes(id)) delete this.pb[id];
       this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPoly(m), "PING", 1e4);
     }
-    if (!this.ws.act || muet("act") > 30 && depuis("act") > 30) this.connecter(
+    if (!this.SG && (!this.ws.act || muet("act") > 30 && depuis("act") > 30)) this.connecter(
       "act",
       "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "activity", type: "trades" }] })],
@@ -24597,7 +24597,7 @@ var Bot = class {
     });
   }
   noter(a, k, p, t) {
-    if (V1.ACTIFS.includes(a) && EVT_SRC[k]) {
+    if (!this.SG && V1.ACTIFS.includes(a) && EVT_SRC[k]) {
       const last = (this._evL = this._evL || {})[a + k];
       if (last !== p) {
         this._evL[a + k] = p;
@@ -24669,7 +24669,7 @@ var Bot = class {
           }
         }
       }
-      if (V1.ACTIFS.includes(a)) {
+      if (!this.SG && V1.ACTIFS.includes(a)) {
         const ac = this.bbAcc(a);
         for (const y of m.data || []) {
           const u2 = +y.v * +y.p;
@@ -25215,8 +25215,10 @@ var Bot = class {
       for (const x of m) this.surPoly(x);
       return;
     }
-    (this.polyRaw = this.polyRaw || []).unshift(JSON.stringify(m).slice(0, 300));
-    this.polyRaw.length = Math.min(this.polyRaw.length, 6);
+    if (!this.SG) {
+      (this.polyRaw = this.polyRaw || []).unshift(JSON.stringify(m).slice(0, 300));
+      this.polyRaw.length = Math.min(this.polyRaw.length, 6);
+    }
     const t = now(), ts = +m.timestamp > 1e12 ? +m.timestamp / 1e3 : +m.timestamp;
     if (ts) {
       this.latPoly.push(t - ts);
@@ -25234,11 +25236,14 @@ var Bot = class {
       const ch = m.price_changes || (m.changes || []).map((c) => ({ ...c, asset_id: m.asset_id }));
       for (const c of ch) {
         const L = livre(c.asset_id), cote = c.side === "BUY" ? L.bids : L.asks, avant = cote.get(+c.price) || 0, apres = +c.size;
-        if (apres < avant) this.noterFlux(c.asset_id, "retrait_" + (c.side === "BUY" ? "achat" : "vente"), (avant - apres) * +c.price, t);
+        if (!this.SG && apres < avant) this.noterFlux(c.asset_id, "retrait_" + (c.side === "BUY" ? "achat" : "vente"), (avant - apres) * +c.price, t);
         {
-          const z = this.pmAcc(c.asset_id), cs = c.side === "BUY" ? "achat" : "vente";
-          if (apres < avant) z["retrait_" + cs] += (avant - apres) * +c.price;
-          else z["ajout_" + cs] += (apres - avant) * +c.price;
+          const cs = c.side === "BUY" ? "achat" : "vente";
+          if (!this.SG) {
+            const z = this.pmAcc(c.asset_id);
+            if (apres < avant) z["retrait_" + cs] += (avant - apres) * +c.price;
+            else z["ajout_" + cs] += (apres - avant) * +c.price;
+          }
           const z2 = this.sigP(c.asset_id);
           if (apres < avant) z2["retrait_" + cs] += (avant - apres) * +c.price;
           else z2["ajout_" + cs] += (apres - avant) * +c.price;
@@ -25259,12 +25264,14 @@ var Bot = class {
         R.push([t, m.asset_id, m.side === "BUY" ? 1 : 0, +m.price * +m.size]);
         while (R.length && R[0][0] < t - 35) R.shift();
       }
-      this.noterFlux(m.asset_id, "echange_" + (m.side === "BUY" ? "achat" : "vente"), +m.price * +m.size, t);
-      this.pmAcc(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size;
+      if (!this.SG) {
+        this.noterFlux(m.asset_id, "echange_" + (m.side === "BUY" ? "achat" : "vente"), +m.price * +m.size, t);
+        this.pmAcc(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size;
+      }
       this.sigP(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size;
       this.v1Echange(m.asset_id, m.side, +m.price, +m.size);
     } else return;
-    try {
+    if (!this.SG) try {
       const ids = ev === "price_change" ? [...new Set((m.price_changes || []).map((c) => c.asset_id))] : [m.asset_id];
       for (const jid of ids) {
         const a2 = this.actifDuJeton(jid);
@@ -25842,7 +25849,7 @@ var Bot = class {
     const P = { strat, actif: a, start: mk.start, end: mk.end, slug: mk.slug, up: mk.up, down: mk.down, U: 0, D: 0, cash: 0, heure: (/* @__PURE__ */ new Date()).toISOString(), journal: [], ...extra };
     if (STOPPEES.has(strat + "|" + a)) {
       P.stoppee = true;
-      try {
+      if (!this.SG) try {
         this.consensusK2(strat, a, mk, extra || {});
       } catch (err) {
         this.erreur("consensus K2", err);
@@ -25858,7 +25865,7 @@ var Bot = class {
         this.erreur("signal live", err);
       }
     }
-    try {
+    if (!this.SG) try {
       this.consensusK2(strat, a, mk, extra || {});
     } catch (err) {
       this.erreur("consensus K2", err);
@@ -26988,7 +26995,7 @@ var Bot = class {
   nEval(a, mk, pu) {
     const t = now(), tleft = mk.end - t;
     (this._puA = this._puA || {})[a] = pu;
-    try {
+    if (!this.SG) try {
       this.nManq(a, mk, pu, t, tleft);
     } catch (_) {
     }
@@ -27047,7 +27054,7 @@ var Bot = class {
     } catch (err) {
       this.erreur("d\xE9saccord V2", err);
     }
-    try {
+    if (!this.SG) try {
       this.dConfirme(a, mk, pu, tleft);
     } catch (err) {
       this.erreur("d\xE9saccord confirm\xE9", err);
@@ -27059,7 +27066,7 @@ var Bot = class {
         this.erreur("d\xE9saccords nouveaux", err);
       }
     }
-    if (tleft >= NV.DESACCORD.TMIN) for (const [nom, ecart2] of Object.entries(NV.DESACCORD.VARIANTES)) {
+    if (tleft >= NV.DESACCORD.TMIN && !this.SG) for (const [nom, ecart2] of Object.entries(NV.DESACCORD.VARIANTES)) {
       if (!NV.ACTIVES.includes(nom)) continue;
       if (this.N.ouvertes.some((P) => P.strat === nom && P.actif === a && P.start === mk.start) || (this._dsF || {})[nom + a] === mk.start) continue;
       const nuit = (NV.DESACCORD.NUIT || {})[nom];
@@ -27120,7 +27127,7 @@ var Bot = class {
   }
   // ---- échanges Polymarket : remplissage prudent des offres maker (un vendeur doit passer 1 cent sous notre offre)
   nEchange(id, side, p, size4) {
-    try {
+    if (!this.SG) try {
       this.nManqEchange(id, side, p);
     } catch (_) {
     }
@@ -27459,11 +27466,11 @@ var Bot = class {
       return null;
     }, "ilya");
     const niveaux = /* @__PURE__ */ __name((idv) => this.livreTrie(idv, "asks").slice(0, 8).map(([p, z]) => [p, Math.round(z)]), "niveaux");
-    for (const P of this.N.ouvertes) {
+    if (!this.SG) for (const P of this.N.ouvertes) {
       if (P.actif !== a || P.start !== mk.start || !P.carnet || !P.t0) continue;
       for (const d of [1, 3, 10]) if (!P.carnet[d] && t - P.t0 >= d) P.carnet[d] = niveaux(P.cote === "Up" ? mk.up : mk.down);
     }
-    for (const P of this.N.ouvertes) {
+    if (!this.SG) for (const P of this.N.ouvertes) {
       if (P.actif !== a || P.start !== mk.start || !P.strat.startsWith("corrige :") || !P.strat.includes("sortie -10")) continue;
       const parts = P.cote === "Up" ? P.U : P.D;
       if (!(parts > 0)) continue;
@@ -27487,7 +27494,7 @@ var Bot = class {
       this.nNote(P, `mod\xE8le corrig\xE9 pass\xE9 de ${P.proba0} \xE0 ${fair.toFixed(3)} \u2192 revente de ${(parts - reste).toFixed(1)} parts pour ${recu.toFixed(2)} $`);
       this.nSauver();
     }
-    if (a === "BTC") {
+    if (a === "BTC" && !this.SG) {
       const hb = H.hb = H.hb || [];
       hb.push([now(), ua ? ua[0] : null, ua ? ua[1] : null, da ? da[0] : null, da ? da[1] : null]);
       while (hb.length && now() - hb[0][0] > 4) hb.shift();
@@ -27548,7 +27555,7 @@ var Bot = class {
           if (pq != null) V["TWAP fin quantiles"] = pq;
         } catch (_) {
         }
-        try {
+        if (!this.SG) try {
           const ts2 = Math.floor(now()), hs2 = H.sante = H.sante || { nom: "sante", start: mk.start, n: 0, sp: 0, sp2: 0, sm: 0, sm2: 0, calme: 0, last: 0 };
           const bu = this.livreTrie(mk.up, "bids")[0], au = ua;
           if (ts2 !== hs2.last && bu && au && au[0] != null) {
@@ -27573,7 +27580,7 @@ var Bot = class {
           for (const up of [true, false]) {
             const k = up ? ua : da, fair = up ? p4 : 1 - p4;
             if (!k || k[0] < 0.02 || k[0] > 0.98 || fair - k[0] < 0.2) continue;
-            this.twSignal(H, nom, mk, up, tleft, fair, k);
+            if (!this.SG) this.twSignal(H, nom, mk, up, tleft, fair, k);
             const r = this.nAcheter(up ? mk.up : mk.down, 50 / k[0], k[0]);
             if (r.parts < 1) continue;
             H.fait[nom] = true;
@@ -27632,7 +27639,7 @@ var Bot = class {
                 etat: "attente",
                 nom: NC
               };
-              this.twSignal(H, NC, mk, up, tleft, fair, k);
+              if (!this.SG) this.twSignal(H, NC, mk, up, tleft, fair, k);
               break;
             }
           } else if (H.twc.etat === "attente" && clDer[2] != null && now() - H.twc.tSignal >= 0.5 && clDer[2] > (H.twc.clRecu || 0) && clDer[3] != null && clDer[3] !== H.twc.clValeur) {
@@ -27682,7 +27689,7 @@ var Bot = class {
         }
       }
     }
-    if (a === "BTC" && H.tws) {
+    if (a === "BTC" && H.tws && !this.SG) {
       for (const S of Object.values(H.tws)) {
         if (S.ecrit) continue;
         const idv = S.cote === "Up" ? mk.up : mk.down, dt = now() - S.t0;
@@ -27697,7 +27704,7 @@ var Bot = class {
         }
       }
     }
-    if (a === "BTC" && H.sante && !H.sante.ecrit && tleft < 20) {
+    if (a === "BTC" && H.sante && !H.sante.ecrit && tleft < 20 && !this.SG) {
       H.sante.ecrit = true;
       if (H.sante.n >= 10) this.twJournal("sante", H.sante);
     }
@@ -27730,6 +27737,7 @@ var Bot = class {
       };
       for (const [nom, ok] of Object.entries(W)) {
         if (!ok || H.fait[nom] || !NV.ACTIVES.includes(nom)) continue;
+        if (this.SG && (nom === "corrige : V2-F + garde-fou" || nom === "corrige : zone + Binance et perp + sortie -10")) continue;
         if (nom !== "corrige marge mesuree : V2-F" && edge < 0.2) continue;
         const r = this.nAcheter(up ? mk.up : mk.down, 50 / k[0], k[0] + 0.01);
         if (r.parts < 1) continue;
@@ -27770,7 +27778,7 @@ var Bot = class {
       H.r.push({ t, pu, pu2, pu3, pu4, um: (ub[0] + ua[0]) / 2, dm: (db[0] + da[0]) / 2, ua: ua[0], da: da[0], perp: px("perp"), okx: px("okx"), bn: px("bn"), cb: px("cb") });
       while (H.r.length && t - H.r[0].t > 12) H.r.shift();
       const VRr = (this._vr = this._vr || {})[a] = this._vr[a] || [];
-      if (px("perp")) {
+      if (px("perp") && !this.SG) {
         VRr.push({ t, p: px("perp") });
         while (VRr.length && t - VRr[0].t > 60) VRr.shift();
       }
@@ -27779,7 +27787,7 @@ var Bot = class {
       this.dCorrige(a, mk, tleft, ua, da, H, px);
       return;
     }
-    try {
+    if (!this.SG) try {
       this.blinkSuivre(a, mk, pu, tleft, ua, da, H);
     } catch (err) {
       this.erreur("qui converge", err);
@@ -27789,7 +27797,7 @@ var Bot = class {
     } catch (err) {
       this.erreur("mod\xE8le corrig\xE9", err);
     }
-    for (const P of this.N.ouvertes) {
+    if (!this.SG) for (const P of this.N.ouvertes) {
       if (P.actif !== a || P.start !== mk.start || !P.strat.includes("sortie modele -10")) continue;
       const parts = P.cote === "Up" ? P.U : P.D;
       if (!(parts > 0)) continue;
@@ -27837,7 +27845,7 @@ var Bot = class {
         this.nSauver();
       }
     }
-    if (tleft > 60) for (const up of [true, false]) {
+    if (tleft > 60 && !this.SG) for (const up of [true, false]) {
       const k = up ? ua : da, fair = up ? pu : 1 - pu, sg = up ? 1 : -1;
       if (k[0] < 0.15 || k[0] >= 0.6 || fair - k[0] < 0.3) continue;
       const h3 = il_y_a(3), last = H.r[H.r.length - 1], dz = /* @__PURE__ */ __name((src) => h3 && h3[src] && last[src] ? (last[src] - h3[src]) * sg : 0, "dz");
@@ -27868,7 +27876,7 @@ var Bot = class {
         this.nSauver();
       }
     }
-    for (const up of [true, false]) {
+    if (!this.SG) for (const up of [true, false]) {
       const k = up ? ua : da, fair = up ? pu : 1 - pu, edge = fair - k[0], sg = up ? 1 : -1;
       if (k[0] < 0.03 || k[0] > 0.97 || edge < 0.2) continue;
       const edgeDe = /* @__PURE__ */ __name((x) => up ? x.pu - x.ua : 1 - x.pu - x.da, "edgeDe"), midDe = /* @__PURE__ */ __name((x) => up ? x.um : x.dm, "midDe");
@@ -27945,7 +27953,7 @@ var Bot = class {
     } catch (err) {
       this.erreur("V2-F 0,01 %", err);
     }
-    try {
+    if (!this.SG) try {
       this.diversite(a, mk, H, pu, tleft, ua, da, t);
     } catch (err) {
       this.erreur("diversit\xE9", err);
@@ -28155,7 +28163,7 @@ var Bot = class {
       H.fait[nom] = true;
       const fo = up ? last.pu : 1 - last.pu;
       const r = this.v2fxAcheter(nom, a, mk, up, k, fair, tleft, `\xE9cart ${edge.toFixed(2)} avec 0,01 % (mod\xE8le 0,08 % : ${fo != null ? fo.toFixed(3) : "\u2014"})`);
-      this.v2fxJournal({
+      if (!this.SG) this.v2fxJournal({
         start: mk.start,
         nom,
         t: +t.toFixed(3),

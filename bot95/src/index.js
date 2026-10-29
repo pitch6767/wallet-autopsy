@@ -1074,7 +1074,8 @@ export class Bot {
       this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPoly(m), "PING", 10000);
     }
     // 12.10.2026 22:01 (Pitch) : flux public « activity/trades » (portefeuilles) pour le fantôme « consensus K5 anti-bête » (étude H1054).
-    if (!this.ws.act || (muet("act") > 30 && depuis("act") > 30)) this.connecter("act", "https://ws-live-data.polymarket.com",
+    // 29.10.2026 (allègement du moteur de signaux seul) : ce flux ne sert qu'au consensus K5 anti-bête, qui ne produit aucun nom affiché → pas abonné en mode signaux
+    if (!this.SG && (!this.ws.act || (muet("act") > 30 && depuis("act") > 30))) this.connecter("act", "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "activity", type: "trades" }] })], (m) => this.surAct(m), "PING", 5000);
     if (!this.ws.cl || (muet("cl") > 20 && depuis("cl") > 20)) this.connecter("cl", "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surCl(m), "PING", 5000);
@@ -1134,7 +1135,7 @@ export class Bot {
     if (B.bloc % 40 === 0) this.state.storage.list({ prefix: "evt:", limit: 400 }).then((m2) => { const ks = [...m2.keys()].filter((k) => +k.slice(4) < B.bloc - 5760).slice(0, 120); if (ks.length) this.state.storage.delete(ks); }).catch(() => {});
   }
   noter(a, k, p, t) {
-    if (V1.ACTIFS.includes(a) && EVT_SRC[k]) { const last = (this._evL = this._evL || {})[a + k]; if (last !== p) { this._evL[a + k] = p; this.evt(a[0] + EVT_SRC[k], p); } }
+    if (!this.SG && V1.ACTIFS.includes(a) && EVT_SRC[k]) { const last = (this._evL = this._evL || {})[a + k]; if (last !== p) { this._evL[a + k] = p; this.evt(a[0] + EVT_SRC[k], p); } }
     this.f[a][k] = { p, t };
     // H1077 (Pitch 14.10.2026 00:18) : sauts Bybit vus en premier (≥ 5 $ en 0,3 s, OKX / Binance / Coinbase pas bougé de 2 $ dans le même sens)
     if (a === "BTC" && (k === "perp" || k === "okx" || k === "bn" || k === "cb")) { try {
@@ -1157,7 +1158,7 @@ export class Bot {
     if (!a) return;
     if (tp.startsWith("publicTrade")) {
       if (V1.ACTIFS.includes(a)) { const sg = this.sigB(a); for (const y of m.data || []) { const u2 = +y.v * +y.p; sg.n++; if (y.S === "Buy") { sg.ach += u2; sg.max_ach = Math.max(sg.max_ach, u2); } else { sg.ven += u2; sg.max_ven = Math.max(sg.max_ven, u2); } } }
-      if (V1.ACTIFS.includes(a)) { const ac = this.bbAcc(a); for (const y of m.data || []) { const u2 = +y.v * +y.p; ac.n++; if (y.S === "Buy") { ac.ach += u2; ac.max_ach = Math.max(ac.max_ach, u2); } else { ac.ven += u2; ac.max_ven = Math.max(ac.max_ven, u2); } } }
+      if (!this.SG && V1.ACTIFS.includes(a)) { const ac = this.bbAcc(a); for (const y of m.data || []) { const u2 = +y.v * +y.p; ac.n++; if (y.S === "Buy") { ac.ach += u2; ac.max_ach = Math.max(ac.max_ach, u2); } else { ac.ven += u2; ac.max_ven = Math.max(ac.max_ven, u2); } } }
       const x = (m.data || []).slice(-1)[0];
       if (x) { this.noter(a, "perp", +x.p, t); if (V1.ACTIFS.includes(a)) this.v1Declencher(a, "perp", +x.T / 1000, t); }
     }
@@ -1493,7 +1494,7 @@ export class Bot {
   // ------------------------------------------------------------------ V1 temps réel
   surPoly(m) {
     if (Array.isArray(m)) { for (const x of m) this.surPoly(x); return; }
-    (this.polyRaw = this.polyRaw || []).unshift(JSON.stringify(m).slice(0, 300)); this.polyRaw.length = Math.min(this.polyRaw.length, 6);
+    if (!this.SG) { (this.polyRaw = this.polyRaw || []).unshift(JSON.stringify(m).slice(0, 300)); this.polyRaw.length = Math.min(this.polyRaw.length, 6); }   // 29.10.2026 : page de diagnostic seulement
     const t = now(), ts = +m.timestamp > 1e12 ? +m.timestamp / 1000 : +m.timestamp;
     if (ts) { this.latPoly.push(t - ts); if (this.latPoly.length > 400) this.latPoly.shift(); }
     const livre = (id) => (this.pb[id] = this.pb[id] || { bids: new Map(), asks: new Map() });
@@ -1504,21 +1505,20 @@ export class Bot {
       const ch = m.price_changes || (m.changes || []).map((c) => ({ ...c, asset_id: m.asset_id }));
       for (const c of ch) {
         const L = livre(c.asset_id), cote = c.side === "BUY" ? L.bids : L.asks, avant = cote.get(+c.price) || 0, apres = +c.size;
-        if (apres < avant) this.noterFlux(c.asset_id, "retrait_" + (c.side === "BUY" ? "achat" : "vente"), (avant - apres) * +c.price, t);
-        { const z = this.pmAcc(c.asset_id), cs = c.side === "BUY" ? "achat" : "vente"; if (apres < avant) z["retrait_" + cs] += (avant - apres) * +c.price; else z["ajout_" + cs] += (apres - avant) * +c.price;
+        if (!this.SG && apres < avant) this.noterFlux(c.asset_id, "retrait_" + (c.side === "BUY" ? "achat" : "vente"), (avant - apres) * +c.price, t);   // 29.10.2026 : V1 seulement (arrêtée)
+        { const cs = c.side === "BUY" ? "achat" : "vente"; if (!this.SG) { const z = this.pmAcc(c.asset_id); if (apres < avant) z["retrait_" + cs] += (avant - apres) * +c.price; else z["ajout_" + cs] += (apres - avant) * +c.price; }
           const z2 = this.sigP(c.asset_id); if (apres < avant) z2["retrait_" + cs] += (avant - apres) * +c.price; else z2["ajout_" + cs] += (apres - avant) * +c.price; }
         apres ? cote.set(+c.price, apres) : cote.delete(+c.price); L.v = (L.v || 0) + 1; L.tRecu = t; L.tsPoly = ts || null;
         { const R = (this._pch = this._pch || []); R.push([t, c.asset_id, c.side === "BUY" ? 0 : 1, +c.price, apres - avant]); while (R.length && R[0][0] < t - 5) R.shift(); }
       }
     } else if (ev === "last_trade_price") {
       { const R = (this._ltp = this._ltp || []); R.push([t, m.asset_id, m.side === "BUY" ? 1 : 0, +m.price * +m.size]); while (R.length && R[0][0] < t - 35) R.shift(); }
-      this.noterFlux(m.asset_id, "echange_" + (m.side === "BUY" ? "achat" : "vente"), +m.price * +m.size, t);
-      this.pmAcc(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size;
+      if (!this.SG) { this.noterFlux(m.asset_id, "echange_" + (m.side === "BUY" ? "achat" : "vente"), +m.price * +m.size, t); this.pmAcc(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size; }
       this.sigP(m.asset_id)["echange_" + (m.side === "BUY" ? "achat" : "vente")] += +m.price * +m.size;
       this.v1Echange(m.asset_id, m.side, +m.price, +m.size);
     } else return;
-    // enregistreur au message près : meilleur prix de chaque jeton des cycles en cours, et échanges
-    try {
+    // enregistreur au message près : meilleur prix de chaque jeton des cycles en cours, et échanges (rien en mode signaux : evt n'écrit rien)
+    if (!this.SG) try {
       const ids = ev === "price_change" ? [...new Set((m.price_changes || []).map((c) => c.asset_id))] : [m.asset_id];
       for (const jid of ids) {
         const a2 = this.actifDuJeton(jid); if (!a2) continue;
@@ -1851,7 +1851,7 @@ export class Bot {
     const P = { strat, actif: a, start: mk.start, end: mk.end, slug: mk.slug, up: mk.up, down: mk.down, U: 0, D: 0, cash: 0, heure: new Date().toISOString(), journal: [], ...extra };
     // 13.10.2026 13:27 (Pitch : « Tu peux enlever les stratégies à moins 1000 $ ») : ces stratégies n'ouvrent plus de position (rien n'est compté
     // ni affiché pour elles). Leur signal reste transmis au consensus K2/K5/K9 pour que ces fantômes approuvés restent inchangés.
-    if (STOPPEES.has(strat + "|" + a)) { P.stoppee = true; try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); } return P; }
+    if (STOPPEES.has(strat + "|" + a)) { P.stoppee = true; if (!this.SG) try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); } return P; }
     this.N.ouvertes.push(P);
     // 13.10.2026 21:35 (Pitch : « tes dernières trouvailles avec les autres stratégies du bot ») : on note le déséquilibre du carnet Polymarket
     // de NOTRE jeton au moment de l'achat (5 premiers niveaux, (acheteurs − vendeurs) / total). À la clôture, si > 0, une copie du trade est
@@ -1859,7 +1859,7 @@ export class Bot {
     this.nChamps(P, strat, a, mk, extra);
     // 26.10.2026 : copie de Dublin seulement (SIGNAL_URL) — signal en direct vers le bot de trading pour les stratégies choisies
     if ((this.env.SIGNAL_URL || this.env.SIGNAL_FLUX) && a === "BTC") { try { this.slEmettre(P, mk); } catch (err) { this.erreur("signal live", err); } }
-    try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); }
+    if (!this.SG) try { this.consensusK2(strat, a, mk, extra || {}); } catch (err) { this.erreur("consensus K2", err); }   // 29.10.2026 : consensus K2/K5/K9/anti-bête sans nom affiché → pas calculé en mode signaux
     return P;
   }
   // champs mesurés au moment de l'achat (carnet, écart, flux, passages, saut Bybit, mise doublée, pression) — extrait de nPos le 26.10.2026
@@ -2463,7 +2463,7 @@ export class Bot {
   nEval(a, mk, pu) {
     const t = now(), tleft = mk.end - t;
     (this._puA = this._puA || {})[a] = pu;
-    try { this.nManq(a, mk, pu, t, tleft); } catch (_) {}
+    if (!this.SG) try { this.nManq(a, mk, pu, t, tleft); } catch (_) {}   // 29.10.2026 : statistiques « occasions manquées » (page seulement)
     // 28.10.2026 (allègement) : m97 arrêté (seulement /api/m97 ; REST Binance 5000 niveaux + options Deribit 2 fois par cycle)
     for (const P of this.N.ouvertes) if (P.strat.startsWith("assurance") && P.actif === a && P.start === mk.start && !P.fini) this.gGerer(P, pu);
     for (const P of this.N.ouvertes) if (P.famille === "desaccordG" && P.actif === a && P.start === mk.start) { try { this.dGerer(P, pu); } catch (_) {} }
@@ -2492,10 +2492,10 @@ export class Bot {
       return;
     }
     try { this.dV2(a, mk, pu, tleft); } catch (err) { this.erreur("désaccord V2", err); }
-    try { this.dConfirme(a, mk, pu, tleft); } catch (err) { this.erreur("désaccord confirmé", err); }
+    if (!this.SG) try { this.dConfirme(a, mk, pu, tleft); } catch (err) { this.erreur("désaccord confirmé", err); }   // 29.10.2026 : « desaccord confirme perp » sans nom affiché
     // ---- 4. désaccord : le modèle donne au moins X de plus que le meilleur vendeur → achat, une fois par cycle et par variante
     if (tleft >= NV.DESACCORD.TMIN && !NV.DESACCORD.ARRETES) { try { this.dNouvelles(a, mk, pu, tleft); } catch (err) { this.erreur("désaccords nouveaux", err); } }
-    if (tleft >= NV.DESACCORD.TMIN) for (const [nom, ecart] of Object.entries(NV.DESACCORD.VARIANTES)) {
+    if (tleft >= NV.DESACCORD.TMIN && !this.SG) for (const [nom, ecart] of Object.entries(NV.DESACCORD.VARIANTES)) {   // 29.10.2026 : « desaccord 20 sans nuit » stoppée (consensus seulement), « desaccord 20 » inactive
       if (!NV.ACTIVES.includes(nom)) continue;
       if (this.N.ouvertes.some((P) => P.strat === nom && P.actif === a && P.start === mk.start) || ((this._dsF || {})[nom + a] === mk.start)) continue;
       const nuit = (NV.DESACCORD.NUIT || {})[nom];
@@ -2534,7 +2534,7 @@ export class Bot {
 
   // ---- échanges Polymarket : remplissage prudent des offres maker (un vendeur doit passer 1 cent sous notre offre)
   nEchange(id, side, p, size) {
-    try { this.nManqEchange(id, side, p); } catch (_) {}
+    if (!this.SG) try { this.nManqEchange(id, side, p); } catch (_) {}
     try { this.dMakerEchange(id, side, p, size); } catch (_) {}
     // vendeur du jeton X au prix px (une vente de X, ou un achat de l'autre jeton apparié)
     const vendeur = (X, autre) => (id === X && side === "SELL" ? p : id === autre && side === "BUY" ? 1 - p : null);
@@ -2785,12 +2785,12 @@ export class Bot {
     const ilya = (sec) => { for (let i = H.r.length - 1; i >= 0; i--) if (t - H.r[i].t >= sec) return H.r[i]; return null; };
     // carnet complet (8 niveaux de vendeurs) à l'achat puis 1, 3 et 10 s après — enregistrement seulement (09.10.2026)
     const niveaux = (idv) => this.livreTrie(idv, "asks").slice(0, 8).map(([p, z]) => [p, Math.round(z)]);
-    for (const P of this.N.ouvertes) {
+    if (!this.SG) for (const P of this.N.ouvertes) {   // 29.10.2026 : enregistrement seulement → pas en mode signaux
       if (P.actif !== a || P.start !== mk.start || !P.carnet || !P.t0) continue;
       for (const d of [1, 3, 10]) if (!P.carnet[d] && t - P.t0 >= d) P.carnet[d] = niveaux(P.cote === "Up" ? mk.up : mk.down);
     }
-    // sortie -10 sur le modèle corrigé (avec plancher)
-    for (const P of this.N.ouvertes) {
+    // sortie -10 sur le modèle corrigé (avec plancher) — seule « corrige : zone … sortie -10 » est concernée, pas calculée en mode signaux
+    if (!this.SG) for (const P of this.N.ouvertes) {
       if (P.actif !== a || P.start !== mk.start || !P.strat.startsWith("corrige :") || !P.strat.includes("sortie -10")) continue;
       const parts = P.cote === "Up" ? P.U : P.D; if (!(parts > 0)) continue;
       const fair = P.cote === "Up" ? pu2 : 1 - pu2; if (fair > P.proba0 - 0.10) continue;
@@ -2806,7 +2806,7 @@ export class Bot {
     // Variantes du 10.10.2026 : « sauts » (loi de Student à 4 degrés, même variance) ; « correction spot-perp » (moyenne prévue corrigée de
     // 0,40 × (Binance − perp) + 0,16 × (Coinbase − perp), au prorata de la fenêtre restante — coefficients figés, appris sur 07-09.10).
     // historique court du meilleur vendeur (2 s) pour mesurer le retrait de liquidité au moment des signaux (enregistrement seulement, 10.10.2026)
-    if (a === "BTC") {
+    if (a === "BTC" && !this.SG) {   // 29.10.2026 : sert seulement aux enregistrements twSignal / certificat
       const hb = (H.hb = H.hb || []); hb.push([now(), ua ? ua[0] : null, ua ? ua[1] : null, da ? da[0] : null, da ? da[1] : null]);
       while (hb.length && now() - hb[0][0] > 4) hb.shift();
     }
@@ -2850,7 +2850,7 @@ export class Bot {
           if (pq != null) V["TWAP fin quantiles"] = pq;
         } catch (_) {}
         // moniteur de santé (enregistrement seulement) : une mesure par seconde, probabilité du moteur et milieu du carnet Up
-        try {
+        if (!this.SG) try {
           const ts2 = Math.floor(now()), hs2 = (H.sante = H.sante || { nom: "sante", start: mk.start, n: 0, sp: 0, sp2: 0, sm: 0, sm2: 0, calme: 0, last: 0 });
           const bu = this.livreTrie(mk.up, "bids")[0], au = ua;
           if (ts2 !== hs2.last && bu && au && au[0] != null) {
@@ -2868,7 +2868,7 @@ export class Bot {
           for (const up of [true, false]) {
             const k = up ? ua : da, fair = up ? p4 : 1 - p4;
             if (!k || k[0] < 0.02 || k[0] > 0.98 || fair - k[0] < 0.20) continue;
-            this.twSignal(H, nom, mk, up, tleft, fair, k);
+            if (!this.SG) this.twSignal(H, nom, mk, up, tleft, fair, k);   // enregistrement seulement
             const r = this.nAcheter(up ? mk.up : mk.down, 50 / k[0], k[0]); if (r.parts < 1) continue;
             H.fait[nom] = true;
             try { this.rafaleEmettre(mk, up, k[0], nom); } catch (err) { this.erreur("rafale", err); }   // 29.10.2026 : n° 35
@@ -2895,7 +2895,7 @@ export class Bot {
               if (!k || k[0] < 0.02 || k[0] > 0.98 || !(k[1] > 0) || fair - k[0] < 0.20) continue;
               H.twc = { start: mk.start, cote: up ? "Up" : "Down", tSignal: +now().toFixed(3), restant_s: +tleft.toFixed(1), proba: +fair.toFixed(3), vendeur: k[0], taille: k[1],
                 clObs: clDer[0] ?? null, clRecu: clDer[2] ?? null, clValeur: clDer[3] ?? null, etat: "attente", nom: NC };
-              this.twSignal(H, NC, mk, up, tleft, fair, k);
+              if (!this.SG) this.twSignal(H, NC, mk, up, tleft, fair, k);   // enregistrement seulement
               break;
             }
           } else if (H.twc.etat === "attente" && clDer[2] != null && now() - H.twc.tSignal >= 0.5 && clDer[2] > (H.twc.clRecu || 0) && clDer[3] != null && clDer[3] !== H.twc.clValeur) {
@@ -2921,7 +2921,7 @@ export class Bot {
       }
     }
     // carnets (8 niveaux vendeurs et acheteurs) après chaque signal TWAP fin : 0,25 / 0,5 / 1 / 2 / 5 s — enregistrement seulement (10.10.2026)
-    if (a === "BTC" && H.tws) {
+    if (a === "BTC" && H.tws && !this.SG) {
       for (const S of Object.values(H.tws)) {
         if (S.ecrit) continue;
         const idv = S.cote === "Up" ? mk.up : mk.down, dt = now() - S.t0;
@@ -2931,7 +2931,7 @@ export class Bot {
         if (S.asks["5"] || tleft < 12) { S.ecrit = true; this.twJournal("twcarnet", S); }
       }
     }
-    if (a === "BTC" && H.sante && !H.sante.ecrit && tleft < 20) { H.sante.ecrit = true; if (H.sante.n >= 10) this.twJournal("sante", H.sante); }
+    if (a === "BTC" && H.sante && !H.sante.ecrit && tleft < 20 && !this.SG) { H.sante.ecrit = true; if (H.sante.n >= 10) this.twJournal("sante", H.sante); }
     // le signal confirmé-Chainlink en attente quand la fenêtre se ferme (moins de 20 s) est abandonné et journalisé
     if (a === "BTC" && H.twc && H.twc.etat === "attente" && tleft < 20 && !H.fait[H.twc.nom]) {
       H.twc.etat = "abandon : pas de nouvelle valeur Chainlink (≥ 0,5 s) avant 20 s"; H.fait[H.twc.nom] = true; this.twcJournal(H.twc);
@@ -2957,6 +2957,7 @@ export class Bot {
         "corrige : zone + Binance et perp + sortie -10": k[0] >= 0.15 && k[0] < 0.35 && edge >= 0.30 && tleft > 60 && dz("bn") >= 0 && dz("perp") >= 0 };
       for (const [nom, ok] of Object.entries(W)) {
         if (!ok || H.fait[nom] || !NV.ACTIVES.includes(nom)) continue;
+        if (this.SG && (nom === "corrige : V2-F + garde-fou" || nom === "corrige : zone + Binance et perp + sortie -10")) continue;   // 29.10.2026 : aucun nom affiché
         if (nom !== "corrige marge mesuree : V2-F" && edge < 0.20) continue;
         const r = this.nAcheter(up ? mk.up : mk.down, 50 / k[0], k[0] + 0.01); if (r.parts < 1) continue;
         H.fait[nom] = true;
@@ -2982,13 +2983,16 @@ export class Bot {
       while (H.r.length && t - H.r[0].t > 12) H.r.shift();
       // volatilité du perp sur 60 s (09.10.2026)
       const VRr = ((this._vr = this._vr || {})[a] = this._vr[a] || []);
-      if (px("perp")) { VRr.push({ t, p: px("perp") }); while (VRr.length && t - VRr[0].t > 60) VRr.shift(); }
+      if (px("perp") && !this.SG) { VRr.push({ t, p: px("perp") }); while (VRr.length && t - VRr[0].t > 60) VRr.shift(); }
     }
     if (seulCorrige) { this.dCorrige(a, mk, tleft, ua, da, H, px); return; }
-    try { this.blinkSuivre(a, mk, pu, tleft, ua, da, H); } catch (err) { this.erreur("qui converge", err); }
+    // 29.10.2026 (Pitch : allègement du moteur de signaux seul) : en mode signaux, seuls les calculs qui produisent un nom affiché (slNoms) ou un signal
+    // restent : TWAP fin (7 variantes), corrige marge mesurée / desaccord 20 / V2-F écart qui grandit / V2-F pas les deux baissent, V2-F incertitude 0,01 %.
+    // Coupés : « qui converge » (blink, filtre bourses), sortie modèle −10, zone désaccord 30, V2-B à V2-H, miroir, pause mémoire, diversité, désaccord confirmé.
+    if (!this.SG) try { this.blinkSuivre(a, mk, pu, tleft, ua, da, H); } catch (err) { this.erreur("qui converge", err); }
     try { this.dCorrige(a, mk, tleft, ua, da, H, px); } catch (err) { this.erreur("modèle corrigé", err); }
     // sortie « modèle -10 pts » (08.10.2026) : revente au meilleur acheteur si le modèle a perdu 10 pts depuis l'entrée
-    for (const P of this.N.ouvertes) {
+    if (!this.SG) for (const P of this.N.ouvertes) {
       if (P.actif !== a || P.start !== mk.start || !P.strat.includes("sortie modele -10")) continue;
       const parts = P.cote === "Up" ? P.U : P.D; if (!(parts > 0)) continue;
       const fair = P.cote === "Up" ? pu : 1 - pu;
@@ -3022,7 +3026,7 @@ export class Bot {
       }
     }
     // ZONE (08.10.2026, figés) : écart >= 30 pts, jeton entre 0,15 et 0,35, plus de 60 s restantes ; variante + Binance et perp >= 0 sur 3 s
-    if (tleft > 60) for (const up of [true, false]) {
+    if (tleft > 60 && !this.SG) for (const up of [true, false]) {
       const k = up ? ua : da, fair = up ? pu : 1 - pu, sg = up ? 1 : -1;
       if (k[0] < 0.15 || k[0] >= 0.60 || fair - k[0] < 0.30) continue;
       const h3 = il_y_a(3), last = H.r[H.r.length - 1], dz = (src) => (h3 && h3[src] && last[src] ? (last[src] - h3[src]) * sg : 0);
@@ -3046,7 +3050,7 @@ export class Bot {
         this.nSauver();
       }
     }
-    for (const up of [true, false]) {
+    if (!this.SG) for (const up of [true, false]) {
       const k = up ? ua : da, fair = up ? pu : 1 - pu, edge = fair - k[0], sg = up ? 1 : -1;
       if (k[0] < 0.03 || k[0] > 0.97 || edge < 0.20) continue;
       const edgeDe = (x) => (up ? x.pu - x.ua : (1 - x.pu) - x.da), midDe = (x) => (up ? x.um : x.dm);
@@ -3096,7 +3100,7 @@ export class Bot {
     // 10.10.2026 (Pitch) : V2-F incertitude 0,01 % — même règle, probabilité calculée avec 0,01 % au lieu de 0,08 %
     try { this.v2fxIncertitude(a, mk, H, tleft, ua, da, il_y_a, t); } catch (err) { this.erreur("V2-F 0,01 %", err); }
     // 10.10.2026 14:08 (Pitch) : trois variantes de désaccord pour la diversité (figées), premier signal du cycle, meilleur vendeur seul
-    try { this.diversite(a, mk, H, pu, tleft, ua, da, t); } catch (err) { this.erreur("diversité", err); }
+    if (!this.SG) try { this.diversite(a, mk, H, pu, tleft, ua, da, t); } catch (err) { this.erreur("diversité", err); }
     // 28.10.2026 (allègement) : suivi « vitesse » arrêté (seulement /api/vitesse)
   }
   // ---- 10.10.2026 : trois variantes expérimentales de V2-F (figées, aucune modification des autres fantômes). Achat au SEUL meilleur vendeur,
@@ -3228,7 +3232,7 @@ export class Bot {
       H.fait[nom] = true;
       const fo = up ? last.pu : 1 - last.pu;
       const r = this.v2fxAcheter(nom, a, mk, up, k, fair, tleft, `écart ${edge.toFixed(2)} avec 0,01 % (modèle 0,08 % : ${fo != null ? fo.toFixed(3) : "—"})`);
-      this.v2fxJournal({ start: mk.start, nom, t: +t.toFixed(3), cote: up ? "Up" : "Down", vendeur: k[0], partsAffichees: +k[1].toFixed(2), modele: +fair.toFixed(4), ecart: +edge.toFixed(4),
+      if (!this.SG) this.v2fxJournal({ start: mk.start, nom, t: +t.toFixed(3), cote: up ? "Up" : "Down", vendeur: k[0], partsAffichees: +k[1].toFixed(2), modele: +fair.toFixed(4), ecart: +edge.toFixed(4),
         ecart3s: +e3.toFixed(4), t3s: +h3.t.toFixed(3), modeleOriginal: fo != null ? +fo.toFixed(4) : null, restant_s: +tleft.toFixed(1), heures: this.v2fxHeures(a, mk, up, t),
         decision: r.parts >= 1 ? "achat" : "refus : moins d'une part au meilleur vendeur", parts: +r.parts.toFixed(2), cout: +r.cout.toFixed(2) });
       return;
