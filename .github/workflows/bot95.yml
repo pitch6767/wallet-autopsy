@@ -15,7 +15,6 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       POLY_CLE_PRIVEE: ${{ secrets.POLY_CLE_PRIVEE }}
       POLY_ADRESSE_PORTEFEUILLE: ${{ secrets.POLY_ADRESSE_PORTEFEUILLE }}
-      BOT_OPS_TOKEN: ${{ secrets.BTCBOT_OPS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,8 +29,6 @@ jobs:
           # clés du portefeuille (secrets GitHub -> secrets Cloudflare), jamais écrites dans le dépôt
           if [ -n "$POLY_CLE_PRIVEE" ]; then echo "$POLY_CLE_PRIVEE" | npx -y wrangler@4 secret put POLY_CLE_PRIVEE >> /tmp/d.log 2>&1; echo "cle: $?" >> /tmp/d.log; fi
           if [ -n "$POLY_ADRESSE_PORTEFEUILLE" ]; then echo "$POLY_ADRESSE_PORTEFEUILLE" | npx -y wrangler@4 secret put POLY_ADRESSE_PORTEFEUILLE >> /tmp/d.log 2>&1; echo "adresse: $?" >> /tmp/d.log; fi
-          # 29.10.2026 : lecture des stratégies du bot de trading pour l'onglet 6 (lecture seule), jamais écrit dans le dépôt
-          if [ -n "$BOT_OPS_TOKEN" ]; then echo "$BOT_OPS_TOKEN" | npx -y wrangler@4 secret put BOT_OPS_TOKEN >> /tmp/d.log 2>&1; echo "jeton bot: $?" >> /tmp/d.log; fi
           U=https://bot95.pitch67.workers.dev
           sleep 20; curl -sS -m 20 -o /dev/null -w "page %{http_code}\n" $U/ >> /tmp/c.log
           for k in 1 2 3; do sleep 40; echo "=== etat $k" >> /tmp/c.log; curl -sS -m 20 $U/api/etat | python3 -c "import json,sys;d=json.load(sys.stdin);print(json.dumps({'actifs':d['actifs'],'diag':d['diag'],'vetos':d['e']['vetos'],'candidats':d['e']['candidats'],'trades':len(d['e']['trades'])},ensure_ascii=False))" >> /tmp/c.log 2>&1; echo >> /tmp/c.log; done
