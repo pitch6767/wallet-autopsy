@@ -29158,7 +29158,7 @@ function estBY1(x) {
 __name(estBY1, "estBY1");
 function sansBY1(v) {
   if (typeof v === "string") return sansBY1Texte(v);
-  if (Array.isArray(v)) return v.filter((x) => !estBY1(x) && !(Array.isArray(x) && typeof x[0] === "string" && x[0].includes("BY1"))).map(sansBY1);
+  if (Array.isArray(v)) return v.filter((x) => !estBY1(x) && !(typeof x === "string" && x.includes("BY1")) && !(Array.isArray(x) && typeof x[0] === "string" && x[0].includes("BY1"))).map(sansBY1);
   if (v && typeof v === "object") {
     const o = {};
     for (const [k, x] of Object.entries(v)) if (!k.includes("BY1") && !estBY1(x)) o[k] = sansBY1(x);
