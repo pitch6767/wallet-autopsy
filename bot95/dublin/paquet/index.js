@@ -24441,7 +24441,7 @@ var Bot = class {
     }, 100);
     const ageBn = Math.max(...V1.ACTIFS.map((a) => this.f[a].bn ? t - this.f[a].bn.t : 1e9));
     if (!this.ws.bn || ageBn > 30 && depuis("bn") > 30)
-      this.connecter("bn", "https://stream.binance.com:443/stream?streams=" + V1.ACTIFS.map((a) => a.toLowerCase() + "usdt@trade").join("/"), [], (m) => {
+      this.connecter("bn", (this.env.BINANCE_WS_BASE || "https://stream.binance.com:443") + "/stream?streams=" + V1.ACTIFS.map((a) => a.toLowerCase() + "usdt@trade").join("/"), [], (m) => {
         const d = m.data || {}, a = V1.ACTIFS.find((k) => k + "USDT" === d.s);
         if (a && +d.p > 0) this.noter(a, "bn", +d.p, now());
       });
