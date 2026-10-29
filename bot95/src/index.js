@@ -1981,8 +1981,13 @@ export class Bot {
   slEmettre(P, mk) {
     if (!P || P.stoppee || !mk || !mk.end || mk.end * 1000 < Date.now() + 1000 || (P.cote !== "Up" && P.cote !== "Down")) return;
     const noms = this.slNoms(P), T = (this._slT = this._slT || {}), cy = (T[P.start] = T[P.start] || { Up: 0, Down: 0 });
+    const avantCy = cy[P.cote];
     cy[P.cote] += noms.length; for (const x of Object.keys(T)) if (+x < P.start - 900) delete T[x];
     const nums = String(this.env.SIGNAL_NUMS || "").split(",").map((x) => +x.trim()).filter((x) => x > 0);
+    // 29.10.2026 (Pitch : « go ») : n° 32 CONSENSUS 8 EN DIRECT — signal quand la 8e stratégie affichée achète ce côté dans le cycle (une fois par cycle et par côté)
+    if (nums.includes(32) && avantCy < 8 && cy[P.cote] >= 8) { const tok32 = P.cote === "Up" ? mk.up : mk.down, ask32 = (this.livreTrie(tok32, "asks")[0] || [null])[0];
+      if (ask32 != null) { const h32 = new Date().toISOString(), c32 = { id: `32|${P.start}|CONSENSUS 8|CONSENSUS|${h32}`, num: 32, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask32, mult: 1, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok32, endTs: mk.end * 1000, question: mk.slug, t: Date.now() };
+        const J = (this._slJ = this._slJ || []); J.unshift({ at: h32, num: 32, nom: "CONSENSUS 8", depuis: P.strat, cote: P.cote, prix: ask32, statut: "diffusé", clients: this.slDiffuser(c32) }); J.length = Math.min(J.length, 1500); } }
     const tok = P.cote === "Up" ? mk.up : mk.down, ask = (this.livreTrie(tok, "asks")[0] || [null])[0];
     for (const n of nums) {
       const b = CATALOGUE.find((c) => c.n === n % 100), d = b && noms.find((x) => x.nom === b.nom), v = Math.floor(n / 100);
