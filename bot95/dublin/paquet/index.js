@@ -23133,6 +23133,7 @@ var Bot = class {
           this.N.idq = q.idq || {};
           this.N.idfait = q.idfait || {};
           this.N.consPris = q.consPris || {};
+          this.N.slDec = q.slDec || {};
         }
         if (await this.state.storage.get("zero:depuis") !== ZERO_DEPUIS) {
           await this.state.storage.put("zero:archive:" + (await this.state.storage.get("zero:depuis") || "2026-10-14T08:45:00Z"), this.N.zero);
@@ -25772,7 +25773,7 @@ var Bot = class {
       if (N.zero3) zSauver(this.state.storage, "nv:zero3", N.zero3).catch((err) => this.erreur("sauvegarde zero3", err));
       if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err));
       if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err));
-      if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {} });
+      if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {}, slDec: N.slDec || {} });
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
       N.ordres = [...regles.slice(-250), ...nonRegles];
       put("nv:ordres", N.ordres);
@@ -26082,21 +26083,34 @@ var Bot = class {
         J.unshift({ at: (/* @__PURE__ */ new Date()).toISOString(), num: n, nom: d.nom, depuis: P.strat, cote: P.cote, prix: ask, ...o });
         J.length = Math.min(J.length, 1500);
       }, "note");
+      const SD = this.N.slDec = this.N.slDec || {}, dk = n + "|" + P.start + "|" + P.cote + "|" + P.heure, dec = /* @__PURE__ */ __name((g, m) => {
+        SD[dk] = [g ? 1 : 0, m];
+      }, "dec");
       if (ask == null) {
         note({ statut: "pas de vendeur" });
+        dec(false, 0);
         continue;
       }
-      let mult = d.mult;
+      let mult = d.mult, mI = 1;
       if (v === 1 || v === 2) {
         const rI = this.slIdees(P, cy[P.cote]);
         if (!rI.garder) {
           note({ statut: "\xE9cart\xE9 par \xAB + id\xE9es \xBB (gros trade)", ...rI });
+          dec(false, 0);
           continue;
         }
-        if (v === 1) mult *= rI.mult;
-      } else if (v !== 0) {
-        note({ statut: "version pas encore branch\xE9e" });
-        continue;
+        if (v === 1) {
+          mult *= rI.mult;
+          mI = rI.mult;
+        }
+      }
+      dec(true, mI);
+      if (Math.random() < 0.02) {
+        for (const x of Object.keys(SD)) if (+x.split("|")[1] < P.start - 7200) delete SD[x];
+        else if (v !== 0) {
+          note({ statut: "version pas encore branch\xE9e" });
+          continue;
+        }
       }
       const corps = { id: `${n}|${P.start}|${d.nom}|${P.strat}|${P.heure}`, num: n, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask, mult, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok, endTs: mk.end * 1e3, question: mk.slug, t: Date.now() };
       if (this.env.SIGNAL_URL) fetch(this.env.SIGNAL_URL, { method: "POST", headers: { "content-type": "application/json", "x-signal-token": this.env.SIGNAL_TOKEN || "" }, body: JSON.stringify(corps) }).then((r) => r.json()).then((j) => note({ statut: "envoy\xE9", mult, reponse: j && j.statut })).catch((err) => note({ statut: "envoi rat\xE9 : " + err.message, mult }));
@@ -26542,6 +26556,13 @@ var Bot = class {
             for (const n of ZERO5_NUMS) {
               const b = catalogue_default.find((c) => c.n === n % 100), v = Math.floor(n / 100), c5 = catalogue_default.find((c) => c.n === n);
               if (!b || !c5 || x.k !== b.nom + " BTC") continue;
+              const D6 = (N.slDec || {})[n + "|" + s0 + "|" + x.cote + "|" + x.heure];
+              if (D6) {
+                N.slDecVus = (N.slDecVus || 0) + 1;
+                if (D6[0]) zCompte(N.zero5, c5.nom + " BTC", x.heure, (v === 1 ? D6[1] : 1) * x.net, sans, (v === 1 ? D6[1] : 1) * mise5, s0);
+                continue;
+              }
+              N.slDecManquants = (N.slDecManquants || 0) + 1;
               if (v === 0) zCompte(N.zero5, c5.nom + " BTC", x.heure, x.net, sans, mise5, s0);
               else if (v === 1 && garder) zCompte(N.zero5, c5.nom + " BTC", x.heure, mult * x.net, sans, mult * mise5, s0);
               else if (v === 2 && garder) zCompte(N.zero5, c5.nom + " BTC", x.heure, x.net, sans, mise5, s0);
