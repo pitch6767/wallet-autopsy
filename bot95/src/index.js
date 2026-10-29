@@ -437,7 +437,20 @@ export class Bot {
   }
 
   // ------------------------------------------------------------------ HTTP
+  // 29.10.2026 (Pitch : « pourquoi je vois toujours des descriptions avec BY1 ? regarde TOUS les onglets ») : sur toutes les pages
+  // et toutes les données des onglets, les stratégies BY1 n'apparaissent plus et les mentions de BY1 sont retirées des textes.
   async fetch(req) {
+    const r = await this.fetchBrut(req);
+    try {
+      const p = new URL(req.url).pathname;
+      if (r.status !== 200 || r.webSocket || !pageAffichee(p)) return r;
+      const ct = r.headers.get("content-type") || "";
+      if (ct.includes("text/html")) return new Response(sansBY1Texte(await r.text()), { status: 200, headers: r.headers });
+      if (ct.includes("application/json")) return new Response(JSON.stringify(sansBY1(await r.json())), { status: 200, headers: r.headers });
+    } catch (_) {}
+    return r;
+  }
+  async fetchBrut(req) {
     await this.ready;
     this.demarrer();
     const u = new URL(req.url);
@@ -802,7 +815,7 @@ export class Bot {
     }
     if (u.pathname === "/excel3" || u.pathname === "/excel4" || u.pathname === "/excel5") {   // 26.10.2026 : trades des stratégies et de leurs versions, onglet 3 (idées) ou 4 (consensus et autres)
       const pre = u.pathname === "/excel3" ? "xl3:" : u.pathname === "/excel4" ? "xl4:" : "xl5:", Q = {};
-      for (const [kk, v] of await this.state.storage.list({ prefix: pre })) { const k = kk.slice(pre.length, kk.lastIndexOf("|")); (Q[k] = Q[k] || []).push(...v); }
+      for (const [kk, v] of await this.state.storage.list({ prefix: pre })) { const k = kk.slice(pre.length, kk.lastIndexOf("|")); if (k.includes("BY1")) continue; (Q[k] = Q[k] || []).push(...v); }   // 29.10.2026 : BY1 plus dans les Excel
       for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => (a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0));
       const corps = await xlClasseur(Q, pre === "xl3:" ? ZERO2_DEPUIS : pre === "xl4:" ? ZERO3_DEPUIS : ZERO4_DEPUIS);
       return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_onglet' + (pre === "xl3:" ? "3" : pre === "xl4:" ? "4" : "5") + "_" + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:]/g, "").replace("T", "_") + '.xlsx"', "cache-control": "no-store" } });
@@ -3694,7 +3707,7 @@ classement();setInterval(classement,60000);
 </script></body></html>`;
 // 23.10.2026 : stratégies affichées, leurs bases, et fichier Excel (.xlsx écrit à la main : XML + zip, aucune bibliothèque)
 const XL_SUFFIXES = [" + foule bybit x2", " + foule bybit", " + carnet ecart serre", " + carnet pression", " + carnet", " + ecart serre", " + contre foule", " + ecart carnet calme", " + calme"];
-function xlVisible(k) { const c = k.replace(/ ([A-Z]+)$/, "|$1"); return !STOPPEES.has(c) && !ARRET_18.has(c); }
+function xlVisible(k) { const c = k.replace(/ ([A-Z]+)$/, "|$1"); return !STOPPEES.has(c) && !ARRET_18.has(c) && !k.includes("BY1"); }   // 29.10.2026 : BY1 plus dans les Excel
 function xlLiees(cles) {
   const g = new Set(["V2-F ecart qui grandit BTC"]);   // lue par la règle « V2-F pause memoire »
   const ajoute = (k) => { g.add(k); const i = k.lastIndexOf(" "), nom = k.slice(0, i), a = k.slice(i + 1); for (const s of XL_SUFFIXES) if (nom.endsWith(s)) g.add(nom.slice(0, -s.length) + " " + a); };
@@ -3794,13 +3807,25 @@ async function zCharger(st, cle) { const n = await st.get(cle + ":n"); if (!n) r
 // 28.10.2026 (allègement) : heure suisse calculée une fois par minute (avant : un formateur Intl créé à chaque message du carnet)
 const _HZ = { m: -1, h: 0 };
 function heureZurich() { const m = Math.floor(Date.now() / 60000); if (m !== _HZ.m) { _HZ.m = m; _HZ.h = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", hour12: false }).format(new Date()) % 24; } return _HZ.h; }
+function pageAffichee(p) { return p === "/" || p === "/numeros" || p === "/rapport" || p === "/nouveaux" || p === "/onglet1-archive" || /^\/(api\/)?zero[0-9]?$/.test(p) || ["/api/catalogue", "/api/classement", "/api/nouveaux", "/api/etat", "/api/zero5"].includes(p); }
+function sansBY1Texte(t) {
+  return String(t).replace(/ ?\(BY1 retiré le 28\.10(\.2026)?(, demande de Pitch)?\)/g, "").replace(/ ?\(BY1 : aucune\)/g, "").replace(/BY1, /g, "").replace(/, BY1\b/g, "")
+    .replace(/ ?\(BY1 annoncés par le labo rapide \(même serveur\)\)/g, "");
+}
+function estBY1(x) { return x && typeof x === "object" && !Array.isArray(x) && ["nom", "k", "strat", "name"].some((c) => typeof x[c] === "string" && x[c].includes("BY1")); }
+function sansBY1(v) {
+  if (typeof v === "string") return sansBY1Texte(v);
+  if (Array.isArray(v)) return v.filter((x) => !estBY1(x) && !(Array.isArray(x) && typeof x[0] === "string" && x[0].includes("BY1"))).map(sansBY1);
+  if (v && typeof v === "object") { const o = {}; for (const [k, x] of Object.entries(v)) if (!k.includes("BY1") && !estBY1(x)) o[k] = sansBY1(x); return o; }
+  return v;
+}
 let ZHOOK = null;   // 26.10.2026 (Pitch : « les trades des stratégies, fichiers Excel onglet 3 et 4 ») : chaque trade compté dans l'onglet 3 / 4 est aussi écrit ligne par ligne
 // 27.10.2026 (Pitch : « voir dans chaque stratégie si plusieurs ordres possibles et s'il y a multiplicateur »)
 // ordres max par cycle vus du 19 au 25.10 pour chaque stratégie de base (n° 1 à 30), puis compteur en direct dans les onglets
 const ORDRES_VUS = {"1": 3, "5": 2, "6": 1, "8": 1, "2": 2, "14": 2, "7": 2, "12": 2, "15": 2, "9": 1, "13": 2, "10": 2, "11": 2, "16": 1, "17": 1, "20": 1, "18": 1, "21": 1, "19": 1, "22": 1, "23": 1, "24": 1, "3": 3, "25": 1, "26": 1, "27": 1, "28": 1, "29": 1, "30": 1};   // 28.10.2026 : recalculé sans BY1 pour les PORTEFEUILLE ; n° 4 (BY1) retiré
 function multTexte(nom) {
   const m = [];
-  if (/^PORTEFEUILLE (400|600)/.test(nom)) m.push("« foule bybit x2 » = x2 (BY1 retiré le 28.10)");
+  if (/^PORTEFEUILLE (400|600)/.test(nom)) m.push("« foule bybit x2 » = x2");
   else { if (/ 100 \$/.test(nom)) m.push("mise 100 $ = x2"); if (nom.includes("foule bybit x2")) m.push("x2 si foule contre nous"); }
   if (nom.includes(" + idées") && !nom.includes("sans x2 x3")) m.push("idées, petits trades (< 0,50) : x2 si ≥ 10 stratégies du même côté, x3 si en plus la foule vend");
   if ((nom.includes(" + consensus") || nom.includes("+ consensus +")) && !nom.includes("sans x2")) m.push("consensus, petits trades (0,10-0,50) : x2 si ≥ 10 stratégies du même côté");
