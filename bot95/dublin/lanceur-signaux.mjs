@@ -25,6 +25,7 @@ if (!code) { log("aucun paquet, nouvel essai dans 30 s"); setTimeout(() => proce
 else {
   const env = { MOTEUR: "signaux", SIGNAL_FLUX: "oui", MODE_REEL: "non", MISE_REEL: "50", SIGNAL_NUMS: process.env.SIGNAL_NUMS || "101,201,121,28,119" };
   if (process.env.CHAINLINK_SOURCE) env.CHAINLINK_SOURCE = process.env.CHAINLINK_SOURCE;
+  if (process.env.BINANCE_WS_BASE) env.BINANCE_WS_BASE = process.env.BINANCE_WS_BASE;   // ex. https://data-stream.binance.vision (Binance refuse stream.binance.com depuis Dublin : 451)
   const mf = new Miniflare({
     modules: [{ type: "ESModule", path: F, contents: code }],
     compatibilityDate: "2026-07-30",
