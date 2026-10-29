@@ -1,48 +1,86 @@
 == etat
-HTTP 200 0.768393s
+HTTP 200 0.836607s
 == /
-HTTP 200 10017 o 0.186374s
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title><st
+HTTP 200 10017 o 0.196637s
+BY1: 0
 == /numeros
-HTTP 200 4340 o 0.181035s
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Numéros des stra
+HTTP 200 4340 o 0.190800s
+BY1: 0
+== /nouveaux
+HTTP 200 8011 o 0.410547s
+BY1: 0
+== /onglet1-archive
+HTTP 200 30206 o 0.221606s
+BY1: 0
+== /zero
+HTTP 200 8011 o 0.190855s
+BY1: 0
+== /zero2
+HTTP 200 9101 o 0.195697s
+BY1: 0
+== /zero3
+HTTP 200 9860 o 0.203484s
+BY1: 0
+== /zero4
+HTTP 200 8791 o 0.173879s
+BY1: 0
 == /zero5
-HTTP 200 8558 o 0.183578s
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 6 — bot 
-== /api/zero5
-HTTP 200 2757 o 0.194482s
-{"depuis":"2026-10-26T20:52:00Z","nums":[101,201,121,28,119],"strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 
+HTTP 200 8558 o 0.171843s
+BY1: 0
+== /api/zero
+HTTP 200 16486 o 0.190102s
+BY1: 0
 == /api/zero2
-HTTP 200 59028 o 0.193230s
-{"depuis":"2026-10-24T20:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x
+HTTP 200 57166 o 0.211428s
+BY1: 0
 == /api/zero3
-HTTP 200 168741 o 0.729932s
-{"depuis":"2026-10-25T14:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x
+HTTP 200 162947 o 0.428306s
+BY1: 0
 == /api/zero4
-HTTP 200 216227 o 0.201130s
-{"depuis":"2026-10-26T11:00:00Z","strats":[{"nom":"corrige : desaccord 20 + foule bybit x2 + idées BTC","num":105,"ordres":"plusieurs (jusqu'à 2)","
+HTTP 200 209343 o 0.436372s
+BY1: 0
+== /api/zero5
+HTTP 200 2782 o 0.199486s
+BY1: 0
+== /api/catalogue
+HTTP 200 282389 o 0.541312s
+BY1: 0
 == /api/classement
-HTTP 200 21200 o 0.310441s
-{"jours":["2026-10-10","2026-10-11","2026-10-12","2026-10-13","2026-10-14","2026-10-15","2026-10-16","2026-10-17","2026-10-18","2026-10-19","2026-10-2
+HTTP 200 20808 o 0.331167s
+BY1: 0
+== /api/nouveaux
+HTTP 200 241676 o 0.250600s
+BY1: 10
+a petit selon le saut","PB seul","PB seul + Poly immobile","BY1 Bybit premier 10 $","BY1 Bybit premier 100 $","BY1 contre-e
+a petit selon le saut","PB seul","PB seul + Poly immobile","BY1 Bybit premier 10 $","BY1 Bybit premier 100 $","BY1 contre-e
 == /api/corr_misemax
-HTTP 200 3841 o 0.176409s
-{"at":"2026-10-28T21:52:24.157Z","by1":2754,"rap":[["onglet 3","PORTEFEUILLE 400 BTC",399.99,158.34],["onglet 3","PORTEFEUILLE 600 BTC",399.99,158.34]
-== /api/memoire
-HTTP 200 2795 o 0.538992s
-{"detail":{"champs":{"trades":38950,"rq":204,"issues":54,"pnl":18,"depuis":14,"n":3,"gains":3,"pertes":3},"nTrades":60,"trade0":{"carnet":405,"journal
+HTTP 200 3841 o 0.194868s
+BY1: 0
+== /excel
+HTTP 200 1263577 o 1.828754s
+BY1: 0
+== /excel3
+HTTP 200 1877399 o 2.122174s
+BY1: 0
+== /excel4
+HTTP 200 4150219 o 5.547749s
+BY1: 0
+== /excel5
+HTTP 200 4376749 o 5.142742s
+BY1: 0
 == GET flux
-{"clients":1,"actif":true}
-HTTP 200 0.209569s
+{"clients":0,"actif":true}
+HTTP 200 0.217565s
 == upgrade
 HTTP/2 200 
-date: Thu, 29 Oct 2026 06:24:24 GMT
+date: Thu, 29 Oct 2026 08:56:28 GMT
 content-type: application/json
 content-length: 26
 cache-control: no-store
-report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=HBq4y5jAgOraAAr6fEze6v35%2BeX3mGGfVdISc7ImzIkWz%2BlcRfA5nAmteF1xKV4U6c2ueyw9GdLqcmNUiPOkTLjlCm7Dg4NWZc08iz%2BMkRaBCwsZ11HDSsGd3pdfG31f32f0WzFl%2F5FIAc0a"}]}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=JR7ZpkgelIqqaGeL0Z1z1Dq7lC5Dgq1JLOew%2BAMiSKA375uBpoljcNQtYfPIpLGZ%2FZEbh4Gsg8xqUWnY%2FNzE%2FSPyvOt%2B7A1Q%2FtxX9XUOqygLGgVXk%2BH5KVCwjhDF61iijS4FEe62%2FABWO9XR"}]}
 nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
 server: cloudflare
-cf-ray: a52018d95d829bd0-MSP
+cf-ray: a520f798acd4a207-MSP
 alt-svc: h3=":443"; ma=86400
 
-{"clients":1,"actif":true}
+{"clients":0,"actif":true}
