@@ -22822,6 +22822,7 @@ var med = /* @__PURE__ */ __name((a) => {
   return b[Math.floor(b.length / 2)];
 }, "med");
 var now = /* @__PURE__ */ __name(() => Date.now() / 1e3, "now");
+var perfNow = /* @__PURE__ */ __name(() => typeof globalThis.performance?.now === "function" ? globalThis.performance.now() : Date.now(), "perfNow");
 var r1 = /* @__PURE__ */ __name((x) => Math.round(x * 10) / 10, "r1");
 var fmt = /* @__PURE__ */ __name((x, p) => Math.abs(p) >= 100 ? x.toFixed(2) : Math.abs(p) >= 1 ? x.toFixed(4) : x.toFixed(6), "fmt");
 async function mesurerLatence() {
@@ -24520,6 +24521,15 @@ var Bot = class {
         if (typeof ev.data !== "string" || ev.data === "PONG" || ev.data === "PING" || ev.data === "pong") return;
         if (this.ws[nom] && this.ws[nom] !== ws && this.ws[nom + "_ouvert"] > (ws._ouvert || 0)) return;
         this.ws[nom + "_msg"] = now();
+        if (this.SG) {
+          const t0 = perfNow(), o0 = this.perfOps();
+          try {
+            surMsg(JSON.parse(ev.data));
+          } catch (_) {
+          }
+          this.perfNoter(nom, perfNow() - t0, this.perfOps() - o0);
+          return;
+        }
         try {
           surMsg(JSON.parse(ev.data));
         } catch (_) {
@@ -25350,6 +25360,7 @@ var Bot = class {
     }
   }
   probaV1(a, mk, sdRel = CFG.SD_ECART_REL, details = false) {
+    if (this.SG) this._ops = (this._ops || 0) + 1;
     const K = mk.strike, perp = this.f[a].perp, cl = this.f[a].cl;
     if (!K || !perp || !cl) return null;
     const t = now();
@@ -25442,6 +25453,7 @@ var Bot = class {
   }
   // 28.10.2026 (allègement) : le carnet trié est gardé en cache tant qu'il ne change pas (avant : recopié et retrié ~16 fois par message). Même résultat.
   livreTrie(id, cote) {
+    if (this.SG) this._ops = (this._ops || 0) + 1;
     const L = this.pb[id];
     if (!L) return [];
     const M = L[cote], C2 = L._tri = L._tri || {}, c = C2[cote];
@@ -25457,7 +25469,15 @@ var Bot = class {
     if (t < mk.start || t > mk.end - 1) return;
     const pu = this.probaV1(a, mk);
     if (pu == null) return;
-    try {
+    if (this.SG) {
+      const t0 = perfNow(), o0 = this.perfOps();
+      try {
+        this.nEval(a, mk, pu);
+      } catch (err) {
+        this.erreur("fant\xF4mes", err);
+      }
+      this.perfNoter("nEval", perfNow() - t0, this.perfOps() - o0);
+    } else try {
       this.nEval(a, mk, pu);
     } catch (err) {
       this.erreur("fant\xF4mes", err);
@@ -25797,6 +25817,7 @@ var Bot = class {
   }
   // achat fantôme en remontant le carnet (frais taker), au plus `maxParts` et jusqu'à `maxPrix`
   nAcheter(id, maxParts, maxPrix) {
+    if (this.SG) this._ops = (this._ops || 0) + 1;
     let parts = 0, cout = 0;
     for (const [p, sz] of this.livreTrie(id, "asks")) {
       if (p > maxPrix + 1e-9) break;
@@ -26038,7 +26059,71 @@ var Bot = class {
       minutesDuo: ((this.duo || {}).min || []).length,
       reconnexions: this.diag.reconnexions,
       erreurs: this.diag.erreurs,
+      perf: this.perfVue(),
       journal: (this._slJ || []).slice(0, 50)
+    };
+  }
+  // 29.10.2026 : mesure du temps de calcul du moteur de signaux seul (avant / après l'allègement). Par flux (poly, perp, okx, cb, cl, cl2, bn)
+  // = message complet (JSON + calculs) ; « nEval » = chemin des stratégies (inclus dans le message qui l'a déclenché).
+  // ms : performance.now() (ou Date.now()) — dans workerd l'horloge peut rester figée pendant un calcul (« horloge_figee ») ; « ops » = nombre
+  // d'appels aux calculs de base (probaV1, livreTrie, nAcheter), indépendant de l'horloge, pour comparer avant / après.
+  perfOps() {
+    return this._ops || 0;
+  }
+  perfNoter(k, ms, ops) {
+    const P = this._perf = this._perf || { depuis: Date.now(), flux: {} };
+    const z = P.flux[k] = P.flux[k] || { n: 0, ms: 0, ops: 0, nonNul: 0, d: new Float64Array(4096), o: new Float64Array(4096), i: 0, sec: [] };
+    z.n++;
+    z.ms += ms;
+    z.ops += ops;
+    if (ms > 0) z.nonNul++;
+    z.d[z.i & 4095] = ms;
+    z.o[z.i & 4095] = ops;
+    z.i++;
+    const s = Math.floor(Date.now() / 1e3), S = z.sec;
+    if (S.length && S[S.length - 1][0] === s) S[S.length - 1][1]++;
+    else {
+      S.push([s, 1]);
+      while (S.length && S[0][0] <= s - 60) S.shift();
+    }
+  }
+  perfVue() {
+    const P = this._perf;
+    if (!P) return null;
+    const s = Math.floor(Date.now() / 1e3), dur = Math.max(1, (Date.now() - P.depuis) / 1e3), r4 = /* @__PURE__ */ __name((x) => x == null ? null : +x.toFixed(4), "r4");
+    const qu = /* @__PURE__ */ __name((A, n2, p) => {
+      const v = Array.from(A.subarray(0, Math.min(n2, 4096))).sort((a, b) => a - b);
+      return v.length ? v[Math.min(v.length - 1, Math.floor(p * v.length))] : null;
+    }, "qu");
+    const flux = {};
+    let n = 0, ms = 0, ops = 0, n60 = 0;
+    for (const [k, z] of Object.entries(P.flux)) {
+      const m60 = z.sec.filter(([x]) => x > s - 60).reduce((a, x) => a + x[1], 0);
+      flux[k] = {
+        n: z.n,
+        msg_s_60s: +(m60 / 60).toFixed(2),
+        msg_s_moy: +(z.n / dur).toFixed(2),
+        moy_ms: r4(z.ms / z.n),
+        p99_ms: r4(qu(z.d, z.n, 0.99)),
+        max_ms: r4(qu(z.d, z.n, 1)),
+        ops_moy: +(z.ops / z.n).toFixed(2),
+        ops_p99: qu(z.o, z.n, 0.99),
+        horloge_figee: z.n >= 200 && z.nonNul === 0
+      };
+      if (k !== "nEval") {
+        n += z.n;
+        ms += z.ms;
+        ops += z.ops;
+        n60 += m60;
+      }
+    }
+    const lp = [...this.latPoly || []].sort((a, b) => a - b), ql = /* @__PURE__ */ __name((p) => lp.length ? +lp[Math.min(lp.length - 1, Math.floor(p * lp.length))].toFixed(3) : null, "ql");
+    return {
+      depuis: new Date(P.depuis).toISOString(),
+      horloge: typeof globalThis.performance?.now === "function" ? "performance.now" : "Date.now",
+      tous_flux: { n, msg_s_60s: +(n60 / 60).toFixed(2), msg_s_moy: +(n / dur).toFixed(2), moy_ms: n ? r4(ms / n) : null, ops_moy: n ? +(ops / n).toFixed(2) : null },
+      flux,
+      retard_poly_s: { p50: ql(0.5), p99: ql(0.99), n: lp.length }
     };
   }
   async slCle() {
