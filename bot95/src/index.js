@@ -1966,6 +1966,18 @@ export class Bot {
   async webSocketMessage(ws, msg) { try { if (msg === "ping") ws.send("pong"); else if (typeof msg === "string" && msg.startsWith("heure:")) ws.send("heure:" + msg.slice(6) + ":" + Date.now()); } catch (_) {} }   // 28.10.2026 : mesure du décalage d'horloge Cloudflare ↔ bot
   async webSocketClose(ws, code) { try { ws.close(code || 1000, "fin"); } catch (_) {} }
   async webSocketError() {}
+  // 29.10.2026 (Pitch : « go ») : n° 35 « TWAP rafale 10 s » — un signal à chaque décision TWAP fin (toutes bases), une fois par cycle et par côté.
+  // Le bot de trading achète ensuite en continu pendant 10 s jusqu'au prix + 5 c. Le prix envoyé = meilleur vendeur au moment de la décision.
+  rafaleEmettre(mk, up, ask, nom) {
+    if (!(this.env.SIGNAL_URL || this.env.SIGNAL_FLUX) || !mk || !mk.end || mk.end * 1000 < Date.now() + 2000) return;
+    const nums = String(this.env.SIGNAL_NUMS || "").split(",").map((x) => +x.trim());
+    if (!nums.includes(35)) return;
+    const cote = up ? "Up" : "Down", cle = mk.start + "|" + cote, R = (this._rfV = this._rfV || {});
+    if (R[cle]) return; R[cle] = 1; for (const x of Object.keys(R)) if (+x.split("|")[0] < mk.start - 900) delete R[x];
+    const tok = up ? mk.up : mk.down, heure = new Date().toISOString();
+    const corps = { id: `35|${mk.start}|TWAP rafale 10 s|TWAP|${heure}`, num: 35, side: up ? "UP" : "DOWN", prix: ask, mult: 1, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok, endTs: mk.end * 1000, question: mk.slug, t: Date.now(), depuis: nom };
+    const J = (this._slJ = this._slJ || []); J.unshift({ at: heure, num: 35, nom: "TWAP rafale 10 s", depuis: nom, cote, prix: ask, statut: "diffusé", clients: this.slDiffuser(corps) }); J.length = Math.min(J.length, 1500);
+  }
   slEmettre(P, mk) {
     if (!P || P.stoppee || !mk || !mk.end || mk.end * 1000 < Date.now() + 1000 || (P.cote !== "Up" && P.cote !== "Down")) return;
     const noms = this.slNoms(P), T = (this._slT = this._slT || {}), cy = (T[P.start] = T[P.start] || { Up: 0, Down: 0 });
@@ -2820,6 +2832,7 @@ export class Bot {
             this.twSignal(H, nom, mk, up, tleft, fair, k);
             const r = this.nAcheter(up ? mk.up : mk.down, 50 / k[0], k[0]); if (r.parts < 1) continue;
             H.fait[nom] = true;
+            try { this.rafaleEmettre(mk, up, k[0], nom); } catch (err) { this.erreur("rafale", err); }   // 29.10.2026 : n° 35
             const B0 = ((this._clBrut || {})[a] || []).slice(-1)[0] || [];
             const P = this.nPos(nom, a, mk, { famille: "twap", cote: up ? "Up" : "Down", prix: +(r.cout / r.parts).toFixed(4), parts: +r.parts.toFixed(2), proba0: +fair.toFixed(3), restant_s: +tleft.toFixed(0),
               tAchat: +now().toFixed(3), tailleAffichee: k[1], prixABattre: +mk.strike.toFixed(2), clObs: B0[0] ?? null, clRecu: B0[2] ?? null, clDernier: B0[3] ?? null, btc: +(Sp || 0).toFixed(2),
