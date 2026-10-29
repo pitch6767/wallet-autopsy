@@ -3,7 +3,7 @@ name: Deploy bot95-signaux
 on:
   push:
     branches: [main]
-    paths: [bot95/src/**, bot95/wrangler.signaux.jsonc, .github/workflows/bot95_signaux.yml]
+    paths: [bot95/wrangler.signaux.jsonc]   # 29.10.2026 : plus redéployé à chaque changement de bot95 (évite de couper les signaux) ; mise à jour volontaire (workflow_dispatch)
   workflow_dispatch:
 permissions:
   contents: write
