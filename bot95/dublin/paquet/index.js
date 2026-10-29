@@ -26107,12 +26107,12 @@ var Bot = class {
     cy[P.cote] += noms.length;
     for (const x of Object.keys(T)) if (+x < P.start - 900) delete T[x];
     const nums = String(this.env.SIGNAL_NUMS || "").split(",").map((x) => +x.trim()).filter((x) => x > 0);
-    if (nums.includes(32) && avantCy < 8 && cy[P.cote] >= 8) {
-      const tok32 = P.cote === "Up" ? mk.up : mk.down, ask32 = (this.livreTrie(tok32, "asks")[0] || [null])[0];
-      if (ask32 != null) {
-        const h32 = (/* @__PURE__ */ new Date()).toISOString(), c32 = { id: `32|${P.start}|CONSENSUS 8|CONSENSUS|${h32}`, num: 32, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask32, mult: 1, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok32, endTs: mk.end * 1e3, question: mk.slug, t: Date.now() };
+    for (const [nC, seuilC] of [[31, 6], [32, 8]]) if (nums.includes(nC) && avantCy < seuilC && cy[P.cote] >= seuilC) {
+      const tokC = P.cote === "Up" ? mk.up : mk.down, askC = (this.livreTrie(tokC, "asks")[0] || [null])[0];
+      if (askC != null) {
+        const hC = (/* @__PURE__ */ new Date()).toISOString(), cC = { id: `${nC}|${P.start}|CONSENSUS ${seuilC}|CONSENSUS|${hC}`, num: nC, side: P.cote === "Up" ? "UP" : "DOWN", prix: askC, mult: 1, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tokC, endTs: mk.end * 1e3, question: mk.slug, t: Date.now() };
         const J = this._slJ = this._slJ || [];
-        J.unshift({ at: h32, num: 32, nom: "CONSENSUS 8", depuis: P.strat, cote: P.cote, prix: ask32, statut: "diffus\xE9", clients: this.slDiffuser(c32) });
+        J.unshift({ at: hC, num: nC, nom: "CONSENSUS " + seuilC, depuis: P.strat, cote: P.cote, prix: askC, statut: "diffus\xE9", clients: this.slDiffuser(cC) });
         J.length = Math.min(J.length, 1500);
       }
     }
