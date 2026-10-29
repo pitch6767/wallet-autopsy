@@ -23300,7 +23300,7 @@ var Bot = class {
     this.demarrer();
     const u = new URL(req.url);
     const json = /* @__PURE__ */ __name((x) => Response.json(x, { headers: { "cache-control": "no-store" } }), "json");
-    if (this.SG && !["/api/cle_signaux", "/api/flux_signaux", "/api/reveil"].includes(u.pathname)) {
+    if (this.SG && !["/api/cle_signaux", "/api/flux_signaux", "/api/reveil", "/api/chainlink_migration"].includes(u.pathname)) {
       if (u.pathname === "/api/sante" || u.pathname === "/api/statut") return json(this.sgStatut());
       return new Response("introuvable (moteur de signaux seul)", { status: 404 });
     }
@@ -24495,7 +24495,7 @@ var Bot = class {
       "PING",
       5e3
     );
-    if (!this.SG && !this.pbCreds && !this._pbDem && (!this._pbT || t - this._pbT > 120)) {
+    if ((!this.SG || this.sourceCl() !== "rtds") && !this.pbCreds && !this._pbDem && (!this._pbT || t - this._pbT > 120)) {
       this._pbDem = true;
       this._pbT = t;
       identifiantsLecture(this.state.storage).then((c) => {
