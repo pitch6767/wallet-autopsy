@@ -455,7 +455,7 @@ export class Bot {
     this.demarrer();
     const u = new URL(req.url);
     const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } });
-    if (this.SG && !["/api/cle_signaux", "/api/flux_signaux", "/api/reveil"].includes(u.pathname)) {   // moteur de signaux seul : rien d'autre
+    if (this.SG && !["/api/cle_signaux", "/api/flux_signaux", "/api/reveil", "/api/chainlink_migration"].includes(u.pathname)) {   // moteur de signaux seul : rien d'autre
       if (u.pathname === "/api/sante" || u.pathname === "/api/statut") return json(this.sgStatut());
       return new Response("introuvable (moteur de signaux seul)", { status: 404 });
     }
@@ -1079,7 +1079,8 @@ export class Bot {
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surCl(m), "PING", 5000);
     // MIGRATION CHAINLINK (11.10.2026) : nouveau flux PolyBolt en PARALLÈLE (ombre). Il ne nourrit le moteur que si le réglage CHAINLINK_SOURCE
     // vaut "polybolt" ou "auto" (absent = "rtds" : moteur inchangé). L'ancien flux RTDS doit fermer vers le 23.10.2026.
-    if (!this.SG && !this.pbCreds && !this._pbDem && (!this._pbT || t - this._pbT > 120)) {
+    // 29.10.2026 (Pitch, point 6) : le moteur de signaux seul lit aussi PolyBolt quand CHAINLINK_SOURCE vaut polybolt/auto (moteur local de Dublin)
+    if ((!this.SG || this.sourceCl() !== "rtds") && !this.pbCreds && !this._pbDem && (!this._pbT || t - this._pbT > 120)) {
       this._pbDem = true; this._pbT = t;
       identifiantsLecture(this.state.storage).then((c) => { this.pbCreds = c; }).catch((e) => this.erreur("polybolt identifiants", e)).finally(() => { this._pbDem = false; });
     }
