@@ -4080,7 +4080,7 @@ try{t.value=sessionStorage.getItem("tri5")||"bot";m.value=sessionStorage.getItem
 const moy=(x)=>x.n?(x.mise||0)/x.n:null;
 window.trier=function(L){const mm=parseFloat(m.value),pm=parseFloat(p.value),k=t.value;
 let R=L.filter((x)=>(!(mm>0)||(x.miseMaxCycle>0&&x.miseMaxCycle<=mm))&&(isNaN(pm)||x.pnl>=pm));
-if(k==="bot")return R;const v={pnl:(x)=>-x.pnl,rend:(x)=>x.miseMaxCycle>0?-x.pnl/x.miseMaxCycle:1e18,mise:(x)=>moy(x)??1e18,cycle:(x)=>x.miseMaxCycle||1e18,creux:(x)=>x.creux??1e18}[k]||((x)=>-x.pnl);
+if(k==="bot"){const o=window._nums||[];return R.slice().sort((a,b)=>o.indexOf(a.num)-o.indexOf(b.num));}const v={pnl:(x)=>-x.pnl,rend:(x)=>x.miseMaxCycle>0?-x.pnl/x.miseMaxCycle:1e18,mise:(x)=>moy(x)??1e18,cycle:(x)=>x.miseMaxCycle||1e18,creux:(x)=>x.creux??1e18}[k]||((x)=>-x.pnl);
 return R.slice().sort((a,b)=>v(a)-v(b)||b.pnl-a.pnl);};
 const go=()=>{try{sessionStorage.setItem("tri5",t.value);sessionStorage.setItem("miseMax",m.value);sessionStorage.setItem("pnlMin",p.value)}catch(e){}if(window.maj)window.maj();};
 t.addEventListener("change",go);m.addEventListener("input",go);p.addEventListener("input",go);})();</script></div>
@@ -4093,7 +4093,7 @@ i.addEventListener("input",f);window.addEventListener("load",()=>{const a=docume
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
-async function maj(){try{const d=await (await fetch("/api/zero5",{cache:"no-store"})).json();const S=window.trier?window.trier(d.strats):d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
+async function maj(){try{const d=await (await fetch("/api/zero5",{cache:"no-store"})).json();window._nums=d.nums;const S=window.trier?window.trier(d.strats):d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Cases du bot lues à "+(d.botMaj?new Date(d.botMaj).toLocaleTimeString("fr-CH"):"— (pas encore lues)")+" · "+S.length+" stratégies (" + S.filter(x=>x.n>0).length + " ont déjà un trade réglé) · total stratégies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> · total de toutes les versions : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> · cycles en attente de calcul : "+d.enAttente+"</div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade réglé depuis la remise à 0 pour l'instant.</div>";
 else h+="<div class='card'><h2>Stratégies du bot de trading</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Case</th><th>Active</th><th>Mise du bot</th><th>Comptée depuis</th><th>Stratégie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th><th>Mise moyenne par trade</th><th>Total misé</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pertes totales</th><th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseillé</th></tr>"+
