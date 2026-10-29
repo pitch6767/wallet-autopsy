@@ -24430,11 +24430,10 @@ var Bot = class {
     await this.state.storage.setAlarm(Date.now() + 1e3);
   }
   // 29.10.2026 17:19 (Pitch : « l'onglet 6 reflète à 100 % l'onglet Stratégies du bot ») : lecture des 15 cases du bot de trading
-  // chaque minute (lecture seule, jeton opérateur en secret Cloudflare). Une stratégie nouvelle est comptée dès son apparition,
+  // chaque minute (route publique en lecture seule du bot : n°, nom, mise, active). Une stratégie nouvelle est comptée dès son apparition,
   // à la mise de sa case (résultat de bot95 calculé pour 50 $ × mise ÷ 50).
   async botStratsMaj() {
-    if (!this.env.BOT_OPS_TOKEN) return;
-    const r = await fetch("https://72-11-157-70.sslip.io/api/bot/strategies", { headers: { "x-ops-token": this.env.BOT_OPS_TOKEN } });
+    const r = await fetch("https://72-11-157-70.sslip.io/api/cases-strategies", { headers: { "cache-control": "no-store" } });
     if (!r.ok) throw new Error("HTTP " + r.status);
     const d = await r.json();
     if (!Array.isArray(d.choisies)) return;
