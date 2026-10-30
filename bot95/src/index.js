@@ -1050,6 +1050,12 @@ export class Bot {
     const avant = JSON.stringify(B.choisies || []); B.choisies = ch; B.maj = h; this.B5 = B;
     if (avant !== JSON.stringify(ch) || !this._b5Sauve) { this._b5Sauve = 1; await this.state.storage.put("bot5", B); }
   }
+  /** N° d'une case du bot (version 3xx et plus) dont la ligne de l'onglet 5 porte ce nom, sinon 0. */
+  nom5(k) {
+    if (!this.B5 || !this.B5.choisies) return 0;
+    for (const c of this.B5.choisies) { if (c.n < 300 || [31, 32, 35].includes(c.n)) continue; const x = CATALOGUE.find((y) => y.n === c.n); if (x && x.nom + " BTC" === k) return c.n; }
+    return 0;
+  }
   nums5() { return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS; }
   /** Facteur de mise de l'onglet 6 pour le n° et l'heure du trade (0 = pas compté : stratégie pas encore dans le bot). */
   f5(n, heure) {
@@ -3931,6 +3937,9 @@ function infoOrdres(nom, z) {
   return { ordres: o ? (o > 1 ? "plusieurs (jusqu'à " + o + ")" : "1") : "—", mult: multTexte(String(nom).replace(/ BTC$/, "")) };
 }
 function zCompte(Z, k, heure, net, sans, mise, start) {
+  // 30.10.2026 : versions 3xx et plus (sans règles échouées, sur mesure, petits minute 35-45…) choisies dans le bot : comptées dans l'onglet 6
+  // comme dans l'onglet 5, à la mise de leur case, depuis leur arrivée dans le bot
+  try { if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && ZHOOK.nom5) { const n5 = ZHOOK.nom5(k), f5 = n5 ? ZHOOK.f5(n5, heure) : 0; if (f5) { ZHOOK.N.zero5 = ZHOOK.N.zero5 || {}; zCompte(ZHOOK.N.zero5, k, heure, f5 * net, sans, f5 * (mise || 0), start); } } } catch (_) {}
   try { if (ZHOOK && ZHOOK.N && (Z === ZHOOK.N.zero2 || Z === ZHOOK.N.zero3 || Z === ZHOOK.N.zero4)) ZHOOK.xlZ(Z === ZHOOK.N.zero2 ? "xl3:" : Z === ZHOOK.N.zero3 ? "xl4:" : "xl5:", k, heure, net, mise, ZHOOK._zx || {}); } catch (_) {}
   // 26.10.2026 11:54 (Pitch : « onglet 5 tous remis à 0 départ midi ») : tout ce qui est compté dans les onglets 3 et 4 est aussi compté dans l'onglet 5 depuis 12:00 (sans doublon)
   try { if (ZHOOK && ZHOOK.N && Date.parse(heure) >= Date.parse(ZERO4_DEPUIS) && ((Z === ZHOOK.N.zero3 && !ONGLET4_DE3.includes(k)) || (Z === ZHOOK.N.zero2 && k.includes(" + idées")))) { ZHOOK.N.zero4 = ZHOOK.N.zero4 || {}; zCompte(ZHOOK.N.zero4, k, heure, net, sans, mise, start); } } catch (_) {}
