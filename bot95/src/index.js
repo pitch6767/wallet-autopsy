@@ -879,6 +879,22 @@ export class Bot {
       }
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: z._case.n, miseBot: z._case.mise, active: z._case.active, depuisBot: z._depuis, source: z._source, ...infoOrdres(nom, z), ...z, _case: undefined, _depuis: undefined, _source: undefined, cn: undefined, cy: undefined, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
       return json({ depuis: ZERO5_DEPUIS, nums: cases.map((c) => c.n), botMaj: B && B.maj, strats: L, total: +L.reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length , decisionsEnvoi: { utilisees: this.N.slDecVus || 0, manquantes: this.N.slDecManquants || 0 } }); }
+    // 30.10.2026 (Pitch : « en un coup d'œil qui fait les mêmes trades ») : ressemblance entre les cases du bot = trades communs (même cycle,
+    // même côté) ÷ tous les trades des deux, mesurée sur les lignes de l'onglet 5 (même période pour toutes : depuis le 26.10 12:00). Cache 10 min.
+    if (u.pathname === "/api/zero5_ressemblance") {
+      const B = this.B5, cases = B && B.choisies ? B.choisies : ZERO5_NUMS.map((n) => ({ n }));
+      const C = (this._ress = this._ress || {}), cle = cases.map((c) => c.n).join(",");
+      if (!C.r || C.cle !== cle || Date.now() - C.t > 600000) {
+        const E = {};
+        for (const c of cases) { const c5 = CATALOGUE.find((x) => x.n === c.n); if (!c5) continue; const S = new Set();
+          for (const v of (await this.state.storage.list({ prefix: "xl5:" + c5.nom + " BTC|" })).values()) for (const l of v) { const ms = Date.parse(l[0]); if (ms >= Date.parse(ZERO4_DEPUIS)) S.add(Math.floor(ms / 300000) + "|" + l[1]); }
+          E[c.n] = S; }
+        const nums = cases.map((c) => c.n).filter((n) => E[n]), M = {};
+        for (const a of nums) for (const b of nums) { if (a === b) continue; let k = 0; for (const x of E[a]) if (E[b].has(x)) k++; const tot = E[a].size + E[b].size - k; M[a + "|" + b] = tot ? Math.round((100 * k) / tot) : null; }
+        C.r = { depuis: ZERO4_DEPUIS, nums, trades: Object.fromEntries(nums.map((n) => [n, E[n].size])), pct: M }; C.cle = cle; C.t = Date.now();
+      }
+      return json(C.r);
+    }
     if (u.pathname === "/zero5") return new Response(PAGE_ZERO5, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero4") return new Response(PAGE_ZERO4, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero3") return new Response(PAGE_ZERO3, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -4119,6 +4135,15 @@ const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n° "+q+" ")):t.includes(q));tr.st
 document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
 i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();</script>
 <div id="app" style="margin-top:12px">Chargement…</div>
+<div class="card" style="margin-top:12px"><h2>Qui fait les mêmes trades ?</h2><div class="mu">% de trades communs (même cycle, même côté) ÷ tous les trades des deux, depuis le 26.10 12:00. Rouge = font presque les mêmes trades, vert = différentes.</div><div id="ress" style="overflow-x:auto;margin-top:8px">Chargement…</div></div>
+<script>
+async function ress(){try{const d=await (await fetch("/api/zero5_ressemblance",{cache:"no-store"})).json();const N=d.nums;
+const coul=(v)=>v==null?"":v>=70?"background:#7f1d1d":v>=40?"background:#78350f":v>=20?"background:#3f3f15":"background:#14532d";
+let h="<table style='border-collapse:collapse;text-align:center'><tr><th></th>"+N.map(n=>"<th>n° "+n+"</th>").join("")+"</tr>";
+for(const a of N){h+="<tr><th style='text-align:left'>n° "+a+" <span class='mu'>("+d.trades[a]+")</span></th>"+N.map(b=>{if(a===b)return "<td style='background:#333'>—</td>";const v=d.pct[a+"|"+b];return "<td style='padding:6px 8px;"+coul(v)+"'>"+(v==null?"—":v+" %")+"</td>";}).join("")+"</tr>";}
+document.getElementById("ress").innerHTML=h+"</table>";}catch(e){document.getElementById("ress").textContent="Erreur : "+e;}}
+ress();setInterval(ress,600000);
+</script>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero5",{cache:"no-store"})).json();window._nums=d.nums;const S=window.trier?window.trier(d.strats):d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
