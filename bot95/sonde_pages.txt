@@ -1,65 +1,65 @@
 == /
-code 200 taille 10017 temps 0.361522s
+code 200 taille 10017 temps 0.390651s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media (prefers-color-
 == /numeros
-code 200 taille 4340 temps 0.301277s
+code 200 taille 4340 temps 0.368580s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Numéros des stratégies</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @med
 == /api/catalogue
-code 200 taille 283056 temps 1.066925s
+code 200 taille 283056 temps 0.962840s
 {"maj":"2026-10-27","strategies":[{"n":1,"nom":"PORTEFEUILLE 400","desc":"PORTEFEUILLE 400 : somme de 2 stratégies, chacune avec ses propres règles et sa mise : (1) TWAP fin sauts + foule bybit x2 ; (2) V2-F incertitude 0,01 % + carnet. Gardé jusqu'au règlement.","ordres":"plusieurs (jusqu'à 3)
 == /nouveaux
-code 302 taille 0 temps 0.401597s
+code 302 taille 0 temps 0.423592s
 
 == /zero
-code 200 taille 8011 temps 0.231126s
+code 200 taille 8011 temps 0.576406s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes — remise à 0</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @me
 == /zero2
-code 200 taille 9101 temps 0.243794s
+code 200 taille 9101 temps 0.316809s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 3 — idées</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media (p
 == /zero3
-code 200 taille 9860 temps 0.345957s
+code 200 taille 9860 temps 0.303748s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 4 — consensus</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media
 == /zero4
-code 200 taille 8791 temps 0.352374s
+code 200 taille 8791 temps 0.364140s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 5 — tout à 0</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @media
 == /zero5
-code 200 taille 9120 temps 0.260652s
+code 200 taille 9278 temps 0.389242s
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 6 — bot de trading</title><style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708}
 @
 == /api/zero5
-code 200 taille 8590 temps 0.223345s
-{"depuis":"2026-10-26T20:52:00Z","nums":[101,105,107,112,109,120,121,31,127,129,35,32,201,28,119],"botMaj":"2026-10-30T10:40:02.859Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"miseBot":50,"active":true,"depuisBot":"2026-10-26T20:52:00Z","ordres":"plusieurs (jusqu'à 3)","mult":"« 
+code 200 taille 8283 temps 0.349238s
+{"depuis":"2026-10-26T20:52:00Z","nums":[101,105,301,107,214,1114,213,1011,2,11,14,15],"botMaj":"2026-10-30T20:30:34.814Z","strats":[{"nom":"corrige : desaccord 20 + foule bybit x2 + idées BTC","num":105,"miseBot":50,"active":false,"depuisBot":"2026-10-24T20:00:00Z","source":"onglet 3","ordres":"pl
 == /api/nouveaux
-code 200 taille 237537 temps 0.535925s
+code 200 taille 233205 temps 0.662832s
 {"depuis":1791633049.024,"typesDesaccord":{},"markout":{"mm prudent BTC":{"remplissages":334,"0.1s":-3.63,"0.5s":-3.63,"1s":-3.49,"3s":-3.35,"10s":-4.24},"mm prudent ETH":{"remplissages":291,"0.1s":-4.44,"0.5s":-5.12,"1s":-5.06,"3s":-4.18,"10s":-3.53}},"ordres":{"desaccord 10 BTC":{"essais":177,"gag
 == /api/zero
-code 200 taille 17020 temps 0.226389s
-{"depuis":"2026-10-19T09:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 BTC","num":1,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x2 » = x2","n":1683,"gains":898,"pertes":785,"pnl":34439.75,"pertesTot":-37607.06,"pire":-115.35,"cum":34439.75000000004,"pic":34540.43000000003,"creux":1283.31,
+code 200 taille 16998 temps 0.344690s
+{"depuis":"2026-10-19T09:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 BTC","num":1,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x2 » = x2","n":1716,"gains":913,"pertes":803,"pnl":36506.44,"pertesTot":-38005.57,"pire":-115.35,"cum":36506.440000000024,"pic":36832.29000000002,"creux":1283.31
 == /api/zero2
-code 200 taille 57514 temps 0.280605s
-{"depuis":"2026-10-24T20:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x2 » = x2 ; idées, petits trades (< 0,50) : x2 si ≥ 10 stratégies du même côté, x3 si en plus la foule vend","n":642,"gains":342,"pertes":300,"
+code 200 taille 55972 temps 0.682645s
+{"depuis":"2026-10-24T20:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x2 » = x2 ; idées, petits trades (< 0,50) : x2 si ≥ 10 stratégies du même côté, x3 si en plus la foule vend","n":674,"gains":356,"pertes":318,"
 == /api/zero3
-code 200 taille 162438 temps 0.485258s
-{"depuis":"2026-10-25T14:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x2 » = x2 ; idées, petits trades (< 0,50) : x2 si ≥ 10 stratégies du même côté, x3 si en plus la foule vend","n":544,"gains":293,"pertes":251,"
+code 200 taille 157500 temps 0.529018s
+{"depuis":"2026-10-25T14:00:00Z","strats":[{"nom":"PORTEFEUILLE 400 + idées BTC","num":101,"ordres":"plusieurs (jusqu'à 3)","mult":"« foule bybit x2 » = x2 ; idées, petits trades (< 0,50) : x2 si ≥ 10 stratégies du même côté, x3 si en plus la foule vend","n":576,"gains":307,"pertes":269,"
 == /api/zero4
-code 200 taille 209804 temps 0.592069s
-{"depuis":"2026-10-26T11:00:00Z","strats":[{"nom":"corrige : desaccord 20 + foule bybit x2 + idées BTC","num":105,"ordres":"plusieurs (jusqu'à 2)","mult":"x2 si foule contre nous ; idées, petits trades (< 0,50) : x2 si ≥ 10 stratégies du même côté, x3 si en plus la foule vend","n":189,"gain
+code 200 taille 203733 temps 0.624888s
+{"depuis":"2026-10-26T11:00:00Z","strats":[{"nom":"corrige : desaccord 20 + foule bybit x2 + idées BTC","num":105,"ordres":"plusieurs (jusqu'à 2)","mult":"x2 si foule contre nous ; idées, petits trades (< 0,50) : x2 si ≥ 10 stratégies du même côté, x3 si en plus la foule vend","n":201,"gain
 == /api/etat
-code 200 taille 894358 temps 0.880050s
-{"mode":"fantôme","reste":240,"e":{"capital":182.67999999999998,"mise":58.663333333333334,"reserve":17.326666666666664,"pnl":-17.320000000000004,"gains":17,"pertes":1,"pause":false,"positions":[],"attente":[],"trades":[{"actif":"ETH","start":1792030800,"end":1792031100,"slug":"eth-updown-5m-1792030
+code 200 taille 893926 temps 1.033441s
+{"mode":"fantôme","reste":224,"e":{"capital":182.67999999999998,"mise":58.663333333333334,"reserve":17.326666666666664,"pnl":-17.320000000000004,"gains":17,"pertes":1,"pause":false,"positions":[],"attente":[],"trades":[{"actif":"ETH","start":1792030800,"end":1792031100,"slug":"eth-updown-5m-1792030
 == /api/classement
-code 200 taille 21862 temps 0.538407s
+code 200 taille 21909 temps 0.469153s
 {"jours":["2026-10-10","2026-10-11","2026-10-12","2026-10-13","2026-10-14","2026-10-15","2026-10-16","2026-10-17","2026-10-18","2026-10-19","2026-10-20","2026-10-21","2026-10-22","2026-10-23","2026-10-24","2026-10-25","2026-10-26","2026-10-27","2026-10-28","2026-10-29","2026-10-30"],"participants":{
