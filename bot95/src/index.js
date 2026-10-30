@@ -306,6 +306,14 @@ export class Bot {
         this.N.ordres = (await this.state.storage.get("nv:ordres")) || [];
         this.N.audit = { fait: base.auditFait || {}, lignes: (await this.state.storage.get("nv:audit")) || [] };
         this.N.zero = (await this.state.storage.get("nv:zero")) || {};
+        // 31.10.2026 (Pitch : « pourquoi déjà sur 31 ? ») : l'onglet 2 comptait les jours en heure d'été (+2 h) même après le 25.10 →
+        // les trades de 23 h à minuit tombaient sur le lendemain. Jours refaits une fois depuis les lignes Excel (heure de Paris).
+        if (!(await this.state.storage.get("zeroJourFix1"))) {
+          for (const [k, z] of Object.entries(this.N.zero)) { const pj = {}; let n = 0;
+            for (const v of (await this.state.storage.list({ prefix: "xl:" + k + "|" })).values()) for (const l of v) { const ms = Date.parse(l[0]); if (!(ms >= Date.parse(ZERO_DEPUIS))) continue; const j = new Date(ms + decalSuisse(ms)).toISOString().slice(0, 10); pj[j] = (pj[j] || 0) + (+l[4] || 0); n++; }
+            if (n > 0 && Math.abs(n - (z.n || 0)) <= 3) z.parJour = pj; }
+          await this.state.storage.put("nv:zero", this.N.zero); await this.state.storage.put("zeroJourFix1", 1);
+        }
         this.N.zero2 = (await this.state.storage.get("nv:zero2")) || {}; if ((await this.state.storage.get("zero2:depuis")) !== ZERO2_DEPUIS) { const ar = await this.state.storage.get("zero2:archive:" + ZERO2_DEPUIS); if (ar) { this.N.zero2 = ar; await this.state.storage.put("nv:zero2", ar); } await this.state.storage.put("zero2:depuis", ZERO2_DEPUIS); }   // 25.10 : compteurs « + idées » rétablis
         // 26.10.2026 : les compteurs des onglets 4 et 5 dépassaient 128 Ko (taille max d'une valeur) → plus sauvegardés ; maintenant découpés en morceaux (nv:zero3:0, :1…)
         this.N.zero3 = await zCharger(this.state.storage, "nv:zero3"); this.N.zero4 = await zCharger(this.state.storage, "nv:zero4"); this.N.zero5 = await zCharger(this.state.storage, "nv:zero5"); this.B5 = (await this.state.storage.get("bot5")) || null;
@@ -491,7 +499,7 @@ export class Bot {
         S2.rq = nRisqueDepuis(apres); S2.recalcule = "2026-10-18";
         const Z = (this.N.zero = this.N.zero || {}), z = (Z[k] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {} });
         for (const P of T) { if (Date.parse(P.heure) < Date.parse(ZERO_DEPUIS)) continue;
-          const jz = new Date(Date.parse(P.heure) + 2 * 3600e3).toISOString().slice(0, 10); z.parJour[jz] = (z.parJour[jz] || 0) + P.net;
+          const jz = new Date(Date.parse(P.heure) + decalSuisse(Date.parse(P.heure))).toISOString().slice(0, 10); z.parJour[jz] = (z.parJour[jz] || 0) + P.net;
           z.n++; z.pnl += P.net; z.cum += P.net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, P.net);
           if (P.net >= 0) { z.gains++; z.serie = 0; } else { z.pertes++; z.pertesTot += P.net; z.serie++; z.serieMax = Math.max(z.serieMax, z.serie); } }
         await this.state.storage.put("hist:" + k, T.slice(-1500).map((P) => [P.heure, P.cote, P.prix, P.net, P.issue, null, null]));
@@ -785,7 +793,7 @@ export class Bot {
     // 13.10.2026 16:08 (Pitch) : classement par jour (heure suisse), progression ou chute, nombre de jours 1er / 2e / 3e (pas forcément de suite)
     if (u.pathname === "/api/classement") {
       const vis = Object.keys(this.nVue().strats), J = {}, jours = new Set();
-      const jourDe = (h) => { const d = new Date(Date.parse(h) + 2 * 3600e3); return d.toISOString().slice(0, 10); };
+      const jourDe = (h) => { const ms = Date.parse(h), d = new Date(ms + decalSuisse(ms)); return d.toISOString().slice(0, 10); };
       for (const k of vis) {
         const L2 = (await this.state.storage.get("hist:" + k)) || [], o = {};
         for (const x of L2) { if (!x || !x[0] || typeof x[3] !== "number") continue; const j = jourDe(x[0]); o[j] = (o[j] || 0) + x[3]; jours.add(j); }
@@ -2271,7 +2279,7 @@ export class Bot {
     nAlleger(S2);   // 17.10.2026 : mémoire du Durable Object dépassée → les vieux trades gardés en mémoire perdent leurs gros champs de diagnostic
     // 14.10.2026 (Pitch : « 2e onglet tout à 0 ») : compteurs repartis de zéro pour les trades ouverts depuis ZERO_DEPUIS (calcul au fil de l'eau, rien n'est relu)
     try { if (!this.SG && P.heure && Date.parse(P.heure) >= Date.parse(ZERO_DEPUIS)) { const Z = (this.N.zero = this.N.zero || {}), k = P.strat + " " + P.actif, z = (Z[k] = Z[k] || { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 });
-      const jz = new Date(Date.parse(P.heure) + 2 * 3600e3).toISOString().slice(0, 10); z.parJour = z.parJour || (z.n > 0 ? { "2026-10-14": z.pnl } : {}); z.parJour[jz] = (z.parJour[jz] || 0) + P.net;
+      const jz = new Date(Date.parse(P.heure) + decalSuisse(Date.parse(P.heure))).toISOString().slice(0, 10); z.parJour = z.parJour || (z.n > 0 ? { "2026-10-14": z.pnl } : {}); z.parJour[jz] = (z.parJour[jz] || 0) + P.net;
       z.n++; z.pnl += P.net; z.cum += P.net; z.pic = Math.max(z.pic, z.cum); z.creux = Math.max(z.creux, z.pic - z.cum); z.pire = Math.min(z.pire, P.net);
       if (P.net >= 0) { z.gains++; z.serie = 0; } else { z.pertes++; z.pertesTot += P.net; z.serie++; z.serieMax = Math.max(z.serieMax, z.serie); } } } catch (_) {}
     // archive compacte de TOUS les trades (09.10.2026) : [heure, côté, prix, net, issue, modèle, secondes restantes]
