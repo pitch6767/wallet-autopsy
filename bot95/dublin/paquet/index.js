@@ -24449,6 +24449,16 @@ var Bot = class {
       await this.state.storage.put("bot5", B);
     }
   }
+  /** N° d'une case du bot (version 3xx et plus) dont la ligne de l'onglet 5 porte ce nom, sinon 0. */
+  nom5(k) {
+    if (!this.B5 || !this.B5.choisies) return 0;
+    for (const c of this.B5.choisies) {
+      if (c.n < 300 || [31, 32, 35].includes(c.n)) continue;
+      const x = catalogue_default.find((y) => y.n === c.n);
+      if (x && x.nom + " BTC" === k) return c.n;
+    }
+    return 0;
+  }
   nums5() {
     return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS;
   }
@@ -29371,6 +29381,16 @@ function infoOrdres(nom, z) {
 }
 __name(infoOrdres, "infoOrdres");
 function zCompte(Z, k, heure, net, sans, mise, start) {
+  try {
+    if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && ZHOOK.nom5) {
+      const n5 = ZHOOK.nom5(k), f5 = n5 ? ZHOOK.f5(n5, heure) : 0;
+      if (f5) {
+        ZHOOK.N.zero5 = ZHOOK.N.zero5 || {};
+        zCompte(ZHOOK.N.zero5, k, heure, f5 * net, sans, f5 * (mise || 0), start);
+      }
+    }
+  } catch (_) {
+  }
   try {
     if (ZHOOK && ZHOOK.N && (Z === ZHOOK.N.zero2 || Z === ZHOOK.N.zero3 || Z === ZHOOK.N.zero4)) ZHOOK.xlZ(Z === ZHOOK.N.zero2 ? "xl3:" : Z === ZHOOK.N.zero3 ? "xl4:" : "xl5:", k, heure, net, mise, ZHOOK._zx || {});
   } catch (_) {
