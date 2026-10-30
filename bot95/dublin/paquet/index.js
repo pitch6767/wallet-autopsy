@@ -24085,6 +24085,35 @@ var Bot = class {
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: z._case.n, miseBot: z._case.mise, active: z._case.active, depuisBot: z._depuis, source: z._source, ...infoOrdres(nom, z), ...z, _case: void 0, _depuis: void 0, _source: void 0, cn: void 0, cy: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
       return json({ depuis: ZERO5_DEPUIS, nums: cases.map((c) => c.n), botMaj: B && B.maj, strats: L, total: +L.reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length, decisionsEnvoi: { utilisees: this.N.slDecVus || 0, manquantes: this.N.slDecManquants || 0 } });
     }
+    if (u.pathname === "/api/zero5_ressemblance") {
+      const B = this.B5, cases = B && B.choisies ? B.choisies : ZERO5_NUMS.map((n) => ({ n }));
+      const C2 = this._ress = this._ress || {}, cle = cases.map((c) => c.n).join(",");
+      if (!C2.r || C2.cle !== cle || Date.now() - C2.t > 6e5) {
+        const E = {};
+        for (const c of cases) {
+          const c5 = catalogue_default.find((x) => x.n === c.n);
+          if (!c5) continue;
+          const S = /* @__PURE__ */ new Set();
+          for (const v of (await this.state.storage.list({ prefix: "xl5:" + c5.nom + " BTC|" })).values()) for (const l of v) {
+            const ms = Date.parse(l[0]);
+            if (ms >= Date.parse(ZERO4_DEPUIS)) S.add(Math.floor(ms / 3e5) + "|" + l[1]);
+          }
+          E[c.n] = S;
+        }
+        const nums = cases.map((c) => c.n).filter((n) => E[n]), M = {};
+        for (const a of nums) for (const b of nums) {
+          if (a === b) continue;
+          let k = 0;
+          for (const x of E[a]) if (E[b].has(x)) k++;
+          const tot = E[a].size + E[b].size - k;
+          M[a + "|" + b] = tot ? Math.round(100 * k / tot) : null;
+        }
+        C2.r = { depuis: ZERO4_DEPUIS, nums, trades: Object.fromEntries(nums.map((n) => [n, E[n].size])), pct: M };
+        C2.cle = cle;
+        C2.t = Date.now();
+      }
+      return json(C2.r);
+    }
     if (u.pathname === "/zero5") return new Response(PAGE_ZERO5, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero4") return new Response(PAGE_ZERO4, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero3") return new Response(PAGE_ZERO3, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -29612,6 +29641,15 @@ const ok=!q||(/^[0-9]+$/.test(q)?(t.includes("n\xB0 "+q+" ")):t.includes(q));tr.
 document.getElementById("chercheN").textContent=q?(n?n+" ligne(s)":"aucune ligne"):"";}
 i.addEventListener("input",f);window.addEventListener("load",()=>{const a=document.getElementById("app");new MutationObserver(f).observe(a,{childList:true,subtree:true});f();});})();<\/script>
 <div id="app" style="margin-top:12px">Chargement\u2026</div>
+<div class="card" style="margin-top:12px"><h2>Qui fait les m\xEAmes trades ?</h2><div class="mu">% de trades communs (m\xEAme cycle, m\xEAme c\xF4t\xE9) \xF7 tous les trades des deux, depuis le 26.10 12:00. Rouge = font presque les m\xEAmes trades, vert = diff\xE9rentes.</div><div id="ress" style="overflow-x:auto;margin-top:8px">Chargement\u2026</div></div>
+<script>
+async function ress(){try{const d=await (await fetch("/api/zero5_ressemblance",{cache:"no-store"})).json();const N=d.nums;
+const coul=(v)=>v==null?"":v>=70?"background:#7f1d1d":v>=40?"background:#78350f":v>=20?"background:#3f3f15":"background:#14532d";
+let h="<table style='border-collapse:collapse;text-align:center'><tr><th></th>"+N.map(n=>"<th>n\xB0 "+n+"</th>").join("")+"</tr>";
+for(const a of N){h+="<tr><th style='text-align:left'>n\xB0 "+a+" <span class='mu'>("+d.trades[a]+")</span></th>"+N.map(b=>{if(a===b)return "<td style='background:#333'>\u2014</td>";const v=d.pct[a+"|"+b];return "<td style='padding:6px 8px;"+coul(v)+"'>"+(v==null?"\u2014":v+" %")+"</td>";}).join("")+"</tr>";}
+document.getElementById("ress").innerHTML=h+"</table>";}catch(e){document.getElementById("ress").textContent="Erreur : "+e;}}
+ress();setInterval(ress,600000);
+<\/script>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero5",{cache:"no-store"})).json();window._nums=d.nums;const S=window.trier?window.trier(d.strats):d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
