@@ -2415,6 +2415,12 @@ export class Bot {
               else if (v === 2 && garder) zCompte(N.zero5, c5.nom + " BTC", x.heure, f5 * x.net, sans, f5 * mise5, s0); } }
           if (Date.parse(x.heure) >= Date.parse(ZERO4_DEPUIS)) { N.zero4 = N.zero4 || {}; zCompte(N.zero4, x.k.replace(/ BTC$/, " + idées sans règles échouées BTC"), x.heure, mult * x.net, sans, mult * (x.prix || 0) * (x.parts || 0), s0); }
           if (garder) { zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0); if (ONGLET4_DE3.includes(x.k.replace(/ BTC$/, " + idées BTC")) && Date.parse(x.heure) >= Date.parse(ZERO3_DEPUIS)) { N.zero3 = N.zero3 || {}; zCompte(N.zero3, x.k.replace(/ BTC$/, " + idées BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0); } zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées sans x2 x3 BTC"), x.heure, net, sans, (x.prix || 0) * (x.parts || 0), s0); }
+          // 31.10.2026 (Pitch : « fais un fantôme de cela ») : n° 1301 / 1305 = 101 / 105 (« + idées ») seulement si au moins 6 stratégies
+          // (dont elle-même) ont déjà acheté ce côté dans le cycle au moment du trade. Règle A de l'analyse du 31.10 (consensus 0-5 ≈ rien gagné).
+          if (garder && (x.k === "PORTEFEUILLE 400 BTC" || x.k === "corrige : desaccord 20 + foule bybit x2 BTC")) {
+            const nc = new Set(tous.filter((y) => y.cote === x.cote && y.k && y.heure <= x.heure).map((y) => y.k)).size;
+            if (nc >= 6) zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées + consensus 6 BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0);
+          }
           // 25.10.2026 14:57 (Pitch : « don't stop those, create other onglet ») : onglet 4, versions « + consensus » (seule idée confirmée sur 10-19.10) :
           // petit trade (0,10-0,50) pas pris si 1 ou 2 trades des stratégies affichées sur le même côté du cycle à son heure d'achat, mise x2 si au moins 10 ; gros et billets inchangés
           if (Date.parse(x.heure) >= Date.parse(ZERO3_DEPUIS)) { let mc = 1, gc = true;
