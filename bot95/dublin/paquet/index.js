@@ -24003,6 +24003,7 @@ var Bot = class {
       for (const [kk, v] of await this.state.storage.list({ prefix: pre })) {
         const k = kk.slice(pre.length, kk.lastIndexOf("|"));
         if (k.includes("BY1")) continue;
+        if (pre === "xl5:" && !this.onglet5Garde(k)) continue;
         (Q[k] = Q[k] || []).push(...v);
       }
       for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0);
@@ -24070,7 +24071,7 @@ var Bot = class {
       return json({ depuis: ZERO3_DEPUIS, strats: L, total: +L.filter((x) => !x.nom.includes(" + consensus")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + consensus BTC")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
     }
     if (u.pathname === "/api/zero4") {
-      const Z = this.N.zero4 || {};
+      const Z = Object.fromEntries(Object.entries(this.N.zero4 || {}).filter(([nom]) => this.onglet5Garde(nom)));
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
       return json({ depuis: ZERO4_DEPUIS, strats: L, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
     }
@@ -24235,7 +24236,8 @@ var Bot = class {
     }
     if (u.pathname === "/zero5") return new Response(PAGE_ZERO5, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero4") return new Response(PAGE_ZERO4, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
-    if (u.pathname === "/zero3") return new Response(PAGE_ZERO3, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+    if (u.pathname === "/zero3") return Response.redirect(new URL("/zero4", req.url).toString(), 302);
+    if (u.pathname === "/zero3-ancien") return new Response(PAGE_ZERO3, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero2") return new Response(PAGE_ZERO2, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero") return new Response(PAGE_ZERO, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/nouveaux") return Response.redirect(u.origin + "/zero", 302);
@@ -24630,6 +24632,12 @@ var Bot = class {
       if (x && x.nom + " BTC" === k) return c.n;
     }
     return 0;
+  }
+  /** 31.10.2026 17:46 (Pitch : « onglet 5 = stratégies de l'onglet 6 plus les nouvelles, rien d'autre ») */
+  onglet5Garde(nom) {
+    const n = numDe(nom);
+    if (!n) return false;
+    return this.nums5().includes(n) || n === 1301 || n === 1305 || n >= 1400 && n < 2e3 || n >= 2110 && n < 2130;
   }
   nums5() {
     return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS;
@@ -26946,11 +26954,7 @@ var Bot = class {
           }
           if (garder && (x.k === "PORTEFEUILLE 400 BTC" || x.k === "corrige : desaccord 20 + foule bybit x2 BTC")) {
             const nc = new Set(tous.filter((y) => y.cote === x.cote && y.k && y.heure <= x.heure).map((y) => y.k)).size;
-            if (nc >= 6) {
-              zCompte(N.zero2, x.k.replace(/ BTC$/, " + id\xE9es + consensus 6 BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0);
-              N.zero3 = N.zero3 || {};
-              zCompte(N.zero3, x.k.replace(/ BTC$/, " + id\xE9es + consensus 6 BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0);
-            }
+            if (nc >= 6) zCompte(N.zero2, x.k.replace(/ BTC$/, " + id\xE9es + consensus 6 BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0);
           }
           if (garder && (x.k === "PORTEFEUILLE 400 BTC" || x.k === "corrige : desaccord 20 + foule bybit x2 BTC") && Date.parse(x.heure) >= Date.parse(ZERO4_DEPUIS)) {
             const avant = tous.filter((y) => y.k && y.heure <= x.heure), carnet = avant.filter((y) => CARNET_K.includes(y.k));
@@ -26960,10 +26964,7 @@ var Bot = class {
             const memeCote = avant.filter((y) => y.cote === x.cote && y.prix > 0), pmin = memeCote.length ? Math.min(...memeCote.map((y) => y.prix)) : x.prix || 0;
             const hausse = (x.prix || 0) - pmin, monte = hausse > 1e-3 && hausse <= 0.05;
             const premier = memeCote.length ? Math.min(...memeCote.map((y) => Date.parse(y.heure))) : Date.parse(x.heure), retard = (Date.parse(x.heure) - premier) / 1e3 > 120;
-            for (const [suf, fac] of [...variantesCarnet(avec, c6), ...variantesPrix(monte, retard)]) if (fac) {
-              N.zero3 = N.zero3 || {};
-              zCompte(N.zero3, x.k.replace(/ BTC$/, " + id\xE9es" + suf + " BTC"), x.heure, fac * nI, sans, fac * mI, s0);
-            }
+            for (const [suf, fac] of [...variantesCarnet(avec, c6), ...variantesPrix(monte, retard)]) if (fac) zCompte(N.zero4, x.k.replace(/ BTC$/, " + id\xE9es" + suf + " BTC"), x.heure, fac * nI, sans, fac * mI, s0);
             (this._pf = this._pf || []).push({ st, s: x.k === "PORTEFEUILLE 400 BTC" ? 101 : 105, heure: x.heure, cote: x.cote, prix: x.prix || 0, net: nI, mise: mI, avec, c6, monte, retard, sans });
           }
           if (Date.parse(x.heure) >= Date.parse(ZERO3_DEPUIS)) {
@@ -27034,8 +27035,7 @@ var Bot = class {
                 }
                 pris[y.cote].push({ s: y.s, prix: y.prix });
                 this._zx = { cote: y.cote, prix: y.prix };
-                N.zero3 = N.zero3 || {};
-                zCompte(N.zero3, nom, y.heure, fac * y.net, y.sans, fac * y.mise, st);
+                zCompte(N.zero4, nom, y.heure, fac * y.net, y.sans, fac * y.mise, st);
               }
             }
           }
@@ -29511,7 +29511,7 @@ function variantesCarnet(avec, c6) {
   return [[" + carnet d'accord", avec ? 1 : 0], [" + x2 carnet d'accord", avec ? 2 : 1], [" + carnet d'accord + consensus 6", avec && c6 ? 1 : 0], [" + x2 carnet d'accord + consensus 6", c6 ? avec ? 2 : 1 : 0]];
 }
 __name(variantesCarnet, "variantesCarnet");
-var ONGLET4_DE3 = ["PORTEFEUILLE 400 + id\xE9es BTC", "PORTEFEUILLE 600 + id\xE9es BTC", "PORTEFEUILLE 400 corrige + id\xE9es BTC", "PORTEFEUILLE 400 + id\xE9es + consensus 6 BTC", "corrige : desaccord 20 + foule bybit x2 + id\xE9es + consensus 6 BTC"];
+var ONGLET4_DE3 = ["PORTEFEUILLE 400 + id\xE9es BTC", "PORTEFEUILLE 600 + id\xE9es BTC", "PORTEFEUILLE 400 corrige + id\xE9es BTC"];
 var DEJA_ECRIT = /* @__PURE__ */ new Map();
 function aChange(k, v) {
   let j;
@@ -29666,7 +29666,7 @@ __name(zCompte, "zCompte");
 var ZERO_DEPUIS = "2026-10-19T09:00:00Z";
 var PAGE_ZERO = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fant\xF4mes \u2014 remise \xE0 0</title>${STYLE}</head><body>
 <h1>Fant\xF4mes \u2014 remise \xE0 0 <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel" style="font-weight:600">\u{1F4E5} Fichier Excel : tous les trades de chaque strat\xE9gie (une ligne par trade, \xE0 jour \xE0 chaque ouverture)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 19.10.2026 \xE0 11:00 (heure suisse) : seuls les trades ouverts depuis comptent. Capital conseill\xE9 = 2 \xD7 creux max + 2 mises de 50 $ (comme l'onglet 1). Aucun argent r\xE9el.</div>
-<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <b>Strat\xE9gies fant\xF4mes : remise \xE0 0</b> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <a href="/zero3">Onglet 4 : consensus</a> \xB7 </div>
+<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <b>Strat\xE9gies fant\xF4mes : remise \xE0 0</b> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 </div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur r\xE9sultat total</option><option value="rend">Trier : meilleur r\xE9sultat par $ de capital (r\xE9sultat \xF7 mise max sur un cycle)</option><option value="mise">Trier : moins de capital par trade</option><option value="cycle">Trier : moins de capital par cycle</option><option value="creux">Trier : plus petit creux</option></select> <label class="mu">mise max par cycle \u2264 <input id="miseMax" inputmode="decimal" placeholder="$" style="width:5em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label> <label class="mu">r\xE9sultat min <input id="pnlMin" inputmode="decimal" placeholder="$" style="width:6em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label>
 <script>(function(){const t=document.getElementById("tri"),m=document.getElementById("miseMax"),p=document.getElementById("pnlMin");
 try{t.value=sessionStorage.getItem("tri")||"pnl";m.value=sessionStorage.getItem("miseMax")||"";p.value=sessionStorage.getItem("pnlMin")||""}catch(e){}
@@ -29726,7 +29726,7 @@ maj();setInterval(maj,20000);
 <\/script></body></html>`;
 var PAGE_ZERO3 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 4 \u2014 consensus</title>${STYLE}</head><body>
 <h1>Onglet 4 \u2014 remise \xE0 0 + versions \xAB consensus \xBB <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel4" style="font-weight:600">\u{1F4E5} Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, \xE0 jour \xE0 chaque ouverture ; \xE9crits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 25.10.2026 \xE0 15:00 (heure suisse). Chaque strat\xE9gie affich\xE9e appara\xEEt trois fois : telle quelle, \xAB + consensus \xBB et \xAB + consensus sans x2 \xBB. R\xE8gle (la seule id\xE9e confirm\xE9e sur les jours du 10 au 19.10, jamais utilis\xE9s pour la trouver) : un petit trade (prix 0,10 \xE0 0,50) n'est pas pris si seulement 1 ou 2 trades des strat\xE9gies affich\xE9es sont sur le m\xEAme c\xF4t\xE9 du cycle \xE0 son heure d'achat ; s'il y en a au moins 10, la mise est doubl\xE9e (sauf dans \xAB sans x2 \xBB). Gros trades et billets &lt; 0,10 inchang\xE9s. Depuis le 25.10 vers 18 h, aussi \xAB + financement contre la foule \xBB (gros trades, prix \u2265 0,50, pris seulement quand le financement Bybit est contre notre c\xF4t\xE9 : la foule paie pour \xEAtre de l'autre c\xF4t\xE9) et \xAB + consensus + financement \xBB (les deux r\xE8gles). Depuis le 25.10 vers 20 h 15 : \xAB + \xE9lan perp \xBB (gros trade pas pris si le flux du perp Bybit sur 30 s est neutre ou contre nous), \xAB + consensus + financement + \xE9lan perp \xBB (tout), et \xAB + petits minute 35-45 \xBB (petits trades pris seulement s'ils sont achet\xE9s entre la minute 35 et 45 de l'heure ; id\xE9e sans explication de march\xE9, \xE0 v\xE9rifier). Depuis le 25.10 vers 21 h : \xAB + sur mesure \xBB \u2014 chaque strat\xE9gie n'applique que les id\xE9es qui l'aident sur les 4 p\xE9riodes du 10 au 25.10 (BY1 : aucune). Depuis le 26.10 : les 3 premi\xE8res lignes de l'onglet 3 (PORTEFEUILLE 400 + id\xE9es, PORTEFEUILLE 600 + id\xE9es, PORTEFEUILLE 400 corrige + id\xE9es), compt\xE9es ici depuis le 25.10 15:00. Calcul environ 5 min apr\xE8s la fin du cycle. Aucun argent r\xE9el.</div>
-<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <a href="/zero3">Onglet 4 : consensus</a> \xB7 <b>Onglet 4 : consensus</b> \xB7 <a href="/zero4">Onglet 5 : tout \xE0 0</a></div>
+<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <b>Onglet 4 : consensus</b> \xB7 <a href="/zero4">Onglet 5 : tout \xE0 0</a></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur r\xE9sultat total</option><option value="rend">Trier : meilleur r\xE9sultat par $ de capital (r\xE9sultat \xF7 mise max sur un cycle)</option><option value="mise">Trier : moins de capital par trade</option><option value="cycle">Trier : moins de capital par cycle</option><option value="creux">Trier : plus petit creux</option></select> <label class="mu">mise max par cycle \u2264 <input id="miseMax" inputmode="decimal" placeholder="$" style="width:5em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label> <label class="mu">r\xE9sultat min <input id="pnlMin" inputmode="decimal" placeholder="$" style="width:6em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label>
 <script>(function(){const t=document.getElementById("tri"),m=document.getElementById("miseMax"),p=document.getElementById("pnlMin");
 try{t.value=sessionStorage.getItem("tri")||"pnl";m.value=sessionStorage.getItem("miseMax")||"";p.value=sessionStorage.getItem("pnlMin")||""}catch(e){}
@@ -29766,8 +29766,8 @@ document.getElementById("r").innerHTML=(L.length?"":"<p>Aucune strat\xE9gie.</p>
 fetch("/api/catalogue").then(r=>r.json()).then(d=>{C=d.strategies;aff();});document.getElementById("q").oninput=aff;
 <\/script></body></html>`;
 var PAGE_ZERO4 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 5 \u2014 tout \xE0 0</title>${STYLE}</head><body>
-<h1>Onglet 5 \u2014 tout remis \xE0 0 le 31.10 \xE0 17:30 <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel5" style="font-weight:600">\u{1F4E5} Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, \xE0 jour \xE0 chaque ouverture ; \xE9crits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 31.10.2026 \xE0 17:30 (heure de Paris) pour toutes les lignes des onglets 3 et 4, plus les fant\xF4mes \xAB famille carnet \xBB de la 101 et de la 105 (plus s\xFBre, plus rentable, + consensus 6) et les portefeuilles 101 + 105 avec et sans \xAB m\xEAme sens \xBB (strat\xE9gies, versions \xAB + id\xE9es \xBB, \xAB + consensus \xBB, financement, \xE9lan perp, minute 35-45, sur mesure, CONSENSUS 6 / 8, DIVERSIT\xC9 3, CONSENSUS 6 billets), plus \xAB + id\xE9es sans r\xE8gles \xE9chou\xE9es \xBB (m\xEAmes mises x2 / x3 que \xAB + id\xE9es \xBB, sans le filtre des gros trades ni la revente \xE0 60 s, qui ont \xE9chou\xE9 sur 10-19.10). Aucun argent r\xE9el.</div>
-<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <a href="/zero3">Onglet 4 : consensus</a> \xB7 <b>Onglet 5 : tout \xE0 0</b> \xB7 <a href="/zero5">Onglet 6 : bot de trading</a></div>
+<h1>Onglet 5 \u2014 tout remis \xE0 0 le 31.10 \xE0 17:30 <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel5" style="font-weight:600">\u{1F4E5} Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, \xE0 jour \xE0 chaque ouverture ; \xE9crits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 31.10.2026 \xE0 17:30 (heure de Paris). Seulement les strat\xE9gies des cases du bot (onglet 6) et les nouveaux fant\xF4mes de la 101 et de la 105 : consensus 6, famille carnet (plus s\xFBre, plus rentable, + consensus 6), r\xE8gle \xAB prix mont\xE9 5 c \xBB, et les portefeuilles 101 + 105 avec et sans \xAB m\xEAme sens \xBB (strat\xE9gies, versions \xAB + id\xE9es \xBB, \xAB + consensus \xBB, financement, \xE9lan perp, minute 35-45, sur mesure, CONSENSUS 6 / 8, DIVERSIT\xC9 3, CONSENSUS 6 billets), plus \xAB + id\xE9es sans r\xE8gles \xE9chou\xE9es \xBB (m\xEAmes mises x2 / x3 que \xAB + id\xE9es \xBB, sans le filtre des gros trades ni la revente \xE0 60 s, qui ont \xE9chou\xE9 sur 10-19.10). Aucun argent r\xE9el.</div>
+<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <b>Onglet 5 : tout \xE0 0</b> \xB7 <a href="/zero5">Onglet 6 : bot de trading</a></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur r\xE9sultat total</option><option value="rend">Trier : meilleur r\xE9sultat par $ de capital (r\xE9sultat \xF7 mise max sur un cycle)</option><option value="mise">Trier : moins de capital par trade</option><option value="cycle">Trier : moins de capital par cycle</option><option value="creux">Trier : plus petit creux</option></select> <label class="mu">mise max par cycle \u2264 <input id="miseMax" inputmode="decimal" placeholder="$" style="width:5em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label> <label class="mu">r\xE9sultat min <input id="pnlMin" inputmode="decimal" placeholder="$" style="width:6em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label>
 <script>(function(){const t=document.getElementById("tri"),m=document.getElementById("miseMax"),p=document.getElementById("pnlMin");
 try{t.value=sessionStorage.getItem("tri")||"pnl";m.value=sessionStorage.getItem("miseMax")||"";p.value=sessionStorage.getItem("pnlMin")||""}catch(e){}
@@ -29797,7 +29797,7 @@ maj();setInterval(maj,20000);
 <\/script></body></html>`;
 var PAGE_ZERO5 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 6 \u2014 bot de trading</title>${STYLE}</head><body>
 <h1>Onglet 6 \u2014 strat\xE9gies choisies pour le bot de trading <span class="badge">mode fant\xF4me</span></h1><div class="mu">Exactement les 15 cases de l'onglet Strat\xE9gies du bot de trading (lu chaque minute), \xE0 la mise de chaque case (x2 / x3 des id\xE9es compris). Chaque case reprend le plus long historique disponible (onglet 2 depuis le 19.10, sinon onglet 3, 4 ou 5), indiqu\xE9 dans \xAB Compt\xE9e depuis \xBB. Calcul environ 10 min apr\xE8s la fin de chaque cycle. \xC0 comparer avec le bot de trading : https://72-11-157-70.sslip.io/</div>
-<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <a href="/zero3">Onglet 4 : consensus</a> \xB7 <a href="/zero4">Onglet 5 : tout \xE0 0</a> \xB7 <b>Onglet 6 : bot de trading</b></div>
+<div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <a href="/zero4">Onglet 5 : tout \xE0 0</a> \xB7 <b>Onglet 6 : bot de trading</b></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="bot">Ordre des cases du bot</option><option value="pnl">Trier : meilleur r\xE9sultat total</option><option value="rend">Trier : meilleur r\xE9sultat par $ de capital (r\xE9sultat \xF7 mise max sur un cycle)</option><option value="mise">Trier : moins de capital par trade</option><option value="cycle">Trier : moins de capital par cycle</option><option value="creux">Trier : plus petit creux</option></select> <label class="mu">mise max par cycle \u2264 <input id="miseMax" inputmode="decimal" placeholder="$" style="width:5em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label> <label class="mu">r\xE9sultat min <input id="pnlMin" inputmode="decimal" placeholder="$" style="width:6em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label>
 <script>(function(){const t=document.getElementById("tri"),m=document.getElementById("miseMax"),p=document.getElementById("pnlMin");
 try{t.value=sessionStorage.getItem("tri5")||"bot";m.value=sessionStorage.getItem("miseMax")||"";p.value=sessionStorage.getItem("pnlMin")||""}catch(e){}
