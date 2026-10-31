@@ -24072,6 +24072,10 @@ var Bot = class {
     }
     if (u.pathname === "/api/zero4") {
       const Z = Object.fromEntries(Object.entries(this.N.zero4 || {}).filter(([nom]) => this.onglet5Garde(nom)));
+      for (const c of catalogue_default) {
+        const nom = c.nom + " BTC";
+        if (!Z[nom] && this.onglet5Garde(nom)) Z[nom] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {}, sansDonnees: 0 };
+      }
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
       return json({ depuis: ZERO4_DEPUIS, strats: L, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
     }
