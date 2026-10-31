@@ -22747,6 +22747,10 @@ var index_default = {
   async fetch(req, env) {
     if (env.MOTEUR === "signaux") return stub(env).fetch(req);
     const pathname = new URL(req.url).pathname;
+    {
+      const m = req.method.toUpperCase();
+      if (m !== "GET" && m !== "HEAD" && m !== "OPTIONS" && pathname !== "/api/signal_by1") return new Response("interdit", { status: 403 });
+    }
     if (pathname.startsWith("/relais/binance/")) {
       if ((req.headers.get("cf-connecting-ip") || "") !== "72.11.157.70") return new Response("interdit", { status: 403 });
       const u = new URL(req.url), cible = "https://stream.binance.com:443/" + pathname.slice("/relais/binance/".length) + u.search;
