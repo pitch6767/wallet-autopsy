@@ -24102,8 +24102,98 @@ var Bot = class {
         z.mise = M2[nom].mise * f;
         z.miseMaxCycle = M2[nom].miseMaxCycle * f;
       }
+      const PRE = { "onglet 2": "xl:", "onglet 3": "xl3:", "onglet 4": "xl4:", "onglet 5": "xl5:" }, M3 = this._m3 = this._m3 || {};
+      const jourP = /* @__PURE__ */ __name((ms) => new Date(ms + decalSuisse(ms)).toISOString().slice(0, 10), "jourP"), auj = jourP(Date.now());
+      const lignes = /* @__PURE__ */ __name(async (nom, z) => {
+        const pre = PRE[z._source], cle = pre + nom;
+        if (!pre) return [];
+        if (!M3[cle] || Date.now() - M3[cle].t > 6e5) {
+          const Ls = [];
+          for (const v of (await this.state.storage.list({ prefix: pre + nom + "|" })).values()) for (const l of v) {
+            const ms = Date.parse(l[0]);
+            if (ms >= Date.parse(z._depuis)) Ls.push({ ms, cote: l[1], prix: +l[2] || 0, parts: +l[3] || 0, net: +l[4] || 0 });
+          }
+          Ls.sort((x, y) => x.ms - y.ms);
+          M3[cle] = { t: Date.now(), L: Ls };
+        }
+        return M3[cle].L;
+      }, "lignes");
+      for (const [nom, z] of Object.entries(Z)) {
+        const Ls = await lignes(nom, z), f = (z._case.mise || 50) / 50;
+        let mise = 0, mJ = 0, nJ = 0;
+        for (const x of Ls) {
+          const m = x.prix * x.parts * f;
+          mise += m;
+          if (jourP(x.ms) === auj) {
+            mJ += m;
+            nJ += x.net * f;
+          }
+        }
+        z.perfPct = mise > 0 ? +(100 * z.pnl / mise).toFixed(1) : null;
+        z.perfJourPct = mJ > 0 ? +(100 * nJ / mJ).toFixed(1) : null;
+        z.resJour = +nJ.toFixed(2);
+      }
+      let combine = null;
+      const actives = Object.entries(Z).filter(([, z]) => z._case.active);
+      if (actives.length >= 2) {
+        const debut = Math.max(...actives.map(([, z]) => Date.parse(z._depuis))), ev = [];
+        for (const [nom, z] of actives) for (const x of await lignes(nom, z)) if (x.ms >= debut) ev.push({ ...x, n: z._case.n, f: (z._case.mise || 50) / 50 });
+        ev.sort((x, y) => x.ms - y.ms);
+        const pris = {}, c = { n: 0, gains: 0, pertes: 0, pnl: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {}, mise: 0, ignores: 0 }, cy = {};
+        let mJ = 0, nJ = 0;
+        for (const x of ev) {
+          const k = Math.floor(x.ms / 3e5) + "|" + x.cote, autres = (pris[k] || []).filter((y) => y.n !== x.n).map((y) => y.prix);
+          if (autres.length && !(x.prix <= 0.5 * Math.min(...autres))) {
+            c.ignores++;
+            continue;
+          }
+          (pris[k] = pris[k] || []).push({ n: x.n, prix: x.prix });
+          const net = x.net * x.f, m = x.prix * x.parts * x.f, j = jourP(x.ms);
+          c.n++;
+          c.pnl += net;
+          c.mise += m;
+          c.parJour[j] = +((c.parJour[j] || 0) + net).toFixed(2);
+          c.cum += net;
+          c.pic = Math.max(c.pic, c.cum);
+          c.creux = Math.max(c.creux, c.pic - c.cum);
+          c.pire = Math.min(c.pire, net);
+          if (net >= 0) {
+            c.gains++;
+            c.serie = 0;
+          } else {
+            c.pertes++;
+            c.serie++;
+            c.serieMax = Math.max(c.serieMax, c.serie);
+          }
+          const st = Math.floor(x.ms / 3e5);
+          cy[st] = (cy[st] || 0) + m;
+          if (j === auj) {
+            mJ += m;
+            nJ += net;
+          }
+        }
+        combine = {
+          nums: actives.map(([, z]) => z._case.n),
+          depuis: new Date(debut).toISOString(),
+          n: c.n,
+          gains: c.gains,
+          pertes: c.pertes,
+          ignores: c.ignores,
+          pnl: +c.pnl.toFixed(2),
+          creux: +c.creux.toFixed(2),
+          pire: +c.pire.toFixed(2),
+          serieMax: c.serieMax,
+          serie: c.serie,
+          parJour: c.parJour,
+          miseMaxCycle: Math.round(Math.max(0, ...Object.values(cy))),
+          perfPct: c.mise > 0 ? +(100 * c.pnl / c.mise).toFixed(1) : null,
+          perfJourPct: mJ > 0 ? +(100 * nJ / mJ).toFixed(1) : null,
+          resJour: +nJ.toFixed(2),
+          sommeSeparees: +actives.reduce((s2, [, z]) => s2 + z.pnl, 0).toFixed(2)
+        };
+      }
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: z._case.n, miseBot: z._case.mise, active: z._case.active, depuisBot: z._depuis, source: z._source, ...infoOrdres(nom, z), ...z, _case: void 0, _depuis: void 0, _source: void 0, cn: void 0, cy: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
-      return json({ depuis: ZERO5_DEPUIS, nums: cases.map((c) => c.n), botMaj: B && B.maj, strats: L, total: +L.reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length, decisionsEnvoi: { utilisees: this.N.slDecVus || 0, manquantes: this.N.slDecManquants || 0 } });
+      return json({ depuis: ZERO5_DEPUIS, nums: cases.map((c) => c.n), botMaj: B && B.maj, combine, strats: L, total: +L.reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length, decisionsEnvoi: { utilisees: this.N.slDecVus || 0, manquantes: this.N.slDecManquants || 0 } });
     }
     if (u.pathname === "/api/zero5_ressemblance") {
       const B = this.B5, cases = B && B.choisies ? B.choisies : ZERO5_NUMS.map((n) => ({ n }));
@@ -29674,9 +29764,13 @@ ress();setInterval(ress,600000);
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 async function maj(){try{const d=await (await fetch("/api/zero5",{cache:"no-store"})).json();window._nums=d.nums;const S=window.trier?window.trier(d.strats):d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Cases du bot lues \xE0 "+(d.botMaj?new Date(d.botMaj).toLocaleTimeString("fr-CH",{timeZone:"Europe/Paris"}):"\u2014 (pas encore lues)")+" \xB7 "+S.length+" strat\xE9gies (" + S.filter(x=>x.n>0).length + " ont d\xE9j\xE0 un trade r\xE9gl\xE9) \xB7 total strat\xE9gies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> \xB7 total de toutes les versions : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> \xB7 cycles en attente de calcul : "+d.enAttente+"</div></div>";
+const pc=(v)=>v==null?"\u2014":(v>=0?"+":"")+v+" %";
+if(d.combine){const c=d.combine;h+="<div class='card'><h2>Strat\xE9gies actives combin\xE9es : n\xB0 "+c.nums.join(" + ")+"</h2><div class='mu'>Avec la r\xE8gle du bot : pas de 2e couche dans le m\xEAme sens sur un cycle, sauf prix \u2264 50 % du prix d\xE9j\xE0 pris. Depuis "+new Date(c.depuis).toLocaleString("fr-CH",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+".</div>"+
+"<div style='display:flex;flex-wrap:wrap;gap:22px;margin-top:10px'><div><div class='mu'>R\xE9sultat</div><b style='font-size:1.8em' class='"+(c.pnl>=0?"ok":"ko")+"'>"+f(c.pnl)+"</b></div><div><div class='mu'>Perf / mise</div><b style='font-size:1.4em'>"+pc(c.perfPct)+"</b></div><div><div class='mu'>Aujourd'hui</div><b style='font-size:1.4em' class='"+(c.resJour>=0?"ok":"ko")+"'>"+f(c.resJour)+" ("+pc(c.perfJourPct)+")</b></div><div><div class='mu'>Creux max</div><b>"+f(-c.creux)+"</b></div><div><div class='mu'>Trades</div><b>"+c.n+"</b> ("+c.gains+" / "+c.pertes+")</div><div><div class='mu'>Ignor\xE9s (m\xEAme sens)</div><b>"+c.ignores+"</b></div><div><div class='mu'>Mise max sur un cycle</div><b>"+c.miseMaxCycle+" $</b></div><div><div class='mu'>Si s\xE9par\xE9es (sans la r\xE8gle)</div><b>"+f(c.sommeSeparees)+"</b></div></div>"+
+"<div style='margin-top:8px;font-size:.9em'>"+Object.entries(c.parJour).sort().map(([j,v])=>j.slice(8,10)+"."+j.slice(5,7)+" <b class='"+(v>=0?"ok":"ko")+"'>"+f(v)+"</b>").join(" \xB7 ")+"</div></div>";}
 if(!S.length)h+="<div class='card'>Aucun trade r\xE9gl\xE9 depuis la remise \xE0 0 pour l'instant.</div>";
-else h+="<div class='card'><h2>Strat\xE9gies du bot de trading</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Case</th><th>Active</th><th>Mise du bot</th><th>Compt\xE9e depuis</th><th>Strat\xE9gie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Mise moyenne par trade</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(d.nums.indexOf(x.num)+1)+"</td><td>"+(x.active?"<b class='ok'>oui</b>":"non")+"</td><td>"+(x.miseBot||50)+" $</td><td>"+(x.depuisBot?new Date(x.depuisBot).toLocaleString("fr-CH",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"\u2014")+(x.source&&x.source!=="onglet 6"?" ("+x.source+")":"")+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"\u2014")+"</td><td style='font-size:.85em'>"+(x.mult||"\u2014")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*(x.miseBot||50))/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+else h+="<div class='card'><h2>Strat\xE9gies du bot de trading</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Case</th><th>Active</th><th>Mise du bot</th><th>Compt\xE9e depuis</th><th>Strat\xE9gie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Perf / mise</th><th>Aujourd'hui</th><th>Mise moyenne par trade</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(d.nums.indexOf(x.num)+1)+"</td><td>"+(x.active?"<b class='ok'>oui</b>":"non")+"</td><td>"+(x.miseBot||50)+" $</td><td>"+(x.depuisBot?new Date(x.depuisBot).toLocaleString("fr-CH",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"\u2014")+(x.source&&x.source!=="onglet 6"?" ("+x.source+")":"")+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"\u2014")+"</td><td style='font-size:.85em'>"+(x.mult||"\u2014")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+pc(x.perfPct)+"</td><td class='"+((x.resJour||0)>=0?"ok":"ko")+"'>"+f(x.resJour||0)+" ("+pc(x.perfJourPct)+")</td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*(x.miseBot||50))/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 <\/script></body></html>`;
