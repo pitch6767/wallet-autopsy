@@ -24193,6 +24193,7 @@ var Bot = class {
           serieMax: c.serieMax,
           serie: c.serie,
           parJour: c.parJour,
+          mise: c.mise,
           miseMaxCycle: Math.round(Math.max(0, ...Object.values(cy))),
           perfPct: c.mise > 0 ? +(100 * c.pnl / c.mise).toFixed(1) : null,
           perfJourPct: mJ > 0 ? +(100 * nJ / mJ).toFixed(1) : null,
@@ -24203,7 +24204,37 @@ var Bot = class {
         else combineSans = res;
       }
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: z._case.n, miseBot: z._case.mise, active: z._case.active, depuisBot: z._depuis, source: z._source, ...infoOrdres(nom, z), ...z, _case: void 0, _depuis: void 0, _source: void 0, cn: void 0, cy: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
-      return json({ depuis: ZERO5_DEPUIS, nums: cases.map((c) => c.n), botMaj: B && B.maj, combine, combineSans, strats: L, total: +L.reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length, decisionsEnvoi: { utilisees: this.N.slDecVus || 0, manquantes: this.N.slDecManquants || 0 } });
+      const ligneComb = /* @__PURE__ */ __name((c) => {
+        if (!c) return null;
+        const n2 = c.nums.join(",") === "101,105" ? c.regle ? 2120 : 2110 : null;
+        return {
+          nom: "PORTEFEUILLE " + c.nums.join(" + ") + (c.regle ? " m\xEAme sens" : "") + " BTC",
+          num: n2,
+          combine: true,
+          miseBot: null,
+          active: false,
+          depuisBot: c.depuis,
+          source: "cases actives",
+          ordres: "les deux strat\xE9gies",
+          mult: c.regle ? "r\xE8gle m\xEAme sens (2e couche seulement \xE0 \u2264 50 % du prix)" : "sans blocage",
+          n: c.n,
+          gains: c.gains,
+          pertes: c.pertes,
+          pnl: c.pnl,
+          pire: c.pire,
+          creux: c.creux,
+          serie: c.serie,
+          serieMax: c.serieMax,
+          parJour: c.parJour,
+          mise: c.mise,
+          miseMaxCycle: c.miseMaxCycle,
+          perfPct: c.perfPct,
+          resJour: c.resJour,
+          perfJourPct: c.perfJourPct
+        };
+      }, "ligneComb");
+      const combLignes = [ligneComb(combineSans), ligneComb(combine)].filter(Boolean);
+      return json({ depuis: ZERO5_DEPUIS, nums: cases.map((c) => c.n), botMaj: B && B.maj, combLignes, strats: L, total: +L.reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length, decisionsEnvoi: { utilisees: this.N.slDecVus || 0, manquantes: this.N.slDecManquants || 0 } });
     }
     if (u.pathname === "/api/zero5_ressemblance") {
       const B = this.B5, cases = B && B.choisies ? B.choisies : ZERO5_NUMS.map((n) => ({ n }));
@@ -29766,7 +29797,7 @@ document.getElementById("r").innerHTML=(L.length?"":"<p>Aucune strat\xE9gie.</p>
 fetch("/api/catalogue").then(r=>r.json()).then(d=>{C=d.strategies;aff();});document.getElementById("q").oninput=aff;
 <\/script></body></html>`;
 var PAGE_ZERO4 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 5 \u2014 tout \xE0 0</title>${STYLE}</head><body>
-<h1>Onglet 5 \u2014 tout remis \xE0 0 le 31.10 \xE0 17:30 <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel5" style="font-weight:600">\u{1F4E5} Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, \xE0 jour \xE0 chaque ouverture ; \xE9crits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 31.10.2026 \xE0 17:30 (heure de Paris). Seulement les strat\xE9gies des cases du bot (onglet 6) et les nouveaux fant\xF4mes de la 101 et de la 105 : consensus 6, famille carnet (plus s\xFBre, plus rentable, + consensus 6), r\xE8gle \xAB prix mont\xE9 5 c \xBB, et les portefeuilles 101 + 105 avec et sans \xAB m\xEAme sens \xBB (strat\xE9gies, versions \xAB + id\xE9es \xBB, \xAB + consensus \xBB, financement, \xE9lan perp, minute 35-45, sur mesure, CONSENSUS 6 / 8, DIVERSIT\xC9 3, CONSENSUS 6 billets), plus \xAB + id\xE9es sans r\xE8gles \xE9chou\xE9es \xBB (m\xEAmes mises x2 / x3 que \xAB + id\xE9es \xBB, sans le filtre des gros trades ni la revente \xE0 60 s, qui ont \xE9chou\xE9 sur 10-19.10). Aucun argent r\xE9el.</div>
+<h1>Onglet 5 \u2014 tout remis \xE0 0 le 31.10 \xE0 17:30 <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel5" style="font-weight:600">\u{1F4E5} Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, \xE0 jour \xE0 chaque ouverture ; \xE9crits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 31.10.2026 \xE0 17:30 (heure de Paris). Seulement les strat\xE9gies des cases du bot (onglet 6) et les nouveaux fant\xF4mes de la 101 et de la 105 : consensus 6, famille carnet (plus s\xFBre, plus rentable, + consensus 6), r\xE8gle \xAB prix mont\xE9 5 c \xBB, et les portefeuilles 101 + 105 avec et sans \xAB m\xEAme sens \xBB. Aucun argent r\xE9el.</div>
 <div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <b>Onglet 5 : tout \xE0 0</b> \xB7 <a href="/zero5">Onglet 6 : bot de trading</a></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur r\xE9sultat total</option><option value="rend">Trier : meilleur r\xE9sultat par $ de capital (r\xE9sultat \xF7 mise max sur un cycle)</option><option value="mise">Trier : moins de capital par trade</option><option value="cycle">Trier : moins de capital par cycle</option><option value="creux">Trier : plus petit creux</option></select> <label class="mu">mise max par cycle \u2264 <input id="miseMax" inputmode="decimal" placeholder="$" style="width:5em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label> <label class="mu">r\xE9sultat min <input id="pnlMin" inputmode="decimal" placeholder="$" style="width:6em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label>
 <script>(function(){const t=document.getElementById("tri"),m=document.getElementById("miseMax"),p=document.getElementById("pnlMin");
@@ -29826,15 +29857,12 @@ ress();setInterval(ress,600000);
 <\/script>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
-async function maj(){try{const d=await (await fetch("/api/zero5",{cache:"no-store"})).json();window._nums=d.nums;const S=window.trier?window.trier(d.strats):d.strats;const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
+async function maj(){try{const d=await (await fetch("/api/zero5",{cache:"no-store"})).json();window._nums=d.nums;const S=window.trier?window.trier(d.strats):d.strats;const J=[...new Set([...(d.combLignes||[]),...S].flatMap(x=>Object.keys(x.parJour||{})))].sort();
 let h="<div class='card'><div class='mu'>Cases du bot lues \xE0 "+(d.botMaj?new Date(d.botMaj).toLocaleTimeString("fr-CH",{timeZone:"Europe/Paris"}):"\u2014 (pas encore lues)")+" \xB7 "+S.length+" strat\xE9gies (" + S.filter(x=>x.n>0).length + " ont d\xE9j\xE0 un trade r\xE9gl\xE9) \xB7 total strat\xE9gies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> \xB7 total de toutes les versions : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> \xB7 cycles en attente de calcul : "+d.enAttente+"</div></div>";
 const pc=(v)=>v==null?"\u2014":(v>=0?"+":"")+v+" %";
-for(const c of [d.combine,d.combineSans].filter(Boolean)){h+="<div class='card'><h2>Strat\xE9gies actives combin\xE9es : n\xB0 "+c.nums.join(" + ")+(c.regle?" \u2014 avec blocage m\xEAme sens":" \u2014 sans blocage")+"</h2><div class='mu'>"+(c.regle?"R\xE8gle du bot : pas de 2e couche dans le m\xEAme sens sur un cycle, sauf prix \u2264 50 % du prix d\xE9j\xE0 pris.":"Tous les trades des deux strat\xE9gies, sans blocage.")+" Depuis "+new Date(c.depuis).toLocaleString("fr-CH",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+".</div>"+
-"<div style='display:flex;flex-wrap:wrap;gap:22px;margin-top:10px'><div><div class='mu'>R\xE9sultat</div><b style='font-size:1.8em' class='"+(c.pnl>=0?"ok":"ko")+"'>"+f(c.pnl)+"</b></div><div><div class='mu'>Perf / mise</div><b style='font-size:1.4em'>"+pc(c.perfPct)+"</b></div><div><div class='mu'>Aujourd'hui</div><b style='font-size:1.4em' class='"+(c.resJour>=0?"ok":"ko")+"'>"+f(c.resJour)+" ("+pc(c.perfJourPct)+")</b></div><div><div class='mu'>Creux max</div><b>"+f(-c.creux)+"</b></div><div><div class='mu'>Trades</div><b>"+c.n+"</b> ("+c.gains+" / "+c.pertes+")</div>"+(c.regle?"<div><div class='mu'>Ignor\xE9s (m\xEAme sens)</div><b>"+c.ignores+"</b></div>":"")+"<div><div class='mu'>Mise max sur un cycle</div><b>"+c.miseMaxCycle+" $</b></div></div>"+
-"<div style='margin-top:8px;font-size:.9em'>"+Object.entries(c.parJour).sort().map(([j,v])=>j.slice(8,10)+"."+j.slice(5,7)+" <b class='"+(v>=0?"ok":"ko")+"'>"+f(v)+"</b>").join(" \xB7 ")+"</div></div>";}
 if(!S.length)h+="<div class='card'>Aucun trade r\xE9gl\xE9 depuis la remise \xE0 0 pour l'instant.</div>";
 else h+="<div class='card'><h2>Strat\xE9gies du bot de trading</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Case</th><th>Active</th><th>Mise du bot</th><th>Compt\xE9e depuis</th><th>Strat\xE9gie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat total</th><th>Perf / mise</th><th>Aujourd'hui</th><th>Mise moyenne par trade</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseill\xE9</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(d.nums.indexOf(x.num)+1)+"</td><td>"+(x.active?"<b class='ok'>oui</b>":"non")+"</td><td>"+(x.miseBot||50)+" $</td><td>"+(x.depuisBot?new Date(x.depuisBot).toLocaleString("fr-CH",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"\u2014")+(x.source&&x.source!=="onglet 6"?" ("+x.source+")":"")+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"\u2014")+"</td><td style='font-size:.85em'>"+(x.mult||"\u2014")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+pc(x.perfPct)+"</td><td class='"+((x.resJour||0)>=0?"ok":"ko")+"'>"+f(x.resJour||0)+" ("+pc(x.perfJourPct)+")</td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*(x.miseBot||50))/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+[...(d.combLignes||[]),...S].map((x,i)=>"<tr"+(x.combine?" style='background:#14532d33'":"")+"><td>"+(x.combine?"\u2014":(d.nums.indexOf(x.num)+1))+"</td><td>"+(x.combine?"\u2014":(x.active?"<b class='ok'>oui</b>":"non"))+"</td><td>"+(x.combine?"cases actives":(x.miseBot||50)+" $")+"</td><td>"+(x.depuisBot?new Date(x.depuisBot).toLocaleString("fr-CH",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"\u2014")+(x.source&&x.source!=="onglet 6"?" ("+x.source+")":"")+"</td><td>"+(x.num?"<b>n\xB0 "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"\u2014")+"</td><td style='font-size:.85em'>"+(x.mult||"\u2014")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+pc(x.perfPct)+"</td><td class='"+((x.resJour||0)>=0?"ok":"ko")+"'>"+f(x.resJour||0)+" ("+pc(x.perfJourPct)+")</td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*(x.miseBot||50))/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 <\/script></body></html>`;
