@@ -13,6 +13,10 @@ jobs:
           G=https://gamma-api.polymarket.com
           for q in "gold%20up%20or%20down" "silver%20up%20or%20down"; do curl -sS -m 60 "$G/public-search?q=$q&limit_per_type=20&events_status=active" ; echo; done > bot95/sonde_metaux.json
           T=$(date +%s); S=$(( T / 900 * 900 ))
-          for a in xau xag gold silver; do for s in $S $((S-900)) $((S+900)); do echo "== $a-updown-15m-$s"; curl -sS -m 30 "$G/events?slug=$a-updown-15m-$s" | head -c 3000; echo; done; done > bot95/sonde_metaux_slugs.txt
+          { for a in xauusd xagusd xau xag; do for f in updown-15m up-or-down-15m; do echo "== $a-$f-$S"; curl -sS -m 30 "$G/events?slug=$a-$f-$S" | head -c 4000; echo; done; done
+            echo "== recherche 15"; curl -sS -m 60 "$G/public-search?q=gold%2015%20minutes&limit_per_type=20&events_status=active" | head -c 6000; echo
+            echo "== xauusd daily"; curl -sS -m 30 "$G/events?slug=xauusd-up-or-down-on-november-2-2026" | head -c 5000; echo
+            echo "== events gold actifs"; curl -sS -m 60 "$G/events?active=true&closed=false&limit=50&order=startDate&ascending=false&title=gold" | head -c 8000; echo
+            echo "== tag"; curl -sS -m 60 "$G/events?active=true&closed=false&limit=40&tag_slug=gold" | python3 -c "import json,sys;[print(e['slug'],e.get('endDate'),e.get('volume')) for e in json.load(sys.stdin)]"; } > bot95/sonde_metaux_slugs.txt 2>&1
           git config user.name sonde; git config user.email bot@users.noreply.github.com
           git add bot95/sonde_metaux.json bot95/sonde_metaux_slugs.txt && git commit -qm "sonde métaux [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
