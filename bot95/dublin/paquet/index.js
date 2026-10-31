@@ -23023,6 +23023,22 @@ var Bot = class {
         this.N.ordres = await this.state.storage.get("nv:ordres") || [];
         this.N.audit = { fait: base.auditFait || {}, lignes: await this.state.storage.get("nv:audit") || [] };
         this.N.zero = await this.state.storage.get("nv:zero") || {};
+        if (!await this.state.storage.get("zeroJourFix1")) {
+          for (const [k, z] of Object.entries(this.N.zero)) {
+            const pj = {};
+            let n = 0;
+            for (const v of (await this.state.storage.list({ prefix: "xl:" + k + "|" })).values()) for (const l of v) {
+              const ms = Date.parse(l[0]);
+              if (!(ms >= Date.parse(ZERO_DEPUIS))) continue;
+              const j = new Date(ms + decalSuisse(ms)).toISOString().slice(0, 10);
+              pj[j] = (pj[j] || 0) + (+l[4] || 0);
+              n++;
+            }
+            if (n > 0 && Math.abs(n - (z.n || 0)) <= 3) z.parJour = pj;
+          }
+          await this.state.storage.put("nv:zero", this.N.zero);
+          await this.state.storage.put("zeroJourFix1", 1);
+        }
         this.N.zero2 = await this.state.storage.get("nv:zero2") || {};
         if (await this.state.storage.get("zero2:depuis") !== ZERO2_DEPUIS) {
           const ar = await this.state.storage.get("zero2:archive:" + ZERO2_DEPUIS);
@@ -23345,7 +23361,7 @@ var Bot = class {
         const Z = this.N.zero = this.N.zero || {}, z = Z[k] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {} };
         for (const P of T) {
           if (Date.parse(P.heure) < Date.parse(ZERO_DEPUIS)) continue;
-          const jz = new Date(Date.parse(P.heure) + 2 * 36e5).toISOString().slice(0, 10);
+          const jz = new Date(Date.parse(P.heure) + decalSuisse(Date.parse(P.heure))).toISOString().slice(0, 10);
           z.parJour[jz] = (z.parJour[jz] || 0) + P.net;
           z.n++;
           z.pnl += P.net;
@@ -23891,7 +23907,7 @@ var Bot = class {
     if (u.pathname === "/api/classement") {
       const vis = Object.keys(this.nVue().strats), J = {}, jours = /* @__PURE__ */ new Set();
       const jourDe = /* @__PURE__ */ __name((h) => {
-        const d = new Date(Date.parse(h) + 2 * 36e5);
+        const ms = Date.parse(h), d = new Date(ms + decalSuisse(ms));
         return d.toISOString().slice(0, 10);
       }, "jourDe");
       for (const k of vis) {
@@ -26037,7 +26053,7 @@ var Bot = class {
   // Numéros envoyés : SIGNAL_NUMS (ex. « 101,201,121,28,119 ») ; le bot de trading n'exécute que les stratégies ACTIVES.
   // Versions branchées : base (1-34), « + idées » (1xx, SANS la revente à 60 s — décision de Pitch du 26.10), « + idées sans x2 x3 » (2xx).
   slNoms(P) {
-    const out = [], a = P.actif, h = P.heure ? new Date(Date.parse(P.heure) + 2 * 36e5).getUTCHours() : null, add = /* @__PURE__ */ __name((nom, mult) => {
+    const out = [], a = P.actif, h = P.heure ? new Date(Date.parse(P.heure) + decalSuisse(Date.parse(P.heure))).getUTCHours() : null, add = /* @__PURE__ */ __name((nom, mult) => {
       if (xlVisible(nom + " " + a)) out.push({ nom, mult });
     }, "add");
     const base = P.strat, m0 = / 100 \$$/.test(base) ? 2 : 1, C2 = [{ nom: base, mult: m0, base: true }];
@@ -26561,7 +26577,7 @@ var Bot = class {
       try {
         const k = P.strat + "|" + P.actif, cp = /* @__PURE__ */ __name((nom, note) => this.nClore({ ...P, strat: nom, copieCarnet: true, copieDuo: true, copieRapide: true, copieMeta: true, journal: [...P.journal || [], "copie de " + P.strat + (note ? " \u2014 " + note : "")] }, issue), "cp");
         if (META_TOP20.has(k)) {
-          const hz = P.heure ? new Date(Date.parse(P.heure) + 2 * 36e5).getUTCHours() : null;
+          const hz = P.heure ? new Date(Date.parse(P.heure) + decalSuisse(Date.parse(P.heure))).getUTCHours() : null;
           if (hz != null && !(hz >= 6 && hz < 9)) cp(P.strat + " pas 06-09h");
           const S0 = this.N.strats[P.strat + " " + P.actif], prev = S0 && S0.trades && S0.trades[0];
           if (prev && prev.net > 0) cp(P.strat + " apres gain", "pr\xE9c\xE9dent +" + prev.net);
@@ -26616,7 +26632,7 @@ var Bot = class {
     try {
       if (!this.SG && P.heure && Date.parse(P.heure) >= Date.parse(ZERO_DEPUIS)) {
         const Z = this.N.zero = this.N.zero || {}, k = P.strat + " " + P.actif, z = Z[k] = Z[k] || { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0 };
-        const jz = new Date(Date.parse(P.heure) + 2 * 36e5).toISOString().slice(0, 10);
+        const jz = new Date(Date.parse(P.heure) + decalSuisse(Date.parse(P.heure))).toISOString().slice(0, 10);
         z.parJour = z.parJour || (z.n > 0 ? { "2026-10-14": z.pnl } : {});
         z.parJour[jz] = (z.parJour[jz] || 0) + P.net;
         z.n++;
@@ -26952,7 +26968,7 @@ var Bot = class {
       }
     }
     if (!P.copieCarnet && FILTRE_HEURES.has(P.strat + "|" + P.actif) && P.heure) {
-      const hz = new Date(Date.parse(P.heure) + 2 * 36e5).getUTCHours();
+      const hz = new Date(Date.parse(P.heure) + decalSuisse(Date.parse(P.heure))).getUTCHours();
       if (!(hz >= 2 && hz < 10)) {
         try {
           this.nClore({ ...P, strat: P.strat + " sans 02-10h", copieCarnet: true, journal: [...P.journal || []] }, issue);
