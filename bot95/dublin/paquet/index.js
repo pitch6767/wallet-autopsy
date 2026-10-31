@@ -29532,7 +29532,8 @@ var SUR_MESURE = { "PORTEFEUILLE 400 BTC": ["x2", "b6", "bcl"], "PORTEFEUILLE 40
 var ZERO3_DEPUIS = "2026-10-25T14:00:00Z";
 var ZERO5_DEPUIS = "2026-10-26T20:52:00Z";
 var ZERO5_NUMS = [101, 201, 121, 28, 119];
-var ZERO4_DEPUIS = "2026-10-31T16:30:00Z";
+var ZERO4_DEPUIS = "2026-10-31T18:50:00Z";
+var ONGLET5_MAX_CYCLE = 250;
 var CARNET_K = ["corrige : desaccord 20 + carnet BTC", "corrige : desaccord 20 + carnet ecart serre BTC", "corrige : V2-F ecart qui grandit + carnet BTC", "corrige : V2-F ecart qui grandit + carnet ecart serre BTC", "corrige : V2-F + pas les deux baissent + carnet BTC", "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC"];
 function variantesPrix(monte, retard) {
   return [[" + x2 prix mont\xE9 5 c", monte ? 2 : 1], [" + x2 prix mont\xE9 5 c + pas de retard", retard ? 0 : monte ? 2 : 1]];
@@ -29639,6 +29640,20 @@ function infoOrdres(nom, z) {
 }
 __name(infoOrdres, "infoOrdres");
 function zCompte(Z, k, heure, net, sans, mise, start) {
+  if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && start && mise > 0) {
+    const C2 = ZHOOK._cap4 = ZHOOK._cap4 || {}, ck = k + "|" + start, deja = C2[ck] || 0, reste = ONGLET5_MAX_CYCLE - deja;
+    if (reste <= 0.01) return;
+    if (mise > reste) {
+      const f = reste / mise;
+      net *= f;
+      mise = reste;
+    }
+    C2[ck] = deja + mise;
+    if (Math.random() < 0.01) {
+      const lim = Math.floor(Date.now() / 1e3) - 3600;
+      for (const x of Object.keys(C2)) if (+x.split("|").pop() < lim) delete C2[x];
+    }
+  }
   try {
     if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && ZHOOK.nom5) {
       const n5 = ZHOOK.nom5(k), f5 = n5 ? ZHOOK.f5(n5, heure) : 0;
@@ -29797,7 +29812,7 @@ document.getElementById("r").innerHTML=(L.length?"":"<p>Aucune strat\xE9gie.</p>
 fetch("/api/catalogue").then(r=>r.json()).then(d=>{C=d.strategies;aff();});document.getElementById("q").oninput=aff;
 <\/script></body></html>`;
 var PAGE_ZERO4 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 5 \u2014 tout \xE0 0</title>${STYLE}</head><body>
-<h1>Onglet 5 \u2014 tout remis \xE0 0 le 31.10 \xE0 17:30 <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel5" style="font-weight:600">\u{1F4E5} Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, \xE0 jour \xE0 chaque ouverture ; \xE9crits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 31.10.2026 \xE0 17:30 (heure de Paris). Seulement les strat\xE9gies des cases du bot (onglet 6) et les nouveaux fant\xF4mes de la 101 et de la 105 : consensus 6, famille carnet (plus s\xFBre, plus rentable, + consensus 6), r\xE8gle \xAB prix mont\xE9 5 c \xBB, et les portefeuilles 101 + 105 avec et sans \xAB m\xEAme sens \xBB. Aucun argent r\xE9el.</div>
+<h1>Onglet 5 \u2014 tout remis \xE0 0 le 31.10 \xE0 19:50 <span class="badge">mode fant\xF4me</span></h1><div class="mu"><a href="/excel5" style="font-weight:600">\u{1F4E5} Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, \xE0 jour \xE0 chaque ouverture ; \xE9crits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de z\xE9ro le 31.10.2026 \xE0 19:50 (heure de Paris), mise au plus 250 $ par cycle pour chaque ligne (au-del\xE0, le trade est r\xE9duit puis ignor\xE9). Seulement les strat\xE9gies des cases du bot (onglet 6) et les nouveaux fant\xF4mes de la 101 et de la 105 : consensus 6, famille carnet (plus s\xFBre, plus rentable, + consensus 6), r\xE8gle \xAB prix mont\xE9 5 c \xBB, et les portefeuilles 101 + 105 avec et sans \xAB m\xEAme sens \xBB. Aucun argent r\xE9el.</div>
 <div style="margin-top:8px"><a href="/">\u2190 Tableau de bord</a> \xB7 <a href="/zero">Onglet 2 (depuis le 19.10)</a> \xB7 <a href="/zero2">Onglet 3 : id\xE9es</a> \xB7 <b>Onglet 5 : tout \xE0 0</b> \xB7 <a href="/zero5">Onglet 6 : bot de trading</a></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom de strat\xE9gie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur r\xE9sultat total</option><option value="rend">Trier : meilleur r\xE9sultat par $ de capital (r\xE9sultat \xF7 mise max sur un cycle)</option><option value="mise">Trier : moins de capital par trade</option><option value="cycle">Trier : moins de capital par cycle</option><option value="creux">Trier : plus petit creux</option></select> <label class="mu">mise max par cycle \u2264 <input id="miseMax" inputmode="decimal" placeholder="$" style="width:5em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label> <label class="mu">r\xE9sultat min <input id="pnlMin" inputmode="decimal" placeholder="$" style="width:6em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label>
 <script>(function(){const t=document.getElementById("tri"),m=document.getElementById("miseMax"),p=document.getElementById("pnlMin");
