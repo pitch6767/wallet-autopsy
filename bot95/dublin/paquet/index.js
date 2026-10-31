@@ -26946,7 +26946,11 @@ var Bot = class {
           }
           if (garder && (x.k === "PORTEFEUILLE 400 BTC" || x.k === "corrige : desaccord 20 + foule bybit x2 BTC")) {
             const nc = new Set(tous.filter((y) => y.cote === x.cote && y.k && y.heure <= x.heure).map((y) => y.k)).size;
-            if (nc >= 6) zCompte(N.zero2, x.k.replace(/ BTC$/, " + id\xE9es + consensus 6 BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0);
+            if (nc >= 6) {
+              zCompte(N.zero2, x.k.replace(/ BTC$/, " + id\xE9es + consensus 6 BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0);
+              N.zero3 = N.zero3 || {};
+              zCompte(N.zero3, x.k.replace(/ BTC$/, " + id\xE9es + consensus 6 BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0);
+            }
           }
           if (garder && (x.k === "PORTEFEUILLE 400 BTC" || x.k === "corrige : desaccord 20 + foule bybit x2 BTC") && Date.parse(x.heure) >= Date.parse(ZERO4_DEPUIS)) {
             const avant = tous.filter((y) => y.k && y.heure <= x.heure), carnet = avant.filter((y) => CARNET_K.includes(y.k));
@@ -26956,7 +26960,10 @@ var Bot = class {
             const memeCote = avant.filter((y) => y.cote === x.cote && y.prix > 0), pmin = memeCote.length ? Math.min(...memeCote.map((y) => y.prix)) : x.prix || 0;
             const hausse = (x.prix || 0) - pmin, monte = hausse > 1e-3 && hausse <= 0.05;
             const premier = memeCote.length ? Math.min(...memeCote.map((y) => Date.parse(y.heure))) : Date.parse(x.heure), retard = (Date.parse(x.heure) - premier) / 1e3 > 120;
-            for (const [suf, fac] of [...variantesCarnet(avec, c6), ...variantesPrix(monte, retard)]) if (fac) zCompte(N.zero4, x.k.replace(/ BTC$/, " + id\xE9es" + suf + " BTC"), x.heure, fac * nI, sans, fac * mI, s0);
+            for (const [suf, fac] of [...variantesCarnet(avec, c6), ...variantesPrix(monte, retard)]) if (fac) {
+              N.zero3 = N.zero3 || {};
+              zCompte(N.zero3, x.k.replace(/ BTC$/, " + id\xE9es" + suf + " BTC"), x.heure, fac * nI, sans, fac * mI, s0);
+            }
             (this._pf = this._pf || []).push({ st, s: x.k === "PORTEFEUILLE 400 BTC" ? 101 : 105, heure: x.heure, cote: x.cote, prix: x.prix || 0, net: nI, mise: mI, avec, c6, monte, retard, sans });
           }
           if (Date.parse(x.heure) >= Date.parse(ZERO3_DEPUIS)) {
@@ -27027,7 +27034,8 @@ var Bot = class {
                 }
                 pris[y.cote].push({ s: y.s, prix: y.prix });
                 this._zx = { cote: y.cote, prix: y.prix };
-                zCompte(N.zero4, nom, y.heure, fac * y.net, y.sans, fac * y.mise, st);
+                N.zero3 = N.zero3 || {};
+                zCompte(N.zero3, nom, y.heure, fac * y.net, y.sans, fac * y.mise, st);
               }
             }
           }
@@ -29503,7 +29511,7 @@ function variantesCarnet(avec, c6) {
   return [[" + carnet d'accord", avec ? 1 : 0], [" + x2 carnet d'accord", avec ? 2 : 1], [" + carnet d'accord + consensus 6", avec && c6 ? 1 : 0], [" + x2 carnet d'accord + consensus 6", c6 ? avec ? 2 : 1 : 0]];
 }
 __name(variantesCarnet, "variantesCarnet");
-var ONGLET4_DE3 = ["PORTEFEUILLE 400 + id\xE9es BTC", "PORTEFEUILLE 600 + id\xE9es BTC", "PORTEFEUILLE 400 corrige + id\xE9es BTC"];
+var ONGLET4_DE3 = ["PORTEFEUILLE 400 + id\xE9es BTC", "PORTEFEUILLE 600 + id\xE9es BTC", "PORTEFEUILLE 400 corrige + id\xE9es BTC", "PORTEFEUILLE 400 + id\xE9es + consensus 6 BTC", "corrige : desaccord 20 + foule bybit x2 + id\xE9es + consensus 6 BTC"];
 var DEJA_ECRIT = /* @__PURE__ */ new Map();
 function aChange(k, v) {
   let j;
