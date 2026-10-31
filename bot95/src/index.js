@@ -143,6 +143,10 @@ export default {
     // qui ne répond qu'aux signaux, au réveil et à un état minimal. Sans MOTEUR (bot95) : rien ne change.
     if (env.MOTEUR === "signaux") return stub(env).fetch(req);
     const pathname = new URL(req.url).pathname;
+    // 31.10.2026 (Pitch : « protection max, déjà hacké 2 fois ») : bot95 est en lecture seule depuis internet. Toute requête qui écrit
+    // (POST, PUT, DELETE…) est refusée, sauf /api/signal_by1 (protégée par son propre jeton). Les anciennes commandes ouvertes
+    // (rapide/*, reel/*, xl_parts, excel_rattrapage, refaire_dublin, reprendre) ne sont plus joignables.
+    { const m = req.method.toUpperCase(); if (m !== "GET" && m !== "HEAD" && m !== "OPTIONS" && pathname !== "/api/signal_by1") return new Response("interdit", { status: 403 }); }
     // 29.10.2026 (Pitch : « on utilise Cloudflare pour Binance ») : relais du flux public Binance pour le moteur local de Dublin
     // (Binance refuse le serveur de Dublin : 451). Seul le serveur de Dublin peut l'utiliser. Rien n'est stocké, aucun objet n'est réveillé.
     if (pathname.startsWith("/relais/binance/")) {
