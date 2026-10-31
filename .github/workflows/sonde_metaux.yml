@@ -1,0 +1,18 @@
+name: Sonde marchés or / argent Polymarket (lecture seule)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set +e
+          G=https://gamma-api.polymarket.com
+          for q in "gold%20up%20or%20down" "silver%20up%20or%20down"; do curl -sS -m 60 "$G/public-search?q=$q&limit_per_type=20&events_status=active" ; echo; done > bot95/sonde_metaux.json
+          T=$(date +%s); S=$(( T / 900 * 900 ))
+          for a in xau xag gold silver; do for s in $S $((S-900)) $((S+900)); do echo "== $a-updown-15m-$s"; curl -sS -m 30 "$G/events?slug=$a-updown-15m-$s" | head -c 3000; echo; done; done > bot95/sonde_metaux_slugs.txt
+          git config user.name sonde; git config user.email bot@users.noreply.github.com
+          git add bot95/sonde_metaux.json bot95/sonde_metaux_slugs.txt && git commit -qm "sonde métaux [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
