@@ -2421,8 +2421,7 @@ export class Bot {
           // (dont elle-même) ont déjà acheté ce côté dans le cycle au moment du trade. Règle A de l'analyse du 31.10 (consensus 0-5 ≈ rien gagné).
           if (garder && (x.k === "PORTEFEUILLE 400 BTC" || x.k === "corrige : desaccord 20 + foule bybit x2 BTC")) {
             const nc = new Set(tous.filter((y) => y.cote === x.cote && y.k && y.heure <= x.heure).map((y) => y.k)).size;
-            if (nc >= 6) { zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées + consensus 6 BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0);
-              N.zero3 = N.zero3 || {}; zCompte(N.zero3, x.k.replace(/ BTC$/, " + idées + consensus 6 BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0); }
+            if (nc >= 6) zCompte(N.zero2, x.k.replace(/ BTC$/, " + idées + consensus 6 BTC"), x.heure, mult * net, sans, mult * (x.prix || 0) * (x.parts || 0), s0);
           }
           // 31.10.2026 17:04 (Pitch) : famille « carnet » (n° 10-15) comme prédiction. « d'accord » = au moins une stratégie carnet a déjà acheté
           // le même côté dans le cycle avant notre trade. Plus sûre = seulement si d'accord ; plus rentable = mise x2 si d'accord ; + consensus 6 en plus.
@@ -2436,7 +2435,7 @@ export class Bot {
             const memeCote = avant.filter((y) => y.cote === x.cote && y.prix > 0), pmin = memeCote.length ? Math.min(...memeCote.map((y) => y.prix)) : (x.prix || 0);
             const hausse = (x.prix || 0) - pmin, monte = hausse > 0.001 && hausse <= 0.05;
             const premier = memeCote.length ? Math.min(...memeCote.map((y) => Date.parse(y.heure))) : Date.parse(x.heure), retard = (Date.parse(x.heure) - premier) / 1000 > 120;
-            for (const [suf, fac] of [...variantesCarnet(avec, c6), ...variantesPrix(monte, retard)]) if (fac) { N.zero3 = N.zero3 || {}; zCompte(N.zero3, x.k.replace(/ BTC$/, " + idées" + suf + " BTC"), x.heure, fac * nI, sans, fac * mI, s0); }   // 31.10.2026 17:37 : onglet 4 aussi (recopié dans l'onglet 5)
+            for (const [suf, fac] of [...variantesCarnet(avec, c6), ...variantesPrix(monte, retard)]) if (fac) zCompte(N.zero4, x.k.replace(/ BTC$/, " + idées" + suf + " BTC"), x.heure, fac * nI, sans, fac * mI, s0);
             (this._pf = this._pf || []).push({ st, s: x.k === "PORTEFEUILLE 400 BTC" ? 101 : 105, heure: x.heure, cote: x.cote, prix: x.prix || 0, net: nI, mise: mI, avec, c6, monte, retard, sans });
           }
           // 25.10.2026 14:57 (Pitch : « don't stop those, create other onglet ») : onglet 4, versions « + consensus » (seule idée confirmée sur 10-19.10) :
@@ -2482,7 +2481,7 @@ export class Bot {
               const pris = { Up: [], Down: [] }, nom = "PORTEFEUILLE 101 + 105" + (bloque ? " même sens" : "") + suf + " BTC";
               for (const y of PF) { const fac = idx < 0 ? 1 : [...variantesCarnet(y.avec, y.c6), ...variantesPrix(y.monte, y.retard)][idx][1]; if (!fac) continue;
                 if (bloque) { const autres = pris[y.cote].filter((z) => z.s !== y.s).map((z) => z.prix); if (autres.length && !(y.prix <= 0.5 * Math.min(...autres))) continue; }
-                pris[y.cote].push({ s: y.s, prix: y.prix }); this._zx = { cote: y.cote, prix: y.prix }; N.zero3 = N.zero3 || {}; zCompte(N.zero3, nom, y.heure, fac * y.net, y.sans, fac * y.mise, st); } } } } catch (err) { this.erreur("portefeuilles 101 + 105", err); }
+                pris[y.cote].push({ s: y.s, prix: y.prix }); this._zx = { cote: y.cote, prix: y.prix }; zCompte(N.zero4, nom, y.heure, fac * y.net, y.sans, fac * y.mise, st); } } } } catch (err) { this.erreur("portefeuilles 101 + 105", err); }
         // 25.10.2026 21:03 (Pitch : « go ») : méta-stratégies CONSENSUS 6 et CONSENSUS 8 — un seul achat de 50 $ par cycle et par côté, au moment où la 6e (8e) stratégie affichée
         // achète ce côté ; prix = meilleur vendeur 1 s plus tard (enregistrement seconde par seconde), sinon prix payé par cette stratégie ; frais 7 % × p × (1 − p) ; gardé jusqu'au règlement.
         try { const CP = (N.consPris = N.consPris || {});
@@ -4017,7 +4016,7 @@ const CARNET_K = ["corrige : desaccord 20 + carnet BTC", "corrige : desaccord 20
 function variantesPrix(monte, retard) { return [[" + x2 prix monté 5 c", monte ? 2 : 1], [" + x2 prix monté 5 c + pas de retard", retard ? 0 : monte ? 2 : 1]]; }
 function variantesCarnet(avec, c6) { return [[" + carnet d'accord", avec ? 1 : 0], [" + x2 carnet d'accord", avec ? 2 : 1], [" + carnet d'accord + consensus 6", avec && c6 ? 1 : 0], [" + x2 carnet d'accord + consensus 6", c6 ? (avec ? 2 : 1) : 0]]; }
 // 26.10.2026 11:16 (Pitch : « rajoute de l'onglet 3 les 3 premières stratégies dans l'onglet 4 pour les mêmes jours ») : les 3 premières de l'onglet 3 à cette heure-là
-const ONGLET4_DE3 = ["PORTEFEUILLE 400 + idées BTC", "PORTEFEUILLE 600 + idées BTC", "PORTEFEUILLE 400 corrige + idées BTC", "PORTEFEUILLE 400 + idées + consensus 6 BTC", "corrige : desaccord 20 + foule bybit x2 + idées + consensus 6 BTC"];     // 25.10.2026 15:00 heure suisse : onglet 4, versions « + consensus »
+const ONGLET4_DE3 = ["PORTEFEUILLE 400 + idées BTC", "PORTEFEUILLE 600 + idées BTC", "PORTEFEUILLE 400 corrige + idées BTC"];     // 25.10.2026 15:00 heure suisse : onglet 4, versions « + consensus »
 // 28.10.2026 (allègement) : on ne réécrit une valeur que si elle a changé depuis la dernière sauvegarde réussie (même contenu sur disque, beaucoup moins d'écritures)
 const DEJA_ECRIT = new Map();
 function aChange(k, v) { let j; try { j = JSON.stringify(v); } catch (_) { return [true, null]; } return [DEJA_ECRIT.get(k) !== j, j]; }
