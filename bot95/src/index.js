@@ -1968,7 +1968,7 @@ export class Bot {
   // Numéros envoyés : SIGNAL_NUMS (ex. « 101,201,121,28,119 ») ; le bot de trading n'exécute que les stratégies ACTIVES.
   // Versions branchées : base (1-34), « + idées » (1xx, SANS la revente à 60 s — décision de Pitch du 26.10), « + idées sans x2 x3 » (2xx).
   slNoms(P) {   // noms affichés produits par ce trade, connus dès l'achat (miroir de nCopies et des copies méta de nClore ; duo / marché rapide non repris)
-    const out = [], a = P.actif, h = P.heure ? new Date(Date.parse(P.heure) + 2 * 3600e3).getUTCHours() : null, add = (nom, mult) => { if (xlVisible(nom + " " + a)) out.push({ nom, mult }); };
+    const out = [], a = P.actif, h = P.heure ? new Date(Date.parse(P.heure) + decalSuisse(Date.parse(P.heure))).getUTCHours() : null, add = (nom, mult) => { if (xlVisible(nom + " " + a)) out.push({ nom, mult }); };
     const base = P.strat, m0 = / 100 \$$/.test(base) ? 2 : 1, C = [{ nom: base, mult: m0, base: true }];
     if (P.flux30 != null && P.flux30 <= -0.296 && P.bySautContre === false) { C.push({ nom: base + " + foule bybit", mult: m0 }); if (P.x2 && P.x2.parts > 0) C.push({ nom: base + " + foule bybit x2", mult: 2 * m0 }); }
     if (FILTRE_HEURES.has(base + "|" + a) && h != null && !(h >= 2 && h < 10)) C.push({ nom: base + " sans 02-10h", mult: m0 });
@@ -2237,7 +2237,7 @@ export class Bot {
       if (v != null && v >= DUO_SEUIL) this.nClore({ ...P, strat: P.strat + " marché rapide", copieCarnet: true, copieRapide: true, copieDuo: true, journal: [...(P.journal || []), "volatilite 1 h " + (v * 100).toFixed(4) + " %/min"] }, issue); } catch (err) { this.erreur("marché rapide", err); } }
     if (!P.copieMeta) { try { const k = P.strat + "|" + P.actif, cp = (nom, note) => this.nClore({ ...P, strat: nom, copieCarnet: true, copieDuo: true, copieRapide: true, copieMeta: true, journal: [...(P.journal || []), "copie de " + P.strat + (note ? " — " + note : "")] }, issue);
       if (META_TOP20.has(k)) {
-        const hz = P.heure ? new Date(Date.parse(P.heure) + 2 * 3600e3).getUTCHours() : null;
+        const hz = P.heure ? new Date(Date.parse(P.heure) + decalSuisse(Date.parse(P.heure))).getUTCHours() : null;
         if (hz != null && !(hz >= 6 && hz < 9)) cp(P.strat + " pas 06-09h");
         const S0 = this.N.strats[P.strat + " " + P.actif], prev = S0 && S0.trades && S0.trades[0];
         if (prev && prev.net > 0) cp(P.strat + " apres gain", "précédent +" + prev.net);
@@ -2455,7 +2455,7 @@ export class Bot {
     // 14.10.2026 15:01 (Pitch : « fantôme avec le filtre pour les 25 ») : copie « sans 02-10h » (aucun trade ouvert entre 02 h et 10 h, heure suisse)
     // pour les stratégies où ce filtre a aidé avant ET après le 13.10 (etude/bot5min/filtre_heures_par_strategie.html), encore actives. Copie seulement.
     if (!P.copieCarnet && FILTRE_HEURES.has(P.strat + "|" + P.actif) && P.heure) {
-      const hz = new Date(Date.parse(P.heure) + 2 * 3600e3).getUTCHours();
+      const hz = new Date(Date.parse(P.heure) + decalSuisse(Date.parse(P.heure))).getUTCHours();   // 31.10.2026 (Pitch) : heure de Paris, plus +2 h fixe
       if (!(hz >= 2 && hz < 10)) { try { this.nClore({ ...P, strat: P.strat + " sans 02-10h", copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie sans 02-10h", err); } }
     }
     if (!P.copieCarnet && P.actif === "BTC") { const cp = (suf) => { try { this.nClore({ ...P, strat: P.strat + suf, copieCarnet: true, journal: [...(P.journal || [])] }, issue); } catch (err) { this.erreur("copie" + suf, err); } };
