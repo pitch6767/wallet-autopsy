@@ -1151,7 +1151,7 @@ export class Bot {
     return 0;
   }
   /** 31.10.2026 17:46 (Pitch : « onglet 5 = stratégies de l'onglet 6 plus les nouvelles, rien d'autre ») */
-  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n < 2130); }
+  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130); }
   nums5() { return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS; }
   /** Facteur de mise de l'onglet 6 pour le n° et l'heure du trade (0 = pas compté : stratégie pas encore dans le bot). */
   f5(n, heure) {
@@ -2491,7 +2491,16 @@ export class Bot {
               const pris = { Up: [], Down: [] }, nom = "PORTEFEUILLE 101 + 105" + (bloque ? " même sens" : "") + suf + " BTC";
               for (const y of PF) { const fac = idx < 0 ? 1 : [...variantesCarnet(y.avec, y.c6), ...variantesPrix(y.monte, y.retard)][idx][1]; if (!fac) continue;
                 if (bloque) { const autres = pris[y.cote].filter((z) => z.s !== y.s).map((z) => z.prix); if (autres.length && !(y.prix <= 0.5 * Math.min(...autres))) continue; }
-                pris[y.cote].push({ s: y.s, prix: y.prix }); this._zx = { cote: y.cote, prix: y.prix }; zCompte(N.zero4, nom, y.heure, fac * y.net, y.sans, fac * y.mise, st); } } } } catch (err) { this.erreur("portefeuilles 101 + 105", err); }
+                pris[y.cote].push({ s: y.s, prix: y.prix }); this._zx = { cote: y.cote, prix: y.prix }; zCompte(N.zero4, nom, y.heure, fac * y.net, y.sans, fac * y.mise, st); } }
+            // 02.11.2026 (Pitch : « oui go ») : n° 2130 = 101 + 105 sans blocage avec gestion du capital : départ 6 000 $, mise x2 à chaque doublement
+            // du capital de jeu (x5 au plus, liquidité), la moitié de chaque gain mise de côté (réserve jamais rejouée).
+            const PA = (this.palier = this.palier || (await this.state.storage.get("palier5")) || { cap: 6000, res: 0, depuis: ZERO4_DEPUIS });
+            if (PA.depuis !== ZERO4_DEPUIS) { PA.cap = 6000; PA.res = 0; PA.depuis = ZERO4_DEPUIS; }
+            for (const y of PF) { const fac = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PA.cap / 6000))))); let g = fac * y.net;
+              if (g > 0) { PA.res += g / 2; g /= 2; } PA.cap += g; this._zx = { cote: y.cote, prix: y.prix };
+              zCompte(N.zero4, "PORTEFEUILLE 101 + 105 palier x2 BTC", y.heure, fac * y.net, y.sans, fac * y.mise, st);
+              const z = N.zero4["PORTEFEUILLE 101 + 105 palier x2 BTC"]; if (z) { z.capital = +PA.cap.toFixed(2); z.reserve = +PA.res.toFixed(2); z.palier = fac; } }
+            await this.state.storage.put("palier5", PA); } } catch (err) { this.erreur("portefeuilles 101 + 105", err); }
         // 25.10.2026 21:03 (Pitch : « go ») : méta-stratégies CONSENSUS 6 et CONSENSUS 8 — un seul achat de 50 $ par cycle et par côté, au moment où la 6e (8e) stratégie affichée
         // achète ce côté ; prix = meilleur vendeur 1 s plus tard (enregistrement seconde par seconde), sinon prix payé par cette stratégie ; frais 7 % × p × (1 − p) ; gardé jusqu'au règlement.
         try { const CP = (N.consPris = N.consPris || {});
@@ -4073,11 +4082,11 @@ function infoOrdres(nom, z) {
 function facteurPrix(p) { return !(p > 0) ? 1 : p < 0.2 ? 1.5 : p < 0.3 ? 1 : p < 0.5 ? 0.5 : 0; }
 function zCompte(Z, k, heure, net, sans, mise, start) {
   // 02.11.2026 (Pitch : « un fantôme de cela sur toutes les stratégies de l'onglet 5 ») : chaque ligne de l'onglet 5 a sa jumelle « + mise selon prix »
-  if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && !k.includes(" + mise selon prix") && ZHOOK.onglet5Garde && ZHOOK.onglet5Garde(k)) {
+  if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && !k.includes(" + mise selon prix") && !k.includes(" palier x2") && ZHOOK.onglet5Garde && ZHOOK.onglet5Garde(k)) {
     const fp = facteurPrix((ZHOOK._zx || {}).prix); if (fp > 0) zCompte(Z, k.replace(/ BTC$/, " + mise selon prix BTC"), heure, fp * net, sans, fp * (mise || 0), start);
   }
   // 31.10.2026 19:42 (Pitch : « max 250 $ par cycle ») : plafond par ligne et par cycle dans l'onglet 5 — trade réduit au reste disponible, sinon ignoré
-  if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && start && mise > 0) {
+  if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && start && mise > 0 && !k.includes(" palier x2")) {
     const C = (ZHOOK._cap4 = ZHOOK._cap4 || {}), ck = k + "|" + start, deja = C[ck] || 0, reste = ONGLET5_MAX_CYCLE - deja;
     if (reste <= 0.01) return;
     if (mise > reste) { const f = reste / mise; net *= f; mise = reste; }
@@ -4223,7 +4232,7 @@ async function maj(){try{const d=await (await fetch("/api/zero4",{cache:"no-stor
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH",{timeZone:"Europe/Paris"})+" · "+S.length+" stratégies (" + S.filter(x=>x.n>0).length + " ont déjà un trade réglé) · total stratégies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> · total de toutes les versions : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> · cycles en attente de calcul : "+d.enAttente+"</div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade réglé depuis la remise à 0 pour l'instant.</div>";
 else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Stratégie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th><th>Mise moyenne par trade</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseillé</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n° "+x.num+"</b> ":"")+x.nom+"</td><td>"+(x.ordres||"—")+"</td><td style='font-size:.85em'>"+(x.mult||"—")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n° "+x.num+"</b> ":"")+x.nom+(x.capital!=null?" <span class='mu'>· capital de jeu "+Math.round(x.capital)+" $ · réserve "+Math.round(x.reserve)+" $ · mise x"+x.palier+"</span>":"")+"</td><td>"+(x.ordres||"—")+"</td><td style='font-size:.85em'>"+(x.mult||"—")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 </script></body></html>`;
