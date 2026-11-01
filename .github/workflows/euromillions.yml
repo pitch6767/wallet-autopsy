@@ -1,0 +1,40 @@
+name: Deploy EuroMillions
+on:
+  push:
+    branches: [main]
+    paths: [euromillions/**, .github/workflows/euromillions.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deployer et controler
+        run: |
+          set +e
+          cd euromillions
+          U=https://euromillions.pitch67.workers.dev
+          # garde-fou : ne jamais écraser un autre Worker qui porterait déjà le nom « euromillions »
+          code=$(curl -sS -m 20 -o /tmp/avant.html -w "%{http_code}" $U/)
+          if [ "$code" = "200" ] && ! grep -q "euromillions-app" /tmp/avant.html; then
+            echo "STOP : un autre Worker nommé euromillions existe déjà, rien n'a été déployé" > controle.txt
+          else
+            npx -y wrangler@4 deploy > /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log
+            sleep 15
+            {
+              tail -15 /tmp/d.log
+              echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" $U/
+              echo "=== controle"; curl -sS -m 90 "$U/api/controle" | head -c 6000; echo
+            } > controle.txt 2>&1
+            curl -sS -m 30 "$U/api/brut?d=30-10-2026" > brut.txt 2>&1
+          fi
+          cd ..; git config user.name controle; git config user.email bot@users.noreply.github.com
+          git add euromillions/controle.txt euromillions/brut.txt; git commit -m "Controle euromillions [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
