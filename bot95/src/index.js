@@ -2496,10 +2496,14 @@ export class Bot {
             // du capital de jeu (x5 au plus, liquidité), la moitié de chaque gain mise de côté (réserve jamais rejouée).
             const PA = (this.palier = this.palier || (await this.state.storage.get("palier5")) || { cap: 6000, res: 0, depuis: ZERO4_DEPUIS });
             if (PA.depuis !== ZERO4_DEPUIS) { PA.cap = 6000; PA.res = 0; PA.depuis = ZERO4_DEPUIS; }
-            for (const y of PF) { const fac = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PA.cap / 6000))))); let g = fac * y.net;
+            // 02.11.2026 00:17 (Pitch) : plafond de 250 $ par cycle gardé, mais adapté au solde : 250 $ × le palier de mise
+            let miseCycle = 0;
+            for (const y of PF) { const pal = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PA.cap / 6000))))), plaf = 250 * pal, reste = plaf - miseCycle;
+              if (reste <= 0.01 || !(y.mise > 0)) continue;
+              const fac = Math.min(pal, reste / y.mise); miseCycle += fac * y.mise; let g = fac * y.net;
               if (g > 0) { PA.res += g / 2; g /= 2; } PA.cap += g; this._zx = { cote: y.cote, prix: y.prix };
               zCompte(N.zero4, "PORTEFEUILLE 101 + 105 palier x2 BTC", y.heure, fac * y.net, y.sans, fac * y.mise, st);
-              const z = N.zero4["PORTEFEUILLE 101 + 105 palier x2 BTC"]; if (z) { z.capital = +PA.cap.toFixed(2); z.reserve = +PA.res.toFixed(2); z.palier = fac; } }
+              const z = N.zero4["PORTEFEUILLE 101 + 105 palier x2 BTC"]; if (z) { z.capital = +PA.cap.toFixed(2); z.reserve = +PA.res.toFixed(2); z.palier = pal; z.plafondCycle = plaf; } }
             await this.state.storage.put("palier5", PA); } } catch (err) { this.erreur("portefeuilles 101 + 105", err); }
         // 25.10.2026 21:03 (Pitch : « go ») : méta-stratégies CONSENSUS 6 et CONSENSUS 8 — un seul achat de 50 $ par cycle et par côté, au moment où la 6e (8e) stratégie affichée
         // achète ce côté ; prix = meilleur vendeur 1 s plus tard (enregistrement seconde par seconde), sinon prix payé par cette stratégie ; frais 7 % × p × (1 − p) ; gardé jusqu'au règlement.
@@ -4232,7 +4236,7 @@ async function maj(){try{const d=await (await fetch("/api/zero4",{cache:"no-stor
 let h="<div class='card'><div class='mu'>Depuis "+new Date(d.depuis).toLocaleString("fr-CH",{timeZone:"Europe/Paris"})+" · "+S.length+" stratégies (" + S.filter(x=>x.n>0).length + " ont déjà un trade réglé) · total stratégies : <b class='"+(d.total>=0?"ok":"ko")+"'>"+f(d.total)+"</b> · total de toutes les versions : <b class='"+(d.totalIdees>=0?"ok":"ko")+"'>"+f(d.totalIdees)+"</b> · cycles en attente de calcul : "+d.enAttente+"</div></div>";
 if(!S.length)h+="<div class='card'>Aucun trade réglé depuis la remise à 0 pour l'instant.</div>";
 else h+="<div class='card'><h2>Classement depuis la remise à 0</h2><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>Stratégie</th><th>Ordres par cycle</th><th>Multiplicateur</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat total</th><th>Mise moyenne par trade</th><th>Mise max sur un cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th><th>Capital conseillé</th></tr>"+
-S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n° "+x.num+"</b> ":"")+x.nom+(x.capital!=null?" <span class='mu'>· capital de jeu "+Math.round(x.capital)+" $ · réserve "+Math.round(x.reserve)+" $ · mise x"+x.palier+"</span>":"")+"</td><td>"+(x.ordres||"—")+"</td><td style='font-size:.85em'>"+(x.mult||"—")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+(x.num?"<b>n° "+x.num+"</b> ":"")+x.nom+(x.capital!=null?" <span class='mu'>· capital de jeu "+Math.round(x.capital)+" $ · réserve "+Math.round(x.reserve)+" $ · mise x"+x.palier+" · plafond "+x.plafondCycle+" $ par cycle</span>":"")+"</td><td>"+(x.ordres||"—")+"</td><td style='font-size:.85em'>"+(x.mult||"—")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td>"+"<td>"+(x.n?(x.mise||0)/x.n:0).toFixed(2)+" $</td><td>"+Math.round(x.miseMaxCycle||0)+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td><td><b>"+(Math.round((2*x.creux+2*50)/50)*50)+" $</b></td></tr>").join("")+"</table></div></div>";
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 maj();setInterval(maj,20000);
 </script></body></html>`;
