@@ -34,7 +34,6 @@ jobs:
               echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" $U/
               echo "=== controle"; curl -sS -m 90 "$U/api/controle" | head -c 6000; echo
             } > controle.txt 2>&1
-            curl -sS -m 30 "$U/api/brut?d=30-10-2026" > brut.txt 2>&1
           fi
           cd ..; git config user.name controle; git config user.email bot@users.noreply.github.com
-          git add euromillions/controle.txt euromillions/brut.txt; git commit -m "Controle euromillions [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
+          git add euromillions/controle.txt; git commit -m "Controle euromillions [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
