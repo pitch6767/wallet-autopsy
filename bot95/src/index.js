@@ -320,7 +320,7 @@ export class Bot {
         }
         this.N.zero2 = (await this.state.storage.get("nv:zero2")) || {}; if ((await this.state.storage.get("zero2:depuis")) !== ZERO2_DEPUIS) { const ar = await this.state.storage.get("zero2:archive:" + ZERO2_DEPUIS); if (ar) { this.N.zero2 = ar; await this.state.storage.put("nv:zero2", ar); } await this.state.storage.put("zero2:depuis", ZERO2_DEPUIS); }   // 25.10 : compteurs « + idées » rétablis
         // 26.10.2026 : les compteurs des onglets 4 et 5 dépassaient 128 Ko (taille max d'une valeur) → plus sauvegardés ; maintenant découpés en morceaux (nv:zero3:0, :1…)
-        this.N.zero3 = await zCharger(this.state.storage, "nv:zero3"); this.N.zero4 = await zCharger(this.state.storage, "nv:zero4"); if ((await this.state.storage.get("zero4:depuis")) !== ZERO4_DEPUIS) { await this.state.storage.put("zero4:archive:" + ((await this.state.storage.get("zero4:depuis")) || "2026-10-26T11:00:00Z"), this.N.zero4 || {}); this.N.zero4 = {}; await zSauver(this.state.storage, "nv:zero4", {}); await this.state.storage.put("zero4:depuis", ZERO4_DEPUIS); } this.N.zero5 = await zCharger(this.state.storage, "nv:zero5"); this.B5 = (await this.state.storage.get("bot5")) || null;
+        this.N.zero3 = await zCharger(this.state.storage, "nv:zero3"); this.N.zero4 = await zCharger(this.state.storage, "nv:zero4"); if ((await this.state.storage.get("zero4:depuis")) !== ZERO4_DEPUIS) { this._cap4 = {}; await this.state.storage.put("zero4:archive:" + ((await this.state.storage.get("zero4:depuis")) || "2026-10-26T11:00:00Z"), this.N.zero4 || {}); this.N.zero4 = {}; await zSauver(this.state.storage, "nv:zero4", {}); await this.state.storage.put("zero4:depuis", ZERO4_DEPUIS); } this.N.zero5 = await zCharger(this.state.storage, "nv:zero5"); this.B5 = (await this.state.storage.get("bot5")) || null;
         if (!(await this.state.storage.get("zero5rattrapage"))) {   // 27.10.2026 : une seule fois, onglet 6 rattrapé depuis les lignes Excel (21:52 → mise en ligne ; revente éventuelle à 60 s incluse dans ce rattrapage, rare)
           try { const Z5 = {}, R5 = [], enAtt = new Set(Object.keys(this.N.idq || {}).map(Number));
             for (const n of ZERO5_NUMS) { const b = CATALOGUE.find((c) => c.n === n % 100), c5 = CATALOGUE.find((c) => c.n === n), v = Math.floor(n / 100); if (!b || !c5) continue;
@@ -1151,7 +1151,7 @@ export class Bot {
     return 0;
   }
   /** 31.10.2026 17:46 (Pitch : « onglet 5 = stratégies de l'onglet 6 plus les nouvelles, rien d'autre ») */
-  onglet5Garde(nom) { const n = numDe(nom); if (!n) return false; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n < 2130); }
+  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n < 2130); }
   nums5() { return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS; }
   /** Facteur de mise de l'onglet 6 pour le n° et l'heure du trade (0 = pas compté : stratégie pas encore dans le bot). */
   f5(n, heure) {
@@ -4019,7 +4019,8 @@ const SUR_MESURE = {"PORTEFEUILLE 400 BTC": ["x2", "b6", "bcl"], "PORTEFEUILLE 4
 const ZERO3_DEPUIS = "2026-10-25T14:00:00Z";
 const ZERO5_DEPUIS = "2026-10-26T20:52:00Z";     // 26.10.2026 21:52 heure suisse : démarrage du paper du bot de trading (onglet 6)
 const ZERO5_NUMS = [101, 201, 121, 28, 119];     // numéros comptés depuis le 26.10 21:52 ; depuis le 29.10 la liste vient du bot de trading (botStratsMaj)
-const ZERO4_DEPUIS = "2026-10-31T18:50:00Z";     // 31.10.2026 19:50 heure de Paris (Pitch : « max 250 $ par cycle, onglet 5 à 0 ») ; avant : 31.10 17:30 et 26.10 12:00 (archivés)
+const ZERO4_DEPUIS = "2026-11-01T23:15:00Z";     // 02.11.2026 00:15 heure de Paris (Pitch : fantômes « mise selon le prix », onglet 5 à 0) ; avant : 31.10 19:50
+const ZERO4_DEPUIS_AVANT = "2026-10-31T18:50:00Z";     // 31.10.2026 19:50 heure de Paris (Pitch : « max 250 $ par cycle, onglet 5 à 0 ») ; avant : 31.10 17:30 et 26.10 12:00 (archivés)
 const ONGLET5_MAX_CYCLE = 250;   // 31.10.2026 19:42 (Pitch) : dans l'onglet 5, chaque ligne mise au plus 250 $ par cycle (au-delà, le trade est réduit puis ignoré)
 const CARNET_K = ["corrige : desaccord 20 + carnet BTC", "corrige : desaccord 20 + carnet ecart serre BTC", "corrige : V2-F ecart qui grandit + carnet BTC", "corrige : V2-F ecart qui grandit + carnet ecart serre BTC", "corrige : V2-F + pas les deux baissent + carnet BTC", "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC"];
 /** [suffixe, facteur de mise] des 4 variantes « famille carnet » : plus sûre, plus rentable, et les mêmes + consensus 6. */
@@ -4068,7 +4069,13 @@ function infoOrdres(nom, z) {
   const n = numDe(nom), vu = n ? ORDRES_VUS[String(n % 100)] : null, live = z && z.ordresMaxCycle || 0, o = Math.max(vu || 0, live);
   return { ordres: o ? (o > 1 ? "plusieurs (jusqu'à " + o + ")" : "1") : "—", mult: multTexte(String(nom).replace(/ BTC$/, "")) };
 }
+/** 02.11.2026 (Pitch) : facteur « mise selon le prix » : x1,5 sous 0,20 ; x1 de 0,20 à 0,30 ; x0,5 de 0,30 à 0,50 ; rien dès 0,50. */
+function facteurPrix(p) { return !(p > 0) ? 1 : p < 0.2 ? 1.5 : p < 0.3 ? 1 : p < 0.5 ? 0.5 : 0; }
 function zCompte(Z, k, heure, net, sans, mise, start) {
+  // 02.11.2026 (Pitch : « un fantôme de cela sur toutes les stratégies de l'onglet 5 ») : chaque ligne de l'onglet 5 a sa jumelle « + mise selon prix »
+  if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && !k.includes(" + mise selon prix") && ZHOOK.onglet5Garde && ZHOOK.onglet5Garde(k)) {
+    const fp = facteurPrix((ZHOOK._zx || {}).prix); if (fp > 0) zCompte(Z, k.replace(/ BTC$/, " + mise selon prix BTC"), heure, fp * net, sans, fp * (mise || 0), start);
+  }
   // 31.10.2026 19:42 (Pitch : « max 250 $ par cycle ») : plafond par ligne et par cycle dans l'onglet 5 — trade réduit au reste disponible, sinon ignoré
   if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && start && mise > 0) {
     const C = (ZHOOK._cap4 = ZHOOK._cap4 || {}), ck = k + "|" + start, deja = C[ck] || 0, reste = ONGLET5_MAX_CYCLE - deja;
@@ -4191,7 +4198,7 @@ document.getElementById("r").innerHTML=(L.length?"":"<p>Aucune stratégie.</p>")
 fetch("/api/catalogue").then(r=>r.json()).then(d=>{C=d.strategies;aff();});document.getElementById("q").oninput=aff;
 </script></body></html>`;
 const PAGE_ZERO4 = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Onglet 5 — tout à 0</title>${STYLE}</head><body>
-<h1>Onglet 5 — tout remis à 0 le 31.10 à 19:50 <span class="badge">mode fantôme</span></h1><div class="mu"><a href="/excel5" style="font-weight:600">📥 Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, à jour à chaque ouverture ; écrits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de zéro le 31.10.2026 à 19:50 (heure de Paris), mise au plus 250 $ par cycle pour chaque ligne (au-delà, le trade est réduit puis ignoré). Seulement les stratégies des cases du bot (onglet 6) et les nouveaux fantômes de la 101 et de la 105 : consensus 6, famille carnet (plus sûre, plus rentable, + consensus 6), règle « prix monté 5 c », et les portefeuilles 101 + 105 avec et sans « même sens ». Aucun argent réel.</div>
+<h1>Onglet 5 — tout remis à 0 le 02.11 à 00:15 <span class="badge">mode fantôme</span></h1><div class="mu"><a href="/excel5" style="font-weight:600">📥 Fichier Excel : les trades de chaque ligne de cet onglet (une ligne par trade, à jour à chaque ouverture ; écrits depuis le 26.10 vers 8 h 30)</a></div><div class="mu">Compteurs repartis de zéro le 02.11.2026 à 00:15 (heure de Paris), mise au plus 250 $ par cycle pour chaque ligne (au-delà, le trade est réduit puis ignoré). Chaque ligne a aussi sa jumelle « + mise selon prix » (n° + 10000) : mise x1,5 sous 0,20, x1 de 0,20 à 0,30, x0,5 de 0,30 à 0,50, rien dès 0,50. Seulement les stratégies des cases du bot (onglet 6) et les nouveaux fantômes de la 101 et de la 105 : consensus 6, famille carnet (plus sûre, plus rentable, + consensus 6), règle « prix monté 5 c », et les portefeuilles 101 + 105 avec et sans « même sens ». Aucun argent réel.</div>
 <div style="margin-top:8px"><a href="/">← Tableau de bord</a> · <a href="/zero">Onglet 2 (depuis le 19.10)</a> · <a href="/zero2">Onglet 3 : idées</a> · <b>Onglet 5 : tout à 0</b> · <a href="/zero5">Onglet 6 : bot de trading</a></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom de stratégie (ex. 101)" style="font-size:1.05em;padding:8px 10px;width:min(420px,90%);border-radius:8px;border:1px solid #8886"> <span id="chercheN" class="mu"></span> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur résultat total</option><option value="rend">Trier : meilleur résultat par $ de capital (résultat ÷ mise max sur un cycle)</option><option value="mise">Trier : moins de capital par trade</option><option value="cycle">Trier : moins de capital par cycle</option><option value="creux">Trier : plus petit creux</option></select> <label class="mu">mise max par cycle ≤ <input id="miseMax" inputmode="decimal" placeholder="$" style="width:5em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label> <label class="mu">résultat min <input id="pnlMin" inputmode="decimal" placeholder="$" style="width:6em;padding:6px;border-radius:8px;border:1px solid #8886"> $</label>
 <script>(function(){const t=document.getElementById("tri"),m=document.getElementById("miseMax"),p=document.getElementById("pnlMin");
