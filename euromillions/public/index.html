@@ -92,7 +92,7 @@ const LETTRES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const chf = v => v.toLocaleString('fr-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' CHF';
 const dateFr = iso => new Date(iso + 'T12:00:00').toLocaleDateString('fr-CH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-function montrer(el, oui) { el.style.display = oui ? '' : 'none'; }
+function montrer(el, oui) { el.style.display = oui ? 'block' : 'none'; }
 function erreur(t) { const e = $('#erreur'); e.textContent = t || ''; montrer(e, !!t); }
 
 function ligneDate(v) {
@@ -228,7 +228,7 @@ function afficher(o) {
     if (t.etat !== 'ok') return `<div class="carte"><h2>${dateFr(t.date)}</h2><div class="petit">${t.etat === 'a_venir' ? 'Tirage à venir ou pas encore publié.' : 'Résultats introuvables pour cette date (pas de tirage ce jour-là ?).'}</div></div>`;
     const lignes = t.lignes.map((l, i) => {
       const g = l.gain + l.swissWinGain;
-      const quoi = [l.gain ? `${l.bons}+${l.etoiles} : ${chf(l.gain)}` : `${l.bons} n° + ${l.etoiles} ★`, l.swissWinGain ? `Swiss Win ${l.swissWinBons} n° : ${chf(l.swissWinGain)}` : ''].filter(Boolean).join(' · ');
+      const quoi = [l.gain ? `${l.bons}+${l.bonnesEtoiles} : ${chf(l.gain)}` : `${l.bons} n° + ${l.bonnesEtoiles} ★`, l.swissWinGain ? `Swiss Win ${l.swissWinBons} n° : ${chf(l.swissWinGain)}` : ''].filter(Boolean).join(' · ');
       return `<div class="res-ligne"><div><div class="mini"><span class="lettre petit" style="width:16px;font-weight:700">${LETTRES[i]}</span>${boules(l.numeros, 'n', t.numeros)}${boules(l.etoiles, 'e', t.etoiles)}</div><div class="petit" style="margin-top:4px">${quoi}</div></div><div class="gain ${g ? 'oui' : 'non'}">${g ? chf(g) : '—'}</div></div>`;
     }).join('');
     const ss = t.superStarLignes.map(x => `<div class="res-ligne"><div><div class="code">${codeSS(x.code, t.superStar || '')}</div><div class="petit">Super-Star${x.rang ? ' · rang ' + x.rang : ''}</div></div><div class="gain ${x.gain ? 'oui' : 'non'}">${x.gain ? chf(x.gain) : '—'}</div></div>`).join('');

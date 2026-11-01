@@ -112,7 +112,7 @@ export function verifierGrille(g, res) {
     sw = g.numeros.filter(x => res.swissWin.includes(x)).length;
     if (sw >= 3) swGain = res.swissWinGains[String(sw)] || 0;
   }
-  return { bons: n, etoiles: e, rang: RANGS_VALIDES.includes(cle) ? cle : null, gain, swissWinBons: sw, swissWinGain: swGain };
+  return { bons: n, bonnesEtoiles: e, rang: RANGS_VALIDES.includes(cle) ? cle : null, gain, swissWinBons: sw, swissWinGain: swGain };
 }
 
 // Prochains tirages (mardi et vendredi) à partir d'une date
