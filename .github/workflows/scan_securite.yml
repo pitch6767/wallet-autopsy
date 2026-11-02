@@ -1,0 +1,40 @@
+name: Scan de sécurité du bot (lecture seule, résultats chiffrés)
+# 02.11.2026 (Pitch : « 2 ») : scan classique, une seule fois, uniquement le site du bot.
+# Pas de force brute, pas de déni de service, pas de tentative de connexion (verrou de connexion du bot).
+# Rien n'est affiché dans le journal public : tout est chiffré avec la clé publique de Claude (comme les ops).
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scans
+        run: |
+          set +e
+          H=72-11-157-70.sslip.io; U=https://$H; D=$(mktemp -d); chmod 777 $D
+          sudo apt-get -qq update >/dev/null 2>&1; sudo apt-get -qq install -y nmap >/dev/null 2>&1
+          # 1. ports et services (1000 ports courants, vitesse normale)
+          sudo nmap -Pn -sV -T3 --top-ports 1000 -oN $D/nmap.txt $H >/dev/null 2>&1
+          # 2. TLS / en-têtes
+          curl -sSI -m 30 $U/ > $D/entetes.txt 2>&1
+          curl -sSI -m 30 $U/api/healthz >> $D/entetes.txt 2>&1
+          echo | openssl s_client -connect $H:443 -servername $H 2>/dev/null | openssl x509 -noout -subject -issuer -dates > $D/certificat.txt 2>&1
+          # 3. nuclei : modèles connus, sans force brute, sans DoS, sans fuzz, sans connexion, 5 requêtes / s
+          wget -q https://github.com/projectdiscovery/nuclei/releases/download/v3.3.7/nuclei_3.3.7_linux_amd64.zip -O n.zip && unzip -q -o n.zip nuclei
+          ./nuclei -update-templates -silent >/dev/null 2>&1
+          ./nuclei -u $U -rl 5 -c 5 -etags dos,fuzz,bruteforce,brute-force,default-login,intrusive -severity info,low,medium,high,critical -silent -nc -o $D/nuclei.txt >/dev/null 2>&1
+          # 4. OWASP ZAP baseline : exploration + analyse passive seulement (aucune attaque active)
+          docker run --rm -v $D:/zap/wrk:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t $U -m 3 -r zap.html -w zap.md -I >/dev/null 2>&1
+          ls -l $D > $D/_fichiers.txt
+          tar czf scan.tgz -C $D .
+          K=$(mktemp); openssl rand -hex 32 > $K
+          openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:$K -in scan.tgz -out ops/scan.enc
+          openssl pkeyutl -encrypt -pubin -inkey ops/claude_pub.pem -pkeyopt rsa_padding_mode:oaep -in $K -out ops/scan_cle.enc
+          rm -rf $D $K scan.tgz n.zip nuclei
+          git config user.name ops; git config user.email ops@users.noreply.github.com
+          git add ops/scan.enc ops/scan_cle.enc; git commit -q -m "scan sécurité $(date -u +%FT%TZ) [skip ci]" || true
+          for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
