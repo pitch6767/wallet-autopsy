@@ -26243,6 +26243,69 @@ var Bot = class {
     return out;
   }
   // règles « + idées » au moment de l'achat (mêmes calculs que idTraiter, avec les lignes seconde par seconde gardées en mémoire)
+  // Règles « sur mesure » en direct (copie de la clôture de l'onglet : p12, p6, x2, elan, fin, min, p750, b6, bcl). nb = trades des stratégies affichées sur ce côté dans le cycle, celui-ci compris.
+  slSurMesure(P, nb, R2) {
+    const R = {};
+    for (const l of this._sgH || []) R[l[0]] = l;
+    const C2 = Object.fromEntries(SIG_COLS.map((c, i) => [c, i]));
+    const val = /* @__PURE__ */ __name((c, t) => {
+      for (let d = 0; d <= 3; d++) {
+        const l = R[t - d];
+        if (l && l[C2[c]] != null) return +l[C2[c]];
+      }
+      return null;
+    }, "val");
+    const taz = Math.floor(Date.parse(P.heure) / 1e3), sgz = P.cote === "Up" ? 1 : -1, px = P.prix;
+    const gros = px != null && px >= 0.5, petit = px != null && px >= 0.1 && px < 0.5, bil = px != null && px < 0.1;
+    let pa = 0, pv = 0, vu = 0;
+    for (let u = taz - 30; u <= taz; u++) {
+      const l = R[u];
+      if (!l) continue;
+      vu++;
+      pa += +l[C2["perp_achats_usd"]] || 0;
+      pv += +l[C2["perp_ventes_usd"]] || 0;
+    }
+    const flux30 = vu ? sgz * (pa - pv) / (pa + pv + 1) : null, elanOk = !gros || flux30 != null && !(flux30 >= -0.366 && flux30 < 0.0851);
+    const fz = val("bybit_financement", taz), grosOk = !gros || fz != null && sgz * fz <= -642e-7;
+    const mn = new Date(taz * 1e3).getUTCMinutes(), tv = sgz > 0 ? val("pm_up_vente_taille", taz) : val("pm_up_achat_taille", taz);
+    const c0 = val("chainlink", taz), c30 = val("chainlink", taz - 30), clm = c0 != null && c30 != null ? sgz * (c0 - c30) : null;
+    let garder = true, mult = 1;
+    const pq = [];
+    if (R2.includes("p12") && petit && nb < 3) {
+      garder = false;
+      pq.push("p12");
+    }
+    if (R2.includes("p6") && petit && nb < 6) {
+      garder = false;
+      pq.push("p6");
+    }
+    if (R2.includes("x2") && petit && nb >= 10) mult = 2;
+    if (R2.includes("elan") && gros && !elanOk) {
+      garder = false;
+      pq.push("elan");
+    }
+    if (R2.includes("fin") && gros && !grosOk) {
+      garder = false;
+      pq.push("fin");
+    }
+    if (R2.includes("min") && petit && !(mn >= 35 && mn < 45)) {
+      garder = false;
+      pq.push("min");
+    }
+    if (R2.includes("p750") && petit && tv != null && tv >= 751) {
+      garder = false;
+      pq.push("p750");
+    }
+    if (R2.includes("b6") && bil && nb < 6) {
+      garder = false;
+      pq.push("b6");
+    }
+    if (R2.includes("bcl") && bil && clm != null && clm >= 2.69 && clm < 12.5) {
+      garder = false;
+      pq.push("bcl");
+    }
+    return { garder, mult, nb, flux30: flux30 == null ? null : +flux30.toFixed(3), clm, raison: pq.join(",") };
+  }
   slIdees(P, nb) {
     const R = {};
     for (const l of this._sgH || []) R[l[0]] = l;
@@ -26511,13 +26574,22 @@ var Bot = class {
           mI = rI.mult;
         }
       }
+      if (v === 11) {
+        const rS = this.slSurMesure(P, cy[P.cote], SUR_MESURE[b.nom + " BTC"] || []);
+        if (!rS.garder) {
+          note({ statut: "\xE9cart\xE9 par \xAB sur mesure \xBB", ...rS });
+          dec(false, 0);
+          continue;
+        }
+        mult *= rS.mult;
+        mI = rS.mult;
+      } else if (v !== 0 && v !== 1 && v !== 2) {
+        note({ statut: "version pas encore branch\xE9e" });
+        continue;
+      }
       dec(true, mI);
       if (Math.random() < 0.02) {
         for (const x of Object.keys(SD)) if (+x.split("|")[1] < P.start - 7200) delete SD[x];
-        else if (v !== 0) {
-          note({ statut: "version pas encore branch\xE9e" });
-          continue;
-        }
       }
       const corps = { id: `${n}|${P.start}|${d.nom}|${P.strat}|${P.heure}`, num: n, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask, mult, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok, endTs: mk.end * 1e3, question: mk.slug, t: Date.now() };
       if (this.env.SIGNAL_URL) fetch(this.env.SIGNAL_URL, { method: "POST", headers: { "content-type": "application/json", "x-signal-token": this.env.SIGNAL_TOKEN || "" }, body: JSON.stringify(corps) }).then((r) => r.json()).then((j) => note({ statut: "envoy\xE9", mult, reponse: j && j.statut })).catch((err) => note({ statut: "envoi rat\xE9 : " + err.message, mult }));
