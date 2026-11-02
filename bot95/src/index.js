@@ -930,7 +930,7 @@ export class Bot {
       }
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: z._case.n, miseBot: z._case.mise, active: z._case.active, depuisBot: z._depuis, source: z._source, ...infoOrdres(nom, z), ...z, _case: undefined, _depuis: undefined, _source: undefined, cn: undefined, cy: undefined, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
       // 31.10.2026 18:12 (Pitch) : les 2 combinés deviennent des lignes du tableau, avec un numéro et le même format que les autres
-      const ligneComb = (c) => { if (!c) return null; const n2 = c.nums.join(",") === "101,105" ? (c.regle ? 2120 : 2110) : null;
+      const ligneComb = (c) => { if (!c) return null; const ns = [...c.nums].sort((a2, b2) => a2 - b2).join(","), n2 = ns === "101,105" ? (c.regle ? 2120 : 2110) : ns === "116,1114" ? (c.regle ? 2141 : 2140) : null;
         return { nom: "PORTEFEUILLE " + c.nums.join(" + ") + (c.regle ? " même sens" : "") + " BTC", num: n2, combine: true, miseBot: null, active: false, depuisBot: c.depuis, source: "cases actives", ordres: "les deux stratégies", mult: c.regle ? "règle même sens (2e couche seulement à ≤ 50 % du prix)" : "sans blocage",
           n: c.n, gains: c.gains, pertes: c.pertes, pnl: c.pnl, pire: c.pire, creux: c.creux, serie: c.serie, serieMax: c.serieMax, parJour: c.parJour, mise: c.mise, miseMaxCycle: c.miseMaxCycle, perfPct: c.perfPct, resJour: c.resJour, perfJourPct: c.perfJourPct }; };
       const combLignes = [ligneComb(combineSans), ligneComb(combine)].filter(Boolean);
@@ -1151,7 +1151,7 @@ export class Bot {
     return 0;
   }
   /** 31.10.2026 17:46 (Pitch : « onglet 5 = stratégies de l'onglet 6 plus les nouvelles, rien d'autre ») */
-  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130); }
+  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130) || n === 2140 || n === 2141; }
   nums5() { return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS; }
   /** Facteur de mise de l'onglet 6 pour le n° et l'heure du trade (0 = pas compté : stratégie pas encore dans le bot). */
   f5(n, heure) {
@@ -2474,6 +2474,9 @@ export class Bot {
             for (const [suf, fac] of [...variantesCarnet(avec, c6), ...variantesPrix(monte, retard)]) if (fac) zCompte(N.zero4, x.k.replace(/ BTC$/, " + idées" + suf + " BTC"), x.heure, fac * nI, sans, fac * mI, s0);
             (this._pf = this._pf || []).push({ st, s: x.k === "PORTEFEUILLE 400 BTC" ? 101 : 105, heure: x.heure, cote: x.cote, prix: x.prix || 0, net: nI, mise: mI, avec, c6, monte, retard, sans });
           }
+          // 02.11.2026 21:49 (Pitch : « rajoute la 116 à la 1114 … un fantôme dans l'onglet 5 et 6 ») : trades de la 116 pour le portefeuille 1114 + 116
+          if (garder && x.k === "TWAP fin quantiles BTC" && Date.parse(x.heure) >= Date.parse(PF2_DEPUIS))
+            (this._pf2 = this._pf2 || []).push({ st, s: 116, heure: x.heure, cote: x.cote, prix: x.prix || 0, net: mult * net, mise: mult * (x.prix || 0) * (x.parts || 0), sans });
           // 25.10.2026 14:57 (Pitch : « don't stop those, create other onglet ») : onglet 4, versions « + consensus » (seule idée confirmée sur 10-19.10) :
           // petit trade (0,10-0,50) pas pris si 1 ou 2 trades des stratégies affichées sur le même côté du cycle à son heure d'achat, mise x2 si au moins 10 ; gros et billets inchangés
           if (Date.parse(x.heure) >= Date.parse(ZERO3_DEPUIS)) { let mc = 1, gc = true;
@@ -2507,6 +2510,8 @@ export class Bot {
               if (R2.includes("p750") && petit && tv != null && tv >= 751) ok = false;
               if (R2.includes("b6") && bil && nb2 < 6) ok = false;
               if (R2.includes("bcl") && bil && clm != null && clm >= 2.69 && clm < 12.5) ok = false;
+              if (ok && x.k === "corrige : V2-F + pas les deux baissent + carnet BTC" && Date.parse(x.heure) >= Date.parse(PF2_DEPUIS))
+                (this._pf2 = this._pf2 || []).push({ st, s: 1114, heure: x.heure, cote: x.cote, prix: x.prix || 0, net: m2 * x.net, mise: m2 * mise, sans: false });
               if (ok) zCompte(N.zero3, x.k.replace(/ BTC$/, " + sur mesure BTC"), x.heure, m2 * x.net, false, m2 * mise, s0); } }   // 24.10 21:49 (Pitch) : aussi une version sans mise x2 / x3
         }
         // 31.10.2026 17:04 (Pitch) : portefeuilles 101 + 105 (versions « + idées »), sans blocage et « même sens » (pas de 2e couche dans le même sens
@@ -2531,6 +2536,12 @@ export class Bot {
               zCompte(N.zero4, "PORTEFEUILLE 101 + 105 palier x2 BTC", y.heure, fac * y.net, y.sans, fac * y.mise, st);
               const z = N.zero4["PORTEFEUILLE 101 + 105 palier x2 BTC"]; if (z) { z.capital = +PA.cap.toFixed(2); z.reserve = +PA.res.toFixed(2); z.palier = pal; z.plafondCycle = plaf; } }
             await this.state.storage.put("palier5", PA); } } catch (err) { this.erreur("portefeuilles 101 + 105", err); }
+        // 02.11.2026 21:49 (Pitch) : n° 2140 = 1114 + 116 sans blocage, n° 2141 = 1114 + 116 avec la règle « même sens » du bot (onglet 5, plafond 250 $ par cycle)
+        try { const PF2 = (this._pf2 || []).filter((y) => y.st === st).sort((a2, b2) => (a2.heure < b2.heure ? -1 : 1)); this._pf2 = (this._pf2 || []).filter((y) => y.st !== st);
+          if (PF2.length) { N.zero4 = N.zero4 || {};
+            for (const bloque of [false, true]) { const pris = { Up: [], Down: [] }, nom = "PORTEFEUILLE 1114 + 116" + (bloque ? " même sens" : "") + " BTC";
+              for (const y of PF2) { if (bloque) { const autres = pris[y.cote].filter((z) => z.s !== y.s).map((z) => z.prix); if (autres.length && !(y.prix <= 0.5 * Math.min(...autres))) continue; }
+                pris[y.cote].push({ s: y.s, prix: y.prix }); this._zx = { cote: y.cote, prix: y.prix }; zCompte(N.zero4, nom, y.heure, y.net, y.sans, y.mise, st); } } } } catch (err) { this.erreur("portefeuille 1114 + 116", err); }
         // 25.10.2026 21:03 (Pitch : « go ») : méta-stratégies CONSENSUS 6 et CONSENSUS 8 — un seul achat de 50 $ par cycle et par côté, au moment où la 6e (8e) stratégie affichée
         // achète ce côté ; prix = meilleur vendeur 1 s plus tard (enregistrement seconde par seconde), sinon prix payé par cette stratégie ; frais 7 % × p × (1 − p) ; gardé jusqu'au règlement.
         try { const CP = (N.consPris = N.consPris || {});
@@ -4058,6 +4069,7 @@ const SUR_MESURE = {"PORTEFEUILLE 400 BTC": ["x2", "b6", "bcl"], "PORTEFEUILLE 4
 const ZERO3_DEPUIS = "2026-10-25T14:00:00Z";
 const ZERO5_DEPUIS = "2026-10-26T20:52:00Z";     // 26.10.2026 21:52 heure suisse : démarrage du paper du bot de trading (onglet 6)
 const ZERO5_NUMS = [101, 201, 121, 28, 119];     // numéros comptés depuis le 26.10 21:52 ; depuis le 29.10 la liste vient du bot de trading (botStratsMaj)
+const PF2_DEPUIS = "2026-11-02T20:55:00Z";      // 02.11.2026 21:55 heure de Paris : début du portefeuille 1114 + 116 (n° 2140 / 2141)
 const ZERO4_DEPUIS = "2026-11-01T23:15:00Z";     // 02.11.2026 00:15 heure de Paris (Pitch : fantômes « mise selon le prix », onglet 5 à 0) ; avant : 31.10 19:50
 const ZERO4_DEPUIS_AVANT = "2026-10-31T18:50:00Z";     // 31.10.2026 19:50 heure de Paris (Pitch : « max 250 $ par cycle, onglet 5 à 0 ») ; avant : 31.10 17:30 et 26.10 12:00 (archivés)
 const ONGLET5_MAX_CYCLE = 250;   // 31.10.2026 19:42 (Pitch) : dans l'onglet 5, chaque ligne mise au plus 250 $ par cycle (au-delà, le trade est réduit puis ignoré)
