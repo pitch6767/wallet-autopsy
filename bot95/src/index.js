@@ -1171,25 +1171,26 @@ export class Bot {
     const t = now(), depuis = (k) => t - (this.ws[k + "_ouvert"] || 0);
     if (!this.bbI) this.bbI = setInterval(() => { try { this.echantillonner(); } catch (_) {} }, 100);
     const ageBn = Math.max(...V1.ACTIFS.map((a) => (this.f[a].bn ? t - this.f[a].bn.t : 1e9)));
-    if (!this.ws.bn || (ageBn > 30 && depuis("bn") > 30))
+    if (!this.ws.bn || (ageBn > 10 && depuis("bn") > 10))
       this.connecter("bn", (this.env.BINANCE_WS_BASE || "https://stream.binance.com:443") + "/stream?streams=" + V1.ACTIFS.map((a) => a.toLowerCase() + "usdt@trade").join("/"), [], (m) => {
         const d = m.data || {}, a = V1.ACTIFS.find((k) => k + "USDT" === d.s);
         if (a && +d.p > 0) this.noter(a, "bn", +d.p, now());
       });
+    // 02.11.2026 23:24 (Pitch : « bien plus tôt, après 10 s ») : tout flux de prix muet 10 s est relancé (avant 20-30 s)
     // 09.10.2026 : on ne relance que si le flux entier est muet 20 s (avant : dès qu'UNE petite crypto n'avait pas de trade depuis 20 s → coupure toutes les 20-30 s)
     const muet = (k) => t - (this.ws[k + "_msg"] || this.ws[k + "_ouvert"] || 0);
-    if (!this.ws.perp || (muet("perp") > 20 && depuis("perp") > 20)) {
+    if (!this.ws.perp || (muet("perp") > 10 && depuis("perp") > 10)) {
       for (const a of Object.keys(ACTIFS)) this.livre[a] = { b: new Map(), a: new Map() };
       // 28.10.2026 (Pitch) : carnet Bybit 50 niveaux et liquidations coupés (~50 messages/s) — ne servaient qu'à l'ancien Bot 95, à la V1 et aux enregistrements ; aucune stratégie ne les lit
       const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`]);
       this.connecter("perp", "https://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args })], (m) => this.surPerp(m), JSON.stringify({ op: "ping" }), 10000);
     }
-    if (!this.ws.cb || (muet("cb") > 30 && depuis("cb") > 30)) {
+    if (!this.ws.cb || (muet("cb") > 10 && depuis("cb") > 10)) {
       const ids = LISTE.map((a) => ACTIFS[a].spot).filter(Boolean);
       this.connecter("cb", "https://advanced-trade-ws.coinbase.com", [JSON.stringify({ type: "subscribe", product_ids: ids, channel: "ticker" })], (m) => this.surCb(m));
     }
     const ageOkx = Math.max(...V1.ACTIFS.map((a) => (this.f[a].okx ? t - this.f[a].okx.t : 1e9)));
-    if (!this.ws.okx || (ageOkx > 20 && depuis("okx") > 20))
+    if (!this.ws.okx || (ageOkx > 10 && depuis("okx") > 10))
       this.connecter("okx", "https://ws.okx.com:8443/ws/v5/public", [JSON.stringify({ op: "subscribe", args: V1.ACTIFS.map((a) => ({ channel: "trades", instId: V1.OKX[a] })) })], (m) => {
         const arg = m.arg || {}, x = (m.data || []).slice(-1)[0], a = V1.ACTIFS.find((k) => V1.OKX[k] === arg.instId);
         if (arg.channel === "trades" && x && a) { const tt = now(); this.noter(a, "okx", +x.px, tt); this.v1Declencher(a, "okx", +x.ts / 1000, tt); }
@@ -1202,7 +1203,7 @@ export class Bot {
       if (nx && nx.up && (!mc || nx.start > mc.start)) jetons.push(nx.up, nx.down);
     }
     const cle = jetons.join(",");
-    if (jetons.length && (this.polyCle !== cle || (!this.ws.poly && depuis("poly") > 3))) {
+    if (jetons.length && (this.polyCle !== cle || (!this.ws.poly && depuis("poly") > 3) || (this.ws.poly && muet("poly") > 10 && depuis("poly") > 10))) {
       this.polyCle = cle; this.polyCycle = mb && mb.start;
       for (const id of Object.keys(this.pb)) if (!jetons.includes(id)) delete this.pb[id];
       this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPoly(m), "PING", 10000);
@@ -1211,7 +1212,7 @@ export class Bot {
     // 29.10.2026 (allègement du moteur de signaux seul) : ce flux ne sert qu'au consensus K5 anti-bête, qui ne produit aucun nom affiché → pas abonné en mode signaux
     if (!this.SG && (!this.ws.act || (muet("act") > 30 && depuis("act") > 30))) this.connecter("act", "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "activity", type: "trades" }] })], (m) => this.surAct(m), "PING", 5000);
-    if (!this.ws.cl || (muet("cl") > 20 && depuis("cl") > 20)) this.connecter("cl", "https://ws-live-data.polymarket.com",
+    if (!this.ws.cl || (muet("cl") > 10 && depuis("cl") > 10)) this.connecter("cl", "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surCl(m), "PING", 5000);
     // MIGRATION CHAINLINK (11.10.2026) : nouveau flux PolyBolt en PARALLÈLE (ombre). Il ne nourrit le moteur que si le réglage CHAINLINK_SOURCE
     // vaut "polybolt" ou "auto" (absent = "rtds" : moteur inchangé). L'ancien flux RTDS doit fermer vers le 23.10.2026.
@@ -1220,7 +1221,7 @@ export class Bot {
       this._pbDem = true; this._pbT = t;
       identifiantsLecture(this.state.storage).then((c) => { this.pbCreds = c; }).catch((e) => this.erreur("polybolt identifiants", e)).finally(() => { this._pbDem = false; });
     }
-    if (this.pbCreds && (!this.ws.cl2 || (muet("cl2") > 20 && depuis("cl2") > 20)))
+    if (this.pbCreds && (!this.ws.cl2 || (muet("cl2") > 10 && depuis("cl2") > 10)))
       this.connecter("cl2", "https://ws-live-v2.polymarket.com/ws", [JSON.stringify({ op: "auth", rid: "a1", auth: { apiKey: this.pbCreds.apiKey, secret: this.pbCreds.secret, passphrase: this.pbCreds.passphrase } })], (m) => this.surCl2(m), JSON.stringify({ op: "ping" }), 20000);
   }
 
