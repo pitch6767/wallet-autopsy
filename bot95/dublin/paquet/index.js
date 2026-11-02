@@ -24718,7 +24718,11 @@ var Bot = class {
     if (!this.ws.bn || ageBn > 10 && depuis("bn") > 10)
       this.connecter("bn", (this.env.BINANCE_WS_BASE || "https://stream.binance.com:443") + "/stream?streams=" + V1.ACTIFS.map((a) => a.toLowerCase() + "usdt@trade").join("/"), [], (m) => {
         const d = m.data || {}, a = V1.ACTIFS.find((k) => k + "USDT" === d.s);
-        if (a && +d.p > 0) this.noter(a, "bn", +d.p, now());
+        if (a && +d.p > 0) {
+          const tt = now();
+          this.noter(a, "bn", +d.p, tt);
+          if (this.SG && V1.ACTIFS.includes(a)) this.v1Declencher(a, "bn", +d.T / 1e3 || tt, tt);
+        }
       });
     const muet = /* @__PURE__ */ __name((k) => t - (this.ws[k + "_msg"] || this.ws[k + "_ouvert"] || 0), "muet");
     if (!this.ws.perp || muet("perp") > 10 && depuis("perp") > 10) {
@@ -24997,7 +25001,11 @@ var Bot = class {
     if (m.channel !== "ticker") return;
     for (const ev of m.events || []) for (const x of ev.tickers || []) {
       const a = LISTE.find((k) => ACTIFS[k].spot === x.product_id);
-      if (a && x.price) this.noter(a, "cb", +x.price, now());
+      if (a && x.price) {
+        const tt = now();
+        this.noter(a, "cb", +x.price, tt);
+        if (this.SG && V1.ACTIFS.includes(a)) this.v1Declencher(a, "cb", tt, tt);
+      }
     }
   }
   sourceCl() {
@@ -25056,7 +25064,11 @@ var Bot = class {
     const P = m.payload || {}, sym = String(P.symbol || "").toUpperCase().replace(/USD$/, ""), v = +(P.full_accuracy_value || P.value), obs = +P.timestamp;
     if (!ACTIFS[sym] || !(v > 0) || !(obs > 0)) return;
     if (m.channel === "price.crypto") {
-      if (this.clComparer(sym, "pb", v, obs)) this.noter(sym, "cl", v, now());
+      if (this.clComparer(sym, "pb", v, obs)) {
+        const tt = now();
+        this.noter(sym, "cl", v, tt);
+        if (this.SG && V1.ACTIFS.includes(sym)) this.v1Declencher(sym, "cl", tt, tt);
+      }
     } else if (m.channel === "price.crypto.twap") {
       if (obs % 3e5 === 0) {
         const L = this.twOff = this.twOff || [];
@@ -25069,7 +25081,11 @@ var Bot = class {
     if (m.topic !== "crypto_prices_chainlink") return;
     const p = m.payload || {}, sym = (p.symbol || "").toUpperCase().split("/")[0];
     if (!ACTIFS[sym] || !(+p.value > 0)) return;
-    if (this.clComparer(sym, "rtds", +p.value, +p.timestamp)) this.noter(sym, "cl", +p.value, now());
+    if (this.clComparer(sym, "rtds", +p.value, +p.timestamp)) {
+      const tt = now();
+      this.noter(sym, "cl", +p.value, tt);
+      if (this.SG && V1.ACTIFS.includes(sym)) this.v1Declencher(sym, "cl", tt, tt);
+    }
     if (sym === "BTC" || sym === "ETH") {
       const B = (this._clBrut = this._clBrut || {})[sym] = this._clBrut[sym] || [];
       B.push([+(p.timestamp || 0) / 1e3, +(m.timestamp || 0) / 1e3, now(), +p.value]);
@@ -25632,7 +25648,7 @@ var Bot = class {
   }
   v1Declencher(a, source, ts, t) {
     if (!NV.TRADE.includes(a) && !this.v1Etat(a).pos) return;
-    if (t - (this._v1t[a] || 0) <= 0.2) return;
+    if (t - (this._v1t[a] || 0) <= (this.SG ? 0.05 : 0.2)) return;
     this._v1t[a] = t;
     try {
       this.v1Eval(source, ts, a);
