@@ -24715,23 +24715,23 @@ var Bot = class {
       }
     }, 100);
     const ageBn = Math.max(...V1.ACTIFS.map((a) => this.f[a].bn ? t - this.f[a].bn.t : 1e9));
-    if (!this.ws.bn || ageBn > 30 && depuis("bn") > 30)
+    if (!this.ws.bn || ageBn > 10 && depuis("bn") > 10)
       this.connecter("bn", (this.env.BINANCE_WS_BASE || "https://stream.binance.com:443") + "/stream?streams=" + V1.ACTIFS.map((a) => a.toLowerCase() + "usdt@trade").join("/"), [], (m) => {
         const d = m.data || {}, a = V1.ACTIFS.find((k) => k + "USDT" === d.s);
         if (a && +d.p > 0) this.noter(a, "bn", +d.p, now());
       });
     const muet = /* @__PURE__ */ __name((k) => t - (this.ws[k + "_msg"] || this.ws[k + "_ouvert"] || 0), "muet");
-    if (!this.ws.perp || muet("perp") > 20 && depuis("perp") > 20) {
+    if (!this.ws.perp || muet("perp") > 10 && depuis("perp") > 10) {
       for (const a of Object.keys(ACTIFS)) this.livre[a] = { b: /* @__PURE__ */ new Map(), a: /* @__PURE__ */ new Map() };
       const args = LISTE.flatMap((a) => [`publicTrade.${ACTIFS[a].bybit}`]);
       this.connecter("perp", "https://stream.bybit.com/v5/public/linear", [JSON.stringify({ op: "subscribe", args })], (m) => this.surPerp(m), JSON.stringify({ op: "ping" }), 1e4);
     }
-    if (!this.ws.cb || muet("cb") > 30 && depuis("cb") > 30) {
+    if (!this.ws.cb || muet("cb") > 10 && depuis("cb") > 10) {
       const ids = LISTE.map((a) => ACTIFS[a].spot).filter(Boolean);
       this.connecter("cb", "https://advanced-trade-ws.coinbase.com", [JSON.stringify({ type: "subscribe", product_ids: ids, channel: "ticker" })], (m) => this.surCb(m));
     }
     const ageOkx = Math.max(...V1.ACTIFS.map((a) => this.f[a].okx ? t - this.f[a].okx.t : 1e9));
-    if (!this.ws.okx || ageOkx > 20 && depuis("okx") > 20)
+    if (!this.ws.okx || ageOkx > 10 && depuis("okx") > 10)
       this.connecter("okx", "https://ws.okx.com:8443/ws/v5/public", [JSON.stringify({ op: "subscribe", args: V1.ACTIFS.map((a) => ({ channel: "trades", instId: V1.OKX[a] })) })], (m) => {
         const arg = m.arg || {}, x = (m.data || []).slice(-1)[0], a = V1.ACTIFS.find((k) => V1.OKX[k] === arg.instId);
         if (arg.channel === "trades" && x && a) {
@@ -24748,7 +24748,7 @@ var Bot = class {
       if (nx && nx.up && (!mc || nx.start > mc.start)) jetons.push(nx.up, nx.down);
     }
     const cle = jetons.join(",");
-    if (jetons.length && (this.polyCle !== cle || !this.ws.poly && depuis("poly") > 3)) {
+    if (jetons.length && (this.polyCle !== cle || !this.ws.poly && depuis("poly") > 3 || this.ws.poly && muet("poly") > 10 && depuis("poly") > 10)) {
       this.polyCle = cle;
       this.polyCycle = mb && mb.start;
       for (const id of Object.keys(this.pb)) if (!jetons.includes(id)) delete this.pb[id];
@@ -24762,7 +24762,7 @@ var Bot = class {
       "PING",
       5e3
     );
-    if (!this.ws.cl || muet("cl") > 20 && depuis("cl") > 20) this.connecter(
+    if (!this.ws.cl || muet("cl") > 10 && depuis("cl") > 10) this.connecter(
       "cl",
       "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })],
@@ -24779,7 +24779,7 @@ var Bot = class {
         this._pbDem = false;
       });
     }
-    if (this.pbCreds && (!this.ws.cl2 || muet("cl2") > 20 && depuis("cl2") > 20))
+    if (this.pbCreds && (!this.ws.cl2 || muet("cl2") > 10 && depuis("cl2") > 10))
       this.connecter("cl2", "https://ws-live-v2.polymarket.com/ws", [JSON.stringify({ op: "auth", rid: "a1", auth: { apiKey: this.pbCreds.apiKey, secret: this.pbCreds.secret, passphrase: this.pbCreds.passphrase } })], (m) => this.surCl2(m), JSON.stringify({ op: "ping" }), 2e4);
   }
   async connecter(nom, url, abos, surMsg, ping, periode) {
