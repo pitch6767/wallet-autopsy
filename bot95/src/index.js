@@ -1174,7 +1174,7 @@ export class Bot {
     if (!this.ws.bn || (ageBn > 10 && depuis("bn") > 10))
       this.connecter("bn", (this.env.BINANCE_WS_BASE || "https://stream.binance.com:443") + "/stream?streams=" + V1.ACTIFS.map((a) => a.toLowerCase() + "usdt@trade").join("/"), [], (m) => {
         const d = m.data || {}, a = V1.ACTIFS.find((k) => k + "USDT" === d.s);
-        if (a && +d.p > 0) this.noter(a, "bn", +d.p, now());
+        if (a && +d.p > 0) { const tt = now(); this.noter(a, "bn", +d.p, tt); if (this.SG && V1.ACTIFS.includes(a)) this.v1Declencher(a, "bn", +d.T / 1000 || tt, tt); }
       });
     // 02.11.2026 23:24 (Pitch : « bien plus tôt, après 10 s ») : tout flux de prix muet 10 s est relancé (avant 20-30 s)
     // 09.10.2026 : on ne relance que si le flux entier est muet 20 s (avant : dès qu'UNE petite crypto n'avait pas de trade depuis 20 s → coupure toutes les 20-30 s)
@@ -1317,7 +1317,7 @@ export class Bot {
     if (m.channel !== "ticker") return;
     for (const ev of m.events || []) for (const x of ev.tickers || []) {
       const a = LISTE.find((k) => ACTIFS[k].spot === x.product_id);
-      if (a && x.price) this.noter(a, "cb", +x.price, now());
+      if (a && x.price) { const tt = now(); this.noter(a, "cb", +x.price, tt); if (this.SG && V1.ACTIFS.includes(a)) this.v1Declencher(a, "cb", tt, tt); }
     }
   }
   sourceCl() { const s = (this.env.CHAINLINK_SOURCE || "rtds").toLowerCase(); return s === "polybolt" || s === "auto" ? s : "rtds"; }
@@ -1340,7 +1340,7 @@ export class Bot {
     if (m.snapshot) return;
     const P = m.payload || {}, sym = String(P.symbol || "").toUpperCase().replace(/USD$/, ""), v = +(P.full_accuracy_value || P.value), obs = +P.timestamp;
     if (!ACTIFS[sym] || !(v > 0) || !(obs > 0)) return;
-    if (m.channel === "price.crypto") { if (this.clComparer(sym, "pb", v, obs)) this.noter(sym, "cl", v, now()); }
+    if (m.channel === "price.crypto") { if (this.clComparer(sym, "pb", v, obs)) { const tt = now(); this.noter(sym, "cl", v, tt); if (this.SG && V1.ACTIFS.includes(sym)) this.v1Declencher(sym, "cl", tt, tt); } }
     else if (m.channel === "price.crypto.twap") {                        // moyenne 60 s officielle : gardée aux instants de début de cycle (prix à battre / prix final)
       if (obs % 300000 === 0) { const L = (this.twOff = this.twOff || []); L.push({ a: sym, t: obs / 1000, twap: v, recu_ms: Date.now() - obs }); while (L.length > 2000) L.shift(); }
     }
@@ -1349,7 +1349,7 @@ export class Bot {
     if (m.topic !== "crypto_prices_chainlink") return;
     const p = m.payload || {}, sym = (p.symbol || "").toUpperCase().split("/")[0];
     if (!ACTIFS[sym] || !(+p.value > 0)) return;
-    if (this.clComparer(sym, "rtds", +p.value, +p.timestamp)) this.noter(sym, "cl", +p.value, now());
+    if (this.clComparer(sym, "rtds", +p.value, +p.timestamp)) { const tt = now(); this.noter(sym, "cl", +p.value, tt); if (this.SG && V1.ACTIFS.includes(sym)) this.v1Declencher(sym, "cl", tt, tt); }
     // horodatages bruts du flux (audit du 09.10.2026) : heure de l'observation (p.timestamp), du message (m.timestamp), de réception
     if (sym === "BTC" || sym === "ETH") {
       const B = ((this._clBrut = this._clBrut || {})[sym] = this._clBrut[sym] || []);
@@ -1713,7 +1713,8 @@ export class Bot {
   v1Etat(a) { return a === "BTC" ? this.e.V1 : this.e.V1x[a]; }
   v1Declencher(a, source, ts, t) {
     if (!NV.TRADE.includes(a) && !this.v1Etat(a).pos) return;          // plus de nouvelle entrée hors BTC (une position ouverte va jusqu'au bout)
-    if (t - (this._v1t[a] || 0) <= 0.2) return;
+    // 03.11.2026 (Pitch : « ultra rapide ») : moteur de Dublin seul — réévaluation au plus toutes les 50 ms et à chaque prix (Binance, Coinbase, Chainlink en plus de Bybit / OKX / Polymarket) ; onglets inchangés (200 ms)
+    if (t - (this._v1t[a] || 0) <= (this.SG ? 0.05 : 0.2)) return;
     this._v1t[a] = t;
     try { this.v1Eval(source, ts, a); } catch (err) { this.erreur("V1 " + a, err); }
   }
