@@ -864,7 +864,7 @@ export class Bot {
       // 31.10.2026 20:04 (Pitch) : toutes les lignes prévues apparaissent dès la remise à 0, même sans trade réglé
       for (const c of CATALOGUE) { const nom = c.nom + " BTC"; if (!Z[nom] && this.onglet5Garde(nom)) Z[nom] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {}, sansDonnees: 0 }; }   // 31.10.2026 17:46 (Pitch) : cases de l'onglet 6 + nouveaux fantômes seulement
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: undefined, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
-      return json({ depuis: ZERO4_DEPUIS, debug: this._dbg5 || null, strats: L, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => (x.nom.includes(" + ") )).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length }); }
+      return json({ depuis: ZERO4_DEPUIS, debug: this.N.dbg5 || null, strats: L, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => (x.nom.includes(" + ") )).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length }); }
     if (u.pathname === "/api/catalogue") return json({ maj: "2026-10-27", strategies: CATALOGUE.map((c) => ({ ...c, ...infoOrdres(c.nom + " BTC") })) });
     if (u.pathname === "/numeros") return new Response(PAGE_NUMEROS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/api/zero5") { const Z0 = this.N.zero5 || {}, B = this.B5, Z = {};
@@ -2589,7 +2589,7 @@ export class Bot {
               for (const y of PF2) { if (bloque) { const autres = pris[y.cote].filter((z) => z.s !== y.s).map((z) => z.prix); if (autres.length && !(y.prix <= 0.5 * Math.min(...autres))) continue; }
                 pris[y.cote].push({ s: y.s, prix: y.prix }); this._zx = { cote: y.cote, prix: y.prix }; zCompte(N.zero4, nom, y.heure, y.net, y.sans, y.mise, st); } }
             // n° 3302 (maker) arrêté le 03.11.2026 07:41 (Pitch) : 9 gagnés sur 35. Remplacé par n° 3303 « canari » (règle « même sens » du bot sur les achats faits)
-            { const DBG = (this._dbg5 = this._dbg5 || { canari: [], teneur: [] }); for (const y of PF2) { DBG.canari.push({ s: y.s, h: y.heure, prix: y.prix, mise: +(y.mise || 0).toFixed(2), ca: y.ca, clAge: y.clAge }); } DBG.canari = DBG.canari.slice(-20); }
+            { const DBG = (N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] }); for (const y of PF2) { DBG.canari.push({ s: y.s, h: y.heure, prix: y.prix, mise: +(y.mise || 0).toFixed(2), ca: y.ca, clAge: y.clAge }); } DBG.canari = DBG.canari.slice(-20); }
             { const pris = { Up: [], Down: [] }, nom = "CANARI 1114 + 116 BTC";
               for (const y of PF2) { const k = y.ca; if (!k || !(k.parts > 0)) continue;
                 const autres = pris[y.cote].filter((z) => z.s !== y.s).map((z) => z.prix); if (autres.length && !(k.prix <= 0.5 * Math.min(...autres))) continue;
@@ -2600,14 +2600,15 @@ export class Bot {
             { const pris = { Up: [], Down: [] }, nom = "PORTEFEUILLE 1114 + 116 même sens + Chainlink frais BTC";
               for (const y of PF2) { if (y.clAge == null || y.clAge > 5) { const z0 = N.zero4[nom]; if (z0) z0.ignoresFige = (z0.ignoresFige || 0) + 1; continue; }
                 const autres = pris[y.cote].filter((z) => z.s !== y.s).map((z) => z.prix); if (autres.length && !(y.prix <= 0.5 * Math.min(...autres))) continue;
-                pris[y.cote].push({ s: y.s, prix: y.prix }); this._zx = { cote: y.cote, prix: y.prix }; zCompte(N.zero4, nom, y.heure, y.net, y.sans, y.mise, st); } } } } catch (err) { this.erreur("portefeuille 1114 + 116", err); }
+                pris[y.cote].push({ s: y.s, prix: y.prix }); this._zx = { cote: y.cote, prix: y.prix }; zCompte(N.zero4, nom, y.heure, y.net, y.sans, y.mise, st); } } } } catch (err) { this.erreur("portefeuille 1114 + 116", err); try { const D = (N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] }); (D.err = D.err || []).push("pf2 " + String(err && err.stack || err).slice(0, 300)); D.err = D.err.slice(-5); } catch (_) {} }
         // 03.11.2026 (Pitch : « go ») : n° 3304 TENEUR DE MARCHÉ sur notre modèle — 100 paires Up + Down créées avant le cycle (100 $), ventes « post only » des deux
         // côtés au prix du modèle + 3 c (jamais sous le meilleur vendeur : on le rejoint), 10 parts par seconde au plus, de 5 s à 10 s avant la fin ; on arrête
         // de vendre un côté qui a 10 parts d'avance sur l'autre. Rempli par les vrais achats de preneurs (moitié du volume si on rejoint le meilleur vendeur,
         // tout s'il est plus cher que nous). Fin : paires restantes refusionnées (1 $), côté gagnant restant encaissé. Pas de frais (maker), ristourne non comptée.
+        try { const D0 = (N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] }); D0.vus = (D0.vus || 0) + 1; D0.dernier = s0; } catch (_) {}
         try { if (Date.parse(new Date(s0 * 1000).toISOString()) >= Date.parse(PF3_DEPUIS)) {
           const g = tous.find((y) => y.gagne != null && y.cote); const upGagne = g ? (g.cote === "Up") === !!g.gagne : null;
-          const DBG = (this._dbg5 = this._dbg5 || { canari: [], teneur: [] }); const dbg = { s0, upGagne, nTous: tous.length, sec: 0, pu: 0, bU: 0, aU: 0 }; DBG.teneur.push(dbg); DBG.teneur = DBG.teneur.slice(-12);
+          const DBG = (N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] }); const dbg = { s0, upGagne, nTous: tous.length, sec: 0, pu: 0, bU: 0, aU: 0 }; DBG.teneur.push(dbg); DBG.teneur = DBG.teneur.slice(-12);
           for (let u = s0 + 5; u <= s0 + 290; u += 30) { dbg.sec++; if (val("proba_up_modele", u) != null) dbg.pu++; if (val("pm_up_achat", u) != null) dbg.bU++; if (val("pm_up_vente", u) != null) dbg.aU++; }
           if (upGagne != null) { const NP = 100, CLIP = 10, AV = 10; let su = 0, sd = 0, recu = 0;
             for (let u = s0 + 5; u <= s0 + 290; u++) { const pu = val("proba_up_modele", u - 1), bU = val("pm_up_achat", u - 1), aU = val("pm_up_vente", u - 1); if (pu == null || bU == null || aU == null) continue;
@@ -2619,7 +2620,7 @@ export class Bot {
                 q = Math.min(q, NP - deja); if (q <= 0) continue; recu += q * ask; if (cote === "Up") su += q; else sd += q; } }
             const rU = NP - su, rD = NP - sd, m = Math.min(rU, rD), net = recu + m + (upGagne ? rU - m : rD - m) - NP;
             const nom = "TENEUR DE MARCHÉ modèle BTC"; this._zx = null; zCompte(N.zero4, nom, new Date(s0 * 1000).toISOString(), net, false, NP, st);
-            const z = N.zero4[nom]; if (z) { z.vendusUp = +((z.vendusUp || 0) + su).toFixed(1); z.vendusDown = +((z.vendusDown || 0) + sd).toFixed(1); } } } } catch (err) { this.erreur("teneur de marché", err); }
+            const z = N.zero4[nom]; if (z) { z.vendusUp = +((z.vendusUp || 0) + su).toFixed(1); z.vendusDown = +((z.vendusDown || 0) + sd).toFixed(1); } } } } catch (err) { this.erreur("teneur de marché", err); try { const D = (N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] }); (D.err = D.err || []).push("teneur " + String(err && err.stack || err).slice(0, 300)); D.err = D.err.slice(-5); } catch (_) {} }
         // 25.10.2026 21:03 (Pitch : « go ») : méta-stratégies CONSENSUS 6 et CONSENSUS 8 — un seul achat de 50 $ par cycle et par côté, au moment où la 6e (8e) stratégie affichée
         // achète ce côté ; prix = meilleur vendeur 1 s plus tard (enregistrement seconde par seconde), sinon prix payé par cette stratégie ; frais 7 % × p × (1 − p) ; gardé jusqu'au règlement.
         try { const CP = (N.consPris = N.consPris || {});
