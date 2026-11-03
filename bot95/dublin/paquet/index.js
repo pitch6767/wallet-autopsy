@@ -29872,12 +29872,24 @@ async function xlClasseur(Q, depuis) {
   res.push([]);
   res.push(["Capital conseill\xE9 = 2 \xD7 creux max + 2 mises de 50 $, arrondi \xE0 50 $. Moyenne / jour = r\xE9sultat \xF7 " + nJours + " jours (du " + jourS(depuis).split("-").reverse().join(".") + " \xE0 aujourd'hui)."]);
   tous.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+  const numK = /* @__PURE__ */ __name((k) => numDe(k) ?? 1e9, "numK");
+  tous.sort((a, b) => numK(a[1]) - numK(b[1]) || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0) || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const T = [["Date (heure suisse)", "N\xB0", "Strat\xE9gie", "C\xF4t\xE9", "Prix", "Parts", "Mise $", "R\xE9sultat $", "Issue"].map((v) => ({ v, s: 3 }))], liensT = [];
+  let kPrec = null, rDeb = 0;
+  const fermer = /* @__PURE__ */ __name((rFin) => {
+    const fk = kPrec != null && feuilleDe[kPrec];
+    if (fk && numDe(kPrec) != null) liensT.push(["B" + rDeb + (rFin > rDeb ? ":B" + rFin : ""), "'" + fk.replace(/'/g, "''") + "'!A1"]);
+  }, "fermer");
   for (const [, k, l] of tous) {
-    const num2 = numDe(k), r = T.length + 1, fk = feuilleDe[k];
-    T.push([{ v: serie(l[0]), s: 1 }, num2 != null ? { v: num2, s: fk ? 5 : 0 } : "", String(k).replace(/ BTC$/, ""), l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: l[3] != null && l[2] != null ? l[2] * l[3] : "", s: 2 }, { v: +l[4] || 0, s: 2 }, l[5] || ""]);
-    if (fk && num2 != null) liensT.push(["B" + r, "'" + fk.replace(/'/g, "''") + "'!A1"]);
+    const num2 = numDe(k), r = T.length + 1;
+    if (k !== kPrec) {
+      if (kPrec != null) fermer(r - 1);
+      kPrec = k;
+      rDeb = r;
+    }
+    T.push([{ v: serie(l[0]), s: 1 }, num2 != null ? { v: num2, s: feuilleDe[k] ? 5 : 0 } : "", String(k).replace(/ BTC$/, ""), l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: l[3] != null && l[2] != null ? l[2] * l[3] : "", s: 2 }, { v: +l[4] || 0, s: 2 }, l[5] || ""]);
   }
+  if (kPrec != null) fermer(T.length);
   const toutes = [["R\xE9sum\xE9", xlFeuille(res, { fige: 2, largeurs: [52, 8, 8, 8, 9, 12, 13, 12, 12, 12, 13, 13, 18], liens })], ["Tous les trades", xlFeuille(T, { fige: 1, largeurs: [18, 8, 60, 8, 8, 9, 10, 11, 18], filtre: "A1:I" + T.length, liens: liensT })], ...feuilles];
   const W = "http://schemas.openxmlformats.org/spreadsheetml/2006/main", RL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
   const F = [
