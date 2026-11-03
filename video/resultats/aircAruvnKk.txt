@@ -265,3 +265,14 @@ Q1 [fait] : Que montre exactement l ecran a 03:00 ? Recopie tout texte, chiffre 
 * **Au centre** : Un cercle représentant un neurone contenant le chiffre **`0.4`** (qui passe à `0.1` à 03:03).
 * **Texte affiché sous le neurone** : 
   `Neuron -> Thing that holds a number`
+
+Q2 [fait] : A 13:40 environ, quelle formule matricielle est affichee a l ecran ? Recopie-la exactement (sigma, W, a, b).
+Autour de la 13e/14e minute (plus précisément entre **14:44** et **15:07**), la formule matricielle compacte affichée à l'écran est :
+
+$$a^{(1)} = \sigma(W a^{(0)} + b)$$
+
+---
+
+Pour être complet, la forme développée avec les matrices et vecteurs affichée entre **14:36** et **14:56** est :
+
+$$\sigma \left( \begin{bmatrix} w_{0,0} & w_{0,1} & \dots & w_{0,n} \\ w_{1,0} & w_{1,1} & \dots & w_{1,n} \\ \vdots & \vdots & \ddots & \vdots \\ w_{k,0} & w_{k,1} & \dots & w_{k,n} \end{bmatrix} \begin{bmatrix} a_0^{(0)} \\ a_1^{(0)} \\ \vdots \\ a_n^{(0)} \end{bmatrix} + \begin{bmatrix} b_0 \\ b_1 \\ \vdots \\ b_k \end{bmatrix} \right)$$
