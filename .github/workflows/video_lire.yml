@@ -1,0 +1,35 @@
+name: Video - lecture pour Claude
+on:
+  push:
+    branches: [main]
+    paths: [video/demande.txt]
+permissions:
+  contents: write
+jobs:
+  lire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Demander et attendre
+        run: |
+          set +e
+          U=https://video.pitch67.workers.dev
+          mkdir -p video/resultats
+          while read -r action a b; do
+            [ -z "$action" ] && continue
+            case "$action" in
+              analyser) id=$(curl -sS -m 60 -G "$U/api/analyser" --data-urlencode "url=$a" ${b:+--data-urlencode "fps=$b"} | python3 -c "import json,sys;print(json.load(sys.stdin).get('id',''))") ;;
+              question) id="$a"; curl -sS -m 60 -G "$U/api/question" --data-urlencode "id=$a" --data-urlencode "q=$b" > /dev/null ;;
+              lire) id="$a" ;;
+            esac
+            [ -z "$id" ] && continue
+            for k in $(seq 1 45); do
+              t=$(curl -sS -m 30 "$U/r/$id.txt")
+              echo "$t" | head -3 | grep -q "STATUT : \(fait\|erreur\)" && ! echo "$t" | grep -q "\[attente\]" && break
+              sleep 20
+            done
+            curl -sS -m 30 "$U/r/$id.txt" > "video/resultats/$id.txt"
+          done < video/demande.txt
+          curl -sS -m 30 "$U/api/etat" > video/resultats/_etat.json
+          git config user.name video; git config user.email bot@users.noreply.github.com
+          git add video/resultats; git commit -m "Video lue [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
