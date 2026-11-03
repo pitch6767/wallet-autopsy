@@ -4132,10 +4132,15 @@ async function xlClasseur(Q, depuis) {
   res.push([]); res.push(["Capital conseillé = 2 × creux max + 2 mises de 50 $, arrondi à 50 $. Moyenne / jour = résultat ÷ " + nJours + " jours (du " + jourS(depuis).split("-").reverse().join(".") + " à aujourd'hui)."]);
   tous.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   // 03.11.2026 18:02 (Pitch) : « Stratégie » coupée en deux colonnes (N° et description) ; le N° est un lien vers la feuille de la stratégie ; filtre sur toutes les colonnes
+  // 03.11.2026 : trades rangés par stratégie (n°) puis par date, pour un seul lien par stratégie (20 000 liens séparés faisaient planter Cloudflare) ; tri libre par les filtres
+  const numK = (k) => numDe(k) ?? 1e9; tous.sort((a, b) => numK(a[1]) - numK(b[1]) || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0) || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const T = [["Date (heure suisse)", "N°", "Stratégie", "Côté", "Prix", "Parts", "Mise $", "Résultat $", "Issue"].map((v) => ({ v, s: 3 }))], liensT = [];
-  for (const [, k, l] of tous) { const num = numDe(k), r = T.length + 1, fk = feuilleDe[k];
-    T.push([{ v: serie(l[0]), s: 1 }, num != null ? { v: num, s: fk ? 5 : 0 } : "", String(k).replace(/ BTC$/, ""), l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: l[3] != null && l[2] != null ? l[2] * l[3] : "", s: 2 }, { v: +l[4] || 0, s: 2 }, l[5] || ""]);
-    if (fk && num != null) liensT.push(["B" + r, "'" + fk.replace(/'/g, "''") + "'!A1"]); }
+  let kPrec = null, rDeb = 0;
+  const fermer = (rFin) => { const fk = kPrec != null && feuilleDe[kPrec]; if (fk && numDe(kPrec) != null) liensT.push(["B" + rDeb + (rFin > rDeb ? ":B" + rFin : ""), "'" + fk.replace(/'/g, "''") + "'!A1"]); };
+  for (const [, k, l] of tous) { const num = numDe(k), r = T.length + 1;
+    if (k !== kPrec) { if (kPrec != null) fermer(r - 1); kPrec = k; rDeb = r; }
+    T.push([{ v: serie(l[0]), s: 1 }, num != null ? { v: num, s: feuilleDe[k] ? 5 : 0 } : "", String(k).replace(/ BTC$/, ""), l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: l[3] != null && l[2] != null ? l[2] * l[3] : "", s: 2 }, { v: +l[4] || 0, s: 2 }, l[5] || ""]); }
+  if (kPrec != null) fermer(T.length);
   const toutes = [["Résumé", xlFeuille(res, { fige: 2, largeurs: [52, 8, 8, 8, 9, 12, 13, 12, 12, 12, 13, 13, 18], liens })], ["Tous les trades", xlFeuille(T, { fige: 1, largeurs: [18, 8, 60, 8, 8, 9, 10, 11, 18], filtre: "A1:I" + T.length, liens: liensT })], ...feuilles];
   const W = "http://schemas.openxmlformats.org/spreadsheetml/2006/main", RL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
   const F = [
