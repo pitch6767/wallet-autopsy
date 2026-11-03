@@ -26576,6 +26576,17 @@ var Bot = class {
   slEmettre(P, mk) {
     if (!P || P.stoppee || !mk || !mk.end || mk.end * 1e3 < Date.now() + 1e3 || P.cote !== "Up" && P.cote !== "Down") return;
     const noms = this.slNoms(P), T = this._slT = this._slT || {}, cy = T[P.start] = T[P.start] || { Up: 0, Down: 0 };
+    const HH = this._slH = this._slH || {}, Hc = HH[P.start] = HH[P.start] || [], tEnv = Date.now();
+    for (const x of noms) Hc.push({ k: x.nom, cote: P.cote, prix: P.prix, t: tEnv });
+    for (const x of Object.keys(HH)) if (+x < P.start - 900) delete HH[x];
+    const memeC = Hc.filter((y) => y.cote === P.cote), pminC = memeC.filter((y) => y.prix > 0).reduce((m, y) => Math.min(m, y.prix), Infinity), hausseC = (P.prix || 0) - (isFinite(pminC) ? pminC : P.prix || 0);
+    const fCtx = {
+      avec: memeC.some((y) => CARNET_NOMS.has(y.k)),
+      c6: new Set(memeC.map((y) => y.k)).size >= 6,
+      monte: hausseC > 1e-3 && hausseC <= 0.05,
+      retard: memeC.length ? (tEnv - Math.min(...memeC.map((y) => y.t))) / 1e3 > 120 : false,
+      nc: new Set(memeC.map((y) => y.k)).size
+    };
     const avantCy = cy[P.cote];
     cy[P.cote] += noms.length;
     for (const x of Object.keys(T)) if (+x < P.start - 900) delete T[x];
@@ -26627,6 +26638,17 @@ var Bot = class {
         }
         mult *= rS.mult;
         mI = rS.mult;
+      } else if (v === 3) {
+        const rI = this.slIdees(P, cy[P.cote]);
+        mult *= rI.mult || 1;
+        mI = rI.mult || 1;
+      } else if (v === 10) {
+        const mn = new Date(Date.parse(P.heure)).getUTCMinutes(), petit = P.prix != null && P.prix >= 0.1 && P.prix < 0.5;
+        if (petit && !(mn >= 35 && mn < 45)) {
+          note({ statut: "\xE9cart\xE9 (petit hors minute 35-45)" });
+          dec(false, 0);
+          continue;
+        }
       } else if (v !== 0 && v !== 1 && v !== 2) {
         note({ statut: "version pas encore branch\xE9e" });
         continue;
@@ -26635,7 +26657,7 @@ var Bot = class {
       if (Math.random() < 0.02) {
         for (const x of Object.keys(SD)) if (+x.split("|")[1] < P.start - 7200) delete SD[x];
       }
-      const corps = { id: `${n}|${P.start}|${d.nom}|${P.strat}|${P.heure}`, num: n, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask, mult, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok, endTs: mk.end * 1e3, question: mk.slug, t: Date.now() };
+      const corps = { id: `${n}|${P.start}|${d.nom}|${P.strat}|${P.heure}`, num: n, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask, mult, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok, endTs: mk.end * 1e3, question: mk.slug, t: Date.now(), f: fCtx };
       if (this.env.SIGNAL_URL) fetch(this.env.SIGNAL_URL, { method: "POST", headers: { "content-type": "application/json", "x-signal-token": this.env.SIGNAL_TOKEN || "" }, body: JSON.stringify(corps) }).then((r) => r.json()).then((j) => note({ statut: "envoy\xE9", mult, reponse: j && j.statut })).catch((err) => note({ statut: "envoi rat\xE9 : " + err.message, mult }));
       else note({ statut: "diffus\xE9", mult, clients: this.slDiffuser(corps) });
     }
@@ -29930,6 +29952,7 @@ var PF3_DEPUIS = "2026-11-03T07:15:00Z";
 var ZERO4_DEPUIS = "2026-11-01T23:15:00Z";
 var ONGLET5_MAX_CYCLE = 250;
 var CARNET_K = ["corrige : desaccord 20 + carnet BTC", "corrige : desaccord 20 + carnet ecart serre BTC", "corrige : V2-F ecart qui grandit + carnet BTC", "corrige : V2-F ecart qui grandit + carnet ecart serre BTC", "corrige : V2-F + pas les deux baissent + carnet BTC", "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC"];
+var CARNET_NOMS = new Set(CARNET_K.map((k) => k.replace(/ BTC$/, "")));
 function variantesPrix(monte, retard) {
   return [[" + x2 prix mont\xE9 5 c", monte ? 2 : 1], [" + x2 prix mont\xE9 5 c + pas de retard", retard ? 0 : monte ? 2 : 1]];
 }
