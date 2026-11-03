@@ -368,7 +368,7 @@ export class Bot {
             this.N.zero2 && (await this.state.storage.put("nv:zero2", this.N.zero2)); await zSauver(this.state.storage, "nv:zero3", this.N.zero3 || {}); await zSauver(this.state.storage, "nv:zero4", this.N.zero4 || {}); await zSauver(this.state.storage, "nv:zero5", this.N.zero5 || {});
             await this.state.storage.put("corrBY1misemax", { at: new Date().toISOString(), by1: by1.size, rap });
           } catch (err) { this.erreur("correction mise max BY1", err); } }
-        { const q = (await this.state.storage.get("nv:idq")) || {}; this.N.idq = q.idq || {}; this.N.idfait = q.idfait || {}; this.N.consPris = q.consPris || {}; this.N.slDec = q.slDec || {}; }   // 24.10.2026 : onglet 3 (remise à 0 + versions « + idées »)
+        { const q = (await this.state.storage.get("nv:idq")) || {}; this.N.idq = q.idq || {}; this.N.idfait = q.idfait || {}; this.N.consPris = q.consPris || {}; this.N.slDec = q.slDec || {}; this.N.mmDernier = q.mmDernier || 0; if (q.dbg5) this.N.dbg5 = q.dbg5; }   // 24.10.2026 : onglet 3 (remise à 0 + versions « + idées »)
         // 19.10.2026 : nouvelle remise à 0 de l'onglet 2 ; les anciens compteurs sont archivés une seule fois
         if ((await this.state.storage.get("zero:depuis")) !== ZERO_DEPUIS) { await this.state.storage.put("zero:archive:" + ((await this.state.storage.get("zero:depuis")) || "2026-10-14T08:45:00Z"), this.N.zero); this.N.zero = {}; await this.state.storage.put("nv:zero", {}); await this.state.storage.put("zero:depuis", ZERO_DEPUIS); }
       } else this.N = (this.SG ? null : await this.state.storage.get("nouveaux")) || { depuis: now(), strats: {}, ouvertes: [], attente: [] };
@@ -1130,6 +1130,7 @@ export class Bot {
     await this.ready;
     try { await this.tick(); } catch (err) { this.erreur("tick", err); }
     if (!this.SG && (!this._b5T || Date.now() - this._b5T > 60000)) { this._b5T = Date.now(); this.botStratsMaj().catch((err) => this.erreur("strategies du bot", err)); }
+    if (!this.SG && (!this._idT || Date.now() - this._idT > 60000)) { this._idT = Date.now(); try { this.idTraiter(); } catch (err) { this.erreur("idées (minute)", err); } }
     this.ouvrirFlux();
     await this.state.storage.setAlarm(Date.now() + 1000);
   }
@@ -1965,7 +1966,7 @@ export class Bot {
       put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {}, markout: N.markout || {} });
       for (const [k, v] of Object.entries(N.strats)) put("nv:strat:" + k, v);
       if (N.zero) put("nv:zero", N.zero);
-      if (N.zero2) put("nv:zero2", N.zero2); if (N.zero3) zSauver(this.state.storage, "nv:zero3", N.zero3).catch((err) => this.erreur("sauvegarde zero3", err)); if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err)); if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err)); if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {}, slDec: N.slDec || {} });
+      if (N.zero2) put("nv:zero2", N.zero2); if (N.zero3) zSauver(this.state.storage, "nv:zero3", N.zero3).catch((err) => this.erreur("sauvegarde zero3", err)); if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err)); if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err)); if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {}, slDec: N.slDec || {}, mmDernier: N.mmDernier || 0, dbg5: N.dbg5 || null });
       // ordres : non réglés + 250 derniers réglés (les compteurs sont cumulés à part)
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
       N.ordres = [...regles.slice(-250), ...nonRegles];
@@ -2396,10 +2397,14 @@ export class Bot {
   }
   idTraiter() {
     if (this._idEnCours || this.SG) return; const N = this.N, mures = Object.keys(N.idq || {}).filter((st) => +st + 600 < now());
+    // 03.11.2026 09:27 (Pitch : « oui go ») : le teneur de marché n° 3304 est calculé sur TOUS les cycles, même sans achat d'une stratégie
+    { const p3 = Math.floor(Date.parse(PF3_DEPUIS) / 1000), fin = Math.floor((now() - 600) / 300) * 300; const d = Math.max(+N.mmDernier || 0, p3 - 300);
+      for (let c = d + 300; c <= fin; c += 300) if (!mures.includes(String(c))) mures.push(String(c));
+      if (fin > d) N.mmDernier = fin; mures.sort((x, y) => +x - +y); }
     if (!mures.length) return; this._idEnCours = true;
     (async () => {
       for (const st of mures) {
-        const L = N.idq[st]; delete N.idq[st]; const s0 = +st;
+        const L = N.idq[st] || []; delete N.idq[st]; const s0 = +st;
         const R = {}; const m0 = Math.floor((s0 - 380) / 60), m1 = Math.floor((s0 + 300) / 60);
         for (let m = m0; m <= m1; m++) { const v = await this.state.storage.get(`sig:BTC:${m}`); if (v && v.lignes) for (const l of v.lignes) R[l[0]] = l; }
         const C = Object.fromEntries(SIG_COLS.map((c, i) => [c, i]));
@@ -2607,7 +2612,10 @@ export class Bot {
         // tout s'il est plus cher que nous). Fin : paires restantes refusionnées (1 $), côté gagnant restant encaissé. Pas de frais (maker), ristourne non comptée.
         try { const D0 = (N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] }); D0.vus = (D0.vus || 0) + 1; D0.dernier = s0; } catch (_) {}
         try { if (Date.parse(new Date(s0 * 1000).toISOString()) >= Date.parse(PF3_DEPUIS)) {
-          const g = tous.find((y) => y.gagne != null && y.cote); const upGagne = g ? (g.cote === "Up") === !!g.gagne : null;
+          const g = tous.find((y) => y.gagne != null && y.cote); let upGagne = g ? (g.cote === "Up") === !!g.gagne : null;
+          // cycle sans achat : gagnant = moyenne Chainlink des 60 dernières secondes comparée au prix à battre enregistré
+          if (upGagne == null) { const k = val("prix_a_battre", s0 + 150), v = []; for (let u = s0 + 240; u <= s0 + 299; u++) { const c = val("chainlink", u); if (c != null) v.push(c); }
+            if (k != null && v.length >= 40) upGagne = v.reduce((x2, y2) => x2 + y2, 0) / v.length > k; }
           const DBG = (N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] }); const dbg = { s0, upGagne, nTous: tous.length, sec: 0, pu: 0, bU: 0, aU: 0 }; DBG.teneur.push(dbg); DBG.teneur = DBG.teneur.slice(-12);
           for (let u = s0 + 5; u <= s0 + 290; u += 30) { dbg.sec++; if (val("proba_up_modele", u) != null) dbg.pu++; if (val("pm_up_achat", u) != null) dbg.bU++; if (val("pm_up_vente", u) != null) dbg.aU++; }
           if (upGagne != null) { const NP = 100, CLIP = 10, AV = 10; let su = 0, sd = 0, recu = 0;
