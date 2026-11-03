@@ -2449,7 +2449,7 @@ export class Bot {
     const vus = (this._prVus = this._prVus || (await this.state.storage.get("prixreel:vus")) || {});
     const R5 = new Set(this._z5r || (await this.state.storage.get("z5retires")) || []);
     const nouv = d.trades.filter((t) => Date.parse(t.ouvert) >= this._prixReelMs && !vus[t.num + "|" + t.id]);
-    this.diag.prixReel = { lu: new Date().toISOString(), recus: d.trades.length, nouveaux: nouv.length };
+    this.diag.prixReel = { lu: new Date().toISOString(), bascule: new Date(this._prixReelMs).toISOString(), demande: dep, recus: d.trades.length, nouveaux: nouv.length, total: Object.keys(vus).length };
     if (!nouv.length) return;
     const PA = (this.palier = this.palier || (await this.state.storage.get("palier5")) || { cap: 6000, res: 0, depuis: ZERO4_DEPUIS }), PC = (this._palCy = this._palCy || {});
     this._reel = true;
