@@ -13,6 +13,8 @@ jobs:
           wb=openpyxl.load_workbook('out/xl_excel5.xlsx'); ws=wb['Tous les trades']; print('filtre',ws.auto_filter.ref,'lignes',ws.max_row)
           for r in ws.iter_rows(min_row=1,max_row=3): print([c.value for c in r], r[1].hyperlink.location if r[1].hyperlink else None)
           print('cellules N° avec lien', sum(1 for c in ws['B'] if c.hyperlink))
+          d=[c.value for c in ws['A'][1:] if c.value]; print('du', min(d), 'au', max(d))
+          r=wb['Résumé']; [print(x) for x in r.iter_rows(min_row=1,max_row=6,values_only=True)]
           s=wb[wb.sheetnames[3]]; print(wb.sheetnames[3], [c.value for c in s[1]], s['H1'].hyperlink.location if s['H1'].hyperlink else None)
           " 
       - uses: actions/upload-artifact@v4
