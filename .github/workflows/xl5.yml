@@ -8,6 +8,13 @@ jobs:
     steps:
       - run: |
           mkdir -p out; curl -sS -m 300 https://bot95.pitch67.workers.dev/excel5 -o out/xl_excel5.xlsx; ls -l out/xl_excel5.xlsx; head -c 4 out/xl_excel5.xlsx | od -c | head -1
+          pip install -q openpyxl && python3 -c "
+          import openpyxl
+          wb=openpyxl.load_workbook('out/xl_excel5.xlsx'); ws=wb['Tous les trades']; print('filtre',ws.auto_filter.ref,'lignes',ws.max_row)
+          for r in ws.iter_rows(min_row=1,max_row=3): print([c.value for c in r], r[1].hyperlink.location if r[1].hyperlink else None)
+          print('cellules N° avec lien', sum(1 for c in ws['B'] if c.hyperlink))
+          s=wb[wb.sheetnames[3]]; print(wb.sheetnames[3], [c.value for c in s[1]], s['H1'].hyperlink.location if s['H1'].hyperlink else None)
+          " 
       - uses: actions/upload-artifact@v4
         with:
           name: excel5
