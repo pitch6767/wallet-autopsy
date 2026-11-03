@@ -4133,11 +4133,12 @@ async function xlClasseur(Q, depuis) {
   tous.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   // 03.11.2026 18:02 (Pitch) : « Stratégie » coupée en deux colonnes (N° et description) ; le N° est un lien vers la feuille de la stratégie ; filtre sur toutes les colonnes
   // 03.11.2026 : trades rangés par stratégie (n°) puis par date, pour un seul lien par stratégie (20 000 liens séparés faisaient planter Cloudflare) ; tri libre par les filtres
-  const numK = (k) => numDe(k) ?? 1e9; tous.sort((a, b) => numK(a[1]) - numK(b[1]) || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0) || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  const numC = {}; for (const k of Object.keys(Q)) numC[k] = numDe(k) ?? 1e9;   // calculé une fois par stratégie (le tri appelait numDe ~600 000 fois)
+  tous.sort((a, b) => numC[a[1]] - numC[b[1]] || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0) || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const T = [["Date (heure suisse)", "N°", "Stratégie", "Côté", "Prix", "Parts", "Mise $", "Résultat $", "Issue"].map((v) => ({ v, s: 3 }))], liensT = [];
   let kPrec = null, rDeb = 0;
-  const fermer = (rFin) => { const fk = kPrec != null && feuilleDe[kPrec]; if (fk && numDe(kPrec) != null) liensT.push(["B" + rDeb + (rFin > rDeb ? ":B" + rFin : ""), "'" + fk.replace(/'/g, "''") + "'!A1"]); };
-  for (const [, k, l] of tous) { const num = numDe(k), r = T.length + 1;
+  const fermer = (rFin) => { const fk = kPrec != null && feuilleDe[kPrec]; if (fk && numC[kPrec] !== 1e9) liensT.push(["B" + rDeb + (rFin > rDeb ? ":B" + rFin : ""), "'" + fk.replace(/'/g, "''") + "'!A1"]); };
+  for (const [, k, l] of tous) { const num = numC[k] === 1e9 ? null : numC[k], r = T.length + 1;
     if (k !== kPrec) { if (kPrec != null) fermer(r - 1); kPrec = k; rDeb = r; }
     T.push([{ v: serie(l[0]), s: 1 }, num != null ? { v: num, s: feuilleDe[k] ? 5 : 0 } : "", String(k).replace(/ BTC$/, ""), l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: l[3] != null && l[2] != null ? l[2] * l[3] : "", s: 2 }, { v: +l[4] || 0, s: 2 }, l[5] || ""]); }
   if (kPrec != null) fermer(T.length);
