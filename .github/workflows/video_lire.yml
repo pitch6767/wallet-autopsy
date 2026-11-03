@@ -31,5 +31,19 @@ jobs:
             curl -sS -m 30 "$U/r/$id.txt" > "video/resultats/$id.txt"
           done < video/demande.txt
           curl -sS -m 30 "$U/api/etat" > video/resultats/_etat.json
+          npm i -q playwright@1 >/dev/null 2>&1 && npx -y playwright@1 install --with-deps chromium >/dev/null 2>&1
+          cat > ./_cap.mjs <<'JS'
+          import { chromium } from "playwright";
+          const U = "https://video.pitch67.workers.dev";
+          const ids = process.argv.slice(2);
+          const b = await chromium.launch();
+          for (const [nom, vp] of [["iphone", { width: 390, height: 844 }], ["ordi", { width: 1280, height: 900 }]]) {
+            const p = await b.newPage({ viewport: vp, deviceScaleFactor: 2 });
+            await p.goto(U + "/", { waitUntil: "networkidle" }); await p.screenshot({ path: `video/resultats/_accueil-${nom}.png`, fullPage: true });
+            for (const id of ids) { await p.goto(`${U}/r/${id}`, { waitUntil: "networkidle" }); await p.screenshot({ path: `video/resultats/_page-${id}-${nom}.png` }); }
+          }
+          await b.close();
+          JS
+          node ./_cap.mjs $(ls -t video/resultats/*.txt | xargs -n1 basename | sed 's/\.txt$//' | head -3)
           git config user.name video; git config user.email bot@users.noreply.github.com
           git add video/resultats; git commit -m "Video lue [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
