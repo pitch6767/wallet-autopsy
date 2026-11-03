@@ -930,7 +930,7 @@ export class Bot {
       }
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: z._case.n, miseBot: z._case.mise, active: z._case.active, depuisBot: z._depuis, source: z._source, ...infoOrdres(nom, z), ...z, _case: undefined, _depuis: undefined, _source: undefined, cn: undefined, cy: undefined, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
       // 31.10.2026 18:12 (Pitch) : les 2 combinés deviennent des lignes du tableau, avec un numéro et le même format que les autres
-      const ligneComb = (c) => { if (!c) return null; const ns = [...c.nums].sort((a2, b2) => a2 - b2).join(","), n2 = ns === "101,105" ? (c.regle ? 2120 : 2110) : ns === "116,1114" ? (c.regle ? 2141 : 2140) : null;
+      const ligneComb = (c) => { if (!c) return null; const ns = [...c.nums].sort((a2, b2) => a2 - b2).join(","), n2 = ns === "101,105" ? (c.regle ? 2120 : 2110) : ns === "116,1114" ? (c.regle ? 2141 : 2140) : ns === "207,1114" ? (c.regle ? 2144 : 2143) : null;
         return { nom: "PORTEFEUILLE " + c.nums.join(" + ") + (c.regle ? " même sens" : "") + " BTC", num: n2, combine: true, miseBot: null, active: false, depuisBot: c.depuis, source: "cases actives", ordres: "les deux stratégies", mult: c.regle ? "règle même sens (2e couche seulement à ≤ 50 % du prix)" : "sans blocage",
           n: c.n, gains: c.gains, pertes: c.pertes, pnl: c.pnl, pire: c.pire, creux: c.creux, serie: c.serie, serieMax: c.serieMax, parJour: c.parJour, mise: c.mise, miseMaxCycle: c.miseMaxCycle, perfPct: c.perfPct, resJour: c.resJour, perfJourPct: c.perfJourPct }; };
       const combLignes = [ligneComb(combineSans), ligneComb(combine)].filter(Boolean);
@@ -4112,7 +4112,7 @@ async function xlClasseur(Q, depuis) {
   const jourS = (iso) => { const ms = Date.parse(iso); return new Date(ms + decalSuisse(ms)).toISOString().slice(0, 10); };
   const nomsF = new Set(), court = (k) => { let n = k.replace(/ BTC$/, "").replace("corrige marge mesuree : ", "CMM ").replace("corrige : ", "C ").replace("PORTEFEUILLE", "PF").replace("carnet ecart serre", "carnet ES").replace("foule bybit x2", "foule x2").replace("pas les deux baissent", "PLDB").replace("ecart qui grandit", "EQG").replace("prevision Chainlink", "prev CL").replace("incertitude 0,01 %", "incert").replace(/[\\\/?*\[\]:]/g, "-").replace(/'/g, "").slice(0, 31).trim(), b = n, i = 2; while (nomsF.has(n.toLowerCase())) n = b.slice(0, 28) + " " + (i++); nomsF.add(n.toLowerCase()); return n; };
   const maint = Date.now(), j0 = Date.parse(jourS(depuis)), nJours = Math.max(1, Math.round((Date.parse(jourS(new Date(maint).toISOString())) - j0) / 864e5) + 1);
-  const R = [], feuilles = [], tous = [];
+  const R = [], feuilles = [], tous = [], feuilleDe = {};
   for (const [k, L] of Object.entries(Q)) {
     let cum = 0, pic = 0, creux = 0, g = 0, p = 0, pertes = 0, pire = 0, mises = 0, nm = 0;
     const lignes = [[{ v: avecNum(k), s: 4 }, "", "", "", "", { v: "← Résumé", s: 5 }], ["Date (heure suisse)", "Côté", "Prix", "Parts", "Mise $", "Résultat $", "Cumul $", "Issue"].map((v) => ({ v, s: 3 }))];
@@ -4120,7 +4120,7 @@ async function xlClasseur(Q, depuis) {
       if (net >= 0) g++; else { p++; pertes += net; } if (mise != null) { mises += mise; nm++; }
       lignes.push([{ v: serie(l[0]), s: 1 }, l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: mise ?? "", s: 2 }, { v: net, s: 2 }, { v: cum, s: 2 }, l[5] || ""]);
       tous.push([l[0], k, l]); }
-    const f = court(k); feuilles.push([f, xlFeuille(lignes, { fige: 2, largeurs: [18, 8, 8, 9, 10, 11, 11, 18], filtre: "A2:H" + lignes.length, liens: [["F1", "'Résumé'!A1"]] })]);
+    const f = court(k); feuilleDe[k] = f; lignes[0].push("", { v: "← Tous les trades", s: 5 }); feuilles.push([f, xlFeuille(lignes, { fige: 2, largeurs: [18, 8, 8, 9, 10, 11, 11, 18], filtre: "A2:H" + lignes.length, liens: [["F1", "'Résumé'!A1"], ["H1", "'Tous les trades'!A1"]] })]);
     R.push({ k, f, n: L.length, g, p, pnl: cum, pertes, pire, creux, cap: Math.round((2 * creux + 2 * 50) / 50) * 50, moy: cum / nJours, mise: nm ? mises / nm : null, der: L[L.length - 1][0] });
   }
   R.sort((a, b) => b.pnl - a.pnl);
@@ -4131,9 +4131,12 @@ async function xlClasseur(Q, depuis) {
   res.push(["Total", R.reduce((a, x) => a + x.n, 0), R.reduce((a, x) => a + x.g, 0), R.reduce((a, x) => a + x.p, 0), "", { v: R.reduce((a, x) => a + x.pnl, 0), s: 2 }, { v: R.reduce((a, x) => a + x.pertes, 0), s: 2 }]);
   res.push([]); res.push(["Capital conseillé = 2 × creux max + 2 mises de 50 $, arrondi à 50 $. Moyenne / jour = résultat ÷ " + nJours + " jours (du " + jourS(depuis).split("-").reverse().join(".") + " à aujourd'hui)."]);
   tous.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
-  const T = [["Date (heure suisse)", "Stratégie", "Côté", "Prix", "Parts", "Mise $", "Résultat $", "Issue"].map((v) => ({ v, s: 3 }))];
-  for (const [, k, l] of tous) T.push([{ v: serie(l[0]), s: 1 }, avecNum(k), l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: l[3] != null && l[2] != null ? l[2] * l[3] : "", s: 2 }, { v: +l[4] || 0, s: 2 }, l[5] || ""]);
-  const toutes = [["Résumé", xlFeuille(res, { fige: 2, largeurs: [52, 8, 8, 8, 9, 12, 13, 12, 12, 12, 13, 13, 18], liens })], ["Tous les trades", xlFeuille(T, { largeurs: [18, 52, 8, 8, 9, 10, 11, 18], filtre: "A1:H" + T.length })], ...feuilles];
+  // 03.11.2026 18:02 (Pitch) : « Stratégie » coupée en deux colonnes (N° et description) ; le N° est un lien vers la feuille de la stratégie ; filtre sur toutes les colonnes
+  const T = [["Date (heure suisse)", "N°", "Stratégie", "Côté", "Prix", "Parts", "Mise $", "Résultat $", "Issue"].map((v) => ({ v, s: 3 }))], liensT = [];
+  for (const [, k, l] of tous) { const num = numDe(k), r = T.length + 1, fk = feuilleDe[k];
+    T.push([{ v: serie(l[0]), s: 1 }, num != null ? { v: num, s: fk ? 5 : 0 } : "", String(k).replace(/ BTC$/, ""), l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: l[3] != null && l[2] != null ? l[2] * l[3] : "", s: 2 }, { v: +l[4] || 0, s: 2 }, l[5] || ""]);
+    if (fk && num != null) liensT.push(["B" + r, "'" + fk.replace(/'/g, "''") + "'!A1"]); }
+  const toutes = [["Résumé", xlFeuille(res, { fige: 2, largeurs: [52, 8, 8, 8, 9, 12, 13, 12, 12, 12, 13, 13, 18], liens })], ["Tous les trades", xlFeuille(T, { fige: 1, largeurs: [18, 8, 60, 8, 8, 9, 10, 11, 18], filtre: "A1:I" + T.length, liens: liensT })], ...feuilles];
   const W = "http://schemas.openxmlformats.org/spreadsheetml/2006/main", RL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
   const F = [
     ["[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>" + toutes.map((_, i) => "<Override PartName=\"/xl/worksheets/sheet" + (i + 1) + ".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>").join("") + "</Types>"],
