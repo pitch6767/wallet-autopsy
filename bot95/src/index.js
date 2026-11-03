@@ -1151,7 +1151,7 @@ export class Bot {
     return 0;
   }
   /** 31.10.2026 17:46 (Pitch : « onglet 5 = stratégies de l'onglet 6 plus les nouvelles, rien d'autre ») */
-  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130) || n === 2140 || n === 2141 || n === 3303; }
+  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130) || n === 2140 || n === 2141 || n === 2142 || n === 3303 || n === 3304; }
   nums5() { return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS; }
   /** Facteur de mise de l'onglet 6 pour le n° et l'heure du trade (0 = pas compté : stratégie pas encore dans le bot). */
   f5(n, heure) {
@@ -1342,7 +1342,7 @@ export class Bot {
     if (!ACTIFS[sym] || !(v > 0) || !(obs > 0)) return;
     if (m.channel === "price.crypto") { if (this.clComparer(sym, "pb", v, obs)) { const tt = now(); this.noter(sym, "cl", v, tt); if (this.SG && V1.ACTIFS.includes(sym)) this.v1Declencher(sym, "cl", tt, tt); } }
     else if (m.channel === "price.crypto.twap") {                        // moyenne 60 s officielle : gardée aux instants de début de cycle (prix à battre / prix final)
-      if (obs % 300000 === 0) { const L = (this.twOff = this.twOff || []); L.push({ a: sym, t: obs / 1000, twap: v, recu_ms: Date.now() - obs }); while (L.length > 2000) L.shift(); }
+      if (obs % 300000 === 0) { const L = (this.twOff = this.twOff || []); const mkS = this.mk[sym]; L.push({ a: sym, t: obs / 1000, twap: v, recu_ms: Date.now() - obs, notre: mkS && mkS.start * 1000 === obs ? mkS.strike : null, notreSrc: mkS && mkS.start * 1000 === obs ? mkS.strikeSrc : null }); while (L.length > 2000) L.shift(); }
     }
   }
   surCl(m) {
@@ -2431,6 +2431,8 @@ export class Bot {
         // 03.11.2026 07:41 (Pitch : « oui ok ») : n° 3303 « canari » — un petit achat maker témoin (10 % de la mise) à 1 c au-dessus du meilleur acheteur.
         // Rempli dans les 5 s → des vendeurs informés sont là : on garde seulement le témoin. Pas rempli → on annule le témoin et on achète
         // toute la mise en preneur au meilleur vendeur 5 s après le signal (frais 0,07 × p × (1 − p) par part), seulement s'il est au plus à +5 c du prix du signal.
+        // 03.11.2026 (Pitch : « go ») : âge du dernier prix Chainlink (secondes depuis le dernier changement) à l'heure t
+        const clAge = (t) => { const c0 = val("chainlink", t); if (c0 == null) return null; for (let u = t - 1; u >= t - 60; u--) { const c = val("chainlink", u); if (c != null && c !== c0) return t - u - 1; } return 60; };
         const canari = (x, mise) => {
           const ta = Math.floor(Date.parse(x.heure) / 1000), up = x.cote === "Up", me = up ? "up" : "down";
           const bidDe = (u) => { const v = up ? val("pm_up_achat", u) : val("pm_up_vente", u); return v == null ? null : up ? v : 1 - v; };
@@ -2518,7 +2520,7 @@ export class Bot {
           }
           // 02.11.2026 21:49 (Pitch : « rajoute la 116 à la 1114 … un fantôme dans l'onglet 5 et 6 ») : trades de la 116 pour le portefeuille 1114 + 116
           if (garder && x.k === "TWAP fin quantiles BTC" && Date.parse(x.heure) >= Date.parse(PF2_DEPUIS))
-            (this._pf2 = this._pf2 || []).push({ st, s: 116, heure: x.heure, cote: x.cote, prix: x.prix || 0, net: mult * net, mise: mult * (x.prix || 0) * (x.parts || 0), sans, ca: canari(x, mult * (x.prix || 0) * (x.parts || 0)) });
+            (this._pf2 = this._pf2 || []).push({ st, s: 116, heure: x.heure, cote: x.cote, prix: x.prix || 0, net: mult * net, mise: mult * (x.prix || 0) * (x.parts || 0), sans, ca: canari(x, mult * (x.prix || 0) * (x.parts || 0)), clAge: clAge(Math.floor(Date.parse(x.heure) / 1000)) });
           // 25.10.2026 14:57 (Pitch : « don't stop those, create other onglet ») : onglet 4, versions « + consensus » (seule idée confirmée sur 10-19.10) :
           // petit trade (0,10-0,50) pas pris si 1 ou 2 trades des stratégies affichées sur le même côté du cycle à son heure d'achat, mise x2 si au moins 10 ; gros et billets inchangés
           if (Date.parse(x.heure) >= Date.parse(ZERO3_DEPUIS)) { let mc = 1, gc = true;
@@ -2553,7 +2555,7 @@ export class Bot {
               if (R2.includes("b6") && bil && nb2 < 6) ok = false;
               if (R2.includes("bcl") && bil && clm != null && clm >= 2.69 && clm < 12.5) ok = false;
               if (ok && x.k === "corrige : V2-F + pas les deux baissent + carnet BTC" && Date.parse(x.heure) >= Date.parse(PF2_DEPUIS))
-                (this._pf2 = this._pf2 || []).push({ st, s: 1114, heure: x.heure, cote: x.cote, prix: x.prix || 0, net: m2 * x.net, mise: m2 * mise, sans: false, ca: canari(x, m2 * mise) });
+                (this._pf2 = this._pf2 || []).push({ st, s: 1114, heure: x.heure, cote: x.cote, prix: x.prix || 0, net: m2 * x.net, mise: m2 * mise, sans: false, ca: canari(x, m2 * mise), clAge: clAge(Math.floor(Date.parse(x.heure) / 1000)) });
               if (ok) zCompte(N.zero3, x.k.replace(/ BTC$/, " + sur mesure BTC"), x.heure, m2 * x.net, false, m2 * mise, s0); } }   // 24.10 21:49 (Pitch) : aussi une version sans mise x2 / x3
         }
         // 31.10.2026 17:04 (Pitch) : portefeuilles 101 + 105 (versions « + idées »), sans blocage et « même sens » (pas de 2e couche dans le même sens
@@ -2590,7 +2592,29 @@ export class Bot {
                 const autres = pris[y.cote].filter((z) => z.s !== y.s).map((z) => z.prix); if (autres.length && !(k.prix <= 0.5 * Math.min(...autres))) continue;
                 pris[y.cote].push({ s: y.s, prix: k.prix }); this._zx = { cote: y.cote, prix: k.prix }; zCompte(N.zero4, nom, y.heure, k.net, false, k.mise, st); }
               const z = N.zero4[nom]; if (z) { const L2 = PF2.filter((y) => y.ca); z.signaux = (z.signaux || 0) + L2.length; z.alertes = (z.alertes || 0) + L2.filter((y) => y.ca.alerte).length;
-                z.alertesPerdantes = (z.alertesPerdantes || 0) + L2.filter((y) => y.ca.alerte && y.net < 0).length; z.manques = (z.manques || 0) + L2.filter((y) => y.ca.rate).length; } } } } catch (err) { this.erreur("portefeuille 1114 + 116", err); }
+                z.alertesPerdantes = (z.alertesPerdantes || 0) + L2.filter((y) => y.ca.alerte && y.net < 0).length; z.manques = (z.manques || 0) + L2.filter((y) => y.ca.rate).length; } }
+            // n° 2142 = n° 2141 sans achat quand le prix Chainlink n'a pas bougé depuis plus de 5 s (prix figé : on s'abstient)
+            { const pris = { Up: [], Down: [] }, nom = "PORTEFEUILLE 1114 + 116 même sens + Chainlink frais BTC";
+              for (const y of PF2) { if (y.clAge == null || y.clAge > 5) { const z0 = N.zero4[nom]; if (z0) z0.ignoresFige = (z0.ignoresFige || 0) + 1; continue; }
+                const autres = pris[y.cote].filter((z) => z.s !== y.s).map((z) => z.prix); if (autres.length && !(y.prix <= 0.5 * Math.min(...autres))) continue;
+                pris[y.cote].push({ s: y.s, prix: y.prix }); this._zx = { cote: y.cote, prix: y.prix }; zCompte(N.zero4, nom, y.heure, y.net, y.sans, y.mise, st); } } } } catch (err) { this.erreur("portefeuille 1114 + 116", err); }
+        // 03.11.2026 (Pitch : « go ») : n° 3304 TENEUR DE MARCHÉ sur notre modèle — 100 paires Up + Down créées avant le cycle (100 $), ventes « post only » des deux
+        // côtés au prix du modèle + 3 c (jamais sous le meilleur vendeur : on le rejoint), 10 parts par seconde au plus, de 5 s à 10 s avant la fin ; on arrête
+        // de vendre un côté qui a 10 parts d'avance sur l'autre. Rempli par les vrais achats de preneurs (moitié du volume si on rejoint le meilleur vendeur,
+        // tout s'il est plus cher que nous). Fin : paires restantes refusionnées (1 $), côté gagnant restant encaissé. Pas de frais (maker), ristourne non comptée.
+        try { if (Date.parse(new Date(s0 * 1000).toISOString()) >= Date.parse(PF3_DEPUIS)) {
+          const g = tous.find((y) => y.gagne != null && y.cote); const upGagne = g ? (g.cote === "Up") === !!g.gagne : null;
+          if (upGagne != null) { const NP = 100, CLIP = 10, AV = 10; let su = 0, sd = 0, recu = 0;
+            for (let u = s0 + 5; u <= s0 + 290; u++) { const pu = val("proba_up_modele", u - 1), bU = val("pm_up_achat", u - 1), aU = val("pm_up_vente", u - 1); if (pu == null || bU == null || aU == null) continue;
+              const l = R[u]; if (!l) continue;
+              for (const [cote, fair, aBest, bBest, volUsd, bNow] of [["Up", pu, aU, bU, +l[C["pm_up_echange_achat"]] || 0, val("pm_up_achat", u)], ["Down", 1 - pu, 1 - bU, 1 - aU, +l[C["pm_down_echange_achat"]] || 0, (() => { const v2 = val("pm_up_vente", u); return v2 == null ? null : 1 - v2; })()]]) {
+                const deja = cote === "Up" ? su : sd, autre = cote === "Up" ? sd : su; if (deja >= NP || deja - autre >= AV) continue;
+                const ask = Math.max(Math.ceil((fair + 0.03) * 100) / 100, Math.round(aBest * 100) / 100); if (ask >= 1 || ask <= bBest) continue;
+                let q = 0; if (bNow != null && bNow >= ask) q = CLIP; else if (volUsd > 0 && aBest >= ask) q = Math.min(CLIP, (ask < aBest ? 1 : 0.5) * volUsd / ask);
+                q = Math.min(q, NP - deja); if (q <= 0) continue; recu += q * ask; if (cote === "Up") su += q; else sd += q; } }
+            const rU = NP - su, rD = NP - sd, m = Math.min(rU, rD), net = recu + m + (upGagne ? rU - m : rD - m) - NP;
+            const nom = "TENEUR DE MARCHÉ modèle BTC"; this._zx = null; zCompte(N.zero4, nom, new Date(s0 * 1000).toISOString(), net, false, NP, st);
+            const z = N.zero4[nom]; if (z) { z.vendusUp = +((z.vendusUp || 0) + su).toFixed(1); z.vendusDown = +((z.vendusDown || 0) + sd).toFixed(1); } } } } catch (err) { this.erreur("teneur de marché", err); }
         // 25.10.2026 21:03 (Pitch : « go ») : méta-stratégies CONSENSUS 6 et CONSENSUS 8 — un seul achat de 50 $ par cycle et par côté, au moment où la 6e (8e) stratégie affichée
         // achète ce côté ; prix = meilleur vendeur 1 s plus tard (enregistrement seconde par seconde), sinon prix payé par cette stratégie ; frais 7 % × p × (1 − p) ; gardé jusqu'au règlement.
         try { const CP = (N.consPris = N.consPris || {});
@@ -4118,7 +4142,8 @@ const SUR_MESURE = {"PORTEFEUILLE 400 BTC": ["x2", "b6", "bcl"], "PORTEFEUILLE 4
 const ZERO3_DEPUIS = "2026-10-25T14:00:00Z";
 const ZERO5_DEPUIS = "2026-10-26T20:52:00Z";     // 26.10.2026 21:52 heure suisse : démarrage du paper du bot de trading (onglet 6)
 const ZERO5_NUMS = [101, 201, 121, 28, 119];     // numéros comptés depuis le 26.10 21:52 ; depuis le 29.10 la liste vient du bot de trading (botStratsMaj)
-const PF2_DEPUIS = "2026-11-02T20:55:00Z";      // 02.11.2026 21:55 heure de Paris : début du portefeuille 1114 + 116 (n° 2140 / 2141)
+const PF2_DEPUIS = "2026-11-02T20:55:00Z";
+const PF3_DEPUIS = "2026-11-03T07:15:00Z";      // 03.11.2026 08:15 heure de Paris : début du teneur de marché n° 3304      // 02.11.2026 21:55 heure de Paris : début du portefeuille 1114 + 116 (n° 2140 / 2141)
 const ZERO4_DEPUIS = "2026-11-01T23:15:00Z";     // 02.11.2026 00:15 heure de Paris (Pitch : fantômes « mise selon le prix », onglet 5 à 0) ; avant : 31.10 19:50
 const ZERO4_DEPUIS_AVANT = "2026-10-31T18:50:00Z";     // 31.10.2026 19:50 heure de Paris (Pitch : « max 250 $ par cycle, onglet 5 à 0 ») ; avant : 31.10 17:30 et 26.10 12:00 (archivés)
 const ONGLET5_MAX_CYCLE = 250;   // 31.10.2026 19:42 (Pitch) : dans l'onglet 5, chaque ligne mise au plus 250 $ par cycle (au-delà, le trade est réduit puis ignoré)
