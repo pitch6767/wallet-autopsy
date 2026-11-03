@@ -24003,10 +24003,11 @@ var Bot = class {
     }
     if (u.pathname === "/excel3" || u.pathname === "/excel4" || u.pathname === "/excel5") {
       const pre = u.pathname === "/excel3" ? "xl3:" : u.pathname === "/excel4" ? "xl4:" : "xl5:", Q = {};
+      const R5 = new Set(pre === "xl5:" ? this._z5r || await this.state.storage.get("z5retires") || [] : []);
       for (const [kk, v] of await this.state.storage.list({ prefix: pre })) {
         const k = kk.slice(pre.length, kk.lastIndexOf("|"));
         if (k.includes("BY1")) continue;
-        if (pre === "xl5:" && !this.onglet5Garde(k)) continue;
+        if (pre === "xl5:" && (!this.onglet5Garde(k) || R5.has(k))) continue;
         (Q[k] = Q[k] || []).push(...v);
       }
       for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0);
@@ -24096,7 +24097,17 @@ var Bot = class {
         if (!Z[nom] && this.onglet5Garde(nom)) Z[nom] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {}, sansDonnees: 0 };
       }
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
-      return json({ depuis: ZERO4_DEPUIS, debug: this.N.dbg5 || null, strats: L, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
+      if (!this._z5r) this._z5r = await this.state.storage.get("z5retires") || null;
+      if (!this._z5r) {
+        this._z5r = L.slice(83).map((x) => x.nom);
+        await this.state.storage.put("z5retires", this._z5r);
+        await this.state.storage.put("z5retiresA", (/* @__PURE__ */ new Date()).toISOString());
+      }
+      {
+        const R5 = new Set(this._z5r);
+        for (let i = L.length - 1; i >= 0; i--) if (R5.has(L[i].nom)) L.splice(i, 1);
+      }
+      return json({ depuis: ZERO4_DEPUIS, debug: this.N.dbg5 || null, strats: L, retires: this._z5r.length, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
     }
     if (u.pathname === "/api/catalogue") return json({ maj: "2026-10-27", strategies: catalogue_default.map((c) => ({ ...c, ...infoOrdres(c.nom + " BTC") })) });
     if (u.pathname === "/numeros") return new Response(PAGE_NUMEROS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
