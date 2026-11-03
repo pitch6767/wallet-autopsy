@@ -2398,7 +2398,8 @@ export class Bot {
   idTraiter() {
     if (this._idEnCours || this.SG) return; const N = this.N, mures = Object.keys(N.idq || {}).filter((st) => +st + 600 < now());
     // 03.11.2026 09:27 (Pitch : « oui go ») : le teneur de marché n° 3304 est calculé sur TOUS les cycles, même sans achat d'une stratégie
-    { const p3 = Math.floor(Date.parse(PF3_DEPUIS) / 1000), fin = Math.floor((now() - 600) / 300) * 300; const d = Math.max(+N.mmDernier || 0, p3 - 300);
+    { const p3 = Math.floor(Date.parse(PF3_DEPUIS) / 1000), fin = Math.floor((now() - 600) / 300) * 300; if (!N.mmDernier) N.mmDernier = fin;   // première fois : on part de maintenant (pas de double compte des cycles déjà réglés)
+      const d = Math.max(+N.mmDernier || 0, p3 - 300);
       for (let c = d + 300; c <= fin; c += 300) if (!mures.includes(String(c))) mures.push(String(c));
       if (fin > d) N.mmDernier = fin; mures.sort((x, y) => +x - +y); }
     if (!mures.length) return; this._idEnCours = true;
