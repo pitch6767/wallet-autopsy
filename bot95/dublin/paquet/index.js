@@ -23063,6 +23063,15 @@ var Bot = class {
         }
         this.N.zero5 = await zCharger(this.state.storage, "nv:zero5");
         this.B5 = await this.state.storage.get("bot5") || null;
+        if (!this.SG) {
+          let pr = await this.state.storage.get("prixreel:depuis");
+          if (!pr) {
+            pr = (/* @__PURE__ */ new Date()).toISOString();
+            await this.state.storage.put("prixreel:depuis", pr);
+          }
+          this._prixReelMs = Date.parse(pr);
+          this.N.reel6 = await zCharger(this.state.storage, "nv:reel6");
+        }
         if (!await this.state.storage.get("zero5rattrapage")) {
           try {
             const Z5 = {}, R5 = [], enAtt = new Set(Object.keys(this.N.idq || {}).map(Number));
@@ -24119,13 +24128,18 @@ var Bot = class {
       const echelle = /* @__PURE__ */ __name((z, f) => f === 1 ? z : { ...z, pnl: z.pnl * f, pertesTot: z.pertesTot * f, pire: z.pire * f, cum: z.cum * f, pic: z.pic * f, creux: z.creux * f, mise: (z.mise || 0) * f, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, v * f])) }, "echelle");
       for (const c of cases) {
         const c5 = catalogue_default.find((x) => x.n === c.n), nom = c5 ? c5.nom + " BTC" : "n\xB0 " + c.n;
+        const R6 = (this.N.reel6 || {})[nom];
+        if (R6 && R6._src) {
+          Z[nom] = { ...echelle({ ...R6, _src: void 0, _depuisSrc: void 0 }, (c.mise || 50) / 50), _case: c, _depuis: R6._depuisSrc, _source: R6._src, _reel: true };
+          continue;
+        }
         const src = SRC.find(([Zs]) => Zs && Zs[nom]);
         if (src) Z[nom] = { ...echelle(src[0][nom], (c.mise || 50) / 50), _case: c, _depuis: src[1], _source: src[2] };
         else Z[nom] = { ...Z0[nom] || vide(), _case: c, _depuis: B && B.depuis ? B.depuis[c.n] : ZERO5_DEPUIS, _source: "onglet 6" };
       }
       const M2 = this._m2 = this._m2 || {};
       for (const [nom, z] of Object.entries(Z)) {
-        if (z._source !== "onglet 2") continue;
+        if (z._source !== "onglet 2" || z._reel) continue;
         if (!M2[nom] || Date.now() - M2[nom].t > 6e5) {
           let mise = 0;
           const cy = {};
@@ -24146,13 +24160,17 @@ var Bot = class {
       const PRE = { "onglet 2": "xl:", "onglet 3": "xl3:", "onglet 4": "xl4:", "onglet 5": "xl5:" }, M3 = this._m3 = this._m3 || {};
       const jourP = /* @__PURE__ */ __name((ms) => new Date(ms + decalSuisse(ms)).toISOString().slice(0, 10), "jourP"), auj = jourP(Date.now());
       const lignes = /* @__PURE__ */ __name(async (nom, z) => {
-        const pre = PRE[z._source], cle = pre + nom;
-        if (!pre) return [];
-        if (!M3[cle] || Date.now() - M3[cle].t > 6e5) {
-          const Ls = [];
-          for (const v of (await this.state.storage.list({ prefix: pre + nom + "|" })).values()) for (const l of v) {
+        const pre = PRE[z._source], cle = pre + nom + (z._reel ? "|reel" : "");
+        if (!pre && !z._reel) return [];
+        if (!M3[cle] || Date.now() - M3[cle].t > 6e4) {
+          const Ls = [], fin = z._reel ? this._prixReelMs : Infinity;
+          if (pre) for (const v of (await this.state.storage.list({ prefix: pre + nom + "|" })).values()) for (const l of v) {
             const ms = Date.parse(l[0]);
-            if (ms >= Date.parse(z._depuis)) Ls.push({ ms, cote: l[1], prix: +l[2] || 0, parts: +l[3] || 0, net: +l[4] || 0 });
+            if (ms >= Date.parse(z._depuis) && ms < fin) Ls.push({ ms, cote: l[1], prix: +l[2] || 0, parts: +l[3] || 0, net: +l[4] || 0 });
+          }
+          if (z._reel) for (const v of (await this.state.storage.list({ prefix: "xr:" + nom + "|" })).values()) for (const l of v) {
+            const ms = Date.parse(l[0]);
+            if (ms >= this._prixReelMs) Ls.push({ ms, cote: l[1], prix: +l[2] || 0, parts: +l[3] || 0, net: +l[4] || 0 });
           }
           Ls.sort((x, y) => x.ms - y.ms);
           M3[cle] = { t: Date.now(), L: Ls };
@@ -24673,6 +24691,10 @@ var Bot = class {
       } catch (err) {
         this.erreur("id\xE9es (minute)", err);
       }
+    }
+    if (!this.SG && (!this._prT || Date.now() - this._prT > 6e4)) {
+      this._prT = Date.now();
+      this.prixReelMaj().catch((err) => this.erreur("prix r\xE9el", err));
     }
     this.ouvrirFlux();
     await this.state.storage.setAlarm(Date.now() + 1e3);
@@ -26144,6 +26166,7 @@ var Bot = class {
       if (N.zero3) zSauver(this.state.storage, "nv:zero3", N.zero3).catch((err) => this.erreur("sauvegarde zero3", err));
       if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err));
       if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err));
+      if (N.reel6) zSauver(this.state.storage, "nv:reel6", N.reel6).catch((err) => this.erreur("sauvegarde reel6", err));
       if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {}, slDec: N.slDec || {}, mmDernier: N.mmDernier || 0, dbg5: N.dbg5 || null });
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
       N.ordres = [...regles.slice(-250), ...nonRegles];
@@ -26991,6 +27014,116 @@ var Bot = class {
   //  petits (< 0,50) : mise x2 si ≥ 10 trades des stratégies affichées sur le même côté du cycle à l'heure d'achat, x3 si en plus la foule Polymarket a vendu notre jeton (10 s, ≤ −0,3) ;
   //  revente à T−60 s (tous) si Chainlink est de notre côté mais les futures Bybit (ramenés au niveau Chainlink) de l'autre côté d'au moins 3 $ : vente au meilleur acheteur, frais 7 % × p × (1 − p).
   //  Sans données seconde par seconde pour un trade : trade gardé tel quel (compté dans « sans données »).
+  // 04.11.2026 (Pitch : « je veux le prix possible maintenant ») : trades RÉELS des onglets 5 et 6. Lus chaque minute sur le banc d'essai du bot
+  // (route publique en lecture seule, trades réglés seulement) : chaque signal rejoué sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix + 5 c,
+  // prix moyen obtenu, frais compris), résultat officiel Polymarket. Même numéro de ligne que l'onglet 5. Aucun trade fantôme après la bascule.
+  async prixReelMaj() {
+    if (this.SG || !this._prixReelMs || !this.N) return;
+    const N = this.N;
+    N.zero4 = N.zero4 || {};
+    N.reel6 = N.reel6 || {};
+    if (!await this.state.storage.get("prixreel:snap")) {
+      const SRC = [[N.zero, ZERO_DEPUIS, "onglet 2"], [N.zero2, ZERO2_DEPUIS, "onglet 3"], [N.zero3, ZERO3_DEPUIS, "onglet 4"], [N.zero4, ZERO4_DEPUIS, "onglet 5"]];
+      const nums = /* @__PURE__ */ new Set([...PRIX_REEL_NUMS, ...this.nums5()]);
+      for (const n of nums) {
+        const c = catalogue_default.find((x) => x.n === n);
+        if (!c) continue;
+        const nom = c.nom + " BTC";
+        if (N.reel6[nom]) continue;
+        const src = SRC.find(([Zs]) => Zs && Zs[nom]);
+        if (src) {
+          const z = JSON.parse(JSON.stringify(src[0][nom]));
+          z._src = src[2];
+          z._depuisSrc = src[1];
+          if (src[2] === "onglet 2") {
+            let mise = 0;
+            const cy = {};
+            for (const v of (await this.state.storage.list({ prefix: "xl:" + nom + "|" })).values()) for (const l of v) {
+              const ms = Date.parse(l[0]);
+              if (!(ms >= Date.parse(ZERO_DEPUIS)) || ms >= this._prixReelMs) continue;
+              const m = (l[2] || 0) * (l[3] || 0);
+              mise += m;
+              const st = Math.floor(ms / 3e5);
+              cy[st] = (cy[st] || 0) + m;
+            }
+            z.mise = mise;
+            z.miseMaxCycle = Math.max(0, ...Object.values(cy));
+          }
+          N.reel6[nom] = z;
+        } else if (N.zero5 && N.zero5[nom]) {
+          const B = this.B5, cs = B && B.choisies && B.choisies.find((x) => x.n === n), f = cs ? (cs.mise || 50) / 50 : 1, z = JSON.parse(JSON.stringify(N.zero5[nom]));
+          const sc = /* @__PURE__ */ __name((v) => v / f, "sc");
+          for (const k of ["pnl", "pertesTot", "pire", "cum", "pic", "creux", "mise", "miseMaxCycle"]) if (typeof z[k] === "number") z[k] = sc(z[k]);
+          z.parJour = Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, sc(v)]));
+          z._src = "onglet 6";
+          z._depuisSrc = B && B.depuis && B.depuis[n] ? B.depuis[n] : ZERO5_DEPUIS;
+          N.reel6[nom] = z;
+        }
+      }
+      await zSauver(this.state.storage, "nv:reel6", N.reel6);
+      await this.state.storage.put("prixreel:snap", (/* @__PURE__ */ new Date()).toISOString());
+    }
+    const dep = new Date(Math.floor(Math.max(this._prixReelMs, Date.now() - 6 * 36e5) / 3e5) * 3e5).toISOString();
+    const r = await fetch("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=" + encodeURIComponent(dep), { headers: { "cache-control": "no-store" } });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const d = await r.json();
+    if (!Array.isArray(d.trades)) return;
+    const vus = this._prVus = this._prVus || await this.state.storage.get("prixreel:vus") || {};
+    const R5 = new Set(this._z5r || await this.state.storage.get("z5retires") || []);
+    const nouv = d.trades.filter((t) => Date.parse(t.ouvert) >= this._prixReelMs && !vus[t.num + "|" + t.id]);
+    this.diag.prixReel = { lu: (/* @__PURE__ */ new Date()).toISOString(), recus: d.trades.length, nouveaux: nouv.length };
+    if (!nouv.length) return;
+    const PA = this.palier = this.palier || await this.state.storage.get("palier5") || { cap: 6e3, res: 0, depuis: ZERO4_DEPUIS }, PC = this._palCy = this._palCy || {};
+    this._reel = true;
+    try {
+      for (const t of nouv) {
+        vus[t.num + "|" + t.id] = t.endTs;
+        const c = catalogue_default.find((x) => x.n === t.num);
+        if (!c) continue;
+        const nom = c.nom + " BTC", st = Math.floor(t.endTs / 1e3) - 300, cote = t.side === "UP" ? "Up" : "Down";
+        this._zx = { cote, prix: t.prix };
+        if (this.onglet5Garde(nom) && !R5.has(nom)) zCompte(N.zero4, nom, t.ouvert, t.pnl, false, t.mise, st);
+        if (t.num === 2110) {
+          const pal = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PA.cap / 6e3))))), plaf = 250 * pal, deja = PC[st] || 0, reste = plaf - deja;
+          if (reste > 0.01 && t.mise > 0) {
+            const fac = Math.min(pal, reste / t.mise);
+            PC[st] = deja + fac * t.mise;
+            let g = fac * t.pnl;
+            if (g > 0) {
+              PA.res += g / 2;
+              g /= 2;
+            }
+            PA.cap += g;
+            zCompte(N.zero4, "PORTEFEUILLE 101 + 105 palier x2 BTC", t.ouvert, fac * t.pnl, false, fac * t.mise, st);
+            const z = N.zero4["PORTEFEUILLE 101 + 105 palier x2 BTC"];
+            if (z) {
+              z.capital = +PA.cap.toFixed(2);
+              z.reserve = +PA.res.toFixed(2);
+              z.palier = pal;
+              z.plafondCycle = plaf;
+            }
+          }
+        }
+        const B = this.B5, cs = B && B.choisies && B.choisies.find((x) => x.n === t.num);
+        if (cs && this.f5(t.num, t.ouvert)) {
+          const f = 50 / (cs.mise || 50);
+          if (!N.reel6[nom]) N.reel6[nom] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {}, sansDonnees: 0, _src: "prix r\xE9el", _depuisSrc: B.depuis[t.num] || t.ouvert };
+          zCompte(N.reel6, nom, t.ouvert, f * t.pnl, false, f * t.mise, st);
+          const kx = "xr:" + nom + "|" + t.ouvert.slice(0, 10), L = await this.state.storage.get(kx) || [];
+          L.push([t.ouvert, cote, t.prix, +(f * t.parts).toFixed(4), +(f * t.pnl).toFixed(4), "r\xE9el"]);
+          await this.state.storage.put(kx, L);
+        }
+      }
+    } finally {
+      this._reel = false;
+    }
+    const lim = Date.now() - 24 * 36e5;
+    for (const k of Object.keys(vus)) if (vus[k] < lim) delete vus[k];
+    await this.state.storage.put("prixreel:vus", vus);
+    await this.state.storage.put("palier5", PA);
+    await zSauver(this.state.storage, "nv:zero4", N.zero4);
+    await zSauver(this.state.storage, "nv:reel6", N.reel6);
+  }
   xlZ(pre, k, heure, net, mise, ctx) {
     if (this.SG) return;
     const kx = pre + k + "|" + heure.slice(0, 10), pr = ctx.prix || null, lx = [heure, ctx.cote || null, pr, pr ? +(mise / pr).toFixed(3) : null, +(+net).toFixed(4), ""];
@@ -27312,6 +27445,7 @@ var Bot = class {
             }
             let miseCycle = 0;
             for (const y of PF) {
+              if (this._prixReelMs && Date.parse(y.heure) >= this._prixReelMs) continue;
               const pal = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PA.cap / 6e3))))), plaf = 250 * pal, reste = plaf - miseCycle;
               if (reste <= 0.01 || !(y.mise > 0)) continue;
               const fac = Math.min(pal, reste / y.mise);
@@ -29961,6 +30095,7 @@ var ZERO5_NUMS = [101, 201, 121, 28, 119];
 var PF2_DEPUIS = "2026-11-02T20:55:00Z";
 var PF3_DEPUIS = "2026-11-03T07:15:00Z";
 var ZERO4_DEPUIS = "2026-11-01T23:15:00Z";
+var PRIX_REEL_NUMS = [101, 105, 107, 112, 109, 120, 121, 31, 127, 129, 35, 32, 201, 28, 119, 1114, 116, 207, 214, 213, 2, 11, 14, 15, 301, 1011];
 var ONGLET5_MAX_CYCLE = 250;
 var CARNET_K = ["corrige : desaccord 20 + carnet BTC", "corrige : desaccord 20 + carnet ecart serre BTC", "corrige : V2-F ecart qui grandit + carnet BTC", "corrige : V2-F ecart qui grandit + carnet ecart serre BTC", "corrige : V2-F + pas les deux baissent + carnet BTC", "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC"];
 var CARNET_NOMS = new Set(CARNET_K.map((k) => k.replace(/ BTC$/, "")));
@@ -30073,7 +30208,8 @@ function facteurPrix(p) {
 }
 __name(facteurPrix, "facteurPrix");
 function zCompte(Z, k, heure, net, sans, mise, start) {
-  if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && !k.includes(" + mise selon prix") && !k.includes(" palier x2") && ZHOOK.onglet5Garde && ZHOOK.onglet5Garde(k)) {
+  if (ZHOOK && ZHOOK.N && ZHOOK._prixReelMs && !ZHOOK._reel && (Z === ZHOOK.N.zero4 || Z === ZHOOK.N.zero5) && Date.parse(heure) >= ZHOOK._prixReelMs) return;
+  if (ZHOOK && ZHOOK.N && !ZHOOK._reel && Z === ZHOOK.N.zero4 && !k.includes(" + mise selon prix") && !k.includes(" palier x2") && ZHOOK.onglet5Garde && ZHOOK.onglet5Garde(k)) {
     const fp = facteurPrix((ZHOOK._zx || {}).prix);
     if (fp > 0) zCompte(Z, k.replace(/ BTC$/, " + mise selon prix BTC"), heure, fp * net, sans, fp * (mise || 0), start);
   }
@@ -30092,7 +30228,7 @@ function zCompte(Z, k, heure, net, sans, mise, start) {
     }
   }
   try {
-    if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && ZHOOK.nom5) {
+    if (ZHOOK && ZHOOK.N && !ZHOOK._reel && Z === ZHOOK.N.zero4 && ZHOOK.nom5) {
       const n5 = ZHOOK.nom5(k), f5 = n5 ? ZHOOK.f5(n5, heure) : 0;
       if (f5) {
         ZHOOK.N.zero5 = ZHOOK.N.zero5 || {};
