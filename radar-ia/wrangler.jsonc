@@ -1,0 +1,11 @@
+{
+  "name": "radar-ia",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
+  "ai": { "binding": "AI" },
+  "triggers": { "crons": ["7 * * * *"] },
+  "durable_objects": { "bindings": [{ "name": "RADAR", "class_name": "Radar" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Radar"] }]
+}

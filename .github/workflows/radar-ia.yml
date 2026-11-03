@@ -1,0 +1,48 @@
+name: Deploy Radar IA
+on:
+  push:
+    branches: [main]
+    paths: [radar-ia/src/**, radar-ia/public/**, radar-ia/wrangler.jsonc, radar-ia/demande.txt, .github/workflows/radar-ia.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: radar-ia
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deployer et controler
+        run: |
+          set +e
+          cd radar-ia
+          U=https://radar-ia.pitch67.workers.dev
+          # garde-fou : ne jamais écraser un autre Worker qui porterait déjà le nom « radar-ia »
+          code=$(curl -sS -m 20 -o /tmp/avant.html -w "%{http_code}" $U/)
+          if [ "$code" = "200" ] && ! grep -q "Radar <span>IA" /tmp/avant.html; then
+            echo "STOP : un autre Worker nommé radar-ia existe déjà, rien n'a été déployé" > controle.txt
+          else
+            npx -y wrangler@4 deploy > /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log
+            sleep 15
+            {
+              tail -15 /tmp/d.log
+              echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" $U/
+              # demande.txt contient « fabriquer » quand une édition doit être fabriquée tout de suite
+              if grep -q fabriquer demande.txt 2>/dev/null; then
+                echo "=== fabrication"; curl -sS -m 900 -X POST -H "content-type: application/json" -d '{}' "$U/api/fabriquer"; echo
+              fi
+              echo "=== etat"; curl -sS -m 60 "$U/api/etat"; echo
+            } > controle.txt 2>&1
+            curl -sS -m 60 "$U/api/edition" > edition.json
+          fi
+          cd ..; git config user.name controle; git config user.email bot@users.noreply.github.com
+          git add radar-ia/controle.txt radar-ia/edition.json; git commit -m "Controle radar-ia [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done

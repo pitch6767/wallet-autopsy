@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radar IA</title>
+<meta name="theme-color" content="#0f1720">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icone.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Radar IA">
+<style>
+:root{
+  --fond:#f6f4ef; --carte:#ffffff; --texte:#1b1f24; --doux:#5d6670; --ligne:#e4e0d6;
+  --accent:#0b6e4f; --accent-doux:#e3f1ea; --alerte:#9a5b00; --une:#11324d;
+  --rayon:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --fond:#0f1720; --carte:#17212c; --texte:#e9edf1; --doux:#9aa6b2; --ligne:#26323f;
+    --accent:#4fc59a; --accent-doux:#173a30; --alerte:#e0a340; --une:#9fd0ff; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--fond);color:var(--texte);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:5;background:var(--fond);border-bottom:1px solid var(--ligne);padding:calc(env(safe-area-inset-top) + 10px) 16px 8px}
+.marque{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.marque h1{margin:0;font-size:22px;letter-spacing:-.02em}
+.marque h1 span{color:var(--accent)}
+#choixEdition{max-width:58%;font:inherit;font-size:14px;background:var(--carte);color:var(--texte);border:1px solid var(--ligne);border-radius:10px;padding:6px 8px}
+nav{display:flex;gap:6px;margin-top:8px;overflow-x:auto}
+nav button{flex:none;font:inherit;font-size:14px;border:1px solid var(--ligne);background:var(--carte);color:var(--texte);border-radius:999px;padding:6px 12px}
+nav button.actif{background:var(--accent);border-color:var(--accent);color:#fff}
+main{max-width:720px;margin:0 auto;padding:12px 16px calc(env(safe-area-inset-bottom) + 40px)}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--doux);margin:26px 0 10px}
+h2.une{color:var(--une)}
+.carte{background:var(--carte);border:1px solid var(--ligne);border-radius:var(--rayon);padding:14px 14px 10px;margin-bottom:12px}
+.meta{font-size:12.5px;color:var(--doux);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.badge{font-size:11.5px;border-radius:6px;padding:1px 7px;background:var(--accent-doux);color:var(--accent);font-weight:600}
+.badge.gris{background:transparent;border:1px solid var(--ligne);color:var(--doux);font-weight:500}
+.carte h3{font-size:17px;line-height:1.3;margin:6px 0 6px}
+.carte p{margin:0 0 8px}
+.pourquoi{font-size:14px;border-left:3px solid var(--accent);padding-left:9px;color:var(--texte)}
+.aussi{font-size:13px;color:var(--doux)}
+.aussi a{color:var(--doux)}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.actions a,.actions button{font:inherit;font-size:13.5px;text-decoration:none;border:1px solid var(--ligne);background:transparent;color:var(--texte);border-radius:9px;padding:6px 10px}
+.actions a.principal{background:var(--accent);border-color:var(--accent);color:#fff}
+.actions button.fav{color:var(--alerte)}
+.vide{color:var(--doux);text-align:center;padding:40px 10px}
+.ligneReglage{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--ligne);font-size:14.5px}
+.ligneReglage small{color:var(--doux);display:block}
+.ok{color:var(--accent)} .ko{color:var(--alerte)}
+input[type=number]{width:64px;font:inherit;padding:5px;border-radius:8px;border:1px solid var(--ligne);background:var(--carte);color:var(--texte)}
+.bouton{font:inherit;border:0;background:var(--accent);color:#fff;border-radius:10px;padding:9px 14px}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 18px);transform:translateX(-50%);background:var(--texte);color:var(--fond);padding:8px 14px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.vu{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="marque"><h1>Radar <span>IA</span></h1><select id="choixEdition" aria-label="Choisir une édition"></select></div>
+  <nav>
+    <button data-vue="edition" class="actif">Édition</button>
+    <button data-vue="favoris">★ Favoris</button>
+    <button data-vue="reglages">Réglages</button>
+  </nav>
+</header>
+<main id="contenu"><div class="vide">Chargement…</div></main>
+<div class="toast" id="toast"></div>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const api = async (p, corps) => { const r = await fetch(p, corps ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(corps) } : {}); return r.json(); };
+const toast = (t) => { const e = $("#toast"); e.textContent = t; e.classList.add("vu"); setTimeout(() => e.classList.remove("vu"), 1800); };
+const heure = (ts) => new Date(ts).toLocaleString("fr-CH", { timeZone: "Europe/Zurich", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+const NOMS_RUB = { modeles: "Modèles", idees: "Idées et outils", local: "IA locale et matériel", recherche: "Recherche et monde" };
+let vue = "edition", edition = null, favoris = new Set(), cartesParId = {};
+
+function carte(c) {
+  cartesParId[c.id] = c;
+  const e = c.extra || {};
+  const meta = [
+    `<span class="badge">${esc(c.genre === "video" ? "Vidéo" : c.genre === "depot" ? "GitHub" : c.genre === "papier" ? "Papier" : c.genre === "version" ? "Version" : NOMS_RUB[c.rubrique] || "")}</span>`,
+    c.statut ? `<span class="badge gris">${esc(c.statut)}</span>` : "",
+    c.type_video ? `<span class="badge gris">${esc(c.type_video)}</span>` : "",
+    `<span>${esc(c.genre === "video" ? (e.chaine || c.source) : c.source)}</span>`,
+    `<span>${heure(c.date)}</span>`,
+  ].join("");
+  let plus = "";
+  if (c.genre === "depot") plus = `<p class="aussi">${esc([e.langage, e.etoiles_jour ? `+${e.etoiles_jour} ★ aujourd'hui` : e.etoiles ? `${e.etoiles} ★` : "", e.licence ? `licence ${e.licence}` : "licence à vérifier", c.essai ? `essai : ${c.essai}` : "", e.signal].filter(Boolean).join(" · "))}</p>`;
+  if (c.genre === "papier" && e.votes) plus = `<p class="aussi">${e.votes} votes sur Hugging Face · <a href="${esc(e.arxiv)}" target="_blank" rel="noopener">arXiv</a></p>`;
+  const aussi = (c.autres || []).length ? `<p class="aussi">Aussi chez : ${c.autres.map((o) => `<a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.source)}</a>`).join(", ")}</p>` : "";
+  const fav = favoris.has(c.id);
+  return `<article class="carte">
+    <div class="meta">${meta}</div>
+    <h3>${esc(c.titre)}</h3>
+    <p>${esc(c.resume)}</p>
+    ${c.pourquoi ? `<p class="pourquoi">${esc(c.pourquoi)}</p>` : ""}
+    ${plus}${aussi}
+    <div class="actions">
+      <a class="principal" href="${esc(c.url)}" target="_blank" rel="noopener">${c.genre === "video" ? "Regarder" : c.genre === "depot" ? "Voir le dépôt" : "Lire la source"}</a>
+      <button class="fav" data-fav="${esc(c.id)}">${fav ? "★ Sauvegardé" : "☆ Sauvegarder"}</button>
+      <button data-plus="${esc(c.id)}" title="Plus de sujets comme ça">＋</button>
+      <button data-moins="${esc(c.id)}" title="Moins de sujets comme ça">－</button>
+    </div>
+  </article>`;
+}
+
+async function chargerListe(selection) {
+  const l = await api("/api/editions");
+  const s = $("#choixEdition");
+  s.innerHTML = l.length ? l.map((e) => { const [a, m, j, cr] = e.id.split("-"); return `<option value="${esc(e.id)}">${cr === "matin" ? "Matin" : "Soir"} ${j}.${m}.${a}</option>`; }).join("") : `<option>Aucune édition</option>`;
+  if (selection) s.value = selection;
+}
+
+async function afficherEdition(id) {
+  cartesParId = {};
+  const e = await api("/api/edition" + (id ? `?id=${encodeURIComponent(id)}` : ""));
+  const m = $("#contenu");
+  if (e.vide) { m.innerHTML = `<div class="vide">La première édition n'est pas encore prête.<br>Elle arrivera à l'heure prévue (réglages).</div>`; return; }
+  edition = e; favoris = new Set(e.favoris || []);
+  let h = `<p class="aussi">${esc(e.titre)} · ${e.stats?.retenus || 0} sujets retenus sur ${e.stats?.candidats || 0} nouveautés</p>`;
+  if (e.une?.length) h += `<h2 class="une">Le plus important</h2>` + e.une.map(carte).join("");
+  for (const r of e.rubriques || []) h += `<h2>${esc(r.titre)}</h2>` + r.cartes.map(carte).join("");
+  if (e.videos?.length) h += `<h2>À regarder</h2>` + e.videos.map(carte).join("");
+  if (e.depots?.length) h += `<h2>Repos du jour</h2>` + e.depots.map(carte).join("");
+  m.innerHTML = h;
+}
+
+async function afficherFavoris() {
+  cartesParId = {};
+  const l = await api("/api/favoris");
+  favoris = new Set(l.map((c) => c.id));
+  $("#contenu").innerHTML = l.length ? `<h2>Sujets sauvegardés</h2>` + l.map(carte).join("") : `<div class="vide">Aucun favori pour l'instant.<br>Touche « ☆ Sauvegarder » sur une carte.</div>`;
+}
+
+async function afficherReglages() {
+  const [p, etat] = await Promise.all([api("/api/prefs"), api("/api/etat")]);
+  const src = etat.sources || {};
+  let h = `<h2>Heures des éditions (heure suisse)</h2>
+    <div class="ligneReglage"><span>Matin</span><input type="number" min="0" max="23" id="hMatin" value="${p.heures[0]}"></div>
+    <div class="ligneReglage"><span>Soir</span><input type="number" min="0" max="23" id="hSoir" value="${p.heures[1]}"></div>
+    <p><button class="bouton" id="sauverHeures">Enregistrer les heures</button></p>
+    <h2>Thèmes (influence sur le classement)</h2>`;
+  for (const r of p.rubriques_noms) {
+    const v = ((p.poidsDepart[r.id] || 1) * (p.rubriques[r.id] || 1)).toFixed(2);
+    h += `<div class="ligneReglage"><span>${esc(r.titre)}<small>poids ${v}</small></span><span class="actions"><button data-rub="${r.id}" data-sens="-1">Moins</button><button data-rub="${r.id}" data-sens="1">Plus</button></span></div>`;
+  }
+  h += `<h2>Sources suivies</h2>`;
+  for (const s of p.liste) {
+    const e = src[s.id];
+    const masque = p.masques.includes(s.id);
+    const st = masque ? `<span class="ko">masquée</span>` : !e ? "pas encore lue" : e.ok ? `<span class="ok">ok</span> · ${e.lus} récents` : `<span class="ko">erreur</span> · ${esc(e.erreur)}`;
+    const poids = p.sources[s.id] ? ` · préférence ×${p.sources[s.id].toFixed(2)}` : "";
+    h += `<div class="ligneReglage"><span>${esc(s.nom)}<small>${esc(s.famille)} · ${st}${poids}</small></span><span class="actions"><button data-src="${s.id}" data-sens="${masque ? "afficher" : "masquer"}">${masque ? "Réafficher" : "Masquer"}</button></span></div>`;
+  }
+  h += `<p class="aussi">Dernière collecte : ${etat.derniere_collecte ? heure(etat.derniere_collecte.quand) : "—"} · version ${esc(etat.version)}</p>
+    <p><button class="bouton" id="reinit">Remettre les préférences à zéro</button></p>`;
+  $("#contenu").innerHTML = h;
+  $("#sauverHeures").onclick = async () => { const r = await api("/api/prefs", { heures: [$("#hMatin").value, $("#hSoir").value] }); toast(`Éditions à ${r.heures[0]} h et ${r.heures[1]} h`); };
+  $("#reinit").onclick = async () => { await api("/api/prefs", { reinitialiser: true }); toast("Préférences remises à zéro"); afficherReglages(); };
+}
+
+document.addEventListener("click", async (ev) => {
+  const b = ev.target.closest("button"); if (!b) return;
+  if (b.dataset.vue) {
+    vue = b.dataset.vue;
+    document.querySelectorAll("nav button").forEach((x) => x.classList.toggle("actif", x === b));
+    $("#choixEdition").style.visibility = vue === "edition" ? "visible" : "hidden";
+    if (vue === "edition") afficherEdition($("#choixEdition").value); else if (vue === "favoris") afficherFavoris(); else afficherReglages();
+    return;
+  }
+  if (b.dataset.fav) {
+    const c = cartesParId[b.dataset.fav]; const deja = favoris.has(c.id);
+    await api("/api/favoris", deja ? { id: c.id, retirer: true } : { carte: c });
+    deja ? favoris.delete(c.id) : favoris.add(c.id);
+    b.textContent = deja ? "☆ Sauvegarder" : "★ Sauvegardé";
+    toast(deja ? "Retiré des favoris" : "Sauvegardé");
+    return;
+  }
+  if (b.dataset.plus || b.dataset.moins) {
+    const c = cartesParId[b.dataset.plus || b.dataset.moins]; const sens = b.dataset.plus ? 1 : -1;
+    await api("/api/prefs", { source: c.source_id, sens });
+    await api("/api/prefs", { rubrique: c.rubrique, sens });
+    toast(sens > 0 ? `Plus de sujets comme ça (${c.source})` : `Moins de ${c.source}`);
+    return;
+  }
+  if (b.dataset.rub) { await api("/api/prefs", { rubrique: b.dataset.rub, sens: +b.dataset.sens }); afficherReglages(); return; }
+  if (b.dataset.src) { await api("/api/prefs", { source: b.dataset.src, sens: b.dataset.sens }); afficherReglages(); return; }
+});
+$("#choixEdition").onchange = (e) => afficherEdition(e.target.value);
+
+(async () => { await chargerListe(); await afficherEdition(); })();
+</script>
+</body>
+</html>
