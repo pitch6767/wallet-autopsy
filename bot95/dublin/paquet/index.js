@@ -24078,7 +24078,7 @@ var Bot = class {
         if (!Z[nom] && this.onglet5Garde(nom)) Z[nom] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {}, sansDonnees: 0 };
       }
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
-      return json({ depuis: ZERO4_DEPUIS, debug: this._dbg5 || null, strats: L, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
+      return json({ depuis: ZERO4_DEPUIS, debug: this.N.dbg5 || null, strats: L, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
     }
     if (u.pathname === "/api/catalogue") return json({ maj: "2026-10-27", strategies: catalogue_default.map((c) => ({ ...c, ...infoOrdres(c.nom + " BTC") })) });
     if (u.pathname === "/numeros") return new Response(PAGE_NUMEROS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -27288,7 +27288,7 @@ var Bot = class {
               }
             }
             {
-              const DBG = this._dbg5 = this._dbg5 || { canari: [], teneur: [] };
+              const DBG = N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] };
               for (const y of PF2) {
                 DBG.canari.push({ s: y.s, h: y.heure, prix: y.prix, mise: +(y.mise || 0).toFixed(2), ca: y.ca, clAge: y.clAge });
               }
@@ -27332,12 +27332,24 @@ var Bot = class {
           }
         } catch (err) {
           this.erreur("portefeuille 1114 + 116", err);
+          try {
+            const D = N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] };
+            (D.err = D.err || []).push("pf2 " + String(err && err.stack || err).slice(0, 300));
+            D.err = D.err.slice(-5);
+          } catch (_) {
+          }
+        }
+        try {
+          const D0 = N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] };
+          D0.vus = (D0.vus || 0) + 1;
+          D0.dernier = s0;
+        } catch (_) {
         }
         try {
           if (Date.parse(new Date(s0 * 1e3).toISOString()) >= Date.parse(PF3_DEPUIS)) {
             const g = tous.find((y) => y.gagne != null && y.cote);
             const upGagne = g ? g.cote === "Up" === !!g.gagne : null;
-            const DBG = this._dbg5 = this._dbg5 || { canari: [], teneur: [] };
+            const DBG = N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] };
             const dbg = { s0, upGagne, nTous: tous.length, sec: 0, pu: 0, bU: 0, aU: 0 };
             DBG.teneur.push(dbg);
             DBG.teneur = DBG.teneur.slice(-12);
@@ -27386,6 +27398,12 @@ var Bot = class {
           }
         } catch (err) {
           this.erreur("teneur de march\xE9", err);
+          try {
+            const D = N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] };
+            (D.err = D.err || []).push("teneur " + String(err && err.stack || err).slice(0, 300));
+            D.err = D.err.slice(-5);
+          } catch (_) {
+          }
         }
         try {
           const CP = N.consPris = N.consPris || {};
