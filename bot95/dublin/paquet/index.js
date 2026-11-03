@@ -29872,16 +29872,17 @@ async function xlClasseur(Q, depuis) {
   res.push([]);
   res.push(["Capital conseill\xE9 = 2 \xD7 creux max + 2 mises de 50 $, arrondi \xE0 50 $. Moyenne / jour = r\xE9sultat \xF7 " + nJours + " jours (du " + jourS(depuis).split("-").reverse().join(".") + " \xE0 aujourd'hui)."]);
   tous.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
-  const numK = /* @__PURE__ */ __name((k) => numDe(k) ?? 1e9, "numK");
-  tous.sort((a, b) => numK(a[1]) - numK(b[1]) || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0) || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  const numC = {};
+  for (const k of Object.keys(Q)) numC[k] = numDe(k) ?? 1e9;
+  tous.sort((a, b) => numC[a[1]] - numC[b[1]] || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0) || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   const T = [["Date (heure suisse)", "N\xB0", "Strat\xE9gie", "C\xF4t\xE9", "Prix", "Parts", "Mise $", "R\xE9sultat $", "Issue"].map((v) => ({ v, s: 3 }))], liensT = [];
   let kPrec = null, rDeb = 0;
   const fermer = /* @__PURE__ */ __name((rFin) => {
     const fk = kPrec != null && feuilleDe[kPrec];
-    if (fk && numDe(kPrec) != null) liensT.push(["B" + rDeb + (rFin > rDeb ? ":B" + rFin : ""), "'" + fk.replace(/'/g, "''") + "'!A1"]);
+    if (fk && numC[kPrec] !== 1e9) liensT.push(["B" + rDeb + (rFin > rDeb ? ":B" + rFin : ""), "'" + fk.replace(/'/g, "''") + "'!A1"]);
   }, "fermer");
   for (const [, k, l] of tous) {
-    const num2 = numDe(k), r = T.length + 1;
+    const num2 = numC[k] === 1e9 ? null : numC[k], r = T.length + 1;
     if (k !== kPrec) {
       if (kPrec != null) fermer(r - 1);
       kPrec = k;
