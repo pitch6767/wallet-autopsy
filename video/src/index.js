@@ -2,8 +2,8 @@
 // La clé Gemini n'est jamais en clair : elle est chiffrée avec la clé publique du coffre (Durable Object)
 import { DurableObject } from "cloudflare:workers";
 
-const VERSION = "1.0.1";
-const MORCEAU = 600; // secondes par morceau analysé
+const VERSION = "1.1.0";
+const MORCEAU = 300; // secondes par morceau analysé (5 min : plus de détail par minute)
 const GEMINI = "https://generativelanguage.googleapis.com/v1beta";
 
 const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
@@ -57,6 +57,7 @@ export class Coffre extends DurableObject {
     this.sql.exec(`CREATE TABLE IF NOT EXISTS kv(k TEXT PRIMARY KEY, v TEXT)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY, url TEXT, titre TEXT, auteur TEXT, statut TEXT, duree INTEGER,
       total INTEGER, faits INTEGER DEFAULT 0, fps REAL, resume TEXT, modele TEXT, cree INTEGER, maj INTEGER, erreur TEXT, essais INTEGER DEFAULT 0)`);
+    try { this.sql.exec(`ALTER TABLE jobs ADD COLUMN source_duree TEXT`); } catch {}
     this.sql.exec(`CREATE TABLE IF NOT EXISTS morceaux(job TEXT, idx INTEGER, debut INTEGER, fin INTEGER, texte TEXT, PRIMARY KEY(job, idx))`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS questions(qid INTEGER PRIMARY KEY AUTOINCREMENT, job TEXT, q TEXT, debut INTEGER, fin INTEGER, fps REAL,
       reponse TEXT, statut TEXT, cree INTEGER, erreur TEXT, essais INTEGER DEFAULT 0)`);
@@ -132,7 +133,9 @@ export class Coffre extends DurableObject {
       if (r.ok) {
         const texte = (j.candidates?.[0]?.content?.parts || []).map((x) => x.text || "").join("").trim();
         if (texte) return { texte, modele };
-        derniere = `réponse vide (${j.candidates?.[0]?.finishReason || j.promptFeedback?.blockReason || "?"})`;
+        const raison = j.candidates?.[0]?.finishReason || j.promptFeedback?.blockReason || "?";
+        derniere = `réponse vide (${raison})`;
+        if (/RECITATION|SAFETY|PROHIBITED|BLOCK/i.test(raison)) break; // refus lié au contenu : un autre modèle refusera aussi
         continue;
       }
       derniere = `${modele} : ${r.status} ${JSON.stringify(j.error || j).slice(0, 400)}`;
@@ -179,49 +182,89 @@ Réponds en français, précisément, en donnant les minutages. Recopie exacteme
       }
       return true;
     }
-    const j = this.un(`SELECT * FROM jobs WHERE statut IN ('attente','en cours') AND essais<3 ORDER BY cree LIMIT 1`);
+    const j = this.un(`SELECT * FROM jobs WHERE statut IN ('attente','en cours') ORDER BY cree LIMIT 1`);
     if (!j) return false;
-    try {
-      if (j.duree == null) {
-        const r = await this.gemini([this.partVideo(j.url, null, null, 0.2), { text: "Quelle est la durée totale exacte de cette vidéo ? Réponds uniquement au format H:MM:SS." }], 200);
-        const m = r.texte.match(/(\d+:)?\d{1,2}:\d{2}/);
-        const d = m ? tempsEnSec(m[0]) : null;
-        if (!d) throw new Error(`durée illisible : ${r.texte.slice(0, 100)}`);
-        const total = Math.max(1, Math.ceil(d / MORCEAU));
-        this.sql.exec(`UPDATE jobs SET duree=?, total=?, statut='en cours', modele=?, maj=?, erreur=NULL WHERE id=?`, d, total, r.modele, now, j.id);
+    // ---- 1) durée : d'abord la vraie durée publiée par YouTube, Gemini seulement en secours
+    if (j.duree == null) {
+      let d = null, source = null;
+      try {
+        const r = await fetch(`https://www.youtube.com/watch?v=${j.id}`, { headers: { "accept-language": "fr,en;q=0.8", "user-agent": "Mozilla/5.0" } });
+        const h = await r.text();
+        const m = h.match(/"lengthSeconds":"(\d+)"/) || h.match(/itemprop="duration" content="PT(?:(\d+)H)?(\d+)M(\d+)S"/);
+        if (m) { d = m.length === 2 ? +m[1] : (+(m[1] || 0)) * 3600 + +m[2] * 60 + +m[3]; source = "YouTube"; }
+      } catch {}
+      if (!d) {
+        try {
+          const r = await this.gemini([this.partVideo(j.url, null, null, 0.2), { text: "Quelle est la durée totale exacte de cette vidéo ? Réponds uniquement au format H:MM:SS." }], 200);
+          const m = r.texte.match(/(\d+:)?\d{1,2}:\d{2}/);
+          d = m ? tempsEnSec(m[0]) : null; source = "estimée par Gemini";
+        } catch (e) {
+          this.sql.exec(`UPDATE jobs SET essais=essais+1, erreur=?, maj=?, statut=CASE WHEN essais+1>=3 THEN 'erreur' ELSE statut END WHERE id=?`, `durée : ${String(e).slice(0, 500)}`, now, j.id);
+          await this.ctx.storage.setAlarm(Date.now() + 30e3);
+          return false;
+        }
+      }
+      if (!d) {
+        this.sql.exec(`UPDATE jobs SET statut='erreur', erreur='durée introuvable', maj=? WHERE id=?`, now, j.id);
         return true;
       }
-      if (j.faits < j.total) {
-        const idx = j.faits, debut = idx * MORCEAU, finM = Math.min(j.duree, debut + MORCEAU);
-        const prompt = `Tu regardes l'extrait ${hms(debut)} → ${hms(finM)} d'une vidéo YouTube (durée totale ${hms(j.duree)}). Utilise des minutages ABSOLUS, comptés depuis le début de la vidéo.
-Décris cet extrait de façon EXHAUSTIVE, en français, sous forme de chronologie. Une entrée à chaque changement de plan, et au minimum toutes les 15 secondes :
+      this.sql.exec(`UPDATE jobs SET duree=?, source_duree=?, total=?, statut='en cours', maj=?, erreur=NULL, essais=0 WHERE id=?`, d, source, Math.max(1, Math.ceil(d / MORCEAU)), now, j.id);
+      return true;
+    }
+    // ---- 2) chaque morceau de 5 min : 3 façons de demander, puis on passe au suivant sans bloquer la vidéo
+    if (j.faits < j.total) {
+      const idx = j.faits, debut = idx * MORCEAU, finM = Math.min(j.duree, debut + MORCEAU);
+      const mode = j.essais; // 0 = complet, 1 = paroles reformulées (refus « récitation »), 2 = écran surtout
+      const paroles = [
+        "- PAROLES : transcription fidèle de ce qui est dit, dans la langue d'origine, en indiquant qui parle.",
+        "- PAROLES : contenu détaillé de ce qui est dit, reformulé fidèlement en français (PAS de transcription mot pour mot ; citations de quelques mots maximum), en indiquant qui parle.",
+        "- PAROLES : idée principale de ce qui est dit, en une phrase, reformulée en français.",
+      ][Math.min(mode, 2)];
+      const prompt = `Tu regardes l'extrait ${hms(debut)} → ${hms(finM)} d'une vidéo YouTube (durée totale ${hms(j.duree)}). Utilise des minutages ABSOLUS, comptés depuis le début de la vidéo.
+Décris cet extrait de façon EXHAUSTIVE, en français, sous forme de chronologie. Une entrée OBLIGATOIRE toutes les 10 secondes (${hms(debut)}, ${hms(debut + 10)}, ${hms(debut + 20)}…) jusqu'à ${hms(finM)}, plus une entrée à chaque changement de plan :
 [MM:SS]
 - ÉCRAN : ce qui est montré, précisément (personnes, lieu, interface, site, graphique, diapositive, code…).
 - TEXTE À L'ÉCRAN : recopie exacte de tout texte lisible (titres, chiffres, prix, tableaux, lignes de code, URL, noms de comptes, réglages). Écris [illisible] si tu ne peux pas lire.
-- PAROLES : transcription fidèle de ce qui est dit, dans la langue d'origine, en indiquant qui parle.
-N'invente rien, ne résume pas, ne saute rien.`;
+${paroles}
+N'invente rien : si tu n'es pas sûr d'un détail, écris [incertain]. Ne saute aucun intervalle de 10 secondes.`;
+      try {
         const r = await this.gemini([this.partVideo(j.url, debut, finM, j.fps), { text: prompt }], 32768);
-        this.sql.exec(`INSERT OR REPLACE INTO morceaux(job,idx,debut,fin,texte) VALUES(?,?,?,?,?)`, j.id, idx, debut, finM, r.texte);
+        const note = mode >= 1 ? `(Paroles reformulées : Gemini refuse de les recopier mot pour mot.)\n` : "";
+        this.sql.exec(`INSERT OR REPLACE INTO morceaux(job,idx,debut,fin,texte) VALUES(?,?,?,?,?)`, j.id, idx, debut, finM, note + r.texte);
         this.sql.exec(`UPDATE jobs SET faits=faits+1, modele=?, maj=?, erreur=NULL, essais=0 WHERE id=?`, r.modele, now, j.id);
         return true;
+      } catch (e) {
+        const err = String(e).slice(0, 500);
+        if (j.essais + 1 >= 4) {
+          this.sql.exec(`INSERT OR REPLACE INTO morceaux(job,idx,debut,fin,texte) VALUES(?,?,?,?,?)`, j.id, idx, debut, finM, `[MORCEAU NON ANALYSÉ — ${err}]`);
+          this.sql.exec(`UPDATE jobs SET faits=faits+1, maj=?, erreur=?, essais=0 WHERE id=?`, now, `morceau ${hms(debut)} non analysé : ${err}`, j.id);
+          return true;
+        }
+        this.sql.exec(`UPDATE jobs SET essais=essais+1, erreur=?, maj=? WHERE id=?`, err, now, j.id);
+        if (/RECITATION|SAFETY|PROHIBITED|BLOCK/i.test(err)) return true; // on reformule tout de suite
+        await this.ctx.storage.setAlarm(Date.now() + 30e3); // quota ou panne : pause avant de réessayer
+        return false;
       }
-      const chrono = this.tous(`SELECT texte FROM morceaux WHERE job=? ORDER BY idx`, j.id).map((x) => x.texte).join("\n\n");
+    }
+    // ---- 3) synthèse
+    const ms = this.tous(`SELECT texte FROM morceaux WHERE job=? ORDER BY idx`, j.id);
+    const manquants = ms.filter((x) => x.texte.startsWith("[MORCEAU NON ANALYSÉ")).length;
+    try {
       const r = await this.gemini([{ text: `Voici le compte rendu chronologique complet d'une vidéo YouTube${j.titre ? ` intitulée « ${j.titre} »` : ""}.
 Écris en français :
 1) RÉSUMÉ : 10 lignes maximum.
 2) POINTS CLÉS : méthode, chiffres, affirmations importantes, chacun avec son minutage.
 3) OUTILS, SITES, LIENS, COMPTES ET NOMS cités, avec minutage.
 4) AFFIRMATIONS NON PROUVÉES OU PROMOTIONNELLES repérées (liens d'affiliation, gains invérifiables…).
-N'invente rien.
+N'invente rien.${manquants ? ` Attention : ${manquants} morceau(x) n'ont pas pu être analysés, signale-le.` : ""}
 
-${chrono}` }], 8192);
-      this.sql.exec(`UPDATE jobs SET resume=?, statut='fait', maj=?, erreur=NULL WHERE id=?`, r.texte, now, j.id);
-      return true;
+${ms.map((x) => x.texte).join("\n\n")}` }], 8192);
+      this.sql.exec(`UPDATE jobs SET resume=?, statut='fait', maj=?, essais=0 WHERE id=?`, r.texte, now, j.id);
     } catch (e) {
-      this.sql.exec(`UPDATE jobs SET essais=essais+1, erreur=?, maj=?, statut=CASE WHEN essais+1>=3 THEN 'erreur' ELSE statut END WHERE id=?`, String(e).slice(0, 600), now, j.id);
-      await this.ctx.storage.setAlarm(Date.now() + 30e3); // pause avant de réessayer (quota Gemini)
-      return false;
+      if (j.essais + 1 >= 3) this.sql.exec(`UPDATE jobs SET resume=?, statut='fait', maj=? WHERE id=?`, `[Synthèse indisponible : ${String(e).slice(0, 300)}]`, now, j.id);
+      else { this.sql.exec(`UPDATE jobs SET essais=essais+1, erreur=? WHERE id=?`, String(e).slice(0, 500), j.id); await this.ctx.storage.setAlarm(Date.now() + 30e3); return false; }
     }
+    return true;
   }
 
   // ---------- pages ----------
@@ -230,7 +273,7 @@ ${chrono}` }], 8192);
     if (!j) return null;
     const ms = this.tous(`SELECT * FROM morceaux WHERE job=? ORDER BY idx`, id);
     const qs = this.tous(`SELECT * FROM questions WHERE job=? ORDER BY qid`, id);
-    let t = `VIDÉO : ${j.titre || id}${j.auteur ? ` — ${j.auteur}` : ""}\nLIEN : ${j.url}\nSTATUT : ${j.statut}${j.total ? ` (${j.faits}/${j.total} morceaux de 10 min)` : ""}${j.duree ? `\nDURÉE : ${hms(j.duree)}` : ""}${j.modele ? `\nREGARDÉE PAR : ${j.modele}` : ""}${j.erreur ? `\nDERNIÈRE ERREUR : ${j.erreur}` : ""}\n`;
+    let t = `VIDÉO : ${j.titre || id}${j.auteur ? ` — ${j.auteur}` : ""}\nLIEN : ${j.url}\nSTATUT : ${j.statut}${j.total ? ` (${j.faits}/${j.total} morceaux de 5 min)` : ""}${j.duree ? `\nDURÉE : ${hms(j.duree)}${j.source_duree ? ` (${j.source_duree})` : ""}` : ""}${ms.some((m) => m.texte.startsWith("[MORCEAU NON ANALYSÉ")) ? `\nMORCEAUX NON ANALYSÉS : ${ms.filter((m) => m.texte.startsWith("[MORCEAU NON ANALYSÉ")).map((m) => hms(m.debut)).join(", ")}` : ""}${j.modele ? `\nREGARDÉE PAR : ${j.modele}` : ""}${j.erreur ? `\nDERNIÈRE ERREUR : ${j.erreur}` : ""}\n`;
     if (j.resume) t += `\n==================== SYNTHÈSE ====================\n${j.resume}\n`;
     if (ms.length) t += `\n==================== CHRONOLOGIE COMPLÈTE ====================\n` + ms.map((m) => `----- ${hms(m.debut)} → ${hms(m.fin)} -----\n${m.texte}`).join("\n\n") + "\n";
     if (qs.length) t += `\n==================== QUESTIONS ====================\n` + qs.map((q) => `Q${q.qid} [${q.statut}]${q.debut != null ? ` (${hms(q.debut)}→${q.fin != null ? hms(q.fin) : "fin"})` : ""} : ${q.q}\n${q.reponse || q.erreur || "(en attente)"}`).join("\n\n") + "\n";
@@ -252,7 +295,7 @@ input,button{font:inherit;padding:10px;border-radius:8px;border:1px solid #bbb}b
 <h1 style="font-size:20px">${esc(j.titre || id)}</h1>${encours ? `<p>⏳ Gemini regarde la vidéo… cette page se met à jour toute seule.</p>` : ""}
 <form action="/api/question" method="get"><input type="hidden" name="id" value="${id}"><input type="hidden" name="page" value="1">
 <b>Poser une question sur la vidéo</b><input name="q" required placeholder="Ex. : que montre l'écran à 12:34 ?">
-<div class="r"><input name="debut" placeholder="Début (MM:SS, facultatif)"><input name="fin" placeholder="Fin (MM:SS, facultatif)"></div><button>Demander</button></form>
+<div class="r"><input name="debut" placeholder="Début MM:SS"><input name="fin" placeholder="Fin MM:SS"></div><button>Demander</button></form>
 <pre>${esc(t)}</pre></main></body></html>`;
     return new Response(html, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
   }
