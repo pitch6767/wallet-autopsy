@@ -39,7 +39,7 @@ footer{color:var(--doux);font-size:12px;margin-top:20px}
 <footer>Version <span id="v">…</span></footer>
 </main>
 <script>
-const st={attente:"⏳ en attente","en cours":"⏳ en cours",fait:"✅ prête",erreur:"❌ erreur"};
+const st={attente:"⏳ en attente","en cours":"⏳ en cours",fait:"✅ prête",incomplet:"⚠️ incomplète",erreur:"❌ erreur"};
 function hms(s){if(!s)return"";s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60,p=n=>String(n).padStart(2,"0");return h?`${h}:${p(m)}:${p(x)}`:`${p(m)}:${p(x)}`}
 fetch("/api/liste").then(r=>r.json()).then(l=>{
   document.getElementById("liste").innerHTML=l.map(x=>`<li><a href="/r/${x.id}"><b>${(x.titre||x.id).replace(/</g,"&lt;")}</b><br><small>${st[x.statut]||x.statut}${x.total?` · ${x.faits}/${x.total}`:""}${x.duree?` · ${hms(x.duree)}`:""}${x.auteur?` · ${x.auteur.replace(/</g,"&lt;")}`:""}</small></a></li>`).join("");

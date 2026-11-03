@@ -21,11 +21,12 @@ jobs:
               analyser) id=$(curl -sS -m 60 -G "$U/api/analyser" --data-urlencode "url=$a" ${b:+--data-urlencode "fps=$b"} | python3 -c "import json,sys;print(json.load(sys.stdin).get('id',''))") ;;
               question) id="$a"; curl -sS -m 60 -G "$U/api/question" --data-urlencode "id=$a" --data-urlencode "q=$b" > /dev/null ;;
               lire) id="$a" ;;
+              refaire) id=$(curl -sS -m 60 -G "$U/api/analyser" --data-urlencode "url=$a" --data-urlencode "refaire=1" ${b:+--data-urlencode "fps=$b"} | python3 -c "import json,sys;print(json.load(sys.stdin).get('id',''))") ;;
             esac
             [ -z "$id" ] && continue
             for k in $(seq 1 45); do
               t=$(curl -sS -m 30 "$U/r/$id.txt")
-              echo "$t" | head -3 | grep -q "STATUT : \(fait\|erreur\)" && ! echo "$t" | grep -q "\[attente\]" && break
+              echo "$t" | head -3 | grep -q "STATUT : \(fait\|erreur\|incomplet\)" && ! echo "$t" | grep -q "\[attente\]" && break
               sleep 20
             done
             curl -sS -m 30 "$U/r/$id.txt" > "video/resultats/$id.txt"

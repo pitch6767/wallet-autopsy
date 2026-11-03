@@ -2,7 +2,7 @@
 // La clé Gemini n'est jamais en clair : elle est chiffrée avec la clé publique du coffre (Durable Object)
 import { DurableObject } from "cloudflare:workers";
 
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 const MORCEAU = 300; // secondes par morceau analysé (5 min : plus de détail par minute)
 const GEMINI = "https://generativelanguage.googleapis.com/v1beta";
 
@@ -14,6 +14,9 @@ const hms = (s) => {
   const p = (n) => String(n).padStart(2, "0");
   return h ? `${h}:${p(m)}:${p(x)}` : `${p(m)}:${p(x)}`;
 };
+const estQuota = (e) => /\b429\b|RESOURCE_EXHAUSTED|QUOTA/i.test(String(e));
+const delaiQuota = (e) => { const m = String(e).match(/retry(?:Delay)?\D{0,20}(\d+(?:\.\d+)?)s/i); return Math.min(3600, Math.max(60, m ? Math.ceil(+m[1]) + 5 : 600)); };
+const erreurCourte = (e) => estQuota(e) ? "quota gratuit Gemini atteint — reprise automatique dès qu'il se libère" : String(e).replace(/\{.*$/s, "").slice(0, 200);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const json = (o, st = 200) =>
   new Response(JSON.stringify(o, null, 1), { status: st, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
@@ -123,7 +126,8 @@ export class Coffre extends DurableObject {
     if (!cle) throw new Error("clé Gemini absente");
     const liste = await this.modeles();
     let derniere;
-    for (const modele of liste.slice(0, 4)) {
+    let quota = 0;
+    for (const modele of liste) {
       const r = await fetch(`${GEMINI}/models/${modele}:generateContent`, {
         method: "POST",
         headers: { "content-type": "application/json", "x-goog-api-key": cle },
@@ -139,9 +143,10 @@ export class Coffre extends DurableObject {
         continue;
       }
       derniere = `${modele} : ${r.status} ${JSON.stringify(j.error || j).slice(0, 400)}`;
+      if (r.status === 429) { quota++; continue; }
       if (r.status === 400 && !/model/i.test(derniere)) break; // erreur sur la vidéo elle-même : inutile d'essayer d'autres modèles
     }
-    throw new Error(derniere || "Gemini indisponible");
+    throw new Error((quota && quota === liste.length ? "QUOTA " : "") + (derniere || "Gemini indisponible"));
   }
   partVideo(url, debut, fin, fps) {
     const vm = {};
@@ -176,7 +181,8 @@ Réponds en français, précisément, en donnant les minutages. Recopie exacteme
         const r = await this.gemini([this.partVideo(job.url, q.debut, q.fin, q.fps), { text: prompt }], 16384);
         this.sql.exec(`UPDATE questions SET reponse=?, statut='fait', erreur=NULL WHERE qid=?`, r.texte, q.qid);
       } catch (e) {
-        this.sql.exec(`UPDATE questions SET essais=essais+1, erreur=?, statut=CASE WHEN essais+1>=3 THEN 'erreur' ELSE 'attente' END WHERE qid=?`, String(e).slice(0, 600), q.qid);
+        if (estQuota(e)) { this.sql.exec(`UPDATE questions SET erreur=? WHERE qid=?`, erreurCourte(e), q.qid); await this.ctx.storage.setAlarm(Date.now() + delaiQuota(e) * 1000); return false; }
+        this.sql.exec(`UPDATE questions SET essais=essais+1, erreur=?, statut=CASE WHEN essais+1>=3 THEN 'erreur' ELSE 'attente' END WHERE qid=?`, erreurCourte(e), q.qid);
         await this.ctx.storage.setAlarm(Date.now() + 30e3); // pause avant de réessayer (quota Gemini)
         return false;
       }
@@ -188,7 +194,7 @@ Réponds en français, précisément, en donnant les minutages. Recopie exacteme
     if (j.duree == null) {
       let d = null, source = null;
       try {
-        const r = await fetch(`https://www.youtube.com/watch?v=${j.id}`, { headers: { "accept-language": "fr,en;q=0.8", "user-agent": "Mozilla/5.0" } });
+        const r = await fetch(`https://www.youtube.com/watch?v=${j.id}&hl=en&gl=US&bpctr=9999999999&has_verified=1`, { headers: { "accept-language": "en-US,en;q=0.8", "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36", cookie: "CONSENT=YES+cb; SOCS=CAI" } });
         const h = await r.text();
         const m = h.match(/"lengthSeconds":"(\d+)"/) || h.match(/itemprop="duration" content="PT(?:(\d+)H)?(\d+)M(\d+)S"/);
         if (m) { d = m.length === 2 ? +m[1] : (+(m[1] || 0)) * 3600 + +m[2] * 60 + +m[3]; source = "YouTube"; }
@@ -199,7 +205,8 @@ Réponds en français, précisément, en donnant les minutages. Recopie exacteme
           const m = r.texte.match(/(\d+:)?\d{1,2}:\d{2}/);
           d = m ? tempsEnSec(m[0]) : null; source = "estimée par Gemini";
         } catch (e) {
-          this.sql.exec(`UPDATE jobs SET essais=essais+1, erreur=?, maj=?, statut=CASE WHEN essais+1>=3 THEN 'erreur' ELSE statut END WHERE id=?`, `durée : ${String(e).slice(0, 500)}`, now, j.id);
+          if (estQuota(e)) { this.sql.exec(`UPDATE jobs SET erreur=?, maj=? WHERE id=?`, erreurCourte(e), now, j.id); await this.ctx.storage.setAlarm(Date.now() + delaiQuota(e) * 1000); return false; }
+          this.sql.exec(`UPDATE jobs SET essais=essais+1, erreur=?, maj=?, statut=CASE WHEN essais+1>=3 THEN 'erreur' ELSE statut END WHERE id=?`, `durée : ${erreurCourte(e)}`, now, j.id);
           await this.ctx.storage.setAlarm(Date.now() + 30e3);
           return false;
         }
@@ -213,7 +220,7 @@ Réponds en français, précisément, en donnant les minutages. Recopie exacteme
     }
     // ---- 2) chaque morceau de 5 min : 3 façons de demander, puis on passe au suivant sans bloquer la vidéo
     if (j.faits < j.total) {
-      const idx = j.faits, debut = idx * MORCEAU, finM = Math.min(j.duree, debut + MORCEAU);
+      const idx = j.faits, debut = idx * MORCEAU, finM = Math.min(j.duree, debut + MORCEAU), dernier = idx === j.total - 1;
       const mode = j.essais; // 0 = complet, 1 = paroles reformulées (refus « récitation »), 2 = écran surtout
       const paroles = [
         "- PAROLES : transcription fidèle de ce qui est dit, dans la langue d'origine, en indiquant qui parle.",
@@ -221,26 +228,27 @@ Réponds en français, précisément, en donnant les minutages. Recopie exacteme
         "- PAROLES : idée principale de ce qui est dit, en une phrase, reformulée en français.",
       ][Math.min(mode, 2)];
       const prompt = `Tu regardes l'extrait ${hms(debut)} → ${hms(finM)} d'une vidéo YouTube (durée totale ${hms(j.duree)}). Utilise des minutages ABSOLUS, comptés depuis le début de la vidéo.
-Décris cet extrait de façon EXHAUSTIVE, en français, sous forme de chronologie. Une entrée OBLIGATOIRE toutes les 10 secondes (${hms(debut)}, ${hms(debut + 10)}, ${hms(debut + 20)}…) jusqu'à ${hms(finM)}, plus une entrée à chaque changement de plan :
+Décris cet extrait de façon EXHAUSTIVE, en français, sous forme de chronologie. Une entrée OBLIGATOIRE toutes les 10 secondes (${hms(debut)}, ${hms(debut + 10)}, ${hms(debut + 20)}…) jusqu'à ${dernier ? "la toute fin réelle de la vidéo (elle peut durer un peu plus que la durée annoncée : continue jusqu'à la dernière image)" : hms(finM)}, plus une entrée à chaque changement de plan :
 [MM:SS]
 - ÉCRAN : ce qui est montré, précisément (personnes, lieu, interface, site, graphique, diapositive, code…).
 - TEXTE À L'ÉCRAN : recopie exacte de tout texte lisible (titres, chiffres, prix, tableaux, lignes de code, URL, noms de comptes, réglages). Écris [illisible] si tu ne peux pas lire.
 ${paroles}
 N'invente rien : si tu n'es pas sûr d'un détail, écris [incertain]. Ne saute aucun intervalle de 10 secondes.`;
       try {
-        const r = await this.gemini([this.partVideo(j.url, debut, finM, j.fps), { text: prompt }], 32768);
+        const r = await this.gemini([this.partVideo(j.url, debut, dernier ? null : finM, j.fps), { text: prompt }], 32768);
         const note = mode >= 1 ? `(Paroles reformulées : Gemini refuse de les recopier mot pour mot.)\n` : "";
         this.sql.exec(`INSERT OR REPLACE INTO morceaux(job,idx,debut,fin,texte) VALUES(?,?,?,?,?)`, j.id, idx, debut, finM, note + r.texte);
         this.sql.exec(`UPDATE jobs SET faits=faits+1, modele=?, maj=?, erreur=NULL, essais=0 WHERE id=?`, r.modele, now, j.id);
         return true;
       } catch (e) {
         const err = String(e).slice(0, 500);
+        if (estQuota(e)) { this.sql.exec(`UPDATE jobs SET erreur=?, maj=? WHERE id=?`, erreurCourte(e), now, j.id); await this.ctx.storage.setAlarm(Date.now() + delaiQuota(e) * 1000); return false; }
         if (j.essais + 1 >= 4) {
-          this.sql.exec(`INSERT OR REPLACE INTO morceaux(job,idx,debut,fin,texte) VALUES(?,?,?,?,?)`, j.id, idx, debut, finM, `[MORCEAU NON ANALYSÉ — ${err}]`);
-          this.sql.exec(`UPDATE jobs SET faits=faits+1, maj=?, erreur=?, essais=0 WHERE id=?`, now, `morceau ${hms(debut)} non analysé : ${err}`, j.id);
+          this.sql.exec(`INSERT OR REPLACE INTO morceaux(job,idx,debut,fin,texte) VALUES(?,?,?,?,?)`, j.id, idx, debut, finM, `[MORCEAU NON ANALYSÉ — ${erreurCourte(err)}]`);
+          this.sql.exec(`UPDATE jobs SET faits=faits+1, maj=?, erreur=?, essais=0 WHERE id=?`, now, `morceau ${hms(debut)} non analysé : ${erreurCourte(err)}`, j.id);
           return true;
         }
-        this.sql.exec(`UPDATE jobs SET essais=essais+1, erreur=?, maj=? WHERE id=?`, err, now, j.id);
+        this.sql.exec(`UPDATE jobs SET essais=essais+1, erreur=?, maj=? WHERE id=?`, erreurCourte(err), now, j.id);
         if (/RECITATION|SAFETY|PROHIBITED|BLOCK/i.test(err)) return true; // on reformule tout de suite
         await this.ctx.storage.setAlarm(Date.now() + 30e3); // quota ou panne : pause avant de réessayer
         return false;
@@ -259,10 +267,11 @@ N'invente rien : si tu n'es pas sûr d'un détail, écris [incertain]. Ne saute 
 N'invente rien.${manquants ? ` Attention : ${manquants} morceau(x) n'ont pas pu être analysés, signale-le.` : ""}
 
 ${ms.map((x) => x.texte).join("\n\n")}` }], 8192);
-      this.sql.exec(`UPDATE jobs SET resume=?, statut='fait', maj=?, essais=0 WHERE id=?`, r.texte, now, j.id);
+      this.sql.exec(`UPDATE jobs SET resume=?, statut=?, maj=?, essais=0, erreur=NULL WHERE id=?`, r.texte, manquants ? 'incomplet' : 'fait', now, j.id);
     } catch (e) {
-      if (j.essais + 1 >= 3) this.sql.exec(`UPDATE jobs SET resume=?, statut='fait', maj=? WHERE id=?`, `[Synthèse indisponible : ${String(e).slice(0, 300)}]`, now, j.id);
-      else { this.sql.exec(`UPDATE jobs SET essais=essais+1, erreur=? WHERE id=?`, String(e).slice(0, 500), j.id); await this.ctx.storage.setAlarm(Date.now() + 30e3); return false; }
+      if (estQuota(e)) { this.sql.exec(`UPDATE jobs SET erreur=?, maj=? WHERE id=?`, erreurCourte(e), now, j.id); await this.ctx.storage.setAlarm(Date.now() + delaiQuota(e) * 1000); return false; }
+      if (j.essais + 1 >= 3) this.sql.exec(`UPDATE jobs SET resume=?, statut=?, maj=? WHERE id=?`, `[Synthèse indisponible : ${erreurCourte(e)}]`, manquants ? 'incomplet' : 'fait', now, j.id);
+      else { this.sql.exec(`UPDATE jobs SET essais=essais+1, erreur=? WHERE id=?`, erreurCourte(e), j.id); await this.ctx.storage.setAlarm(Date.now() + 30e3); return false; }
     }
     return true;
   }
@@ -273,7 +282,7 @@ ${ms.map((x) => x.texte).join("\n\n")}` }], 8192);
     if (!j) return null;
     const ms = this.tous(`SELECT * FROM morceaux WHERE job=? ORDER BY idx`, id);
     const qs = this.tous(`SELECT * FROM questions WHERE job=? ORDER BY qid`, id);
-    let t = `VIDÉO : ${j.titre || id}${j.auteur ? ` — ${j.auteur}` : ""}\nLIEN : ${j.url}\nSTATUT : ${j.statut}${j.total ? ` (${j.faits}/${j.total} morceaux de 5 min)` : ""}${j.duree ? `\nDURÉE : ${hms(j.duree)}${j.source_duree ? ` (${j.source_duree})` : ""}` : ""}${ms.some((m) => m.texte.startsWith("[MORCEAU NON ANALYSÉ")) ? `\nMORCEAUX NON ANALYSÉS : ${ms.filter((m) => m.texte.startsWith("[MORCEAU NON ANALYSÉ")).map((m) => hms(m.debut)).join(", ")}` : ""}${j.modele ? `\nREGARDÉE PAR : ${j.modele}` : ""}${j.erreur ? `\nDERNIÈRE ERREUR : ${j.erreur}` : ""}\n`;
+    let t = `VIDÉO : ${j.titre || id}${j.auteur ? ` — ${j.auteur}` : ""}\nLIEN : ${j.url}\nSTATUT : ${j.statut}${j.total ? ` (${j.faits}/${j.total} morceaux de 5 min)` : ""}${j.duree ? `\nDURÉE : ${hms(j.duree)}${j.source_duree ? ` (${j.source_duree})` : ""}` : ""}${ms.some((m) => m.texte.startsWith("[MORCEAU NON ANALYSÉ")) ? `\nMORCEAUX NON ANALYSÉS : ${ms.filter((m) => m.texte.startsWith("[MORCEAU NON ANALYSÉ")).map((m) => hms(m.debut)).join(", ")}` : ""}${j.modele ? `\nREGARDÉE PAR : ${j.modele}` : ""}${j.erreur && j.statut !== "fait" ? `\nINFO : ${erreurCourte(j.erreur)}` : ""}\n`;
     if (j.resume) t += `\n==================== SYNTHÈSE ====================\n${j.resume}\n`;
     if (ms.length) t += `\n==================== CHRONOLOGIE COMPLÈTE ====================\n` + ms.map((m) => `----- ${hms(m.debut)} → ${hms(m.fin)} -----\n${m.texte}`).join("\n\n") + "\n";
     if (qs.length) t += `\n==================== QUESTIONS ====================\n` + qs.map((q) => `Q${q.qid} [${q.statut}]${q.debut != null ? ` (${hms(q.debut)}→${q.fin != null ? hms(q.fin) : "fin"})` : ""} : ${q.q}\n${q.reponse || q.erreur || "(en attente)"}`).join("\n\n") + "\n";
@@ -319,7 +328,7 @@ input,button{font:inherit;padding:10px;border-radius:8px;border:1px solid #bbb}b
         if (!id) return json({ erreur: "lien YouTube non reconnu" }, 400);
         const fps = Math.min(5, Math.max(0, parseFloat(s.get("fps") || "0"))) || null;
         const ex = this.un(`SELECT * FROM jobs WHERE id=?`, id);
-        if (!ex || s.get("refaire") === "1" || ex.statut === "erreur") {
+        if (!ex || s.get("refaire") === "1" || ex.statut === "erreur" || ex.statut === "incomplet") {
           let titre = null, auteur = null;
           try {
             const o = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent("https://www.youtube.com/watch?v=" + id)}`);
