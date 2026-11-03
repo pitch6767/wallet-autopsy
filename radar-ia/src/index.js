@@ -3,7 +3,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { SOURCES, MOTS_IA, RUBRIQUES, POIDS_RUBRIQUES } from "./sources.js";
 
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 const MODELE = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const UA = "Mozilla/5.0 (compatible; RadarIA/1.0; +https://radar-ia.pitch67.workers.dev)";
 const FUSEAU = "Europe/Zurich";
@@ -134,6 +134,7 @@ export class Radar extends DurableObject {
         const der = this.lire("derniere_fab_manuelle", 0);
         if (Date.now() - der < 20 * 60e3) return json({ erreur: "Une édition vient d'être fabriquée, réessaie dans 20 minutes." }, 429);
         this.ecrire("derniere_fab_manuelle", Date.now());
+        if (corps.refaire) this.sql.exec(`UPDATE items SET edition=NULL WHERE edition=?`, String(corps.refaire));
         await this.collecter();
         return json(await this.fabriquer(corps.creneau || null));
       }
@@ -224,7 +225,8 @@ export class Radar extends DurableObject {
 
   async ajouter(s, genre, x) {
     if (!x.url || !x.titre) return 0;
-    const id = await hacher(x.url.replace(/[?#].*$/, "").replace(/\/$/, "") + (genre === "version" ? x.titre : ""));
+    const propre = x.url.replace(/#.*$/, "").replace(/([?&])(utm_[^&=]*|ref|source)=[^&]*/g, "$1").replace(/[?&]+$/, "").replace(/\/$/, "");
+    const id = await hacher(propre + (genre === "version" ? x.titre : ""));
     const avant = this.sql.exec(`SELECT 1 FROM items WHERE id=?`, id).toArray().length;
     if (avant) return 0;
     this.sql.exec(`INSERT INTO items(id,source,famille,genre,titre,url,texte,date,extra,ajoute,edition) VALUES(?,?,?,?,?,?,?,?,?,?,NULL)`,
@@ -394,7 +396,7 @@ export class Radar extends DurableObject {
     const consigne = `Tu es le rédacteur de « Radar IA », une veille en français sur l'intelligence artificielle pour un lecteur suisse curieux et pragmatique (modèles, IA locale sur son ordinateur, matériel, agents, création d'apps).
 Pour chaque élément reçu, réponds UNIQUEMENT par un tableau JSON, un objet par élément, dans le même ordre, avec ces clés :
 - "n" : le numéro de l'élément
-- "titre" : titre clair en français, 12 mots maximum, sans majuscules partout
+- "titre" : titre informatif en français correct (majuscule initiale, accents, noms propres en majuscule), 7 à 14 mots, qui dit ce qui se passe — par exemple « Anthropic publie une étude sur la fiabilité des agents de codage »
 - "resume" : 2 à 3 phrases en français, factuelles, rédigées avec tes propres mots ; n'invente rien qui ne figure pas dans le texte
 - "pourquoi" : une phrase : ce que cela change concrètement pour un utilisateur qui teste l'IA chez lui ou crée des apps (vide si rien)
 - "rubrique" : "modeles" (sortie ou mise à jour de modèle, benchmark), "idees" (outils, usages, agents, automatisation, création d'apps, dépôts), "local" (IA sur son ordinateur, GPU, puces, matériel, prix), "recherche" (papiers, robotique, entreprises, régulation, sécurité, société)
