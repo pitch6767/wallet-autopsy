@@ -2,7 +2,7 @@
 // La clé Gemini n'est jamais en clair : elle est chiffrée avec la clé publique du coffre (Durable Object)
 import { DurableObject } from "cloudflare:workers";
 
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 const MORCEAU = 600; // secondes par morceau analysé
 const GEMINI = "https://generativelanguage.googleapis.com/v1beta";
 
