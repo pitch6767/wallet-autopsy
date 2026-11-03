@@ -2185,6 +2185,15 @@ export class Bot {
   slEmettre(P, mk) {
     if (!P || P.stoppee || !mk || !mk.end || mk.end * 1000 < Date.now() + 1000 || (P.cote !== "Up" && P.cote !== "Down")) return;
     const noms = this.slNoms(P), T = (this._slT = this._slT || {}), cy = (T[P.start] = T[P.start] || { Up: 0, Down: 0 });
+    // 03.11.2026 (Pitch : banc d'essai réel des 20 premières de l'onglet 5) : contexte connu À L'ENVOI, joint au signal (f) —
+    // mêmes définitions que l'onglet 5 : avec = une stratégie de la famille carnet a déjà acheté ce côté ; c6 = au moins 6 stratégies sur ce côté ;
+    // monte = prix 0 à 5 c au-dessus du plus bas déjà payé sur ce côté ; retard = plus de 120 s après le premier achat de ce côté.
+    const HH = (this._slH = this._slH || {}), Hc = (HH[P.start] = HH[P.start] || []), tEnv = Date.now();
+    for (const x of noms) Hc.push({ k: x.nom, cote: P.cote, prix: P.prix, t: tEnv });
+    for (const x of Object.keys(HH)) if (+x < P.start - 900) delete HH[x];
+    const memeC = Hc.filter((y) => y.cote === P.cote), pminC = memeC.filter((y) => y.prix > 0).reduce((m, y) => Math.min(m, y.prix), Infinity), hausseC = (P.prix || 0) - (isFinite(pminC) ? pminC : (P.prix || 0));
+    const fCtx = { avec: memeC.some((y) => CARNET_NOMS.has(y.k)), c6: new Set(memeC.map((y) => y.k)).size >= 6, monte: hausseC > 0.001 && hausseC <= 0.05,
+      retard: memeC.length ? (tEnv - Math.min(...memeC.map((y) => y.t))) / 1000 > 120 : false, nc: new Set(memeC.map((y) => y.k)).size };
     const avantCy = cy[P.cote];
     cy[P.cote] += noms.length; for (const x of Object.keys(T)) if (+x < P.start - 900) delete T[x];
     const nums = String(this.env.SIGNAL_NUMS || "").split(",").map((x) => +x.trim()).filter((x) => x > 0);
@@ -2204,9 +2213,13 @@ export class Bot {
       if (v === 1 || v === 2) { const rI = this.slIdees(P, cy[P.cote]); if (!rI.garder) { note({ statut: "écarté par « + idées » (gros trade)", ...rI }); dec(false, 0); continue; } if (v === 1) { mult *= rI.mult; mI = rI.mult; } }
       // 02.11.2026 (Pitch : « remplace la stratégie du bot par la 1114 ») : versions « + sur mesure » (v = 11) branchées en direct, mêmes règles que l'onglet (SUR_MESURE)
       if (v === 11) { const rS = this.slSurMesure(P, cy[P.cote], SUR_MESURE[b.nom + " BTC"] || []); if (!rS.garder) { note({ statut: "écarté par « sur mesure »", ...rS }); dec(false, 0); continue; } mult *= rS.mult; mI = rS.mult; }
+      // 03.11.2026 : n° 3xx « + idées sans règles échouées » = mêmes mises x2 / x3 que « + idées », sans le filtre des gros trades
+      else if (v === 3) { const rI = this.slIdees(P, cy[P.cote]); mult *= rI.mult || 1; mI = rI.mult || 1; }
+      // 03.11.2026 : n° 10xx « + petits minute 35-45 » = petits trades (0,10-0,50) pris seulement entre la minute 35 et 45 de l'heure
+      else if (v === 10) { const mn = new Date(Date.parse(P.heure)).getUTCMinutes(), petit = P.prix != null && P.prix >= 0.10 && P.prix < 0.5; if (petit && !(mn >= 35 && mn < 45)) { note({ statut: "écarté (petit hors minute 35-45)" }); dec(false, 0); continue; } }
       else if (v !== 0 && v !== 1 && v !== 2) { note({ statut: "version pas encore branchée" }); continue; }
       dec(true, mI); if (Math.random() < 0.02) for (const x of Object.keys(SD)) if (+x.split("|")[1] < P.start - 7200) delete SD[x];
-      const corps = { id: `${n}|${P.start}|${d.nom}|${P.strat}|${P.heure}`, num: n, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask, mult, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok, endTs: mk.end * 1000, question: mk.slug, t: Date.now() };
+      const corps = { id: `${n}|${P.start}|${d.nom}|${P.strat}|${P.heure}`, num: n, side: P.cote === "Up" ? "UP" : "DOWN", prix: ask, mult, marketId: mk.marketId || mk.slug, conditionId: mk.conditionId || null, tokenId: tok, endTs: mk.end * 1000, question: mk.slug, t: Date.now(), f: fCtx };
       if (this.env.SIGNAL_URL) fetch(this.env.SIGNAL_URL, { method: "POST", headers: { "content-type": "application/json", "x-signal-token": this.env.SIGNAL_TOKEN || "" }, body: JSON.stringify(corps) })
         .then((r) => r.json()).then((j) => note({ statut: "envoyé", mult, reponse: j && j.statut })).catch((err) => note({ statut: "envoi raté : " + err.message, mult }));
       else note({ statut: "diffusé", mult, clients: this.slDiffuser(corps) });
@@ -4180,6 +4193,7 @@ const ZERO4_DEPUIS = "2026-11-01T23:15:00Z";     // 02.11.2026 00:15 heure de Pa
 const ZERO4_DEPUIS_AVANT = "2026-10-31T18:50:00Z";     // 31.10.2026 19:50 heure de Paris (Pitch : « max 250 $ par cycle, onglet 5 à 0 ») ; avant : 31.10 17:30 et 26.10 12:00 (archivés)
 const ONGLET5_MAX_CYCLE = 250;   // 31.10.2026 19:42 (Pitch) : dans l'onglet 5, chaque ligne mise au plus 250 $ par cycle (au-delà, le trade est réduit puis ignoré)
 const CARNET_K = ["corrige : desaccord 20 + carnet BTC", "corrige : desaccord 20 + carnet ecart serre BTC", "corrige : V2-F ecart qui grandit + carnet BTC", "corrige : V2-F ecart qui grandit + carnet ecart serre BTC", "corrige : V2-F + pas les deux baissent + carnet BTC", "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC"];
+const CARNET_NOMS = new Set(CARNET_K.map((k) => k.replace(/ BTC$/, "")));
 /** [suffixe, facteur de mise] des 4 variantes « famille carnet » : plus sûre, plus rentable, et les mêmes + consensus 6. */
 /** [suffixe, facteur] des 2 variantes « prix monté » : x2 si le prix a monté de 0-5 c ; la même en ignorant les achats en retard de plus de 120 s. */
 function variantesPrix(monte, retard) { return [[" + x2 prix monté 5 c", monte ? 2 : 1], [" + x2 prix monté 5 c + pas de retard", retard ? 0 : monte ? 2 : 1]]; }
