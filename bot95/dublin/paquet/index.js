@@ -24010,7 +24010,23 @@ var Bot = class {
         (Q[k] = Q[k] || []).push(...v);
       }
       for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0);
-      const corps = await xlClasseur(Q, pre === "xl3:" ? ZERO2_DEPUIS : pre === "xl4:" ? ZERO3_DEPUIS : ZERO4_DEPUIS);
+      let depuisX = pre === "xl3:" ? ZERO2_DEPUIS : pre === "xl4:" ? ZERO3_DEPUIS : ZERO4_DEPUIS;
+      if (pre === "xl5:") {
+        for (const k of Object.keys(Q)) {
+          let premier = Q[k].length ? Q[k][0][0] : "9999";
+          for (const src of ["xl3:", "xl:"]) {
+            const avant = [];
+            for (const v of (await this.state.storage.list({ prefix: src + k + "|" })).values()) for (const l of v) if (l && l[0] && l[0] < premier) avant.push(l);
+            if (avant.length) {
+              avant.sort((a2, b2) => a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0);
+              Q[k] = [...avant, ...Q[k]];
+              premier = avant[0][0];
+            }
+          }
+        }
+        for (const L of Object.values(Q)) if (L.length && L[0][0] < depuisX) depuisX = L[0][0];
+      }
+      const corps = await xlClasseur(Q, depuisX);
       return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_onglet' + (pre === "xl3:" ? "3" : pre === "xl4:" ? "4" : "5") + "_" + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:]/g, "").replace("T", "_") + '.xlsx"', "cache-control": "no-store" } });
     }
     if (u.pathname === "/api/xl_compte") {
