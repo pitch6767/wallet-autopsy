@@ -1,15 +1,15 @@
 name: Excel onglet 5 seul (lecture seule)
 on:
   workflow_dispatch:
-permissions:
-  contents: write
 jobs:
   x:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
-      - uses: actions/checkout@v4
       - run: |
-          curl -sS -m 300 https://bot95.pitch67.workers.dev/excel5 -o bot95/xl_excel5.xlsx; ls -l bot95/xl_excel5.xlsx
-          git config user.name sonde; git config user.email bot@users.noreply.github.com
-          git add bot95/xl_excel5.xlsx; git commit -q -m "Excel onglet 5 [skip ci]" || true
-          for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
+          mkdir -p out; curl -sS -m 300 https://bot95.pitch67.workers.dev/excel5 -o out/xl_excel5.xlsx; ls -l out/xl_excel5.xlsx; head -c 4 out/xl_excel5.xlsx | od -c | head -1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: excel5
+          path: out/xl_excel5.xlsx
+          retention-days: 1
