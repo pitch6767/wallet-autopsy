@@ -23168,6 +23168,8 @@ var Bot = class {
           this.N.idfait = q.idfait || {};
           this.N.consPris = q.consPris || {};
           this.N.slDec = q.slDec || {};
+          this.N.mmDernier = q.mmDernier || 0;
+          if (q.dbg5) this.N.dbg5 = q.dbg5;
         }
         if (await this.state.storage.get("zero:depuis") !== ZERO_DEPUIS) {
           await this.state.storage.put("zero:archive:" + (await this.state.storage.get("zero:depuis") || "2026-10-14T08:45:00Z"), this.N.zero);
@@ -24636,6 +24638,14 @@ var Bot = class {
     if (!this.SG && (!this._b5T || Date.now() - this._b5T > 6e4)) {
       this._b5T = Date.now();
       this.botStratsMaj().catch((err) => this.erreur("strategies du bot", err));
+    }
+    if (!this.SG && (!this._idT || Date.now() - this._idT > 6e4)) {
+      this._idT = Date.now();
+      try {
+        this.idTraiter();
+      } catch (err) {
+        this.erreur("id\xE9es (minute)", err);
+      }
     }
     this.ouvrirFlux();
     await this.state.storage.setAlarm(Date.now() + 1e3);
@@ -26107,7 +26117,7 @@ var Bot = class {
       if (N.zero3) zSauver(this.state.storage, "nv:zero3", N.zero3).catch((err) => this.erreur("sauvegarde zero3", err));
       if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err));
       if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err));
-      if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {}, slDec: N.slDec || {} });
+      if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {}, slDec: N.slDec || {}, mmDernier: N.mmDernier || 0, dbg5: N.dbg5 || null });
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
       N.ordres = [...regles.slice(-250), ...nonRegles];
       put("nv:ordres", N.ordres);
@@ -26945,11 +26955,18 @@ var Bot = class {
   idTraiter() {
     if (this._idEnCours || this.SG) return;
     const N = this.N, mures = Object.keys(N.idq || {}).filter((st) => +st + 600 < now());
+    {
+      const p3 = Math.floor(Date.parse(PF3_DEPUIS) / 1e3), fin = Math.floor((now() - 600) / 300) * 300;
+      const d = Math.max(+N.mmDernier || 0, p3 - 300);
+      for (let c = d + 300; c <= fin; c += 300) if (!mures.includes(String(c))) mures.push(String(c));
+      if (fin > d) N.mmDernier = fin;
+      mures.sort((x, y) => +x - +y);
+    }
     if (!mures.length) return;
     this._idEnCours = true;
     (async () => {
       for (const st of mures) {
-        const L = N.idq[st];
+        const L = N.idq[st] || [];
         delete N.idq[st];
         const s0 = +st;
         const R = {};
@@ -27348,7 +27365,15 @@ var Bot = class {
         try {
           if (Date.parse(new Date(s0 * 1e3).toISOString()) >= Date.parse(PF3_DEPUIS)) {
             const g = tous.find((y) => y.gagne != null && y.cote);
-            const upGagne = g ? g.cote === "Up" === !!g.gagne : null;
+            let upGagne = g ? g.cote === "Up" === !!g.gagne : null;
+            if (upGagne == null) {
+              const k = val("prix_a_battre", s0 + 150), v = [];
+              for (let u = s0 + 240; u <= s0 + 299; u++) {
+                const c = val("chainlink", u);
+                if (c != null) v.push(c);
+              }
+              if (k != null && v.length >= 40) upGagne = v.reduce((x2, y2) => x2 + y2, 0) / v.length > k;
+            }
             const DBG = N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] };
             const dbg = { s0, upGagne, nTous: tous.length, sec: 0, pu: 0, bU: 0, aU: 0 };
             DBG.teneur.push(dbg);
