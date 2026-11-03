@@ -1154,7 +1154,7 @@ export class Bot {
     return 0;
   }
   /** 31.10.2026 17:46 (Pitch : « onglet 5 = stratégies de l'onglet 6 plus les nouvelles, rien d'autre ») */
-  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130) || n === 2140 || n === 2141 || n === 2142 || n === 3303 || n === 3304; }
+  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130) || n === 2140 || n === 2141 || n === 2142 || n === 3304; }
   nums5() { return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS; }
   /** Facteur de mise de l'onglet 6 pour le n° et l'heure du trade (0 = pas compté : stratégie pas encore dans le bot). */
   f5(n, heure) {
@@ -2596,7 +2596,8 @@ export class Bot {
                 pris[y.cote].push({ s: y.s, prix: y.prix }); this._zx = { cote: y.cote, prix: y.prix }; zCompte(N.zero4, nom, y.heure, y.net, y.sans, y.mise, st); } }
             // n° 3302 (maker) arrêté le 03.11.2026 07:41 (Pitch) : 9 gagnés sur 35. Remplacé par n° 3303 « canari » (règle « même sens » du bot sur les achats faits)
             { const DBG = (N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] }); for (const y of PF2) { DBG.canari.push({ s: y.s, h: y.heure, prix: y.prix, mise: +(y.mise || 0).toFixed(2), ca: y.ca, clAge: y.clAge }); } DBG.canari = DBG.canari.slice(-20); }
-            { const pris = { Up: [], Down: [] }, nom = "CANARI 1114 + 116 BTC";
+            // 03.11.2026 15:21 (Pitch : « oui ») : n° 3303 canari ARRÊTÉ — alerte fiable (9 perdants sur 13) mais 19 signaux manqués sur 21 à cause des 5 s d'attente
+            if (false) { const pris = { Up: [], Down: [] }, nom = "CANARI 1114 + 116 BTC";
               for (const y of PF2) { const k = y.ca; if (!k || !(k.parts > 0)) continue;
                 const autres = pris[y.cote].filter((z) => z.s !== y.s).map((z) => z.prix); if (autres.length && !(k.prix <= 0.5 * Math.min(...autres))) continue;
                 pris[y.cote].push({ s: y.s, prix: k.prix }); this._zx = { cote: y.cote, prix: k.prix }; zCompte(N.zero4, nom, y.heure, k.net, false, k.mise, st); }
