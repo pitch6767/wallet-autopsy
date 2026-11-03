@@ -1,0 +1,179 @@
+VIDÉO : But what is a neural network? | Deep learning chapter 1 — 3Blue1Brown
+LIEN : https://www.youtube.com/watch?v=aircAruvnKk
+STATUT : erreur (1/2 morceaux de 10 min)
+DURÉE : 18:40
+REGARDÉE PAR : gemini-3.5-flash
+DERNIÈRE ERREUR : Error: réponse vide (RECITATION)
+
+==================== CHRONOLOGIE COMPLÈTE ====================
+----- 00:00 → 10:00 -----
+Voici la description exhaustive et chronologique des 10 premières minutes de la vidéo :
+
+[00:00]
+- ÉCRAN : Animation du logo 3Blue1Brown sur fond noir. Un cercle composé de petits triangles bleus et marron se forme au centre, puis le texte apparaît en dessous.
+- TEXTE À L'ÉCRAN : 3Blue1Brown
+- PAROLES : (Musique d'introduction)
+
+[00:04]
+- ÉCRAN : Fond noir. À gauche, un personnage représentant le symbole mathématique Pi regarde une image carrée contenant un chiffre "3" écrit à la main. Le carré montre un quadrillage de 28 par 28 pixels.
+- TEXTE À L'ÉCRAN : 28px, 28px
+- PAROLES : Grant Sanderson : "This is a three. It's sloppily written and rendered at an extremely low resolution of 28 by 28 pixels,..."
+
+[00:11]
+- ÉCRAN : Une bulle de pensée apparaît au-dessus du personnage Pi. L'image du "3" pixellisé est convertie en un chiffre "3" typographique, puis une illustration de cerveau apparaît avec le texte "How?!?".
+- TEXTE À L'ÉCRAN : 3 -> 3, How?!?
+- PAROLES : Grant Sanderson : "...but your brain has no trouble recognizing it as a three. And I want you to take a moment to appreciate how crazy it is that brains can do this so effortlessly."
+
+[00:19]
+- ÉCRAN : Trois exemples différents du chiffre "3" manuscrit apparaissent dans des cadres à droite. Le personnage Pi regarde chaque échantillon.
+- TEXTE À L'ÉCRAN : 3
+- PAROLES : Grant Sanderson : "I mean, this, this, and this are also recognizable as threes, even though the specific values of each pixel is very different from one image to the next."
+
+[00:28]
+- ÉCRAN : Des faisceaux de points lumineux simulent la transmission de l'information visuelle depuis les pixels des chiffres jusqu'aux yeux du personnage Pi.
+- TEXTE À L'ÉCRAN : Aucun texte supplémentaire.
+- PAROLES : Grant Sanderson : "The particular light-sensitive cells in your eye that are firing when you see this three are very different from the ones firing when you see this three."
+
+[00:37]
+- ÉCRAN : La bulle de pensée affiche successivement "3 = 3", puis "3 ≠ 8", "3 ≠ 7", "3 ≠ 6", "3 ≠ 5".
+- TEXTE À L'ÉCRAN : 3 = 3, 3 ≠ 8, 3 ≠ 7, 3 ≠ 6, 3 ≠ 5
+- PAROLES : Grant Sanderson : "But something in that crazy smart visual cortex of yours resolves these as representing the same idea, while at the same time recognizing other images as their own distinct ideas."
+
+[00:49]
+- ÉCRAN : L'image du "3" est agrandie pour révéler une matrice de nombres décimaux (valeurs de gris de chaque pixel). Une flèche pointe vers une liste verticale des chiffres de 0 à 9, testant différentes prédictions.
+- TEXTE À L'ÉCRAN : 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 (ainsi que les valeurs décimales des pixels : 0.0, 1.0, 0.8...)
+- PAROLES : Grant Sanderson : "But if I told you, 'Hey, sit down and write for me a program that takes in a grid of 28 by 28 pixels like this and outputs a single number between 0 and 10, telling you what it thinks the digit is,' well, the task goes from comically trivial to dauntingly difficult."
+
+[01:07]
+- ÉCRAN : Des personnages Pi observent un schéma de réseau de neurones en cours de dessin. Les termes "Machine learning" puis "Neural network" s'affichent à droite.
+- TEXTE À L'ÉCRAN : Machine learning, Neural network
+- PAROLES : Grant Sanderson : "Unless you've been living under a rock, I think I hardly need to motivate the relevance and importance of machine learning and neural networks to the present and to the future."
+
+[01:15]
+- ÉCRAN : Une équation mathématique décrivant la propagation dans une couche s'affiche au-dessus du réseau. Un personnage Pi demande "Why the layers?". Le mot "learning" s'illumine.
+- TEXTE À L'ÉCRAN : a_{l+1} = \sigma(W_l a_l + b_l), "Why the layers?", learning, Machine learning, Neural network
+- PAROLES : Grant Sanderson : "But what I want to do here is show you what a neural network actually is, assuming no background, and to help visualize what it's doing, not as a buzzword, but as a piece of math. My hope is just that you come away feeling like this structure itself is motivated, and to feel like you know what it means when you read or you hear about a neural network, quote unquote, 'learning'."
+
+[01:35]
+- ÉCRAN : Deux boutons/icônes apparaissent : "Structure" et "learning". Un réseau de neurones complet est représenté avec 784 neurones en entrée, deux couches cachées et 10 neurones de sortie (chiffres 0 à 9). Une image du chiffre "7" traverse le réseau.
+- TEXTE À L'ÉCRAN : Structure, learning, 784, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+- PAROLES : Grant Sanderson : "This video is just going to be devoted to the structure component of that, and the following one is going to tackle learning. What we're going to do is put together a neural network that can learn to recognize handwritten digits."
+
+[01:49]
+- ÉCRAN : L'image d'un "2" manuscrit puis d'un "1" entre dans le réseau. Les activations se propagent à travers les couches jusqu'à éclairer le neurone de sortie correspondant.
+- TEXTE À L'ÉCRAN : 784, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+- PAROLES : Grant Sanderson : "This is a somewhat classic example for introducing the topic, and I'm happy to stick with the status quo here, because at the end of the two videos, I want to point you to a couple good resources where you can learn more, and where you can download the code that does this and play with it on your own computer."
+
+[02:05]
+- ÉCRAN : Une liste de variantes de réseaux de neurones apparaît sur la droite (CNN, LSTM). Puis l'architecture actuelle est étiquetée "Plain vanilla (aka 'multilayer perceptron')".
+- TEXTE À L'ÉCRAN : Convolutional neural network -> Good for image recognition, Long short-term memory network -> Good for speech recognition, Maybe future videos?, Plain vanilla (aka "multilayer perceptron"), 784
+- PAROLES : Grant Sanderson : "There are many, many variants of neural networks, and in recent years, there's been sort of a boom in research towards these variants. But in these two introductory videos, you and I are just going to look at the simplest plain vanilla form with no added frills."
+
+[02:20]
+- ÉCRAN : Diverses images de chiffres ('1', '4', '9') sont présentées au réseau, illustrant le fonctionnement d'un perceptron multicouche classique.
+- TEXTE À L'ÉCRAN : Plain vanilla (aka "multilayer perceptron"), 784, 0-9
+- PAROLES : Grant Sanderson : "This is kind of a necessary prerequisite for understanding any of the more powerful modern variants, and trust me, it still has plenty of complexity for us to wrap our minds around. But even in this simplest form, it can learn to recognize handwritten digits, which is a pretty cool thing for a computer to be able to do."
+
+[02:37]
+- ÉCRAN : Le personnage Pi de droite hausse les épaules. Une bulle affiche le jeu de mots "More A than I" (Plus d'Artifice que d'Intelligence).
+- TEXTE À L'ÉCRAN : More A than I
+- PAROLES : Grant Sanderson : "And at the same time, you'll see how it does fall short of a couple hopes that we might have for it."
+
+[02:43]
+- ÉCRAN : Titre "Neural network". Deux questions apparaissent : "What are the neurons?" et "How are they connected?". Un cercle représentant un neurone affiche un nombre évoluant entre 0.0 et 1.0.
+- TEXTE À L'ÉCRAN : Neural network, What are the neurons?, How are they connected?, Neuron -> Thing that holds a number, 0.2, 0.8, 0.4, 0.1
+- PAROLES : Grant Sanderson : "As the name suggests, neural networks are inspired by the brain. But let's break that down: what are the neurons, and in what sense are they linked together? Right now, when I say neuron, all I want you to think about is a thing that holds a number—specifically, a number between 0 and 1. It's really not more than that."
+
+[03:03]
+- ÉCRAN : L'image d'un chiffre "4" manuscrit est divisée en une grille de 28x28 pixels, soit 784 pixels. Un neurone individuel est mis en avant avec sa valeur numérique nommée "Activation" (ex: 0.58, 1.00).
+- TEXTE À L'ÉCRAN : 28 x 28 = 784, 0.58, "Activation", 1.00
+- PAROLES : Grant Sanderson : "For example, the network starts with a bunch of neurons corresponding to each of the 28 by 28 pixels of the input image, which is 784 neurons in total. Each one of these holds a number that represents the grayscale value of the corresponding pixel, ranging from 0 for black pixels up to 1 for white pixels. This number inside the neuron is called its activation, and the image you might have in mind here is that each neuron is lit up when its activation is a high number."
+
+[03:36]
+- ÉCRAN : Les 784 neurones s'alignent verticalement pour former la couche d'entrée. Le réseau réapparaît avec ses deux couches cachées et sa couche de sortie à 10 neurones (0 à 9).
+- TEXTE À L'ÉCRAN : 784, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+- PAROLES : Grant Sanderson : "So all of these 784 neurons make up the first layer of our network. Now, jumping over to the last layer, this has 10 neurons, each representing one of the digits."
+
+[03:52]
+- ÉCRAN : Focus sur la couche de sortie. Le neurone 9 s'agrandit pour montrer son niveau d'activation (ex: 0.97). Les couches centrales sont encadrées et désignées sous le nom de "Hidden layers" avec un grand point d'interrogation.
+- TEXTE À L'ÉCRAN : 784, "Hidden layers", ?, 0-9, 0.97
+- PAROLES : Grant Sanderson : "The activation in these neurons—again, some number between 0 and 1—represents how much the system thinks that a given image corresponds with a given digit. There's also a couple layers in between, called the hidden layers, which, for the time being, should just be a giant question mark for how on earth this process of recognizing digits is going to be handled."
+
+[04:14]
+- ÉCRAN : Les personnages Pi débattent de la structure. Encadrement des deux couches cachées avec le texte "2 hidden layers", "16 neurons each". Des bulles affichent "Why 2 layers?" et "Why 16?".
+- TEXTE À L'ÉCRAN : 784, 2 hidden layers, 16 neurons each, Why 2 layers?, Why 16?
+- PAROLES : Grant Sanderson : "In this network, I chose two hidden layers, each one with 16 neurons, and admittedly, that's kind of an arbitrary choice. To be honest, I chose two layers based on how I want to motivate the structure in just a moment, and 16, well, that was just a nice number to fit on the screen. In practice, there is a lot of room for experiment with the specific structure here."
+
+[04:33]
+- ÉCRAN : Les connexions s'illuminent en jaune couche par couche pour montrer la propagation du signal.
+- TEXTE À L'ÉCRAN : 784, "Hidden layers", ?, 0-9
+- PAROLES : Grant Sanderson : "The way the network operates, activations in one layer determine the activations of the next layer. And of course, the heart of the network as an information processing mechanism comes down to exactly how those activations from one layer bring about activations in the next layer. It's meant to be loosely analogous to how in biological networks of neurons, some groups of neurons firing cause certain others to fire."
+
+[04:58]
+- ÉCRAN : Démonstration du réseau sur plusieurs chiffres manuscrits ('2', '9', '1', '0', '4', '6'). À chaque image, une cascade d'activations se produit à travers le réseau jusqu'à faire briller le neurone de sortie désigné.
+- TEXTE À L'ÉCRAN : 784, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+- PAROLES : Grant Sanderson : "Now, the network I'm showing here has already been trained to recognize digits, and let me show you what I mean by that. It means if you feed in an image, lighting up all 784 neurons of the input layer according to the brightness of each pixel in the image, that pattern of activations causes some very specific pattern in the next layer, which causes some pattern in the one after it, which finally gives some pattern in the output layer. And the brightest neuron of that output layer is the network's choice, so to speak, for what digit this image represents."
+
+[05:32]
+- ÉCRAN : Un personnage Pi s'interroge avec les bulles : "How does one layer influence the next?", "How does training work?". Titre mis en avant : "Why the layers?".
+- TEXTE À L'ÉCRAN : How does one layer influence the next?, How does training work?, Why the layers?, 784, 0-9
+- PAROLES : Grant Sanderson : "And before jumping into the math for how one layer influences the next, or how training works, let's just talk about why it's even reasonable to expect a layered structure like this to behave intelligently. What are we expecting here? What is the best hope for what those middle layers might be doing?"
+
+[05:49]
+- ÉCRAN : Schéma de décomposition visuelle : '9' est décomposé en une boucle supérieure et un trait vertical ; '8' en deux boucles ; '4' en trois segments de droite.
+- TEXTE À L'ÉCRAN : 9 = [boucle] + [ligne], 8 = [boucle] + [boucle], 4 = [ligne] + [ligne] + [ligne]
+- PAROLES : Grant Sanderson : "Well, when you or I recognize digits, we piece together various components. A nine has a loop up top and a line on the right; an eight also has a loop up top, but it's paired with another loop down low; a four basically breaks down into three specific lines, and things like that."
+
+[06:12]
+- ÉCRAN : Les sous-composants visuels sont associés aux neurones de l'avant-dernière couche. Une flèche désigne un neurone étiqueté "Upper loop neuron... maybe...".
+- TEXTE À L'ÉCRAN : Upper loop neuron... maybe..., 784, 0-9
+- PAROLES : Grant Sanderson : "Now, in a perfect world, we might hope that each neuron in the second to last layer corresponds with one of these subcomponents—that anytime you feed in an image with, say, a loop up top, like a nine or an eight, there's some specific neuron whose activation is going to be close to 1. And I don't mean this specific loop of pixels; the hope would be that any generally loopy pattern towards the top sets off this neuron."
+
+[06:41]
+- ÉCRAN : Un personnage Pi objecte dans une bulle : "Okay, but recognizing loops is just as hard!".
+- TEXTE À L'ÉCRAN : Okay, but recognizing loops is just as hard!
+- PAROLES : Grant Sanderson : "That way, going from the third layer to the last one just requires learning which combination of subcomponents corresponds to which digits. Of course, that just kicks the problem down the road, because how would you recognize these subcomponents or even learn what the right subcomponents should be? And I still haven't even talked about how one layer influences the next, but run with me on this one for a moment."
+
+[06:53]
+- ÉCRAN : Décomposition d'une boucle en petits traits/bords élémentaires colorés. Un trait vertical est également décomposé en sous-segments.
+- TEXTE À L'ÉCRAN : [Boucle] = [bord1] + [bord2] + [bord3] + [bord4] + [bord5], [Ligne] = [bord1] + [bord2] + [bord3]
+- PAROLES : Grant Sanderson : "Recognizing a loop can also break down into subproblems. One reasonable way to do this would be to first recognize the various little edges that make it up. Similarly, a long line, like the kind you might see in the digits 1 or 4 or 7, well, that's really just a long edge, or maybe you think of it as a certain pattern of several smaller edges."
+
+[07:16]
+- ÉCRAN : La première couche cachée est nommée '"Little edge" layer?'. Le trajet de détection d'un '9' est animé : petits bords -> formes complexes (boucle + barre) -> sortie '9'.
+- TEXTE À L'ÉCRAN : "Little edge" layer?, Does the network actually do this?, We'll get back to this, 784, 0-9
+- PAROLES : Grant Sanderson : "So, maybe our hope is that each neuron in the second layer of the network corresponds with the various relevant little edges. Maybe when an image like this one comes in, it lights up all of the neurons associated with around 8 to 10 specific little edges, which in turn lights up the neurons associated with the upper loop and a long vertical line, and those light up the neuron associated with a nine. Whether or not this is what our final network actually does is another question, one that I'll come back to once we see how to train the network. But this is a hope that we might have, a sort of goal with the layered structure like this."
+
+[07:49]
+- ÉCRAN : Une photographie de lion apparaît à côté de sa version traitée par détection de contours. Ensuite, un diagramme montre la hiérarchie d'abstraction dans la reconnaissance vocale : Raw audio -> recognition -> re-cog-ni-tion -> recognition.
+- TEXTE À L'ÉCRAN : Raw audio -> recognition -> re-cog-ni-tion -> recognition, Many recognition tasks break down like this
+- PAROLES : Grant Sanderson : "Moreover, you can imagine how being able to detect edges and patterns like this would be really useful for other image recognition tasks. And even beyond image recognition, there are all sorts of intelligent things you might want to do that break down into layers of abstraction. Parsing speech, for example, involves taking raw audio and picking out distinct sounds, which combine to make certain syllables, which combine to form words, which combine to make up phrases and more abstract thoughts, etc."
+
+[08:21]
+- ÉCRAN : Le schéma du réseau réapparaît. Les connexions entre la 1re et la 2e couche sont surlignées. Une question s'affiche : "What are these connections actually doing?".
+- TEXTE À L'ÉCRAN : What are these connections actually doing?, 784, 0-9
+- PAROLES : Grant Sanderson : "But getting back to how any of this actually works, picture yourself right now designing how exactly the activations in one layer might determine the activations in the next. The goal is to have some mechanism that could conceivably combine pixels into edges, or edges into patterns, or patterns into digits."
+
+[08:40]
+- ÉCRAN : Focus sur un neurone spécifique de la 2e couche relié à tous les neurones de la couche d'entrée. Une grille de 28x28 montre un rectangle blanc représentant une zone de détection de bord. Une liste de paramètres p_1, p_2... défile.
+- TEXTE À L'ÉCRAN : What parameters should exist?, p_1: 0.00, p_2: 0.00, p_3: 0.00 ..., 784
+- PAROLES : Grant Sanderson : "And to zoom in on one very specific example, let's say the hope is for one particular neuron in the second layer to pick up on whether or not the image has an edge in this region here. The question at hand is: what parameters should the network have? What dials and knobs should you be able to tweak so that it's expressive enough to potentially capture this pattern, or any other pixel pattern, or the pattern that several edges can make a loop, and other such things?"
+
+[09:08]
+- ÉCRAN : Chaque connexion se voit attribuer un "Weight" (poids, ex: w_1: 2.07). La formule de la somme pondérée w_1 a_1 + w_2 a_2 + ... + w_n a_n s'affiche. Une grille de pixels verts (poids positifs) et rouges (poids négatifs) représente visuellement la grille de poids.
+- TEXTE À L'ÉCRAN : Weights, w_1: 2.07, w_2: 2.31, w_3: 3.64, w_4: 1.87, w_5: -1.51, w_6: -0.43, w_7: 2.01, w_8: 1.07 ..., w_1 a_1 + w_2 a_2 + w_3 a_3 + w_4 a_4 + ... + w_n a_n
+- PAROLES : Grant Sanderson : "Well, what we'll do is assign a weight to each one of the connections between our neuron and the neurons from the first layer. These weights are just numbers. Then, take all of those activations from the first layer and compute their weighted sum according to these weights. I find it helpful to think of these weights as being organized into a little grid of their own, and I'm going to use green pixels to indicate positive weights and red pixels to indicate negative weights, where the brightness of that pixel is some loose depiction of the weight's value."
+
+[09:42]
+- ÉCRAN : La grille de poids montre une zone verte ciblée au centre (représentant le bord horizontal recherché), tout le reste étant noir/zéro. L'image du chiffre "7" est superposée pour montrer comment les pixels du chiffre s'alignent avec les poids positifs.
+- TEXTE À L'ÉCRAN : w_1 a_1 + w_2 a_2 + w_3 a_3 + w_4 a_4 + ... + w_n a_n, 784
+- PAROLES : Grant Sanderson : "Now, if we made the weights associated with almost all of the pixels zero, except for some positive weights in this region that we care about, then taking the weighted sum of all the pixel values really just amounts to adding up the values of the pixel just in the region that we care about."
+
+==================== QUESTIONS ====================
+Q1 [fait] : Que montre exactement l ecran a 03:00 ? Recopie tout texte, chiffre ou formule affiche.
+À **03:00**, l'écran montre les éléments suivants :
+
+* **À gauche** : Une image d'un chiffre manuscrit **`9`** encadré dans un carré bleu.
+* **Au centre** : Un cercle représentant un neurone contenant le chiffre **`0.4`** (qui passe à `0.1` à 03:03).
+* **Texte affiché sous le neurone** : 
+  `Neuron -> Thing that holds a number`
