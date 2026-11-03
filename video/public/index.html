@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vidéo</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icone.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{--fond:#f6f6f4;--carte:#fff;--txt:#1b1b1b;--doux:#666;--bord:#ddd;--acc:#c4302b}
+@media(prefers-color-scheme:dark){:root{--fond:#151515;--carte:#1f1f1f;--txt:#eee;--doux:#aaa;--bord:#333}}
+body{margin:0;background:var(--fond);color:var(--txt);font:16px/1.5 -apple-system,system-ui,sans-serif}
+main{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:24px;margin:8px 0 4px}p.s{color:var(--doux);margin:0 0 16px}
+form{background:var(--carte);border:1px solid var(--bord);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+input,select,button{font:inherit;padding:12px;border-radius:10px;border:1px solid var(--bord);background:var(--fond);color:var(--txt)}
+button{background:var(--acc);color:#fff;border:0;font-weight:600}
+ul{list-style:none;padding:0;margin:16px 0}li{background:var(--carte);border:1px solid var(--bord);border-radius:12px;margin-bottom:8px}
+li a{display:block;padding:12px;color:var(--txt);text-decoration:none}li small{color:var(--doux)}
+footer{color:var(--doux);font-size:12px;margin-top:20px}
+</style>
+</head>
+<body data-app="video-app">
+<main>
+<h1>🎬 Vidéo</h1>
+<p class="s">Colle un lien YouTube : Gemini regarde toute la vidéo (images et son) et écrit le compte rendu complet, lisible par Claude.</p>
+<form action="/api/analyser" method="get">
+  <input type="hidden" name="page" value="1">
+  <input name="url" required inputmode="url" placeholder="https://youtu.be/…">
+  <select name="fps">
+    <option value="">Normal — 1 image par seconde</option>
+    <option value="2">Détaillé — 2 images par seconde</option>
+    <option value="5">Très détaillé — 5 images par seconde (vidéos rapides, écrans de code)</option>
+  </select>
+  <button>Regarder la vidéo</button>
+</form>
+<ul id="liste"></ul>
+<footer>Version <span id="v">…</span></footer>
+</main>
+<script>
+const st={attente:"⏳ en attente","en cours":"⏳ en cours",fait:"✅ prête",erreur:"❌ erreur"};
+function hms(s){if(!s)return"";s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60,p=n=>String(n).padStart(2,"0");return h?`${h}:${p(m)}:${p(x)}`:`${p(m)}:${p(x)}`}
+fetch("/api/liste").then(r=>r.json()).then(l=>{
+  document.getElementById("liste").innerHTML=l.map(x=>`<li><a href="/r/${x.id}"><b>${(x.titre||x.id).replace(/</g,"&lt;")}</b><br><small>${st[x.statut]||x.statut}${x.total?` · ${x.faits}/${x.total}`:""}${x.duree?` · ${hms(x.duree)}`:""}${x.auteur?` · ${x.auteur.replace(/</g,"&lt;")}`:""}</small></a></li>`).join("");
+}).catch(()=>{});
+fetch("/api/etat").then(r=>r.json()).then(e=>{
+  document.getElementById("v").textContent=e.version;
+  try{const k="video-v";if(sessionStorage.getItem(k)&&sessionStorage.getItem(k)!==e.version){sessionStorage.setItem(k,e.version);location.reload()}else sessionStorage.setItem(k,e.version)}catch(_){}
+}).catch(()=>{});
+</script>
+</body>
+</html>
