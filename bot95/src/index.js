@@ -835,7 +835,8 @@ export class Bot {
     }
     if (u.pathname === "/excel3" || u.pathname === "/excel4" || u.pathname === "/excel5") {   // 26.10.2026 : trades des stratégies et de leurs versions, onglet 3 (idées) ou 4 (consensus et autres)
       const pre = u.pathname === "/excel3" ? "xl3:" : u.pathname === "/excel4" ? "xl4:" : "xl5:", Q = {};
-      for (const [kk, v] of await this.state.storage.list({ prefix: pre })) { const k = kk.slice(pre.length, kk.lastIndexOf("|")); if (k.includes("BY1")) continue; if (pre === "xl5:" && !this.onglet5Garde(k)) continue; (Q[k] = Q[k] || []).push(...v); }   // 29.10.2026 : BY1 plus dans les Excel
+      const R5 = new Set(pre === "xl5:" ? (this._z5r || (await this.state.storage.get("z5retires")) || []) : []);   // 03.11.2026 : lignes retirées de l'onglet 5
+      for (const [kk, v] of await this.state.storage.list({ prefix: pre })) { const k = kk.slice(pre.length, kk.lastIndexOf("|")); if (k.includes("BY1")) continue; if (pre === "xl5:" && (!this.onglet5Garde(k) || R5.has(k))) continue; (Q[k] = Q[k] || []).push(...v); }   // 29.10.2026 : BY1 plus dans les Excel
       for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => (a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0));
       // 03.11.2026 20:09 (Pitch : « rajoute des jours ») : Excel de l'onglet 5 complété avec l'historique plus ancien de la même stratégie
       // (onglet 3 « + idées » depuis le 24.10, puis onglet 2 depuis le 19.10), seulement avant son premier trade de l'onglet 5
@@ -871,7 +872,12 @@ export class Bot {
       // 31.10.2026 20:04 (Pitch) : toutes les lignes prévues apparaissent dès la remise à 0, même sans trade réglé
       for (const c of CATALOGUE) { const nom = c.nom + " BTC"; if (!Z[nom] && this.onglet5Garde(nom)) Z[nom] = { n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {}, sansDonnees: 0 }; }   // 31.10.2026 17:46 (Pitch) : cases de l'onglet 6 + nouveaux fantômes seulement
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: undefined, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
-      return json({ depuis: ZERO4_DEPUIS, debug: this.N.dbg5 || null, strats: L, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => (x.nom.includes(" + ") )).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length }); }
+      // 03.11.2026 23:40 (Pitch : « onglet 5 enlève les stratégies depuis 84 compris » → « retirer pour de bon ») : les lignes classées 84e et
+      // au-delà (classement par résultat total) sont relevées UNE fois, sauvegardées, puis retirées définitivement de l'onglet 5 et de son Excel
+      if (!this._z5r) this._z5r = (await this.state.storage.get("z5retires")) || null;
+      if (!this._z5r) { this._z5r = L.slice(83).map((x) => x.nom); await this.state.storage.put("z5retires", this._z5r); await this.state.storage.put("z5retiresA", new Date().toISOString()); }
+      { const R5 = new Set(this._z5r); for (let i = L.length - 1; i >= 0; i--) if (R5.has(L[i].nom)) L.splice(i, 1); }
+      return json({ depuis: ZERO4_DEPUIS, debug: this.N.dbg5 || null, strats: L, retires: this._z5r.length, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => (x.nom.includes(" + ") )).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length }); }
     if (u.pathname === "/api/catalogue") return json({ maj: "2026-10-27", strategies: CATALOGUE.map((c) => ({ ...c, ...infoOrdres(c.nom + " BTC") })) });
     if (u.pathname === "/numeros") return new Response(PAGE_NUMEROS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/api/zero5") { const Z0 = this.N.zero5 || {}, B = this.B5, Z = {};
