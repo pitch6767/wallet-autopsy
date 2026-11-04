@@ -1,7 +1,438 @@
 VIDÉO : But what is a neural network? | Deep learning chapter 1 — 3Blue1Brown
 LIEN : https://www.youtube.com/watch?v=aircAruvnKk
-STATUT : erreur
-INFO : durée : Error: gemini-2.5-pro : 404 
+STATUT : en cours (2/4 morceaux de 5 min)
+DURÉE : 18:40 (YouTube)
+REGARDÉE PAR : gemini-3.6-flash
+INFO : Error: gemini-2.5-pro : 404 
+
+==================== CHRONOLOGIE COMPLÈTE ====================
+----- 00:00 → 05:00 -----
+(Paroles reformulées : Gemini refuse de les recopier mot pour mot.)
+Voici la chronologie détaillée de l'extrait vidéo (00:00 à 05:00) :
+
+[00:00]
+- ÉCRAN : Écran noir avec un fin cercle animé qui se dessine au centre.
+- TEXTE À L'ÉCRAN : Aucun.
+- PAROLES : Musique d'introduction générique.
+
+[00:01]
+- ÉCRAN : Animation du logo de la chaîne 3Blue1Brown (un œil stylisé bleu et brun).
+- TEXTE À L'ÉCRAN : 3Blue1Brown
+- PAROLES : Musique d'introduction.
+
+[00:04]
+- ÉCRAN : Un personnage en forme de lettre grecque Pi (bleu) apparaît à gauche. Au centre, un cadre affiche un chiffre « 3 » écrit à la main sur fond noir.
+- TEXTE À L'ÉCRAN : Aucun.
+- PAROLES : Le narrateur indique que le chiffre affiché est un 3 écrit grossièrement.
+
+[00:07]
+- ÉCRAN : Une grille de 28 par 28 pixels se superpose sur l'image du chiffre 3 avec des accolades indiquant les dimensions.
+- TEXTE À L'ÉCRAN : 28px, 28px
+- PAROLES : Il précise que le chiffre a une très faible résolution de 28 sur 28 pixels, mais que le cerveau humain le reconnaît sans difficulté.
+
+[00:10]
+- ÉCRAN : Une bulle de pensée apparaît au-dessus du personnage Pi, montrant une flèche du chiffre 3 vers le symbole « 3 », puis une icône de cerveau et l'annotation « How?!? ».
+- TEXTE À L'ÉCRAN : 28px, 28px, 3 -> 3, How?!?
+- PAROLES : Le narrateur souligne la facilité déconcertante avec laquelle le cerveau réalise cette tâche de reconnaissance visuelle.
+
+[00:20]
+- ÉCRAN : Trois variantes différentes du chiffre 3 écrites à la main apparaissent dans une colonne sur la droite.
+- TEXTE À L'ÉCRAN : 3 -> 3, How?!?
+- PAROLES : Il explique que d'autres exemples de 3 sont également identifiables immédiatement.
+
+[00:28]
+- ÉCRAN : Un encadré jaune met en surbrillance le deuxième chiffre 3 dans la colonne de droite.
+- TEXTE À L'ÉCRAN : (Chiffres manuscrits 3).
+- PAROLES : Les valeurs spécifiques de chaque pixel varient fortement d'une image à l'autre.
+
+[00:30]
+- ÉCRAN : Des rayons lumineux relient l'œil du personnage Pi aux pixels formant le chiffre 3.
+- TEXTE À L'ÉCRAN : Aucun.
+- PAROLES : Les cellules photosensibles activées dans la rétine sont très différentes d'un 3 à l'autre.
+
+[00:40]
+- ÉCRAN : La bulle de pensée montre l'équivalence entre deux versions du chiffre 3 (« 3 = 3 »).
+- TEXTE À L'ÉCRAN : 3 = 3
+- PAROLES : Le cortex visuel parvient à faire abstraction des différences pour y voir le même concept.
+
+[00:45]
+- ÉCRAN : La bulle de pensée affiche successivement des inégalités pour d'autres chiffres (« 3 ≠ 8 », « 3 ≠ 7 », « 3 ≠ 6 »...).
+- TEXTE À L'ÉCRAN : 3 ≠ 8, 3 ≠ 7, 3 ≠ 6, 3 ≠ 5, 3 ≠ 2
+- PAROLES : Dans le même temps, le système visuel distingue clairement le 3 des autres chiffres.
+
+[00:50]
+- ÉCRAN : L'image du chiffre 3 se transforme en une grille matricielle révélant les valeurs numériques de chaque pixel (de 0.0 à 1.0).
+- TEXTE À L'ÉCRAN : Valeurs numériques de pixels (0.0, 1.0, 0.8...)
+- PAROLES : Le narrateur demande d'imaginer devoir écrire un programme informatique classique prenant ces pixels en entrée.
+
+[00:56]
+- ÉCRAN : Une flèche relie la grille de pixels à une liste de chiffres allant de 0 à 9 sur la droite.
+- TEXTE À L'ÉCRAN : 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+- PAROLES : Ce programme devrait déterminer quel est le chiffre représenté.
+
+[01:00]
+- ÉCRAN : Un rectangle encadre successivement différents chiffres de la liste (8, 1, 5) pour simuler la prédiction, avant d'encadrer le 3.
+- TEXTE À L'ÉCRAN : 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+- PAROLES : Écrire un tel algorithme à la main est une tâche d'une difficulté extrême.
+
+[01:10]
+- ÉCRAN : Quatre personnages Pi apparaissent. L'un d'eux donne une présentation devant du texte.
+- TEXTE À L'ÉCRAN : Machine learning, Neural network
+- PAROLES : Le narrateur aborde la notion d'apprentissage automatique et de réseau de neurones.
+
+[01:16]
+- ÉCRAN : Un schéma de réseau de neurones avec plusieurs couches interconnectées apparaît au-dessus des personnages.
+- TEXTE À L'ÉCRAN : Machine learning, Neural network
+- PAROLES : Il explique que le but de cette vidéo est de démystifier ce qu'est réellement un réseau de neurones.
+
+[01:23]
+- ÉCRAN : Une formule mathématique de propagation s'affiche à côté du réseau de neurones.
+- TEXTE À L'ÉCRAN : $a_{l+1} = \sigma(W_l a_l + b_l)$
+- PAROLES : L'objectif est de comprendre le rôle de la structure et du calcul mathématique sous-jacent.
+
+[01:26]
+- ÉCRAN : Une bulle de parole apparaît au-dessus d'un personnage Pi : « Why the layers? ».
+- TEXTE À L'ÉCRAN : Why the layers?
+- PAROLES : L'idée est de comprendre l'utilité des différentes couches de neurones.
+
+[01:30]
+- ÉCRAN : Le mot « learning » est mis en évidence, et les connexions du schéma de réseau s'allument en jaune.
+- TEXTE À L'ÉCRAN : learning, Machine learning, Neural network
+- PAROLES : Il précise le sens du terme « apprentissage » pour un réseau de neurones.
+
+[01:38]
+- ÉCRAN : Deux blocs apparaissent avec des icônes : « Structure » (schéma du réseau) et « learning » (bouton lecture).
+- TEXTE À L'ÉCRAN : Structure, learning
+- PAROLES : Cette première vidéo porte sur la structure, tandis que la suivante traitera de l'apprentissage.
+
+[01:40]
+- ÉCRAN : Transition vers le schéma complet d'un réseau de neurones à 4 couches. Une image du chiffre « 7 » apparaît en haut à gauche.
+- TEXTE À L'ÉCRAN : 784, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+- PAROLES : Le réseau va être conçu pour reconnaître des chiffres écrites à la main, à commencer par le 7.
+
+[01:45]
+- ÉCRAN : Les connexions s'illuminent et le neurone de sortie correspondant au chiffre 7 s'allume en vert.
+- TEXTE À L'ÉCRAN : 784, 0 à 9, encadré sur 7
+- PAROLES : La propagation du signal à travers le réseau active la réponse correcte.
+
+[01:50]
+- ÉCRAN : L'image d'entrée devient un « 2 », le réseau s'anime et le neurone de sortie 2 s'allume.
+- TEXTE À L'ÉCRAN : 784, encadré sur 2
+- PAROLES : C'est un exemple classique d'introduction au sujet.
+
+[01:59]
+- ÉCRAN : L'image d'entrée devient un « 1 », le réseau s'anime et le neurone de sortie 1 s'allume.
+- TEXTE À L'ÉCRAN : 784, encadré sur 1
+- PAROLES : Le narrateur indique qu'il donnera des références pour télécharger le code et le tester soi-même.
+
+[02:05]
+- ÉCRAN : Le personnage Pi réapparaît. Du texte présente différentes architectures de réseaux.
+- TEXTE À L'ÉCRAN : Convolutional neural network -> Good for image recognition, Long short-term memory network -> Good for speech recognition, Maybe future videos?
+- PAROLES : Il existe de nombreuses variantes comme les réseaux convolutifs ou LSTM.
+
+[02:15]
+- ÉCRAN : Le réseau réapparaît avec l'image du chiffre 4. Un titre annonce la forme basique étudiée.
+- TEXTE À L'ÉCRAN : Plain vanilla (aka "multilayer perceptron"), 784
+- PAROLES : Cette série se concentre sur le perceptron multicouche basique (forme « vanilla »).
+
+[02:29]
+- ÉCRAN : Le réseau traite une image du chiffre 9 et active la sortie 9.
+- TEXTE À L'ÉCRAN : Plain vanilla (aka "multilayer perceptron"), 784, encadré sur 9
+- PAROLES : Cette structure simple est déjà capable d'apprendre la reconnaissance de chiffres.
+
+[02:37]
+- ÉCRAN : Les personnages Pi s'entretiennent. L'un d'eux dit « More A than I ».
+- TEXTE À L'ÉCRAN : More A than I
+- PAROLES : Le narrateur évoque également les limites de ce modèle simple.
+
+[02:43]
+- ÉCRAN : Titre « Neural network » avec un cerveau au-dessus du personnage Pi.
+- TEXTE À L'ÉCRAN : Neural network
+- PAROLES : Les réseaux de neurones s'inspirent du cerveau humain.
+
+[02:48]
+- ÉCRAN : Deux questions apparaissent à l'écran sous le titre.
+- TEXTE À L'ÉCRAN : What are the neurons?, How are they connected?
+- PAROLES : Il pose les questions : que sont les neurones et comment sont-ils connectés ?
+
+[02:53]
+- ÉCRAN : Un cercle représentant un neurone s'affiche avec la définition « Thing that holds a number » et une valeur (ex: 0.2, 0.8, 0.4).
+- TEXTE À L'ÉCRAN : Neuron -> Thing that holds a number, 0.2, 0.8, 0.4, 0.1
+- PAROLES : Dans ce modèle, un neurone est simplement un élément contenant un nombre entre 0 et 1.
+
+[03:00]
+- ÉCRAN : L'image d'un chiffre 9 manuscrit s'affiche découpée en une grille de 28x28 points.
+- TEXTE À L'ÉCRAN : 28, 28
+- PAROLES : La couche d'entrée correspond aux pixels de l'image.
+
+[03:08]
+- ÉCRAN : Le calcul du nombre total de pixels s'affiche : 28 x 28 = 784.
+- TEXTE À L'ÉCRAN : 28 x 28 = 784
+- PAROLES : La première couche comporte donc 784 neurones.
+
+[03:10]
+- ÉCRAN : Zoom sur un neurone affichant sa valeur numérique de niveau de gris (ex: 0.58, 0.32, 1.00).
+- TEXTE À L'ÉCRAN : 28 x 28 = 784, 0.58, 1.00
+- PAROLES : Chaque neurone contient une valeur de 0 (noir) à 1 (blanc).
+
+[03:25]
+- ÉCRAN : Le terme « Activation » apparaît à côté de la valeur numérique dans le neurone.
+- TEXTE À L'ÉCRAN : "Activation", 0.58
+- PAROLES : Ce nombre est appelé l'« activation » du neurone.
+
+[03:30]
+- ÉCRAN : Le neurone brille d'autant plus que son activation est proche de 1.00.
+- TEXTE À L'ÉCRAN : "Activation", 1.00, 0.20
+- PAROLES : Un neurone est perçu comme « allumé » lorsque son niveau d'activation est élevé.
+
+[03:37]
+- ÉCRAN : La grille de 784 pixels se déroule pour former une seule colonne verticale de 784 neurones.
+- TEXTE À L'ÉCRAN : 784
+- PAROLES : Ces 784 neurones constituent la première couche du réseau.
+
+[03:46]
+- ÉCRAN : Le réseau complet réapparaît. La dernière couche de 10 neurones (indexés de 0 à 9) est mise en surbrillance.
+- TEXTE À L'ÉCRAN : 784, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+- PAROLES : La couche de sortie contient 10 neurones représentant les chiffres de 0 à 9.
+
+[03:50]
+- ÉCRAN : Zoom sur le neurone 9 de la couche de sortie, dont l'activation monte à 0.94 puis 0.97.
+- TEXTE À L'ÉCRAN : 0.97, 9
+- PAROLES : L'activation de ces neurones exprime le degré de certitude du système pour chaque chiffre.
+
+[04:00]
+- ÉCRAN : Les deux couches intermédiaires sont encadrées avec le titre « Hidden layers » et un point d'interrogation central.
+- TEXTE À L'ÉCRAN : "Hidden layers", ?
+- PAROLES : Les couches situées au milieu sont appelées les couches cachées (« hidden layers »).
+
+[04:10]
+- ÉCRAN : Le point d'interrogation persiste sur les couches cachées.
+- TEXTE À L'ÉCRAN : "Hidden layers", ?
+- PAROLES : Le rôle de ces couches cachées dans le traitement d'image reste à expliquer.
+
+[04:15]
+- ÉCRAN : Des annotations apparaissent au-dessus du réseau : « 2 hidden layers », « 16 neurons each ».
+- TEXTE À L'ÉCRAN : 2 hidden layers, 16 neurons each
+- PAROLES : Ce réseau comporte 2 couches cachées de 16 neurones chacune.
+
+[04:21]
+- ÉCRAN : Les personnages Pi posent des questions dans des bulles : « Why 2 layers? », « Why 16? ».
+- TEXTE À L'ÉCRAN : Why 2 layers?, Why 16?
+- PAROLES : Le choix de 2 couches et 16 neurones est assez arbitraire et adapté pour l'affichage à l'écran.
+
+[04:30]
+- ÉCRAN : Le réseau complet s'affiche à nouveau.
+- TEXTE À L'ÉCRAN : 784, "Hidden layers", 0 à 9
+- PAROLES : Il existe en pratique une grande liberté d'expérimentation pour la structure.
+
+[04:34]
+- ÉCRAN : Des lignes de connexion jaunes s'illuminent séquentiellement de la première couche vers la deuxième, puis la troisième, puis la sortie.
+- TEXTE À L'ÉCRAN : "Hidden layers", ?
+- PAROLES : Les activations d'une couche déterminent les activations de la couche suivante.
+
+[04:44]
+- ÉCRAN : Démonstration avec l'image d'un 7 : propagation du signal à travers les couches cachées vers la sortie 7.
+- TEXTE À L'ÉCRAN : 784, encadré sur 7
+- PAROLES : Ce mécanisme rappelle de manière simplifiée le fonctionnement des réseaux biologiques.
+
+[04:54]
+- ÉCRAN : Démonstration avec l'image d'un 2 : propagation du signal à travers les couches cachées vers la sortie 2.
+- TEXTE À L'ÉCRAN : 784, encadré sur 2
+- PAROLES : L'activation de certains groupes de neurones entraîne l'activation d'autres neurones connectés.
+
+[05:00]
+- ÉCRAN : Le réseau continue de traiter l'image du chiffre 2 avec les connexions illuminées en jaune.
+- TEXTE À L'ÉCRAN : 784, 0 à 9
+- PAROLES : Fin de la séquence observée.
+
+----- 05:00 → 10:00 -----
+(Paroles reformulées : Gemini refuse de les recopier mot pour mot.)
+Voici la chronologie détaillée de l'extrait vidéo entre 05:00 et 10:00 :
+
+[05:00]
+- ÉCRAN : Schéma complet d'un réseau de neurones artificiels (784 neurones d'entrée, deux couches cachées, 10 neurones de sortie de 0 à 9). Une image du chiffre « 2 » apparaît en haut à gauche et le neurone de sortie correspondant au chiffre 2 s'allume en jaune.
+- TEXTE À L'ÉCRAN : 784, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+- PAROLES : Explication du fonctionnement global d'un réseau entraîné à reconnaître des chiffres à partir d'une image d'entrée.
+
+[05:05]
+- ÉCRAN : L'image d'entrée passe à un « 9 » sous forme de grille de 28x28 pixels (784 neurones).
+- TEXTE À L'ÉCRAN : 28 x 28 = 784
+- PAROLES : Chaque pixel éclaire un neurone d'entrée en fonction de sa luminosité.
+
+[05:10]
+- ÉCRAN : Le schéma montre l'activation se propageant de la couche d'entrée vers les couches cachées, encadrées par un rectangle jaune.
+- TEXTE À L'ÉCRAN : 784, "Hidden layers", ?, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+- PAROLES : La combinaison d'activations d'une couche détermine le motif d'activation de la couche suivante.
+
+[05:20]
+- ÉCRAN : Démonstration rapide de plusieurs chiffres en entrée (« 1 », « 0 », « 4 », « 6 », « 9 ») illuminant chacun leur neurone de sortie respectif.
+- TEXTE À L'ÉCRAN : 784, 0 à 9
+- PAROLES : Le neurone le plus lumineux dans la couche de sortie représente la réponse retenue par le réseau.
+
+[05:30]
+- ÉCRAN : L'image « 9 » est affichée en haut à gauche et le neurone de sortie 9 est encadré en jaune à droite.
+- TEXTE À L'ÉCRAN : 784, 0 à 9
+- PAROLES : Conclusion de la présentation rapide du principe du réseau de neurones.
+
+[05:32]
+- ÉCRAN : Changement de plan. Trois créatures Pi bleues s'adressent à une créature Pi marron sur fond noir.
+- TEXTE À L'ÉCRAN : "How does one layer influence the next?", "How does training work?"
+- PAROLES : Avant d'aborder les mathématiques de l'entraînement, posons-nous la question du rôle des couches cachées.
+
+[05:38]
+- ÉCRAN : Retour au schéma complet du réseau de neurones avec des flèches jaunes pointant vers les différentes couches.
+- TEXTE À L'ÉCRAN : 784, "Why the layers?", 0 à 9
+- PAROLES : Pourquoi une telle structure en couches permet-elle d'obtenir un comportement intelligent ?
+
+[05:40]
+- ÉCRAN : Les deux couches cachées du milieu sont encadrées en jaune.
+- TEXTE À L'ÉCRAN : 784, "Why the layers?", 0 à 9
+- PAROLES : Que peut-on espérer que fassent ces couches intermédiaires ?
+
+[05:50]
+- ÉCRAN : Changement de plan. Décomposition du chiffre 9 en sous-composants : une boucle en haut (jaune) et une ligne droite (rouge).
+- TEXTE À L'ÉCRAN : 9 = [boucle jaune] + [ligne rouge]
+- PAROLES : Pour un humain, reconnaître un chiffre consiste à assembler des éléments constitutifs de base.
+
+[05:57]
+- ÉCRAN : Décomposition du chiffre 8 en deux boucles (jaune et verte).
+- TEXTE À L'ÉCRAN : 8 = [boucle jaune] + [boucle verte]
+- PAROLES : Le chiffre 8 réutilise la boucle supérieure associée à une seconde boucle inférieure.
+
+[06:00]
+- ÉCRAN : Décomposition du chiffre 4 en trois segments de droite (rouge, bleu et rose).
+- TEXTE À L'ÉCRAN : 4 = [ligne 1] + [ligne 2] + [ligne 3]
+- PAROLES : Le chiffre 4 se décompose quant à lui en trois lignes droites distinctes.
+
+[06:10]
+- ÉCRAN : Les sous-composants visuels sont alignés verticalement et se déplacent vers la troisième couche du réseau.
+- TEXTE À L me ÉCRAN : [images de boucles et de lignes]
+- PAROLES : Idéalement, chaque neurone de l'avant-dernière couche correspondrait à l'un de ces sous-composants.
+
+[06:14]
+- ÉCRAN : Le réseau réapparaît. La troisième couche présente de minuscules icônes de sous-composants à côté de ses neurones. Un neurone particulier est désigné.
+- TEXTE À L'ÉCRAN : 784, "Upper loop neuron... maybe...", 0 à 9
+- PAROLES : Quand une image avec une boucle en haut est fournie, un neurone spécifique de boucle supérieure s'activerait.
+
+[06:20]
+- ÉCRAN : Une image de 9 entre dans le réseau, activant les connexions vers le neurone supposé détecter la boucle supérieure.
+- TEXTE À L'ÉCRAN : 784, "Upper loop neuron... maybe...", 0 à 9
+- PAROLES : Ce neurone s'activerait pour n'importe quelle boucle située vers le haut de l'image.
+
+[06:30]
+- ÉCRAN : L'image d'entrée alterne entre « 9 » et « 8 », illuminant les connexions reliant le neurone de boucle supérieure aux sorties 8 et 9.
+- TEXTE À L'ÉCRAN : 784, "Upper loop neuron... maybe...", 0 à 9
+- PAROLES : Passer de cette couche à la sortie consisterait alors simplement à apprendre quelles combinaisons de pièces composent quel chiffre.
+
+[06:40]
+- ÉCRAN : Transition vers les personnages Pi. L'un d'eux pose une question dans une bulle de dialogue.
+- TEXTE À L'ÉCRAN : "Okay, but recognizing loops is just as hard!"
+- PAROLES : Mais reconnaître une boucle est un problème tout aussi difficile à résoudre.
+
+[06:50]
+- ÉCRAN : Les personnages Pi s'effacent. Une petite image de boucle blanche sur fond noir apparaît au centre.
+- TEXTE À L'ÉCRAN : [aucun]
+- PAROLES : Décomposons la détection d'une boucle en sous-problèmes encore plus simples.
+
+[07:00]
+- ÉCRAN : La boucle se décompose en cinq petits contours/bords colorés alignés horizontalement.
+- TEXTE À L'ÉCRAN : [boucle] = [bord bleu] + [bord vert] + [bord jaune] + [bord orange] + [bord rouge]
+- PAROLES : Une boucle peut s'obtenir en repérant d'abord les petits bords et traits qui la composent.
+
+[07:05]
+- ÉCRAN : Une ligne verticale s'affiche au-dessous et se décompose également en petits bords, en montrant les chiffres 1, 4 et 7.
+- TEXTE À L'ÉCRAN : [ligne] = [bord] + [bord] + [bord]
+- PAROLES : De même, une longue ligne droite est constituée d'un alignement de plusieurs petits bords.
+
+[07:17]
+- ÉCRAN : Le schéma du réseau réapparaît. Un rectangle jaune encadre la deuxième couche (première couche cachée).
+- TEXTE À L'ÉCRAN : 784, "“Little edge” layer?"
+- PAROLES : On peut espérer que chaque neurone de la deuxième couche détecte un petit bord spécifique.
+
+[07:30]
+- ÉCRAN : Animation montrant le flux complet pour un chiffre 9 : pixels d'entrée -> petits bords -> sous-composants (boucle et barre) -> sortie 9.
+- TEXTE À L'ÉCRAN : 784, 0 à 9
+- PAROLES : L'image active les neurones de bords, qui activent ceux de la boucle et de la barre, activant enfin le chiffre 9.
+
+[07:40]
+- ÉCRAN : Un texte avec une flèche apparaît à gauche du réseau.
+- TEXTE À L'ÉCRAN : "Does the network actually do this?", "We'll get back to this"
+- PAROLES : Le réseau fonctionne-t-il réellement ainsi en pratique ? Nous y reviendrons une fois l'entraînement expliqué.
+
+[07:50]
+- ÉCRAN : Rappel visuel des décompositions de chiffres en formes géométriques de base.
+- TEXTE À L'ÉCRAN : 9 = [boucle] + [barre], 8 = [boucle] + [boucle], 4 = [barre] + [barre] + [barre]
+- PAROLES : C'est le principe de décomposition structurée visé par une architecture en couches.
+
+[07:55]
+- ÉCRAN : Changement de plan. Photo d'un lion côte à côte avec sa version traitée par détection de contours (edge detection).
+- TEXTE À L'ÉCRAN : [aucun]
+- PAROLES : La détection de contours est une étape fondamentale essentielle pour de nombreuses tâches de vision par ordinateur.
+
+[08:01]
+- ÉCRAN : Changement de plan. Les personnages Pi réapparaissent.
+- TEXTE À L'ÉCRAN : "Many recognition tasks break down like this"
+- PAROLES : Beaucoup d'autres tâches de reconnaissance se prêtent à ce type de décomposition hiérarchique.
+
+[08:09]
+- ÉCRAN : Schéma de reconnaissance vocale s'affichant au-dessus des personnages Pi.
+- TEXTE À L'ÉCRAN : Raw audio -> recognition -> re-cog-ni-tion -> recognition
+- PAROLES : La reconnaissance vocale convertit l'audio brut en sons, puis en syllabes, en mots et enfin en idées abstraites.
+
+[08:22]
+- ÉCRAN : Retour au schéma du réseau de neurones avec des flèches jaunes pointant les interconnexions.
+- TEXTE À L'ÉCRAN : "What are these connections actually doing?"
+- PAROLES : Voyons concrètement comment les connexions entre deux couches sont définies mathématiquement.
+
+[08:31]
+- ÉCRAN : Animation de propagation des signaux à travers les connexions pour l'image d'un 9.
+- TEXTE À L'ÉCRAN : 784, 0 à 9
+- PAROLES : Comment les activations d'une couche déterminent-elles exactement celles de la suivante ?
+
+[08:40]
+- ÉCRAN : Focus sur un seul neurone de la première couche cachée, relié aux 784 neurones d'entrée. Une grille 28x28 s'affiche à droite avec un rectangle blanc horizontal au centre.
+- TEXTE À L'ÉCRAN : 784
+- PAROLES : Prenons l'exemple d'un neurone devant détecter un bord horizontal dans une zone précise de l'image.
+
+[08:50]
+- ÉCRAN : Une liste de paramètres s'affiche à côté des connexions, et une grille de pixels aléatoires apparaît à droite.
+- TEXTE À L'ÉCRAN : "What parameters should exist?", p1: 0.00, p2: 0.00, p3: 0.00...
+- PAROLES : De quels paramètres le réseau doit-il disposer pour pouvoir exprimer et détecter ce motif ?
+
+[09:00]
+- ÉCRAN : Les valeurs des paramètres changent rapidement et la grille d'exemple modifie ses motifs de texture.
+- TEXTE À L'ÉCRAN : p1: 0.96, p2: 0.01, p3: 0.55...
+- PAROLES : Nous avons besoin de réglages capables de s'adapter à n'importe quel motif de pixels.
+
+[09:09]
+- ÉCRAN : La liste de paramètres s'intitule désormais « Weights » (poids). Les valeurs $w_1, w_2, w_3...$ sont énumérées.
+- TEXTE À L'ÉCRAN : "Weights", w1: 2.07, w2: 2.31, w3: 3.64, w4: 1.87, w5: -1.51, w6: -0.43, w7: 2.01, w8: 1.07...
+- PAROLES : Chaque connexion entre un neurone et ceux de la couche précédente se voit attribuer un nombre appelé « poids ».
+
+[09:20]
+- ÉCRAN : La formule mathématique de la somme pondérée apparaît au-dessus du réseau : $w_1 a_1 + w_2 a_2 + w_3 a_3 + \dots + w_n a_n$.
+- TEXTE À L'ÉCRAN : $w_1 a_1 + w_2 a_2 + w_3 a_3 + w_4 a_4 + \dots + w_n a_n$
+- PAROLES : On calcule la somme des activations de la couche précédente, chacune multipliée par son poids respectif.
+
+[09:30]
+- ÉCRAN : Les poids sont représentés visuellement sous forme d'une grille 28x28 avec des pixels verts (poids positifs) et rouges (poids négatifs).
+- TEXTE À L'ÉCRAN : $w_1 a_1 + w_2 a_2 + w_3 a_3 + \dots + w_n a_n$
+- PAROLES : Représenter ces poids sous forme d'une grille permet de visualiser les zones positives (vert) et négatives (rouge).
+
+[09:40]
+- ÉCRAN : La grille de poids affiche une petite barre verte au centre sur fond sombre. Une image du chiffre « 7 » est superposée à droite.
+- TEXTE À L'ÉCRAN : $w_1 a_1 + w_2 a_2 + w_3 a_3 + \dots + w_n a_n$
+- PAROLES : Si les poids sont positifs uniquement dans la zone d'intérêt, la somme pondérée additionne la luminosité des pixels de cette zone spécifique.
+
+[09:50]
+- ÉCRAN : Zoom sur le trait horizontal du chiffre 7 qui coïncide parfaitement avec la zone de poids verts positifs.
+- TEXTE À L'ÉCRAN : $w_1 a_1 + w_2 a_2 + w_3 a_3 + \dots + w_n a_n$
+- PAROLES : Ainsi, la somme pondérée sera particulièrement élevée lorsque le trait du chiffre traverse précisément cette région.
+
+[10:00]
+- ÉCRAN : Fin de la démonstration visuelle de la somme pondérée appliquée à la détection du trait horizontal du chiffre 7.
+- TEXTE À L'ÉCRAN : $w_1 a_1 + w_2 a_2 + w_3 a_3 + \dots + w_n a_n$
+- PAROLES : Ce mécanisme permet d'isoler l'information utile en ignorant le reste de l'image.
 
 ==================== QUESTIONS ====================
 Q1 [fait] : Que montre exactement l ecran a 03:00 ? Recopie tout texte, chiffre ou formule affiche.
