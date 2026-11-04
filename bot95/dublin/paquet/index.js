@@ -24107,6 +24107,10 @@ var Bot = class {
       }
       const L = Object.entries(Z).map(([nom, z]) => ({ nom, num: numDe(nom), ...infoOrdres(nom, z), ...z, cn: void 0, parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +v.toFixed(2)])), pnl: +z.pnl.toFixed(2), pertesTot: +z.pertesTot.toFixed(2), pire: +z.pire.toFixed(2), creux: +z.creux.toFixed(2) })).sort((a2, b2) => b2.pnl - a2.pnl || b2.n - a2.n);
       if (!this._z5r) this._z5r = await this.state.storage.get("z5retires") || null;
+      if (this._z5r && this._z5r.includes(NOM_3304)) {
+        this._z5r = this._z5r.filter((x) => x !== NOM_3304);
+        await this.state.storage.put("z5retires", this._z5r);
+      }
       if (!this._z5r) {
         this._z5r = L.slice(83).map((x) => x.nom);
         await this.state.storage.put("z5retires", this._z5r);
@@ -24115,6 +24119,10 @@ var Bot = class {
       {
         const R5 = new Set(this._z5r);
         for (let i = L.length - 1; i >= 0; i--) if (R5.has(L[i].nom)) L.splice(i, 1);
+      }
+      for (const x of L) if (x.nom === NOM_3304) {
+        x.nom = NOM_3304.replace(/ BTC$/, "") + " \u2014 ESTIM\xC9E (trades fant\xF4mes, seule exception) BTC";
+        x.estimee = true;
       }
       return json({ depuis: ZERO4_DEPUIS, debug: this.N.dbg5 || null, strats: L, retires: this._z5r.length, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length });
     }
@@ -30096,6 +30104,7 @@ var PF2_DEPUIS = "2026-11-02T20:55:00Z";
 var PF3_DEPUIS = "2026-11-03T07:15:00Z";
 var ZERO4_DEPUIS = "2026-11-01T23:15:00Z";
 var PRIX_REEL_NUMS = [101, 105, 107, 112, 109, 120, 121, 31, 127, 129, 35, 32, 201, 28, 119, 1114, 116, 207, 214, 213, 2, 11, 14, 15, 301, 1011];
+var NOM_3304 = "TENEUR DE MARCH\xC9 mod\xE8le BTC";
 var ONGLET5_MAX_CYCLE = 250;
 var CARNET_K = ["corrige : desaccord 20 + carnet BTC", "corrige : desaccord 20 + carnet ecart serre BTC", "corrige : V2-F ecart qui grandit + carnet BTC", "corrige : V2-F ecart qui grandit + carnet ecart serre BTC", "corrige : V2-F + pas les deux baissent + carnet BTC", "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC"];
 var CARNET_NOMS = new Set(CARNET_K.map((k) => k.replace(/ BTC$/, "")));
@@ -30208,7 +30217,7 @@ function facteurPrix(p) {
 }
 __name(facteurPrix, "facteurPrix");
 function zCompte(Z, k, heure, net, sans, mise, start) {
-  if (ZHOOK && ZHOOK.N && ZHOOK._prixReelMs && !ZHOOK._reel && (Z === ZHOOK.N.zero4 || Z === ZHOOK.N.zero5) && Date.parse(heure) >= ZHOOK._prixReelMs) return;
+  if (ZHOOK && ZHOOK.N && ZHOOK._prixReelMs && !ZHOOK._reel && (Z === ZHOOK.N.zero4 || Z === ZHOOK.N.zero5) && Date.parse(heure) >= ZHOOK._prixReelMs && k !== NOM_3304) return;
   if (ZHOOK && ZHOOK.N && !ZHOOK._reel && Z === ZHOOK.N.zero4 && !k.includes(" + mise selon prix") && !k.includes(" palier x2") && ZHOOK.onglet5Garde && ZHOOK.onglet5Garde(k)) {
     const fp = facteurPrix((ZHOOK._zx || {}).prix);
     if (fp > 0) zCompte(Z, k.replace(/ BTC$/, " + mise selon prix BTC"), heure, fp * net, sans, fp * (mise || 0), start);
