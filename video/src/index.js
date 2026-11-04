@@ -2,7 +2,7 @@
 // La clé Gemini n'est jamais en clair : elle est chiffrée avec la clé publique du coffre (Durable Object)
 import { DurableObject } from "cloudflare:workers";
 
-const VERSION = "1.2.0";
+const VERSION = "1.2.1";
 const MORCEAU = 300; // secondes par morceau analysé (5 min : plus de détail par minute)
 const GEMINI = "https://generativelanguage.googleapis.com/v1beta";
 
@@ -144,9 +144,10 @@ export class Coffre extends DurableObject {
       }
       derniere = `${modele} : ${r.status} ${JSON.stringify(j.error || j).slice(0, 400)}`;
       if (r.status === 429) { quota++; continue; }
+      if (r.status === 404) continue; // modèle non disponible pour cette clé
       if (r.status === 400 && !/model/i.test(derniere)) break; // erreur sur la vidéo elle-même : inutile d'essayer d'autres modèles
     }
-    throw new Error((quota && quota === liste.length ? "QUOTA " : "") + (derniere || "Gemini indisponible"));
+    throw new Error((quota ? "QUOTA 429 " : "") + (derniere || "Gemini indisponible"));
   }
   partVideo(url, debut, fin, fps) {
     const vm = {};
