@@ -40,6 +40,14 @@
 + git commit -q --amend -m 'cycles bot rapide 2026-10-26'
 + for k in 1 2 3
 + git push -q -f origin dr-2026-10-26
+remote: fatal error in commit_refs_rules        
+To https://github.com/pitch6767/wallet-autopsy
+ ! [remote rejected] dr-2026-10-26 -> dr-2026-10-26 (fatal error in commit_refs_rules
+)
+error: failed to push some refs to 'https://github.com/pitch6767/wallet-autopsy'
++ sleep 5
++ for k in 1 2 3
++ git push -q -f origin dr-2026-10-26
 + break
 + cd /
 + for J in $(cat /tmp/jours)
@@ -80,5 +88,28 @@
 + git commit -q --amend -m 'cycles bot rapide 2026-10-28'
 + for k in 1 2 3
 + git push -q -f origin dr-2026-10-28
-+ break
+remote: fatal error in commit_refs_rules        
+To https://github.com/pitch6767/wallet-autopsy
+ ! [remote rejected] dr-2026-10-28 -> dr-2026-10-28 (fatal error in commit_refs_rules
+)
+error: failed to push some refs to 'https://github.com/pitch6767/wallet-autopsy'
++ sleep 5
++ for k in 1 2 3
++ git push -q -f origin dr-2026-10-28
+remote: Internal Server Error        
+remote: Request ID CD00:157056:265CC26:32EA466:6AEB128A        
+remote: Time 2026-11-04T11:10:02Z
+To https://github.com/pitch6767/wallet-autopsy
+ ! [remote rejected] dr-2026-10-28 -> dr-2026-10-28 (Internal Server Error)
+error: failed to push some refs to 'https://github.com/pitch6767/wallet-autopsy'
++ sleep 5
++ for k in 1 2 3
++ git push -q -f origin dr-2026-10-28
+remote: Internal Server Error        
+remote: Request ID CD02:5ECF0:26F284A:33BEA45:6AEB1290        
+remote: Time 2026-11-04T11:10:08Z
+To https://github.com/pitch6767/wallet-autopsy
+ ! [remote rejected] dr-2026-10-28 -> dr-2026-10-28 (Internal Server Error)
+error: failed to push some refs to 'https://github.com/pitch6767/wallet-autopsy'
++ sleep 5
 + cd /
