@@ -883,3 +883,38 @@ $$a^{(1)} = \sigma(W a^{(0)} + b)$$
 Pour être complet, la forme développée avec les matrices et vecteurs affichée entre **14:36** et **14:56** est :
 
 $$\sigma \left( \begin{bmatrix} w_{0,0} & w_{0,1} & \dots & w_{0,n} \\ w_{1,0} & w_{1,1} & \dots & w_{1,n} \\ \vdots & \vdots & \ddots & \vdots \\ w_{k,0} & w_{k,1} & \dots & w_{k,n} \end{bmatrix} \begin{bmatrix} a_0^{(0)} \\ a_1^{(0)} \\ \vdots \\ a_n^{(0)} \end{bmatrix} + \begin{bmatrix} b_0 \\ b_1 \\ \vdots \\ b_k \end{bmatrix} \right)$$
+
+Q3 [fait] : Vers 15:45-15:55, quel decompte des poids et des biais est affiche a l ecran ? Recopie exactement chaque terme de la somme des poids, puis dis si le total 13,002 est coherent avec ces termes.
+Voici les informations précises affichées à l'écran dans la vidéo (notamment aux minutages **12:13-12:22** et **15:51-15:53**) :
+
+### 1. Recopie exacte du décompte affiché à l'écran :
+
+* **Poids (weights) :**
+  $$784 \times 16 + 16 \times 16 + 16 \times 10$$
+  *(affiché avec le texte « weights »)*
+
+* **Biais (biases) :**
+  $$16 + 16 + 10$$
+  *(affiché avec le texte « biases »)*
+
+* **Total affiché :**
+  `13,002`
+
+---
+
+### 2. Vérification de la cohérence du total (13 002) :
+
+* **Calcul des poids :**
+  * $784 \times 16 = 12\ 544$
+  * $16 \times 16 = 256$
+  * $16 \times 10 = 160$
+  * **Sous-total des poids :** $12\ 544 + 256 + 160 = 12\ 960$
+
+* **Calcul des biais :**
+  * $16 + 16 + 10 = 42$
+  * **Sous-total des biais :** $42$
+
+* **Total général :**
+  $$12\ 960 + 42 = 13\ 002$$
+
+**Conclusion :** Oui, le total de **13 002** est parfaitement cohérent avec les termes de la somme affichés à l'écran.
