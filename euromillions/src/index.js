@@ -1,5 +1,12 @@
 import { lireResultats, verifierGrille, rangSuperStar, gainSuperStar, tiragesDepuis } from './resultats.js';
 
+// Une date qui n'est ni un mardi ni un vendredi (date d'achat) devient le tirage suivant
+function versTirage(iso) {
+  const d = new Date(iso + 'T12:00:00Z');
+  for (let k = 0; k < 7 && d.getUTCDay() !== 2 && d.getUTCDay() !== 5; k++) d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
 const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { 'content-type': 'application/json; charset=utf-8' } });
 
 const MODELES = [
@@ -13,7 +20,7 @@ Réponds UNIQUEMENT par un objet JSON, sans texte autour, de la forme :
 {"dates":["AAAA-MM-JJ"],"premier_tirage":"AAAA-MM-JJ","nombre_tirages":1,"grilles":[{"numeros":[n,n,n,n,n],"etoiles":[e,e]}],"super_star":["A123B"]}
 Règles :
 - "grilles" : chaque ligne jouée, 5 numéros entre 1 et 50 puis 2 étoiles entre 1 et 12. Recopie exactement ce qui est imprimé, dans l'ordre des lignes.
-- "dates" : toutes les dates de tirage imprimées (format suisse JJ.MM.AA → AAAA-MM-JJ). Les tirages ont lieu le mardi et le vendredi.
+- "dates" : toutes les dates de tirage imprimées (format suisse JJ.MM.AA → AAAA-MM-JJ). Les tirages ont lieu le mardi et le vendredi. Ne confonds pas avec la date et l'heure d'achat ou d'impression du billet (souvent en bas, avec une heure) : ne mets cette date-là que si aucune date de tirage n'est imprimée.
 - "premier_tirage" et "nombre_tirages" : si le billet indique une durée (ex. « 4 tirages », « Durée ») ou une période, sinon le nombre de dates.
 - "super_star" : les codes Super-Star imprimés (5 caractères : une lettre, trois chiffres, une lettre). Liste vide s'il n'y en a pas.
 - N'invente rien : si une valeur est illisible, mets null.`;
@@ -28,7 +35,7 @@ function extraitJSON(t) {
 
 function propre(o) {
   const ent = (v, min, max) => { const n = parseInt(v, 10); return n >= min && n <= max ? n : null; };
-  const dateOk = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : null;
+  const dateOk = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) ? versTirage(d) : null;
   const grilles = (Array.isArray(o?.grilles) ? o.grilles : []).map(g => ({
     numeros: (g?.numeros || []).slice(0, 5).map(v => ent(v, 1, 50)),
     etoiles: (g?.etoiles || []).slice(0, 2).map(v => ent(v, 1, 12)),
@@ -87,7 +94,8 @@ function aujourdhuiSuisse() {
 async function verifier(corps) {
   const grilles = (corps.grilles || []).filter(g => g.numeros?.length === 5 && g.etoiles?.length === 2 && [...g.numeros, ...g.etoiles].every(Number.isInteger));
   const superStar = (corps.super_star || []).map(c => String(c).toUpperCase().replace(/[^A-Z0-9]/g, '')).filter(c => c.length === 5);
-  let dates = (corps.dates || []).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d));
+  let dates = (corps.dates || []).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).map(versTirage);
+  if (corps.premier_tirage) corps.premier_tirage = versTirage(corps.premier_tirage);
   if (corps.premier_tirage && corps.nombre_tirages > dates.length) dates = tiragesDepuis(corps.premier_tirage, corps.nombre_tirages);
   dates = [...new Set(dates)].sort();
   if (!dates.length) return { erreur: 'Aucune date de tirage' };
@@ -128,7 +136,8 @@ export default {
         let bin = ''; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
         const lu = await lireBillet(env, 'data:image/jpeg;base64,' + btoa(bin));
         const v = await verifier({ dates: ['2026-10-30'], grilles: [{ numeros: [3, 12, 14, 40, 41], etoiles: [3, 5] }, { numeros: [13, 19, 39, 1, 2], etoiles: [1, 5] }], super_star: ['N538X'] });
-        return json({ lu, verification: v });
+        const v2 = await verifier({ dates: ['2026-10-31'], grilles: [{ numeros: [9, 18, 21, 36, 40], etoiles: [5, 7] }] });
+        return json({ lu, verification: v, samedi: v2 });
       }
     } catch (e) {
       return json({ erreur: String(e.message || e) }, 500);
