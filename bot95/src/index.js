@@ -321,7 +321,10 @@ export class Bot {
         this.N.zero2 = (await this.state.storage.get("nv:zero2")) || {}; if ((await this.state.storage.get("zero2:depuis")) !== ZERO2_DEPUIS) { const ar = await this.state.storage.get("zero2:archive:" + ZERO2_DEPUIS); if (ar) { this.N.zero2 = ar; await this.state.storage.put("nv:zero2", ar); } await this.state.storage.put("zero2:depuis", ZERO2_DEPUIS); }   // 25.10 : compteurs « + idées » rétablis
         // 26.10.2026 : les compteurs des onglets 4 et 5 dépassaient 128 Ko (taille max d'une valeur) → plus sauvegardés ; maintenant découpés en morceaux (nv:zero3:0, :1…)
         this.N.zero3 = await zCharger(this.state.storage, "nv:zero3"); this.N.zero4 = await zCharger(this.state.storage, "nv:zero4"); if ((await this.state.storage.get("zero4:depuis")) !== ZERO4_DEPUIS) { this._cap4 = {}; await this.state.storage.put("zero4:archive:" + ((await this.state.storage.get("zero4:depuis")) || "2026-10-26T11:00:00Z"), this.N.zero4 || {}); this.N.zero4 = {}; await zSauver(this.state.storage, "nv:zero4", {}); await this.state.storage.put("zero4:depuis", ZERO4_DEPUIS); } this.N.zero5 = await zCharger(this.state.storage, "nv:zero5"); this.B5 = (await this.state.storage.get("bot5")) || null;
-        if (!this.SG) { let pr = await this.state.storage.get("prixreel:depuis"); if (!pr) { pr = new Date().toISOString(); await this.state.storage.put("prixreel:depuis", pr); } this._prixReelMs = Date.parse(pr); this.N.reel6 = await zCharger(this.state.storage, "nv:reel6"); }
+        if (!this.SG) { let pr = await this.state.storage.get("prixreel:depuis"); if (!pr) { pr = new Date().toISOString(); await this.state.storage.put("prixreel:depuis", pr); } this._prixReelMs = Date.parse(pr); this.N.reel6 = await zCharger(this.state.storage, "nv:reel6");
+          // 04.11.2026 17:22 (Pitch : « tu recommences à 0 que avec des vrais trades ») : tableau unique « vrais trades », départ à la mise en ligne
+          let rd = await this.state.storage.get("reel:depuis"); if (!rd) { rd = new Date().toISOString(); await this.state.storage.put("reel:depuis", rd); } this._reelMs = Date.parse(rd); this._reelDepuis = rd;
+          this.N.reelZ = await zCharger(this.state.storage, "nv:reelZ"); }
         if (!(await this.state.storage.get("zero5rattrapage"))) {   // 27.10.2026 : une seule fois, onglet 6 rattrapé depuis les lignes Excel (21:52 → mise en ligne ; revente éventuelle à 60 s incluse dans ce rattrapage, rare)
           try { const Z5 = {}, R5 = [], enAtt = new Set(Object.keys(this.N.idq || {}).map(Number));
             for (const n of ZERO5_NUMS) { const b = CATALOGUE.find((c) => c.n === n % 100), c5 = CATALOGUE.find((c) => c.n === n), v = Math.floor(n / 100); if (!b || !c5) continue;
@@ -974,6 +977,23 @@ export class Bot {
       return json(C.r);
     }
     // 03.11.2026 08:01 (Pitch) : l'adresse suit le numéro de l'onglet — /zero5 = onglet 5, /zero6 = onglet 6 (/zero4 renvoie à l'onglet 5)
+    // 04.11.2026 17:22 (Pitch : « tu enlèves tous les onglets de l'app et tu recommences à 0 que avec des vrais trades ») : une seule page.
+    // Les anciens onglets fantômes sont cachés (redirigés), leurs données sont gardées.
+    if (u.pathname === "/reel") return new Response(PAGE_REEL, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+    if (u.pathname === "/api/reel") { const N = this.N || {}, Z = N.reelZ || {}, R5 = new Set(this._z5r || (await this.state.storage.get("z5retires")) || []);
+      const noms = new Set([...CATALOGUE.map((c) => c.nom + " BTC").filter((nom) => this.onglet5Garde(nom) && !R5.has(nom)), ...NOMS_ESTIMES]);
+      const vide = () => ({ n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {} });
+      const z9 = (N.zero4 || {})["TENEUR DE MARCHÉ file d'attente estimée BTC"] || {};
+      const L = [...noms].map((nom) => { const z = Z[nom] || vide(); return { nom: nom.replace(/ BTC$/, ""), num: numDe(nom), estimee: NOMS_ESTIMES.has(nom), n: z.n, gains: z.gains, pertes: z.pertes, pnl: +(+z.pnl).toFixed(2), mise: +(+(z.mise || 0)).toFixed(2), miseMaxCycle: Math.round(z.miseMaxCycle || 0), pire: +(+z.pire).toFixed(2), creux: +(+z.creux).toFixed(2), serie: z.serie, serieMax: z.serieMax, capital: z.capital, palier: z.palier,
+        parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +(+v).toFixed(2)])) }; }).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
+      return json({ depuis: this._reelDepuis || null, strats: L, total: +L.filter((x) => !x.estimee).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null }); }
+    if (u.pathname === "/excel-reel") { const Q = {};
+      for (const [kk, v] of await this.state.storage.list({ prefix: "xreel:" })) { const k = kk.slice(6, kk.lastIndexOf("|")); (Q[k] = Q[k] || []).push(...v); }
+      for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => (a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0));
+      if (!Object.keys(Q).length) return new Response("Aucun vrai trade réglé pour l'instant.", { headers: { "content-type": "text/plain; charset=utf-8" } });
+      const corps = await xlClasseur(Q, this._reelDepuis || new Date().toISOString(), { deux: true, titre: "Bot95 — VRAIS TRADES (signaux reçus par le bot, joués sur le vrai carnet Polymarket, frais compris, réglés par Polymarket ; teneurs de marché = estimés) depuis le " });
+      return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_vrais_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:T]/g, "") + '.xlsx"', "cache-control": "no-store" } }); }
+    if (["/zero6", "/zero5", "/zero2", "/zero", "/zero3-ancien", "/onglet1-archive", "/", "/index.html"].includes(u.pathname)) return Response.redirect(new URL("/reel", req.url).toString(), 302);
     if (u.pathname === "/zero6") return new Response(PAGE_ZERO5, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero5") return new Response(PAGE_ZERO4, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero4") return Response.redirect(new URL("/zero5", req.url).toString(), 302);
@@ -1989,7 +2009,7 @@ export class Bot {
       put("nv:base", { depuis: N.depuis, ouvertes: N.ouvertes, attente: N.attente, manq: N.manq, auditFait: (N.audit || {}).fait || {}, ordAgg: N.ordAgg || {}, markout: N.markout || {} });
       for (const [k, v] of Object.entries(N.strats)) put("nv:strat:" + k, v);
       if (N.zero) put("nv:zero", N.zero);
-      if (N.zero2) put("nv:zero2", N.zero2); if (N.zero3) zSauver(this.state.storage, "nv:zero3", N.zero3).catch((err) => this.erreur("sauvegarde zero3", err)); if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err)); if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err)); if (N.reel6) zSauver(this.state.storage, "nv:reel6", N.reel6).catch((err) => this.erreur("sauvegarde reel6", err)); if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {}, slDec: N.slDec || {}, mmDernier: N.mmDernier || 0, dbg5: N.dbg5 || null });
+      if (N.zero2) put("nv:zero2", N.zero2); if (N.zero3) zSauver(this.state.storage, "nv:zero3", N.zero3).catch((err) => this.erreur("sauvegarde zero3", err)); if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err)); if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err)); if (N.reel6) zSauver(this.state.storage, "nv:reel6", N.reel6).catch((err) => this.erreur("sauvegarde reel6", err)); if (N.reelZ) zSauver(this.state.storage, "nv:reelZ", N.reelZ).catch((err) => this.erreur("sauvegarde reelZ", err)); if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {}, slDec: N.slDec || {}, mmDernier: N.mmDernier || 0, dbg5: N.dbg5 || null });
       // ordres : non réglés + 250 derniers réglés (les compteurs sont cumulés à part)
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
       N.ordres = [...regles.slice(-250), ...nonRegles];
@@ -2464,6 +2484,14 @@ export class Bot {
         this._zx = { cote, prix: t.prix };
         // onglet 5 : la ligne du même numéro (et l'Excel de l'onglet 5 via zCompte)
         if (this.onglet5Garde(nom) && !R5.has(nom)) zCompte(N.zero4, nom, t.ouvert, t.pnl, false, t.mise, st);
+        // 04.11.2026 17:22 : tableau unique des VRAIS trades (toutes les lignes de l'onglet 5), à zéro depuis la mise en ligne
+        if (this.onglet5Garde(nom) && !R5.has(nom) && Date.parse(t.ouvert) >= (this._reelMs || Infinity)) this.compteReel(nom, t.ouvert, t.pnl, t.mise, st, { cote, prix: t.prix, parts: t.parts });
+        if (t.num === 2110 && Date.parse(t.ouvert) >= (this._reelMs || Infinity)) { const PR = (this._palR = this._palR || (await this.state.storage.get("reel:palier")) || { cap: 6000, res: 0 });
+          const pal = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PR.cap / 6000))))), deja = (this._capR || {})["PORTEFEUILLE 101 + 105 palier x2 BTC|" + st] || 0, reste = 250 - deja;
+          if (reste > 0.01 && t.mise > 0) { const fac = Math.min(pal, reste / t.mise); let g = fac * t.pnl; if (g > 0) { PR.res += g / 2; g /= 2; } PR.cap += g;
+            this.compteReel("PORTEFEUILLE 101 + 105 palier x2 BTC", t.ouvert, fac * t.pnl, fac * t.mise, st, { cote, prix: t.prix, parts: fac * t.parts });
+            const zr = N.reelZ && N.reelZ["PORTEFEUILLE 101 + 105 palier x2 BTC"]; if (zr) { zr.capital = +PR.cap.toFixed(2); zr.reserve = +PR.res.toFixed(2); zr.palier = pal; }
+            await this.state.storage.put("reel:palier", PR); } }
         // n° 2130 : 101 + 105 sans blocage (n° 2110 réel) avec la gestion du capital du palier x2
         if (t.num === 2110) { const pal = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PA.cap / 6000))))), plaf = 250 * pal, deja = PC[st] || 0, reste = plaf - deja;
           if (reste > 0.01 && t.mise > 0) { const fac = Math.min(pal, reste / t.mise); PC[st] = deja + fac * t.mise; let g = fac * t.pnl; if (g > 0) { PA.res += g / 2; g /= 2; } PA.cap += g;
@@ -2480,7 +2508,21 @@ export class Bot {
     } finally { this._reel = false; }
     const lim = Date.now() - 24 * 3600000; for (const k of Object.keys(vus)) if (vus[k] < lim) delete vus[k];
     await this.state.storage.put("prixreel:vus", vus); await this.state.storage.put("palier5", PA);
-    await zSauver(this.state.storage, "nv:zero4", N.zero4); await zSauver(this.state.storage, "nv:reel6", N.reel6);
+    await zSauver(this.state.storage, "nv:zero4", N.zero4); await zSauver(this.state.storage, "nv:reel6", N.reel6); if (N.reelZ) await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
+  }
+  /** 04.11.2026 17:22 : un trade dans le tableau des vrais trades — 250 $ au plus par cycle et par stratégie (frais compris), trade réduit au reste, sinon ignoré. */
+  compteReel(nom, heure, net, mise, start, ctx = {}) {
+    if (this.SG || !this.N || !this._reelMs || Date.parse(heure) < this._reelMs) return;
+    const N = this.N; N.reelZ = N.reelZ || {};
+    let parts = ctx.parts ?? null;
+    if (start && mise > 0) { const C = (this._capR = this._capR || {}), ck = nom + "|" + start, deja = C[ck] || 0, reste = 250 - deja;
+      if (reste <= 0.01) return;
+      if (mise > reste) { const f = reste / mise; net *= f; mise = reste; if (parts != null) parts *= f; }
+      C[ck] = deja + mise; if (Math.random() < 0.02) { const lim = Math.floor(Date.now() / 1000) - 3600; for (const x of Object.keys(C)) if (+x.split("|").pop() < lim) delete C[x]; } }
+    zCompte(N.reelZ, nom, heure, net, false, mise, start);
+    const prix = ctx.prix ?? null, lx = [heure, ctx.cote || null, prix, parts != null ? +(+parts).toFixed(4) : (prix ? +(mise / prix).toFixed(3) : null), +(+net).toFixed(4), ctx.estime ? "estimé (teneur de marché)" : "réel"];
+    const kx = "xreel:" + nom + "|" + heure.slice(0, 10), QH = (this._qh = this._qh || {});
+    QH[kx] = (QH[kx] || Promise.resolve()).then(() => this.state.storage.get(kx)).then((L) => { L = L || []; L.push(lx); return this.state.storage.put(kx, L); }).catch((err) => this.erreur("excel vrais trades", err));
   }
   xlZ(pre, k, heure, net, mise, ctx) {
     if (this.SG) return;
@@ -4260,7 +4302,7 @@ function xlFeuille(lignes, opts = {}) {   // lignes : tableaux de cellules ; cel
     "<sheetViews><sheetView workbookViewId=\"0\"><pane ySplit=\"" + (opts.fige || 1) + "\" topLeftCell=\"A" + ((opts.fige || 1) + 1) + "\" activePane=\"bottomLeft\" state=\"frozen\"/></sheetView></sheetViews>" +
     (cols ? "<cols>" + cols + "</cols>" : "") + "<sheetData>" + rows + "</sheetData>" + (opts.filtre ? "<autoFilter ref=\"" + opts.filtre + "\"/>" : "") + (liens ? "<hyperlinks>" + liens + "</hyperlinks>" : "") + "</worksheet>";
 }
-async function xlClasseur(Q, depuis) {
+async function xlClasseur(Q, depuis, opt = {}) {
   const serie = (iso) => { const ms = Date.parse(iso); return (ms + decalSuisse(ms)) / 864e5 + 25569; };
   const jourS = (iso) => { const ms = Date.parse(iso); return new Date(ms + decalSuisse(ms)).toISOString().slice(0, 10); };
   const nomsF = new Set(), court = (k) => { let n = k.replace(/ BTC$/, "").replace("corrige marge mesuree : ", "CMM ").replace("corrige : ", "C ").replace("PORTEFEUILLE", "PF").replace("carnet ecart serre", "carnet ES").replace("foule bybit x2", "foule x2").replace("pas les deux baissent", "PLDB").replace("ecart qui grandit", "EQG").replace("prevision Chainlink", "prev CL").replace("incertitude 0,01 %", "incert").replace(/[\\\/?*\[\]:]/g, "-").replace(/'/g, "").slice(0, 31).trim(), b = n, i = 2; while (nomsF.has(n.toLowerCase())) n = b.slice(0, 28) + " " + (i++); nomsF.add(n.toLowerCase()); return n; };
@@ -4277,11 +4319,11 @@ async function xlClasseur(Q, depuis) {
     R.push({ k, f, n: L.length, g, p, pnl: cum, pertes, pire, creux, cap: Math.round((2 * creux + 2 * 50) / 50) * 50, moy: cum / nJours, mise: nm ? mises / nm : null, der: L[L.length - 1][0] });
   }
   R.sort((a, b) => b.pnl - a.pnl);
-  const res = [[{ v: "Bot95 — trades fantômes depuis la remise à 0 du " + new Date(Date.parse(depuis) + decalSuisse(Date.parse(depuis))).toISOString().slice(0, 16).replace("T", " ") + " (heure suisse) — fichier du " + new Date(maint + decalSuisse(maint)).toISOString().slice(0, 16).replace("T", " ") + ". Aucun argent réel. Cliquer un nom pour voir ses trades.", s: 4 }],
-    ["Stratégie", "Trades", "Gagnés", "Perdus", "% gagnés", "Résultat $", "Total pertes $", "Pire trade $", "Creux max $", "Capital conseillé $", "Moyenne / jour $", "Mise moyenne $", "Dernier trade"].map((v) => ({ v, s: 3 }))];
+  const res = [[{ v: (opt.titre || "Bot95 — trades fantômes depuis la remise à 0 du ") + new Date(Date.parse(depuis) + decalSuisse(Date.parse(depuis))).toISOString().slice(0, 16).replace("T", " ") + " (heure suisse) — fichier du " + new Date(maint + decalSuisse(maint)).toISOString().slice(0, 16).replace("T", " ") + ". Aucun argent réel. Cliquer un nom pour voir ses trades.", s: 4 }],
+    [...(opt.deux ? ["N°"] : []), "Stratégie", "Trades", "Gagnés", "Perdus", "% gagnés", "Résultat $", "Total pertes $", "Pire trade $", "Creux max $", "Capital conseillé $", "Moyenne / jour $", "Mise moyenne $", "Dernier trade"].map((v) => ({ v, s: 3 }))];
   const liens = [];
-  R.forEach((x, i) => { res.push([{ v: avecNum(x.k), s: 5 }, x.n, x.g, x.p, { v: x.n ? x.g / x.n : 0, s: 6 }, { v: x.pnl, s: 2 }, { v: x.pertes, s: 2 }, { v: x.pire, s: 2 }, { v: -x.creux, s: 2 }, { v: x.cap, s: 2 }, { v: x.moy, s: 2 }, { v: x.mise ?? "", s: 2 }, { v: serie(x.der), s: 1 }]); liens.push(["A" + (i + 3), "'" + x.f + "'!A1"]); });
-  res.push(["Total", R.reduce((a, x) => a + x.n, 0), R.reduce((a, x) => a + x.g, 0), R.reduce((a, x) => a + x.p, 0), "", { v: R.reduce((a, x) => a + x.pnl, 0), s: 2 }, { v: R.reduce((a, x) => a + x.pertes, 0), s: 2 }]);
+  R.forEach((x, i) => { res.push([...(opt.deux ? [{ v: numDe(x.k) ?? "", s: 5 }, String(x.k).replace(/ BTC$/, "")] : [{ v: avecNum(x.k), s: 5 }]), x.n, x.g, x.p, { v: x.n ? x.g / x.n : 0, s: 6 }, { v: x.pnl, s: 2 }, { v: x.pertes, s: 2 }, { v: x.pire, s: 2 }, { v: -x.creux, s: 2 }, { v: x.cap, s: 2 }, { v: x.moy, s: 2 }, { v: x.mise ?? "", s: 2 }, { v: serie(x.der), s: 1 }]); liens.push(["A" + (i + 3), "'" + x.f + "'!A1"]); });
+  res.push([...(opt.deux ? [""] : []), "Total", R.reduce((a, x) => a + x.n, 0), R.reduce((a, x) => a + x.g, 0), R.reduce((a, x) => a + x.p, 0), "", { v: R.reduce((a, x) => a + x.pnl, 0), s: 2 }, { v: R.reduce((a, x) => a + x.pertes, 0), s: 2 }]);
   res.push([]); res.push(["Capital conseillé = 2 × creux max + 2 mises de 50 $, arrondi à 50 $. Moyenne / jour = résultat ÷ " + nJours + " jours (du " + jourS(depuis).split("-").reverse().join(".") + " à aujourd'hui)."]);
   tous.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   // 03.11.2026 18:02 (Pitch) : « Stratégie » coupée en deux colonnes (N° et description) ; le N° est un lien vers la feuille de la stratégie ; filtre sur toutes les colonnes
@@ -4295,7 +4337,7 @@ async function xlClasseur(Q, depuis) {
     if (k !== kPrec) { if (kPrec != null) fermer(r - 1); kPrec = k; rDeb = r; }
     T.push([{ v: serie(l[0]), s: 1 }, num != null ? { v: num, s: feuilleDe[k] ? 5 : 0 } : "", String(k).replace(/ BTC$/, ""), l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: l[3] != null && l[2] != null ? l[2] * l[3] : "", s: 2 }, { v: +l[4] || 0, s: 2 }, l[5] || ""]); }
   if (kPrec != null) fermer(T.length);
-  const toutes = [["Résumé", xlFeuille(res, { fige: 2, largeurs: [52, 8, 8, 8, 9, 12, 13, 12, 12, 12, 13, 13, 18], liens })], ["Tous les trades", xlFeuille(T, { fige: 1, largeurs: [18, 8, 60, 8, 8, 9, 10, 11, 18], filtre: "A1:I" + T.length, liens: liensT })], ...feuilles];
+  const toutes = [["Résumé", xlFeuille(res, { fige: 2, largeurs: opt.deux ? [8, 60, 8, 8, 8, 9, 12, 13, 12, 12, 12, 13, 13, 18] : [52, 8, 8, 8, 9, 12, 13, 12, 12, 12, 13, 13, 18], liens, ...(opt.deux ? { filtre: "A2:N" + (R.length + 2) } : {}) })], ["Tous les trades", xlFeuille(T, { fige: 1, largeurs: [18, 8, 60, 8, 8, 9, 10, 11, 18], filtre: "A1:I" + T.length, liens: liensT })], ...feuilles];
   const W = "http://schemas.openxmlformats.org/spreadsheetml/2006/main", RL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
   const F = [
     ["[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>" + toutes.map((_, i) => "<Override PartName=\"/xl/worksheets/sheet" + (i + 1) + ".xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>").join("") + "</Types>"],
@@ -4326,6 +4368,27 @@ const ZERO4_DEPUIS = "2026-11-01T23:15:00Z";     // 02.11.2026 00:15 heure de Pa
 const ZERO4_DEPUIS_AVANT = "2026-10-31T18:50:00Z";     // 31.10.2026 19:50 heure de Paris (Pitch : « max 250 $ par cycle, onglet 5 à 0 ») ; avant : 31.10 17:30 et 26.10 12:00 (archivés)
 // 04.11.2026 : n° des stratégies pour lesquelles le bot reçoit des signaux (donc rejouées par le banc d'essai réel)
 const PRIX_REEL_NUMS = [101, 105, 107, 112, 109, 120, 121, 31, 127, 129, 35, 32, 201, 28, 119, 1114, 116, 207, 214, 213, 2, 11, 14, 15, 301, 1011];
+// 04.11.2026 17:22 : page unique des VRAIS trades
+const PAGE_REEL = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vrais trades</title>${STYLE}</head><body>
+<h1>Vrais trades — toutes les stratégies de l'onglet 5</h1>
+<div class="mu">Seulement des trades réels : chaque signal réellement reçu par le bot (moteur de Dublin) est joué sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix du signal + 5 c, frais compris) et réglé par le résultat officiel de Polymarket. 250 $ au plus par cycle et par stratégie, frais compris (trade réduit au reste, sinon ignoré). Aucun argent réel engagé. <b>Exception : les teneurs de marché (n° 3304 à 3309) sont ESTIMÉS</b> — ordres posés dans le carnet, impossibles à jouer sans vrais ordres.</div>
+<div class="mu" id="dep"></div>
+<div class="mu"><a href="/excel-reel" style="font-weight:600">📥 Fichier Excel des vrais trades (une ligne par trade, N° et stratégie en deux colonnes, filtres)</a></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom" style="font-size:1.05em;padding:8px 10px;width:min(360px,90%);border-radius:8px;border:1px solid #8886"> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur résultat</option><option value="creux">Trier : plus petit creux</option><option value="n">Trier : plus de trades</option><option value="cycle">Trier : moins de mise par cycle</option></select></div>
+<div id="app" style="margin-top:12px">Chargement…</div>
+<script>
+const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
+const t=document.getElementById("tri"),q=document.getElementById("cherche");try{t.value=sessionStorage.getItem("triR")||"pnl";q.value=sessionStorage.getItem("chR")||""}catch(e){}
+async function maj(){try{const d=await (await fetch("/api/reel",{cache:"no-store"})).json();try{sessionStorage.setItem("triR",t.value);sessionStorage.setItem("chR",q.value)}catch(e){}
+document.getElementById("dep").textContent="Départ à zéro : "+(d.depuis?new Date(d.depuis).toLocaleString("fr-CH",{timeZone:"Europe/Paris"}):"—")+" (heure de Paris) · total des vrais trades : "+f(d.total)+" · teneur 3309 : servi seul à un prix plus cher "+d.file3309.servisSeuls+" fois, servi dans la file "+d.file3309.servisFile+" fois, en moyenne "+(d.file3309.fileMoyenne??"—")+" parts devant nous";
+const k=t.value,v={pnl:(x)=>-x.pnl,creux:(x)=>x.n?x.creux:1e18,n:(x)=>-x.n,cycle:(x)=>x.n?x.miseMaxCycle:1e18}[k];const qq=q.value.trim().toLowerCase();
+const S=d.strats.filter(x=>!qq||(/^[0-9]+$/.test(qq)?String(x.num)===qq:x.nom.toLowerCase().includes(qq))).sort((a,b)=>v(a)-v(b)||b.pnl-a.pnl);
+const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
+let h="<div class='card'><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>N°</th><th>Stratégie</th><th>Trades</th><th>Gagnés / perdus</th><th>Résultat</th><th>Mise moyenne</th><th>Mise max / cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td><b>"+(x.num||"")+"</b></td><td>"+x.nom+(x.estimee?" <span style='color:#b45309;font-weight:600'>ESTIMÉE</span>":"")+(x.capital!=null?" <span class='mu'>· capital "+Math.round(x.capital)+" $ · palier x"+x.palier+"</span>":"")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td><td>"+(x.n?(x.mise/x.n).toFixed(2):"0.00")+" $</td><td>"+x.miseMaxCycle+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"—")+"</td>").join("")+"<td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td></tr>").join("")+"</table></div></div>";
+document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
+t.addEventListener("change",maj);q.addEventListener("input",maj);maj();setInterval(maj,20000);
+</script></body></html>`;
 const NOM_3304 = "TENEUR DE MARCHÉ modèle BTC";   // 04.11.2026 : lignes de l'onglet 5 encore comptées en fantôme (estimées) : 3304 et ses variantes 3305-3308
 const NOMS_ESTIMES = new Set([NOM_3304, "TENEUR DE MARCHÉ retrait si les bourses bougent BTC", "TENEUR DE MARCHÉ prix penchés selon le stock BTC", "TENEUR DE MARCHÉ écart variable BTC", "TENEUR DE MARCHÉ arrêt 60 s avant la fin BTC", "TENEUR DE MARCHÉ file d'attente estimée BTC"]);
 const PF33_DEPUIS = "2026-11-04T13:00:00Z";      // 04.11.2026 14:00 heure de Paris : début des teneurs 3305-3308
@@ -4385,6 +4448,7 @@ function zCompte(Z, k, heure, net, sans, mise, start) {
   // seuls les trades du banc d'essai réel (remplissage réel sur le carnet Polymarket, réglés par Polymarket) sont comptés
   // 04.11.2026 13:47 (Pitch : « garde les mêmes conditions avec trades fantôme pour elle seule ») : seule exception, n° 3304 (teneur de marché, estimée)
   if (ZHOOK && ZHOOK.N && ZHOOK._prixReelMs && !ZHOOK._reel && (Z === ZHOOK.N.zero4 || Z === ZHOOK.N.zero5) && Date.parse(heure) >= ZHOOK._prixReelMs && !NOMS_ESTIMES.has(k)) return;
+  if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && NOMS_ESTIMES.has(k) && ZHOOK._reelMs && Date.parse(heure) >= ZHOOK._reelMs && ZHOOK.compteReel) { try { ZHOOK.compteReel(k, heure, net, mise, start, { estime: true }); } catch (_) {} }
   // 02.11.2026 (Pitch : « un fantôme de cela sur toutes les stratégies de l'onglet 5 ») : chaque ligne de l'onglet 5 a sa jumelle « + mise selon prix »
   if (ZHOOK && ZHOOK.N && !ZHOOK._reel && Z === ZHOOK.N.zero4 && !k.includes(" + mise selon prix") && !k.includes(" palier x2") && ZHOOK.onglet5Garde && ZHOOK.onglet5Garde(k)) {
     const fp = facteurPrix((ZHOOK._zx || {}).prix); if (fp > 0) zCompte(Z, k.replace(/ BTC$/, " + mise selon prix BTC"), heure, fp * net, sans, fp * (mise || 0), start);
