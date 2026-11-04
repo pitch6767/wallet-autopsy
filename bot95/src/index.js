@@ -1177,7 +1177,7 @@ export class Bot {
     return 0;
   }
   /** 31.10.2026 17:46 (Pitch : « onglet 5 = stratégies de l'onglet 6 plus les nouvelles, rien d'autre ») */
-  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130) || n === 2140 || n === 2141 || n === 2142 || (n >= 3304 && n <= 3308); }
+  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130) || n === 2140 || n === 2141 || n === 2142 || (n >= 3304 && n <= 3309); }
   nums5() { return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS; }
   /** Facteur de mise de l'onglet 6 pour le n° et l'heure du trade (0 = pas compté : stratégie pas encore dans le bot). */
   f5(n, heure) {
@@ -2754,6 +2754,36 @@ export class Bot {
               const rU = NP - su, rD = NP - sd, m2 = Math.min(rU, rD), net = recu + m2 + (upGagne ? rU - m2 : rD - m2) - NP;
               const nom = nomV + " BTC"; this._zx = null; zCompte(N.zero4, nom, new Date(s0 * 1000).toISOString(), net, false, NP, st);
               const z = N.zero4[nom]; if (z) { z.vendusUp = +((z.vendusUp || 0) + su).toFixed(1); z.vendusDown = +((z.vendusDown || 0) + sd).toFixed(1); } } } } } catch (err) { this.erreur("teneurs 3305-3308", err); }
+        // 04.11.2026 14:24 (Pitch : « go ») : n° 3309 = la 3304 avec FILE D'ATTENTE ESTIMÉE au lieu de « la moitié du volume ».
+        // Au meilleur prix vendeur : notre ordre de 10 parts passe derrière tout ce qui est déjà affiché à ce prix (taille enregistrée la seconde d'avant) ;
+        // les achats des preneurs consomment d'abord ceux qui sont devant, puis nous. La file devant nous ne peut pas dépasser la taille affichée (annulations).
+        // Nouveau prix = nouvel ordre en fin de file. Plus cher que le meilleur vendeur (seuls à notre prix) : servis seulement si un acheteur monte à notre prix.
+        try { if (s0 * 1000 >= Date.parse(PF33_DEPUIS)) {
+          const g = tous.find((y) => y.gagne != null && y.cote); let upGagne = g ? (g.cote === "Up") === !!g.gagne : null;
+          if (upGagne == null) { const k = val("prix_a_battre", s0 + 150), v = []; for (let u = s0 + 240; u <= s0 + 299; u++) { const c = val("chainlink", u); if (c != null) v.push(c); }
+            if (k != null && v.length >= 40) upGagne = v.reduce((x2, y2) => x2 + y2, 0) / v.length > k; }
+          if (upGagne != null) { const NP = 100, CLIP = 10, AV = 10; let su = 0, sd = 0, recu = 0, servisSeuls = 0, servisFile = 0, attente = 0, nAtt = 0;
+            const O = { Up: null, Down: null };   // ordre en cours : { prix, reste, devant }
+            for (let u = s0 + 5; u <= s0 + 290; u++) { const pu = val("proba_up_modele", u - 1), bU = val("pm_up_achat", u - 1), aU = val("pm_up_vente", u - 1); if (pu == null || bU == null || aU == null) continue;
+              const l = R[u]; if (!l) continue;
+              const tU = val("pm_up_vente_taille", u - 1), tD = val("pm_up_achat_taille", u - 1);
+              for (const [cote, fair, aBest, bBest, volUsd, bNow, taille, tailleNow] of [
+                ["Up", pu, aU, bU, +l[C["pm_up_echange_achat"]] || 0, val("pm_up_achat", u), tU, val("pm_up_vente_taille", u)],
+                ["Down", 1 - pu, 1 - bU, 1 - aU, +l[C["pm_down_echange_achat"]] || 0, (() => { const v2 = val("pm_up_vente", u); return v2 == null ? null : 1 - v2; })(), tD, val("pm_up_achat_taille", u)]]) {
+                const deja = cote === "Up" ? su : sd, autre = cote === "Up" ? sd : su; if (deja >= NP || deja - autre >= AV) { O[cote] = null; continue; }
+                const ask = Math.max(Math.ceil((fair + 0.03) * 100) / 100, Math.round(aBest * 100) / 100); if (ask >= 1 || ask <= bBest) { O[cote] = null; continue; }
+                const auMeilleur = Math.abs(ask - Math.round(aBest * 100) / 100) < 1e-9;
+                let o = O[cote]; if (!o || Math.abs(o.prix - ask) > 1e-9) o = O[cote] = { prix: ask, reste: Math.min(CLIP, NP - deja), devant: auMeilleur ? Math.max(0, taille || 0) : 0 };
+                let q = 0;
+                if (bNow != null && bNow >= ask) { q = o.reste; servisSeuls++; }            // un acheteur est monté à notre prix : on est pris
+                else if (auMeilleur && volUsd > 0) { let parts = volUsd / ask; const mange = Math.min(o.devant, parts); o.devant -= mange; parts -= mange; q = Math.min(o.reste, parts); if (q > 0) servisFile++; }
+                if (auMeilleur && tailleNow != null) o.devant = Math.min(o.devant, Math.max(0, tailleNow));   // ceux devant nous ne peuvent pas dépasser ce qui est affiché
+                if (auMeilleur) { attente += o.devant; nAtt++; }
+                q = Math.min(q, NP - deja); if (q <= 0) continue; recu += q * ask; if (cote === "Up") su += q; else sd += q;
+                o.reste -= q; if (o.reste <= 1e-9) O[cote] = null; else o.devant = 0; } }
+            const rU = NP - su, rD = NP - sd, m2 = Math.min(rU, rD), net = recu + m2 + (upGagne ? rU - m2 : rD - m2) - NP;
+            const nom = "TENEUR DE MARCHÉ file d'attente estimée BTC"; this._zx = null; zCompte(N.zero4, nom, new Date(s0 * 1000).toISOString(), net, false, NP, st);
+            const z = N.zero4[nom]; if (z) { z.vendusUp = +((z.vendusUp || 0) + su).toFixed(1); z.vendusDown = +((z.vendusDown || 0) + sd).toFixed(1); z.servisSeuls = (z.servisSeuls || 0) + servisSeuls; z.servisFile = (z.servisFile || 0) + servisFile; z.fileMoyenne = nAtt ? Math.round(attente / nAtt) : z.fileMoyenne; } } } } catch (err) { this.erreur("teneur 3309", err); }
         // 25.10.2026 21:03 (Pitch : « go ») : méta-stratégies CONSENSUS 6 et CONSENSUS 8 — un seul achat de 50 $ par cycle et par côté, au moment où la 6e (8e) stratégie affichée
         // achète ce côté ; prix = meilleur vendeur 1 s plus tard (enregistrement seconde par seconde), sinon prix payé par cette stratégie ; frais 7 % × p × (1 − p) ; gardé jusqu'au règlement.
         try { const CP = (N.consPris = N.consPris || {});
@@ -4297,7 +4327,7 @@ const ZERO4_DEPUIS_AVANT = "2026-10-31T18:50:00Z";     // 31.10.2026 19:50 heure
 // 04.11.2026 : n° des stratégies pour lesquelles le bot reçoit des signaux (donc rejouées par le banc d'essai réel)
 const PRIX_REEL_NUMS = [101, 105, 107, 112, 109, 120, 121, 31, 127, 129, 35, 32, 201, 28, 119, 1114, 116, 207, 214, 213, 2, 11, 14, 15, 301, 1011];
 const NOM_3304 = "TENEUR DE MARCHÉ modèle BTC";   // 04.11.2026 : lignes de l'onglet 5 encore comptées en fantôme (estimées) : 3304 et ses variantes 3305-3308
-const NOMS_ESTIMES = new Set([NOM_3304, "TENEUR DE MARCHÉ retrait si les bourses bougent BTC", "TENEUR DE MARCHÉ prix penchés selon le stock BTC", "TENEUR DE MARCHÉ écart variable BTC", "TENEUR DE MARCHÉ arrêt 60 s avant la fin BTC"]);
+const NOMS_ESTIMES = new Set([NOM_3304, "TENEUR DE MARCHÉ retrait si les bourses bougent BTC", "TENEUR DE MARCHÉ prix penchés selon le stock BTC", "TENEUR DE MARCHÉ écart variable BTC", "TENEUR DE MARCHÉ arrêt 60 s avant la fin BTC", "TENEUR DE MARCHÉ file d'attente estimée BTC"]);
 const PF33_DEPUIS = "2026-11-04T13:00:00Z";      // 04.11.2026 14:00 heure de Paris : début des teneurs 3305-3308
 const ONGLET5_MAX_CYCLE = 250;   // 31.10.2026 19:42 (Pitch) : dans l'onglet 5, chaque ligne mise au plus 250 $ par cycle (au-delà, le trade est réduit puis ignoré)
 const CARNET_K = ["corrige : desaccord 20 + carnet BTC", "corrige : desaccord 20 + carnet ecart serre BTC", "corrige : V2-F ecart qui grandit + carnet BTC", "corrige : V2-F ecart qui grandit + carnet ecart serre BTC", "corrige : V2-F + pas les deux baissent + carnet BTC", "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC"];
