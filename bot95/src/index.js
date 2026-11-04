@@ -876,8 +876,11 @@ export class Bot {
       // 03.11.2026 23:40 (Pitch : « onglet 5 enlève les stratégies depuis 84 compris » → « retirer pour de bon ») : les lignes classées 84e et
       // au-delà (classement par résultat total) sont relevées UNE fois, sauvegardées, puis retirées définitivement de l'onglet 5 et de son Excel
       if (!this._z5r) this._z5r = (await this.state.storage.get("z5retires")) || null;
+      // 04.11.2026 13:47 (Pitch : « oui ») : la 3304 revient dans l'onglet 5
+      if (this._z5r && this._z5r.includes(NOM_3304)) { this._z5r = this._z5r.filter((x) => x !== NOM_3304); await this.state.storage.put("z5retires", this._z5r); }
       if (!this._z5r) { this._z5r = L.slice(83).map((x) => x.nom); await this.state.storage.put("z5retires", this._z5r); await this.state.storage.put("z5retiresA", new Date().toISOString()); }
       { const R5 = new Set(this._z5r); for (let i = L.length - 1; i >= 0; i--) if (R5.has(L[i].nom)) L.splice(i, 1); }
+      for (const x of L) if (x.nom === NOM_3304) { x.nom = NOM_3304.replace(/ BTC$/, "") + " — ESTIMÉE (trades fantômes, seule exception) BTC"; x.estimee = true; }
       return json({ depuis: ZERO4_DEPUIS, debug: this.N.dbg5 || null, strats: L, retires: this._z5r.length, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => (x.nom.includes(" + ") )).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length }); }
     if (u.pathname === "/api/catalogue") return json({ maj: "2026-10-27", strategies: CATALOGUE.map((c) => ({ ...c, ...infoOrdres(c.nom + " BTC") })) });
     if (u.pathname === "/numeros") return new Response(PAGE_NUMEROS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -4263,6 +4266,7 @@ const ZERO4_DEPUIS = "2026-11-01T23:15:00Z";     // 02.11.2026 00:15 heure de Pa
 const ZERO4_DEPUIS_AVANT = "2026-10-31T18:50:00Z";     // 31.10.2026 19:50 heure de Paris (Pitch : « max 250 $ par cycle, onglet 5 à 0 ») ; avant : 31.10 17:30 et 26.10 12:00 (archivés)
 // 04.11.2026 : n° des stratégies pour lesquelles le bot reçoit des signaux (donc rejouées par le banc d'essai réel)
 const PRIX_REEL_NUMS = [101, 105, 107, 112, 109, 120, 121, 31, 127, 129, 35, 32, 201, 28, 119, 1114, 116, 207, 214, 213, 2, 11, 14, 15, 301, 1011];
+const NOM_3304 = "TENEUR DE MARCHÉ modèle BTC";   // 04.11.2026 : seule ligne de l'onglet 5 encore comptée en fantôme (estimée)
 const ONGLET5_MAX_CYCLE = 250;   // 31.10.2026 19:42 (Pitch) : dans l'onglet 5, chaque ligne mise au plus 250 $ par cycle (au-delà, le trade est réduit puis ignoré)
 const CARNET_K = ["corrige : desaccord 20 + carnet BTC", "corrige : desaccord 20 + carnet ecart serre BTC", "corrige : V2-F ecart qui grandit + carnet BTC", "corrige : V2-F ecart qui grandit + carnet ecart serre BTC", "corrige : V2-F + pas les deux baissent + carnet BTC", "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC"];
 const CARNET_NOMS = new Set(CARNET_K.map((k) => k.replace(/ BTC$/, "")));
@@ -4317,7 +4321,8 @@ function facteurPrix(p) { return !(p > 0) ? 1 : p < 0.2 ? 1.5 : p < 0.3 ? 1 : p 
 function zCompte(Z, k, heure, net, sans, mise, start) {
   // 04.11.2026 (Pitch : « je veux le prix possible maintenant ») : onglets 5 et 6 — dès la bascule, plus aucun trade fantôme ;
   // seuls les trades du banc d'essai réel (remplissage réel sur le carnet Polymarket, réglés par Polymarket) sont comptés
-  if (ZHOOK && ZHOOK.N && ZHOOK._prixReelMs && !ZHOOK._reel && (Z === ZHOOK.N.zero4 || Z === ZHOOK.N.zero5) && Date.parse(heure) >= ZHOOK._prixReelMs) return;
+  // 04.11.2026 13:47 (Pitch : « garde les mêmes conditions avec trades fantôme pour elle seule ») : seule exception, n° 3304 (teneur de marché, estimée)
+  if (ZHOOK && ZHOOK.N && ZHOOK._prixReelMs && !ZHOOK._reel && (Z === ZHOOK.N.zero4 || Z === ZHOOK.N.zero5) && Date.parse(heure) >= ZHOOK._prixReelMs && k !== NOM_3304) return;
   // 02.11.2026 (Pitch : « un fantôme de cela sur toutes les stratégies de l'onglet 5 ») : chaque ligne de l'onglet 5 a sa jumelle « + mise selon prix »
   if (ZHOOK && ZHOOK.N && !ZHOOK._reel && Z === ZHOOK.N.zero4 && !k.includes(" + mise selon prix") && !k.includes(" palier x2") && ZHOOK.onglet5Garde && ZHOOK.onglet5Garde(k)) {
     const fp = facteurPrix((ZHOOK._zx || {}).prix); if (fp > 0) zCompte(Z, k.replace(/ BTC$/, " + mise selon prix BTC"), heure, fp * net, sans, fp * (mise || 0), start);
