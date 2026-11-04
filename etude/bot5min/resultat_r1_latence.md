@@ -1,6 +1,6 @@
 # Bot95 — R1 garde latence (avant le 13.10) — mesure pure
 
-Généré le 03.11.2026 21:10 UTC. 1226 signaux réglés sur 294 cycles. « Resté » = encore une quantité achetable au prix du signal après le délai. IC 90 % par rééchantillonnage de cycles.
+Généré le 04.11.2026 01:28 UTC. 1226 signaux réglés sur 294 cycles. « Resté » = encore une quantité achetable au prix du signal après le délai. IC 90 % par rééchantillonnage de cycles.
 
 | Délai après décision | Restés | gagnés | prix moyen | Partis | gagnés | prix moyen | Écart partis − restés (points) | IC 90 % |
 |---|---|---|---|---|---|---|---|---|
