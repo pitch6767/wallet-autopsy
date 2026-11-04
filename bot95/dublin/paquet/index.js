@@ -23071,6 +23071,14 @@ var Bot = class {
           }
           this._prixReelMs = Date.parse(pr);
           this.N.reel6 = await zCharger(this.state.storage, "nv:reel6");
+          let rd = await this.state.storage.get("reel:depuis");
+          if (!rd) {
+            rd = (/* @__PURE__ */ new Date()).toISOString();
+            await this.state.storage.put("reel:depuis", rd);
+          }
+          this._reelMs = Date.parse(rd);
+          this._reelDepuis = rd;
+          this.N.reelZ = await zCharger(this.state.storage, "nv:reelZ");
         }
         if (!await this.state.storage.get("zero5rattrapage")) {
           try {
@@ -24325,6 +24333,47 @@ var Bot = class {
       }
       return json(C2.r);
     }
+    if (u.pathname === "/reel") return new Response(PAGE_REEL, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+    if (u.pathname === "/api/reel") {
+      const N = this.N || {}, Z = N.reelZ || {}, R5 = new Set(this._z5r || await this.state.storage.get("z5retires") || []);
+      const noms = /* @__PURE__ */ new Set([...catalogue_default.map((c) => c.nom + " BTC").filter((nom) => this.onglet5Garde(nom) && !R5.has(nom)), ...NOMS_ESTIMES]);
+      const vide = /* @__PURE__ */ __name(() => ({ n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {} }), "vide");
+      const z9 = (N.zero4 || {})["TENEUR DE MARCH\xC9 file d'attente estim\xE9e BTC"] || {};
+      const L = [...noms].map((nom) => {
+        const z = Z[nom] || vide();
+        return {
+          nom: nom.replace(/ BTC$/, ""),
+          num: numDe(nom),
+          estimee: NOMS_ESTIMES.has(nom),
+          n: z.n,
+          gains: z.gains,
+          pertes: z.pertes,
+          pnl: +(+z.pnl).toFixed(2),
+          mise: +(+(z.mise || 0)).toFixed(2),
+          miseMaxCycle: Math.round(z.miseMaxCycle || 0),
+          pire: +(+z.pire).toFixed(2),
+          creux: +(+z.creux).toFixed(2),
+          serie: z.serie,
+          serieMax: z.serieMax,
+          capital: z.capital,
+          palier: z.palier,
+          parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +(+v).toFixed(2)]))
+        };
+      }).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
+      return json({ depuis: this._reelDepuis || null, strats: L, total: +L.filter((x) => !x.estimee).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null });
+    }
+    if (u.pathname === "/excel-reel") {
+      const Q = {};
+      for (const [kk, v] of await this.state.storage.list({ prefix: "xreel:" })) {
+        const k = kk.slice(6, kk.lastIndexOf("|"));
+        (Q[k] = Q[k] || []).push(...v);
+      }
+      for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0);
+      if (!Object.keys(Q).length) return new Response("Aucun vrai trade r\xE9gl\xE9 pour l'instant.", { headers: { "content-type": "text/plain; charset=utf-8" } });
+      const corps = await xlClasseur(Q, this._reelDepuis || (/* @__PURE__ */ new Date()).toISOString(), { deux: true, titre: "Bot95 \u2014 VRAIS TRADES (signaux re\xE7us par le bot, jou\xE9s sur le vrai carnet Polymarket, frais compris, r\xE9gl\xE9s par Polymarket ; teneurs de march\xE9 = estim\xE9s) depuis le " });
+      return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_vrais_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:T]/g, "") + '.xlsx"', "cache-control": "no-store" } });
+    }
+    if (["/zero6", "/zero5", "/zero2", "/zero", "/zero3-ancien", "/onglet1-archive", "/", "/index.html"].includes(u.pathname)) return Response.redirect(new URL("/reel", req.url).toString(), 302);
     if (u.pathname === "/zero6") return new Response(PAGE_ZERO5, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero5") return new Response(PAGE_ZERO4, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero4") return Response.redirect(new URL("/zero5", req.url).toString(), 302);
@@ -26175,6 +26224,7 @@ var Bot = class {
       if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err));
       if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err));
       if (N.reel6) zSauver(this.state.storage, "nv:reel6", N.reel6).catch((err) => this.erreur("sauvegarde reel6", err));
+      if (N.reelZ) zSauver(this.state.storage, "nv:reelZ", N.reelZ).catch((err) => this.erreur("sauvegarde reelZ", err));
       if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {}, slDec: N.slDec || {}, mmDernier: N.mmDernier || 0, dbg5: N.dbg5 || null });
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
       N.ordres = [...regles.slice(-250), ...nonRegles];
@@ -27091,6 +27141,28 @@ var Bot = class {
         const nom = c.nom + " BTC", st = Math.floor(t.endTs / 1e3) - 300, cote = t.side === "UP" ? "Up" : "Down";
         this._zx = { cote, prix: t.prix };
         if (this.onglet5Garde(nom) && !R5.has(nom)) zCompte(N.zero4, nom, t.ouvert, t.pnl, false, t.mise, st);
+        if (this.onglet5Garde(nom) && !R5.has(nom) && Date.parse(t.ouvert) >= (this._reelMs || Infinity)) this.compteReel(nom, t.ouvert, t.pnl, t.mise, st, { cote, prix: t.prix, parts: t.parts });
+        if (t.num === 2110 && Date.parse(t.ouvert) >= (this._reelMs || Infinity)) {
+          const PR = this._palR = this._palR || await this.state.storage.get("reel:palier") || { cap: 6e3, res: 0 };
+          const pal = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PR.cap / 6e3))))), deja = (this._capR || {})["PORTEFEUILLE 101 + 105 palier x2 BTC|" + st] || 0, reste = 250 - deja;
+          if (reste > 0.01 && t.mise > 0) {
+            const fac = Math.min(pal, reste / t.mise);
+            let g = fac * t.pnl;
+            if (g > 0) {
+              PR.res += g / 2;
+              g /= 2;
+            }
+            PR.cap += g;
+            this.compteReel("PORTEFEUILLE 101 + 105 palier x2 BTC", t.ouvert, fac * t.pnl, fac * t.mise, st, { cote, prix: t.prix, parts: fac * t.parts });
+            const zr = N.reelZ && N.reelZ["PORTEFEUILLE 101 + 105 palier x2 BTC"];
+            if (zr) {
+              zr.capital = +PR.cap.toFixed(2);
+              zr.reserve = +PR.res.toFixed(2);
+              zr.palier = pal;
+            }
+            await this.state.storage.put("reel:palier", PR);
+          }
+        }
         if (t.num === 2110) {
           const pal = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PA.cap / 6e3))))), plaf = 250 * pal, deja = PC[st] || 0, reste = plaf - deja;
           if (reste > 0.01 && t.mise > 0) {
@@ -27131,6 +27203,37 @@ var Bot = class {
     await this.state.storage.put("palier5", PA);
     await zSauver(this.state.storage, "nv:zero4", N.zero4);
     await zSauver(this.state.storage, "nv:reel6", N.reel6);
+    if (N.reelZ) await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
+  }
+  /** 04.11.2026 17:22 : un trade dans le tableau des vrais trades — 250 $ au plus par cycle et par stratégie (frais compris), trade réduit au reste, sinon ignoré. */
+  compteReel(nom, heure, net, mise, start, ctx = {}) {
+    if (this.SG || !this.N || !this._reelMs || Date.parse(heure) < this._reelMs) return;
+    const N = this.N;
+    N.reelZ = N.reelZ || {};
+    let parts = ctx.parts ?? null;
+    if (start && mise > 0) {
+      const C2 = this._capR = this._capR || {}, ck = nom + "|" + start, deja = C2[ck] || 0, reste = 250 - deja;
+      if (reste <= 0.01) return;
+      if (mise > reste) {
+        const f = reste / mise;
+        net *= f;
+        mise = reste;
+        if (parts != null) parts *= f;
+      }
+      C2[ck] = deja + mise;
+      if (Math.random() < 0.02) {
+        const lim = Math.floor(Date.now() / 1e3) - 3600;
+        for (const x of Object.keys(C2)) if (+x.split("|").pop() < lim) delete C2[x];
+      }
+    }
+    zCompte(N.reelZ, nom, heure, net, false, mise, start);
+    const prix = ctx.prix ?? null, lx = [heure, ctx.cote || null, prix, parts != null ? +(+parts).toFixed(4) : prix ? +(mise / prix).toFixed(3) : null, +(+net).toFixed(4), ctx.estime ? "estim\xE9 (teneur de march\xE9)" : "r\xE9el"];
+    const kx = "xreel:" + nom + "|" + heure.slice(0, 10), QH = this._qh = this._qh || {};
+    QH[kx] = (QH[kx] || Promise.resolve()).then(() => this.state.storage.get(kx)).then((L) => {
+      L = L || [];
+      L.push(lx);
+      return this.state.storage.put(kx, L);
+    }).catch((err) => this.erreur("excel vrais trades", err));
   }
   xlZ(pre, k, heure, net, mise, ctx) {
     if (this.SG) return;
@@ -30176,7 +30279,7 @@ function xlFeuille(lignes, opts = {}) {
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetViews><sheetView workbookViewId="0"><pane ySplit="' + (opts.fige || 1) + '" topLeftCell="A' + ((opts.fige || 1) + 1) + '" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' + (cols ? "<cols>" + cols + "</cols>" : "") + "<sheetData>" + rows + "</sheetData>" + (opts.filtre ? '<autoFilter ref="' + opts.filtre + '"/>' : "") + (liens ? "<hyperlinks>" + liens + "</hyperlinks>" : "") + "</worksheet>";
 }
 __name(xlFeuille, "xlFeuille");
-async function xlClasseur(Q, depuis) {
+async function xlClasseur(Q, depuis, opt = {}) {
   const serie = /* @__PURE__ */ __name((iso) => {
     const ms = Date.parse(iso);
     return (ms + decalSuisse(ms)) / 864e5 + 25569;
@@ -30222,15 +30325,15 @@ async function xlClasseur(Q, depuis) {
   }
   R.sort((a, b) => b.pnl - a.pnl);
   const res = [
-    [{ v: "Bot95 \u2014 trades fant\xF4mes depuis la remise \xE0 0 du " + new Date(Date.parse(depuis) + decalSuisse(Date.parse(depuis))).toISOString().slice(0, 16).replace("T", " ") + " (heure suisse) \u2014 fichier du " + new Date(maint + decalSuisse(maint)).toISOString().slice(0, 16).replace("T", " ") + ". Aucun argent r\xE9el. Cliquer un nom pour voir ses trades.", s: 4 }],
-    ["Strat\xE9gie", "Trades", "Gagn\xE9s", "Perdus", "% gagn\xE9s", "R\xE9sultat $", "Total pertes $", "Pire trade $", "Creux max $", "Capital conseill\xE9 $", "Moyenne / jour $", "Mise moyenne $", "Dernier trade"].map((v) => ({ v, s: 3 }))
+    [{ v: (opt.titre || "Bot95 \u2014 trades fant\xF4mes depuis la remise \xE0 0 du ") + new Date(Date.parse(depuis) + decalSuisse(Date.parse(depuis))).toISOString().slice(0, 16).replace("T", " ") + " (heure suisse) \u2014 fichier du " + new Date(maint + decalSuisse(maint)).toISOString().slice(0, 16).replace("T", " ") + ". Aucun argent r\xE9el. Cliquer un nom pour voir ses trades.", s: 4 }],
+    [...opt.deux ? ["N\xB0"] : [], "Strat\xE9gie", "Trades", "Gagn\xE9s", "Perdus", "% gagn\xE9s", "R\xE9sultat $", "Total pertes $", "Pire trade $", "Creux max $", "Capital conseill\xE9 $", "Moyenne / jour $", "Mise moyenne $", "Dernier trade"].map((v) => ({ v, s: 3 }))
   ];
   const liens = [];
   R.forEach((x, i) => {
-    res.push([{ v: avecNum(x.k), s: 5 }, x.n, x.g, x.p, { v: x.n ? x.g / x.n : 0, s: 6 }, { v: x.pnl, s: 2 }, { v: x.pertes, s: 2 }, { v: x.pire, s: 2 }, { v: -x.creux, s: 2 }, { v: x.cap, s: 2 }, { v: x.moy, s: 2 }, { v: x.mise ?? "", s: 2 }, { v: serie(x.der), s: 1 }]);
+    res.push([...opt.deux ? [{ v: numDe(x.k) ?? "", s: 5 }, String(x.k).replace(/ BTC$/, "")] : [{ v: avecNum(x.k), s: 5 }], x.n, x.g, x.p, { v: x.n ? x.g / x.n : 0, s: 6 }, { v: x.pnl, s: 2 }, { v: x.pertes, s: 2 }, { v: x.pire, s: 2 }, { v: -x.creux, s: 2 }, { v: x.cap, s: 2 }, { v: x.moy, s: 2 }, { v: x.mise ?? "", s: 2 }, { v: serie(x.der), s: 1 }]);
     liens.push(["A" + (i + 3), "'" + x.f + "'!A1"]);
   });
-  res.push(["Total", R.reduce((a, x) => a + x.n, 0), R.reduce((a, x) => a + x.g, 0), R.reduce((a, x) => a + x.p, 0), "", { v: R.reduce((a, x) => a + x.pnl, 0), s: 2 }, { v: R.reduce((a, x) => a + x.pertes, 0), s: 2 }]);
+  res.push([...opt.deux ? [""] : [], "Total", R.reduce((a, x) => a + x.n, 0), R.reduce((a, x) => a + x.g, 0), R.reduce((a, x) => a + x.p, 0), "", { v: R.reduce((a, x) => a + x.pnl, 0), s: 2 }, { v: R.reduce((a, x) => a + x.pertes, 0), s: 2 }]);
   res.push([]);
   res.push(["Capital conseill\xE9 = 2 \xD7 creux max + 2 mises de 50 $, arrondi \xE0 50 $. Moyenne / jour = r\xE9sultat \xF7 " + nJours + " jours (du " + jourS(depuis).split("-").reverse().join(".") + " \xE0 aujourd'hui)."]);
   tous.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
@@ -30253,7 +30356,7 @@ async function xlClasseur(Q, depuis) {
     T.push([{ v: serie(l[0]), s: 1 }, num2 != null ? { v: num2, s: feuilleDe[k] ? 5 : 0 } : "", String(k).replace(/ BTC$/, ""), l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: l[3] != null && l[2] != null ? l[2] * l[3] : "", s: 2 }, { v: +l[4] || 0, s: 2 }, l[5] || ""]);
   }
   if (kPrec != null) fermer(T.length);
-  const toutes = [["R\xE9sum\xE9", xlFeuille(res, { fige: 2, largeurs: [52, 8, 8, 8, 9, 12, 13, 12, 12, 12, 13, 13, 18], liens })], ["Tous les trades", xlFeuille(T, { fige: 1, largeurs: [18, 8, 60, 8, 8, 9, 10, 11, 18], filtre: "A1:I" + T.length, liens: liensT })], ...feuilles];
+  const toutes = [["R\xE9sum\xE9", xlFeuille(res, { fige: 2, largeurs: opt.deux ? [8, 60, 8, 8, 8, 9, 12, 13, 12, 12, 12, 13, 13, 18] : [52, 8, 8, 8, 9, 12, 13, 12, 12, 12, 13, 13, 18], liens, ...opt.deux ? { filtre: "A2:N" + (R.length + 2) } : {} })], ["Tous les trades", xlFeuille(T, { fige: 1, largeurs: [18, 8, 60, 8, 8, 9, 10, 11, 18], filtre: "A1:I" + T.length, liens: liensT })], ...feuilles];
   const W = "http://schemas.openxmlformats.org/spreadsheetml/2006/main", RL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
   const F = [
     ["[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' + toutes.map((_, i) => '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join("") + "</Types>"],
@@ -30275,6 +30378,26 @@ var PF2_DEPUIS = "2026-11-02T20:55:00Z";
 var PF3_DEPUIS = "2026-11-03T07:15:00Z";
 var ZERO4_DEPUIS = "2026-11-01T23:15:00Z";
 var PRIX_REEL_NUMS = [101, 105, 107, 112, 109, 120, 121, 31, 127, 129, 35, 32, 201, 28, 119, 1114, 116, 207, 214, 213, 2, 11, 14, 15, 301, 1011];
+var PAGE_REEL = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vrais trades</title>${STYLE}</head><body>
+<h1>Vrais trades \u2014 toutes les strat\xE9gies de l'onglet 5</h1>
+<div class="mu">Seulement des trades r\xE9els : chaque signal r\xE9ellement re\xE7u par le bot (moteur de Dublin) est jou\xE9 sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix du signal + 5 c, frais compris) et r\xE9gl\xE9 par le r\xE9sultat officiel de Polymarket. 250 $ au plus par cycle et par strat\xE9gie, frais compris (trade r\xE9duit au reste, sinon ignor\xE9). Aucun argent r\xE9el engag\xE9. <b>Exception : les teneurs de march\xE9 (n\xB0 3304 \xE0 3309) sont ESTIM\xC9S</b> \u2014 ordres pos\xE9s dans le carnet, impossibles \xE0 jouer sans vrais ordres.</div>
+<div class="mu" id="dep"></div>
+<div class="mu"><a href="/excel-reel" style="font-weight:600">\u{1F4E5} Fichier Excel des vrais trades (une ligne par trade, N\xB0 et strat\xE9gie en deux colonnes, filtres)</a></div>
+<div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom" style="font-size:1.05em;padding:8px 10px;width:min(360px,90%);border-radius:8px;border:1px solid #8886"> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur r\xE9sultat</option><option value="creux">Trier : plus petit creux</option><option value="n">Trier : plus de trades</option><option value="cycle">Trier : moins de mise par cycle</option></select></div>
+<div id="app" style="margin-top:12px">Chargement\u2026</div>
+<script>
+const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
+const t=document.getElementById("tri"),q=document.getElementById("cherche");try{t.value=sessionStorage.getItem("triR")||"pnl";q.value=sessionStorage.getItem("chR")||""}catch(e){}
+async function maj(){try{const d=await (await fetch("/api/reel",{cache:"no-store"})).json();try{sessionStorage.setItem("triR",t.value);sessionStorage.setItem("chR",q.value)}catch(e){}
+document.getElementById("dep").textContent="D\xE9part \xE0 z\xE9ro : "+(d.depuis?new Date(d.depuis).toLocaleString("fr-CH",{timeZone:"Europe/Paris"}):"\u2014")+" (heure de Paris) \xB7 total des vrais trades : "+f(d.total)+" \xB7 teneur 3309 : servi seul \xE0 un prix plus cher "+d.file3309.servisSeuls+" fois, servi dans la file "+d.file3309.servisFile+" fois, en moyenne "+(d.file3309.fileMoyenne??"\u2014")+" parts devant nous";
+const k=t.value,v={pnl:(x)=>-x.pnl,creux:(x)=>x.n?x.creux:1e18,n:(x)=>-x.n,cycle:(x)=>x.n?x.miseMaxCycle:1e18}[k];const qq=q.value.trim().toLowerCase();
+const S=d.strats.filter(x=>!qq||(/^[0-9]+$/.test(qq)?String(x.num)===qq:x.nom.toLowerCase().includes(qq))).sort((a,b)=>v(a)-v(b)||b.pnl-a.pnl);
+const J=[...new Set(S.flatMap(x=>Object.keys(x.parJour||{})))].sort();
+let h="<div class='card'><div style='overflow-x:auto'><table style='min-width:900px'><tr><th>Rang</th><th>N\xB0</th><th>Strat\xE9gie</th><th>Trades</th><th>Gagn\xE9s / perdus</th><th>R\xE9sultat</th><th>Mise moyenne</th><th>Mise max / cycle</th>"+J.map(j=>"<th>"+j.slice(8,10)+"."+j.slice(5,7)+"</th>").join("")+"<th>Pire trade</th><th>Pertes de suite (max / en cours)</th><th>Creux max</th></tr>"+
+S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td><b>"+(x.num||"")+"</b></td><td>"+x.nom+(x.estimee?" <span style='color:#b45309;font-weight:600'>ESTIM\xC9E</span>":"")+(x.capital!=null?" <span class='mu'>\xB7 capital "+Math.round(x.capital)+" $ \xB7 palier x"+x.palier+"</span>":"")+"</td><td>"+x.n+"</td><td>"+x.gains+" / "+x.pertes+"</td><td class='"+(x.pnl>=0?"ok":"ko")+"'><b>"+f(x.pnl)+"</b></td><td>"+(x.n?(x.mise/x.n).toFixed(2):"0.00")+" $</td><td>"+x.miseMaxCycle+" $</td>"+J.map(j=>"<td class='"+((x.parJour[j]||0)>=0?"ok":"ko")+"'>"+(x.parJour[j]!=null?f(x.parJour[j]):"\u2014")+"</td>").join("")+"<td>"+f(x.pire)+"</td><td>"+x.serieMax+" / "+x.serie+"</td><td>"+f(-x.creux)+"</td></tr>").join("")+"</table></div></div>";
+document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
+t.addEventListener("change",maj);q.addEventListener("input",maj);maj();setInterval(maj,20000);
+<\/script></body></html>`;
 var NOM_3304 = "TENEUR DE MARCH\xC9 mod\xE8le BTC";
 var NOMS_ESTIMES = /* @__PURE__ */ new Set([NOM_3304, "TENEUR DE MARCH\xC9 retrait si les bourses bougent BTC", "TENEUR DE MARCH\xC9 prix pench\xE9s selon le stock BTC", "TENEUR DE MARCH\xC9 \xE9cart variable BTC", "TENEUR DE MARCH\xC9 arr\xEAt 60 s avant la fin BTC", "TENEUR DE MARCH\xC9 file d'attente estim\xE9e BTC"]);
 var PF33_DEPUIS = "2026-11-04T13:00:00Z";
@@ -30391,6 +30514,12 @@ function facteurPrix(p) {
 __name(facteurPrix, "facteurPrix");
 function zCompte(Z, k, heure, net, sans, mise, start) {
   if (ZHOOK && ZHOOK.N && ZHOOK._prixReelMs && !ZHOOK._reel && (Z === ZHOOK.N.zero4 || Z === ZHOOK.N.zero5) && Date.parse(heure) >= ZHOOK._prixReelMs && !NOMS_ESTIMES.has(k)) return;
+  if (ZHOOK && ZHOOK.N && Z === ZHOOK.N.zero4 && NOMS_ESTIMES.has(k) && ZHOOK._reelMs && Date.parse(heure) >= ZHOOK._reelMs && ZHOOK.compteReel) {
+    try {
+      ZHOOK.compteReel(k, heure, net, mise, start, { estime: true });
+    } catch (_) {
+    }
+  }
   if (ZHOOK && ZHOOK.N && !ZHOOK._reel && Z === ZHOOK.N.zero4 && !k.includes(" + mise selon prix") && !k.includes(" palier x2") && ZHOOK.onglet5Garde && ZHOOK.onglet5Garde(k)) {
     const fp = facteurPrix((ZHOOK._zx || {}).prix);
     if (fp > 0) zCompte(Z, k.replace(/ BTC$/, " + mise selon prix BTC"), heure, fp * net, sans, fp * (mise || 0), start);
