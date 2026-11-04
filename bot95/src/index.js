@@ -880,7 +880,7 @@ export class Bot {
       if (this._z5r && this._z5r.includes(NOM_3304)) { this._z5r = this._z5r.filter((x) => x !== NOM_3304); await this.state.storage.put("z5retires", this._z5r); }
       if (!this._z5r) { this._z5r = L.slice(83).map((x) => x.nom); await this.state.storage.put("z5retires", this._z5r); await this.state.storage.put("z5retiresA", new Date().toISOString()); }
       { const R5 = new Set(this._z5r); for (let i = L.length - 1; i >= 0; i--) if (R5.has(L[i].nom)) L.splice(i, 1); }
-      for (const x of L) if (x.nom === NOM_3304) { x.nom = NOM_3304.replace(/ BTC$/, "") + " — ESTIMÉE (trades fantômes, seule exception) BTC"; x.estimee = true; }
+      for (const x of L) if (NOMS_ESTIMES.has(x.nom)) { x.nom = x.nom.replace(/ BTC$/, "") + " — ESTIMÉE (trades fantômes) BTC"; x.estimee = true; }
       return json({ depuis: ZERO4_DEPUIS, debug: this.N.dbg5 || null, strats: L, retires: this._z5r.length, total: +L.filter((x) => !x.nom.includes(" + ")).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), totalIdees: +L.filter((x) => (x.nom.includes(" + ") )).reduce((a2, b2) => a2 + b2.pnl, 0).toFixed(2), enAttente: Object.keys(this.N.idq || {}).length }); }
     if (u.pathname === "/api/catalogue") return json({ maj: "2026-10-27", strategies: CATALOGUE.map((c) => ({ ...c, ...infoOrdres(c.nom + " BTC") })) });
     if (u.pathname === "/numeros") return new Response(PAGE_NUMEROS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -1177,7 +1177,7 @@ export class Bot {
     return 0;
   }
   /** 31.10.2026 17:46 (Pitch : « onglet 5 = stratégies de l'onglet 6 plus les nouvelles, rien d'autre ») */
-  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130) || n === 2140 || n === 2141 || n === 2142 || n === 3304; }
+  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130) || n === 2140 || n === 2141 || n === 2142 || (n >= 3304 && n <= 3308); }
   nums5() { return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS; }
   /** Facteur de mise de l'onglet 6 pour le n° et l'heure du trade (0 = pas compté : stratégie pas encore dans le bot). */
   f5(n, heure) {
@@ -2724,6 +2724,36 @@ export class Bot {
             const rU = NP - su, rD = NP - sd, m = Math.min(rU, rD), net = recu + m + (upGagne ? rU - m : rD - m) - NP;
             const nom = "TENEUR DE MARCHÉ modèle BTC"; this._zx = null; zCompte(N.zero4, nom, new Date(s0 * 1000).toISOString(), net, false, NP, st);
             const z = N.zero4[nom]; if (z) { z.vendusUp = +((z.vendusUp || 0) + su).toFixed(1); z.vendusDown = +((z.vendusDown || 0) + sd).toFixed(1); } } } } catch (err) { this.erreur("teneur de marché", err); try { const D = (N.dbg5 = N.dbg5 || { canari: [], teneur: [], err: [] }); (D.err = D.err || []).push("teneur " + String(err && err.stack || err).slice(0, 300)); D.err = D.err.slice(-5); } catch (_) {} }
+        // 04.11.2026 13:55 (Pitch : « go ») : VARIANTES DE LA 3304 (fantômes, estimées, même calcul de remplissage que la 3304) :
+        // 3305 = se retire d'un côté 5 s quand les bourses (consensus ajusté) bougent de 10 $ ou plus en 3 s contre ce côté ;
+        // 3306 = penche les prix selon le stock (+1 c sur le côté déjà le plus vendu par 5 parts d'avance, −1 c sur l'autre, 3 c au plus ; 20 parts d'avance au plus) ;
+        // 3307 = écart variable : 3 c × (agitation Chainlink des 30 dernières s ÷ celle des 5 dernières min), entre 2 et 8 c, + 2 c dans la dernière minute ;
+        // 3308 = comme la 3304 mais plus aucune vente dans les 60 dernières secondes. Décisions prises avec les données de la seconde d'avant (pas de futur).
+        try { if (s0 * 1000 >= Date.parse(PF33_DEPUIS)) {
+          const g = tous.find((y) => y.gagne != null && y.cote); let upGagne = g ? (g.cote === "Up") === !!g.gagne : null;
+          if (upGagne == null) { const k = val("prix_a_battre", s0 + 150), v = []; for (let u = s0 + 240; u <= s0 + 299; u++) { const c = val("chainlink", u); if (c != null) v.push(c); }
+            if (k != null && v.length >= 40) upGagne = v.reduce((x2, y2) => x2 + y2, 0) / v.length > k; }
+          if (upGagne != null) {
+            const agit = (a, b) => { let s2 = 0, n2 = 0; for (let u = a; u < b; u++) { const x1 = val("chainlink", u), x0 = val("chainlink", u - 1); if (x1 != null && x0 != null) { s2 += Math.abs(x1 - x0); n2++; } } return n2 ? s2 / n2 : null; };
+            const C3 = {}; for (let u = s0 - 4; u <= s0 + 290; u++) C3[u] = cons(u);
+            for (const [num, nomV] of [[3305, "TENEUR DE MARCHÉ retrait si les bourses bougent"], [3306, "TENEUR DE MARCHÉ prix penchés selon le stock"], [3307, "TENEUR DE MARCHÉ écart variable"], [3308, "TENEUR DE MARCHÉ arrêt 60 s avant la fin"]]) {
+              const NP = 100, CLIP = 10, AV = num === 3306 ? 20 : 10; let su = 0, sd = 0, recu = 0; const pause = { Up: 0, Down: 0 };
+              for (let u = s0 + 5; u <= s0 + 290; u++) { const pu = val("proba_up_modele", u - 1), bU = val("pm_up_achat", u - 1), aU = val("pm_up_vente", u - 1); if (pu == null || bU == null || aU == null) continue;
+                if (num === 3308 && u > s0 + 240) break;
+                const l = R[u]; if (!l) continue;
+                if (num === 3305) { const c1 = C3[u - 1], c4 = C3[u - 4]; if (c1 != null && c4 != null) { if (c1 - c4 >= 10) pause.Up = u + 5; if (c4 - c1 >= 10) pause.Down = u + 5; } }
+                let marge = 0.03;
+                if (num === 3307) { const a30 = agit(u - 30, u), a300 = agit(u - 300, u); marge = a30 != null && a300 ? Math.min(0.08, Math.max(0.02, 0.03 * a30 / a300)) : 0.03; if (u > s0 + 240) marge += 0.02; }
+                for (const [cote, fair, aBest, bBest, volUsd, bNow] of [["Up", pu, aU, bU, +l[C["pm_up_echange_achat"]] || 0, val("pm_up_achat", u)], ["Down", 1 - pu, 1 - bU, 1 - aU, +l[C["pm_down_echange_achat"]] || 0, (() => { const v2 = val("pm_up_vente", u); return v2 == null ? null : 1 - v2; })()]]) {
+                  const deja = cote === "Up" ? su : sd, autre = cote === "Up" ? sd : su; if (deja >= NP || deja - autre >= AV) continue;
+                  if (num === 3305 && u < pause[cote]) continue;
+                  let m = marge; if (num === 3306) m += Math.max(-0.03, Math.min(0.03, 0.01 * Math.trunc((deja - autre) / 5)));
+                  const ask = Math.max(Math.ceil((fair + m) * 100) / 100, Math.round(aBest * 100) / 100); if (ask >= 1 || ask <= bBest) continue;
+                  let q = 0; if (bNow != null && bNow >= ask) q = CLIP; else if (volUsd > 0 && aBest >= ask) q = Math.min(CLIP, (ask < aBest ? 1 : 0.5) * volUsd / ask);
+                  q = Math.min(q, NP - deja); if (q <= 0) continue; recu += q * ask; if (cote === "Up") su += q; else sd += q; } }
+              const rU = NP - su, rD = NP - sd, m2 = Math.min(rU, rD), net = recu + m2 + (upGagne ? rU - m2 : rD - m2) - NP;
+              const nom = nomV + " BTC"; this._zx = null; zCompte(N.zero4, nom, new Date(s0 * 1000).toISOString(), net, false, NP, st);
+              const z = N.zero4[nom]; if (z) { z.vendusUp = +((z.vendusUp || 0) + su).toFixed(1); z.vendusDown = +((z.vendusDown || 0) + sd).toFixed(1); } } } } } catch (err) { this.erreur("teneurs 3305-3308", err); }
         // 25.10.2026 21:03 (Pitch : « go ») : méta-stratégies CONSENSUS 6 et CONSENSUS 8 — un seul achat de 50 $ par cycle et par côté, au moment où la 6e (8e) stratégie affichée
         // achète ce côté ; prix = meilleur vendeur 1 s plus tard (enregistrement seconde par seconde), sinon prix payé par cette stratégie ; frais 7 % × p × (1 − p) ; gardé jusqu'au règlement.
         try { const CP = (N.consPris = N.consPris || {});
@@ -4266,7 +4296,9 @@ const ZERO4_DEPUIS = "2026-11-01T23:15:00Z";     // 02.11.2026 00:15 heure de Pa
 const ZERO4_DEPUIS_AVANT = "2026-10-31T18:50:00Z";     // 31.10.2026 19:50 heure de Paris (Pitch : « max 250 $ par cycle, onglet 5 à 0 ») ; avant : 31.10 17:30 et 26.10 12:00 (archivés)
 // 04.11.2026 : n° des stratégies pour lesquelles le bot reçoit des signaux (donc rejouées par le banc d'essai réel)
 const PRIX_REEL_NUMS = [101, 105, 107, 112, 109, 120, 121, 31, 127, 129, 35, 32, 201, 28, 119, 1114, 116, 207, 214, 213, 2, 11, 14, 15, 301, 1011];
-const NOM_3304 = "TENEUR DE MARCHÉ modèle BTC";   // 04.11.2026 : seule ligne de l'onglet 5 encore comptée en fantôme (estimée)
+const NOM_3304 = "TENEUR DE MARCHÉ modèle BTC";   // 04.11.2026 : lignes de l'onglet 5 encore comptées en fantôme (estimées) : 3304 et ses variantes 3305-3308
+const NOMS_ESTIMES = new Set([NOM_3304, "TENEUR DE MARCHÉ retrait si les bourses bougent BTC", "TENEUR DE MARCHÉ prix penchés selon le stock BTC", "TENEUR DE MARCHÉ écart variable BTC", "TENEUR DE MARCHÉ arrêt 60 s avant la fin BTC"]);
+const PF33_DEPUIS = "2026-11-04T13:00:00Z";      // 04.11.2026 14:00 heure de Paris : début des teneurs 3305-3308
 const ONGLET5_MAX_CYCLE = 250;   // 31.10.2026 19:42 (Pitch) : dans l'onglet 5, chaque ligne mise au plus 250 $ par cycle (au-delà, le trade est réduit puis ignoré)
 const CARNET_K = ["corrige : desaccord 20 + carnet BTC", "corrige : desaccord 20 + carnet ecart serre BTC", "corrige : V2-F ecart qui grandit + carnet BTC", "corrige : V2-F ecart qui grandit + carnet ecart serre BTC", "corrige : V2-F + pas les deux baissent + carnet BTC", "corrige : V2-F + pas les deux baissent + carnet ecart serre BTC"];
 const CARNET_NOMS = new Set(CARNET_K.map((k) => k.replace(/ BTC$/, "")));
@@ -4322,7 +4354,7 @@ function zCompte(Z, k, heure, net, sans, mise, start) {
   // 04.11.2026 (Pitch : « je veux le prix possible maintenant ») : onglets 5 et 6 — dès la bascule, plus aucun trade fantôme ;
   // seuls les trades du banc d'essai réel (remplissage réel sur le carnet Polymarket, réglés par Polymarket) sont comptés
   // 04.11.2026 13:47 (Pitch : « garde les mêmes conditions avec trades fantôme pour elle seule ») : seule exception, n° 3304 (teneur de marché, estimée)
-  if (ZHOOK && ZHOOK.N && ZHOOK._prixReelMs && !ZHOOK._reel && (Z === ZHOOK.N.zero4 || Z === ZHOOK.N.zero5) && Date.parse(heure) >= ZHOOK._prixReelMs && k !== NOM_3304) return;
+  if (ZHOOK && ZHOOK.N && ZHOOK._prixReelMs && !ZHOOK._reel && (Z === ZHOOK.N.zero4 || Z === ZHOOK.N.zero5) && Date.parse(heure) >= ZHOOK._prixReelMs && !NOMS_ESTIMES.has(k)) return;
   // 02.11.2026 (Pitch : « un fantôme de cela sur toutes les stratégies de l'onglet 5 ») : chaque ligne de l'onglet 5 a sa jumelle « + mise selon prix »
   if (ZHOOK && ZHOOK.N && !ZHOOK._reel && Z === ZHOOK.N.zero4 && !k.includes(" + mise selon prix") && !k.includes(" palier x2") && ZHOOK.onglet5Garde && ZHOOK.onglet5Garde(k)) {
     const fp = facteurPrix((ZHOOK._zx || {}).prix); if (fp > 0) zCompte(Z, k.replace(/ BTC$/, " + mise selon prix BTC"), heure, fp * net, sans, fp * (mise || 0), start);
