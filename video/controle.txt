@@ -1,15 +1,15 @@
-Total Upload: 25.01 KiB / gzip: 8.51 KiB
-Worker Startup Time: 2 ms
+Total Upload: 25.02 KiB / gzip: 8.51 KiB
+Worker Startup Time: 1 ms
 Your Worker has access to the following bindings:
 Binding                                                              Resource                  
 env.COFFRE (Coffre)                                                  Durable Object            
 env.ASSETS                                                           Assets                    
 env.GEMINI_CHIFFRE ("{"epk":{"kty":"EC","crv":"P-256","x":...")      Environment Variable      
 
-Uploaded video (3.30 sec)
-Deployed video triggers (0.61 sec)
+Uploaded video (3.40 sec)
+Deployed video triggers (0.56 sec)
   https://video.pitch67.workers.dev
-Current Version ID: 691d6c26-a989-46e5-9ecc-2c3a47db76d2
+Current Version ID: 32bea57f-928b-4ab1-a39e-3e11be13e2f2
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
@@ -18,7 +18,7 @@ code sortie: 0
 === etat
 {
  "app": "video-app",
- "version": "1.2.0",
+ "version": "1.2.1",
  "cle_chiffree_presente": true,
  "cle_publique_prete": true,
  "cle_ok": true,
