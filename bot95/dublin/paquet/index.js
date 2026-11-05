@@ -24361,7 +24361,7 @@ var Bot = class {
           parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +(+v).toFixed(2)]))
         };
       }).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
-      return json({ depuis: this._reelDepuis || null, strats: L, total: +L.filter((x) => !x.estimee).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null });
+      return json({ depuis: this._reelDepuis || null, strats: L, total: +L.filter((x) => !x.estimee).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } });
     }
     if (u.pathname === "/excel-reel") {
       const Q = {};
@@ -27270,34 +27270,38 @@ var Bot = class {
   async reconstruireTeneurs() {
     if (this._recT || !this._reelMs || !this.N) return;
     this._recT = true;
-    if (await this.state.storage.get("reel:teneurs1")) return;
-    await this.state.storage.put("reel:teneurs1", { debut: (/* @__PURE__ */ new Date()).toISOString() });
-    const N = this.N;
-    N.reelZ = N.reelZ || {};
-    const TV = N.reelZ.__tv = {}, maj = {};
-    for (const nom of NOMS_ESTIMES) {
-      const L = [], vus = /* @__PURE__ */ new Set();
-      for (const [k, v] of await this.state.storage.list({ prefix: "xreel:" + nom + "|" })) {
-        for (const l of v) {
-          if (vus.has(l[0])) continue;
-          vus.add(l[0]);
-          L.push(l);
+    try {
+      if (await this.state.storage.get("reel:teneurs2")) return;
+      await this.state.storage.put("reel:teneurs2", { debut: (/* @__PURE__ */ new Date()).toISOString() });
+      const N = this.N;
+      N.reelZ = N.reelZ || {};
+      const TV = N.reelZ.__tv = {}, maj = {};
+      for (const nom of NOMS_ESTIMES) {
+        const L = [], vus = /* @__PURE__ */ new Set();
+        for (const [k, v] of await this.state.storage.list({ prefix: "xreel:" + nom + "|" })) {
+          for (const l of v) {
+            if (vus.has(l[0])) continue;
+            vus.add(l[0]);
+            L.push(l);
+          }
+          maj[k] = [];
         }
-        maj[k] = [];
+        L.sort((a, b) => a[0] < b[0] ? -1 : 1);
+        delete N.reelZ[nom];
+        for (const l of L) {
+          const st = Math.floor(Date.parse(l[0]) / 1e3);
+          TV[nom + "|" + st] = 1;
+          zCompte(N.reelZ, nom, l[0], +l[4] || 0, false, 100, st);
+          (maj["xreel:" + nom + "|" + l[0].slice(0, 10)] = maj["xreel:" + nom + "|" + l[0].slice(0, 10)] || []).push(l);
+        }
       }
-      L.sort((a, b) => a[0] < b[0] ? -1 : 1);
-      delete N.reelZ[nom];
-      for (const l of L) {
-        const st = Math.floor(Date.parse(l[0]) / 1e3);
-        TV[nom + "|" + st] = 1;
-        zCompte(N.reelZ, nom, l[0], +l[4] || 0, false, 100, st);
-        (maj["xreel:" + nom + "|" + l[0].slice(0, 10)] = maj["xreel:" + nom + "|" + l[0].slice(0, 10)] || []).push(l);
-      }
+      const E = Object.entries(maj);
+      for (let i = 0; i < E.length; i += 64) await this.state.storage.put(Object.fromEntries(E.slice(i, i + 64)));
+      await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
+      await this.state.storage.put("reel:teneurs2", { at: (/* @__PURE__ */ new Date()).toISOString(), cycles: Object.keys(TV).length });
+    } catch (err) {
+      await this.state.storage.put("reel:teneurs2", { erreur: String(err && err.stack || err).slice(0, 400) });
     }
-    const E = Object.entries(maj);
-    for (let i = 0; i < E.length; i += 64) await this.state.storage.put(Object.fromEntries(E.slice(i, i + 64)));
-    await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
-    await this.state.storage.put("reel:teneurs1", { at: (/* @__PURE__ */ new Date()).toISOString() });
   }
   /** 04.11.2026 17:22 : un trade dans le tableau des vrais trades — PLAFOND_REEL $ au plus par cycle et par stratégie (frais compris), trade réduit au reste, sinon ignoré. */
   compteReel(nom, heure, net, mise, start, ctx = {}) {
