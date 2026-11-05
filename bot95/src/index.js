@@ -985,7 +985,7 @@ export class Bot {
       const noms = new Set([...CATALOGUE.map((c) => c.nom + " BTC").filter((nom) => this.onglet5Garde(nom) && !R5.has(nom)), ...NOMS_ESTIMES]);
       const vide = () => ({ n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {} });
       const z9 = (N.zero4 || {})["TENEUR DE MARCHÉ file d'attente estimée BTC"] || {};
-      const L = [...noms].map((nom) => { const z = Z[nom] || vide(); return { nom: nom.replace(/ BTC$/, ""), num: numDe(nom), estimee: NOMS_ESTIMES.has(nom), n: z.n, gains: z.gains, pertes: z.pertes, pnl: +(+z.pnl).toFixed(2), mise: +(+(z.mise || 0)).toFixed(2), miseMaxCycle: Math.round(z.miseMaxCycle || 0), pire: +(+z.pire).toFixed(2), creux: +(+z.creux).toFixed(2), serie: z.serie, serieMax: z.serieMax, capital: z.capital, palier: z.palier,
+      const L = [...noms].filter((nom) => nom !== "__tv").map((nom) => { const z = Z[nom] || vide(); return { nom: nom.replace(/ BTC$/, ""), num: numDe(nom), estimee: NOMS_ESTIMES.has(nom), n: z.n, gains: z.gains, pertes: z.pertes, pnl: +(+z.pnl).toFixed(2), mise: +(+(z.mise || 0)).toFixed(2), miseMaxCycle: Math.round(z.miseMaxCycle || 0), pire: +(+z.pire).toFixed(2), creux: +(+z.creux).toFixed(2), serie: z.serie, serieMax: z.serieMax, capital: z.capital, palier: z.palier,
         parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +(+v).toFixed(2)])) }; }).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
       return json({ depuis: this._reelDepuis || null, strats: L, total: +L.filter((x) => !x.estimee).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null }); }
     if (u.pathname === "/excel-reel") { const Q = {};
@@ -2467,6 +2467,7 @@ export class Bot {
       await zSauver(this.state.storage, "nv:reel6", N.reel6); await this.state.storage.put("prixreel:snap", new Date().toISOString());
     }
     try { await this.reconstruireReel200(); } catch (err) { this.erreur("reconstruction vrais trades 200 $", err); }
+    try { await this.reconstruireTeneurs(); } catch (err) { this.erreur("reconstruction teneurs", err); }
     const dep = new Date(Math.floor(Math.max(this._prixReelMs, Date.now() - 6 * 3600000) / 300000) * 300000).toISOString();
     const r = await fetch("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=" + encodeURIComponent(dep), { headers: { "cache-control": "no-store" } });
     if (!r.ok) throw new Error("HTTP " + r.status);
@@ -2551,10 +2552,29 @@ export class Bot {
     await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
     await this.state.storage.put("reel:rebuild200b", { at: new Date().toISOString(), trades: utiles.length });
   }
+  /** 05.11.2026 : teneurs de marché du tableau des vrais trades recomptés depuis leurs lignes, un seul résultat par cycle (doublons retirés). */
+  async reconstruireTeneurs() {
+    if (this._recT || !this._reelMs || !this.N) return; this._recT = true;
+    if (await this.state.storage.get("reel:teneurs1")) return;
+    await this.state.storage.put("reel:teneurs1", { debut: new Date().toISOString() });
+    const N = this.N; N.reelZ = N.reelZ || {}; const TV = (N.reelZ.__tv = {}), maj = {};
+    for (const nom of NOMS_ESTIMES) {
+      const L = [], vus = new Set();
+      for (const [k, v] of await this.state.storage.list({ prefix: "xreel:" + nom + "|" })) { for (const l of v) { if (vus.has(l[0])) continue; vus.add(l[0]); L.push(l); } maj[k] = []; }
+      L.sort((a, b) => (a[0] < b[0] ? -1 : 1)); delete N.reelZ[nom];
+      for (const l of L) { const st = Math.floor(Date.parse(l[0]) / 1000); TV[nom + "|" + st] = 1; zCompte(N.reelZ, nom, l[0], +l[4] || 0, false, 100, st); (maj["xreel:" + nom + "|" + l[0].slice(0, 10)] = maj["xreel:" + nom + "|" + l[0].slice(0, 10)] || []).push(l); }
+    }
+    const E = Object.entries(maj); for (let i = 0; i < E.length; i += 64) await this.state.storage.put(Object.fromEntries(E.slice(i, i + 64)));
+    await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
+    await this.state.storage.put("reel:teneurs1", { at: new Date().toISOString() });
+  }
   /** 04.11.2026 17:22 : un trade dans le tableau des vrais trades — PLAFOND_REEL $ au plus par cycle et par stratégie (frais compris), trade réduit au reste, sinon ignoré. */
   compteReel(nom, heure, net, mise, start, ctx = {}) {
     if (this.SG || !this.N || !this._reelMs || Date.parse(heure) < this._reelMs) return;
     const N = this.N; N.reelZ = N.reelZ || {};
+    // 05.11.2026 : un cycle de teneur de marché (estimé) n'est compté qu'UNE fois, même si le calcul fantôme repasse sur le cycle
+    if (ctx.estime && start) { const TV = (N.reelZ.__tv = N.reelZ.__tv || {}), cle = nom + "|" + start; if (TV[cle]) return; TV[cle] = 1;
+      if (Math.random() < 0.02) for (const x of Object.keys(TV)) if (+x.split("|").pop() < start - 2 * 86400) delete TV[x]; }
     let parts = ctx.parts ?? null;
     if (start && mise > 0) { const C = (this._capR = this._capR || {}), ck = nom + "|" + start, deja = C[ck] || 0, reste = PLAFOND_REEL - deja;
       if (reste <= 0.01) return;
