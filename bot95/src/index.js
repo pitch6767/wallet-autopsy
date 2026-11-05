@@ -987,7 +987,7 @@ export class Bot {
       const z9 = (N.zero4 || {})["TENEUR DE MARCHÉ file d'attente estimée BTC"] || {};
       const L = [...noms].filter((nom) => nom !== "__tv").map((nom) => { const z = Z[nom] || vide(); return { nom: nom.replace(/ BTC$/, ""), num: numDe(nom), estimee: NOMS_ESTIMES.has(nom), n: z.n, gains: z.gains, pertes: z.pertes, pnl: +(+z.pnl).toFixed(2), mise: +(+(z.mise || 0)).toFixed(2), miseMaxCycle: Math.round(z.miseMaxCycle || 0), pire: +(+z.pire).toFixed(2), creux: +(+z.creux).toFixed(2), serie: z.serie, serieMax: z.serieMax, capital: z.capital, palier: z.palier,
         parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +(+v).toFixed(2)])) }; }).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
-      return json({ depuis: this._reelDepuis || null, strats: L, total: +L.filter((x) => !x.estimee).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null }); }
+      return json({ depuis: this._reelDepuis || null, strats: L, total: +L.filter((x) => !x.estimee).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } }); }
     if (u.pathname === "/excel-reel") { const Q = {};
       for (const [kk, v] of await this.state.storage.list({ prefix: "xreel:" })) { const k = kk.slice(6, kk.lastIndexOf("|")); (Q[k] = Q[k] || []).push(...v); }
       for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => (a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0));
@@ -2555,8 +2555,9 @@ export class Bot {
   /** 05.11.2026 : teneurs de marché du tableau des vrais trades recomptés depuis leurs lignes, un seul résultat par cycle (doublons retirés). */
   async reconstruireTeneurs() {
     if (this._recT || !this._reelMs || !this.N) return; this._recT = true;
-    if (await this.state.storage.get("reel:teneurs1")) return;
-    await this.state.storage.put("reel:teneurs1", { debut: new Date().toISOString() });
+    try {
+    if (await this.state.storage.get("reel:teneurs2")) return;
+    await this.state.storage.put("reel:teneurs2", { debut: new Date().toISOString() });
     const N = this.N; N.reelZ = N.reelZ || {}; const TV = (N.reelZ.__tv = {}), maj = {};
     for (const nom of NOMS_ESTIMES) {
       const L = [], vus = new Set();
@@ -2566,7 +2567,8 @@ export class Bot {
     }
     const E = Object.entries(maj); for (let i = 0; i < E.length; i += 64) await this.state.storage.put(Object.fromEntries(E.slice(i, i + 64)));
     await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
-    await this.state.storage.put("reel:teneurs1", { at: new Date().toISOString() });
+    await this.state.storage.put("reel:teneurs2", { at: new Date().toISOString(), cycles: Object.keys(TV).length });
+    } catch (err) { await this.state.storage.put("reel:teneurs2", { erreur: String((err && err.stack) || err).slice(0, 400) }); }
   }
   /** 04.11.2026 17:22 : un trade dans le tableau des vrais trades — PLAFOND_REEL $ au plus par cycle et par stratégie (frais compris), trade réduit au reste, sinon ignoré. */
   compteReel(nom, heure, net, mise, start, ctx = {}) {
