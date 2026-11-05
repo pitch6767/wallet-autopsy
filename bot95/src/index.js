@@ -979,6 +979,7 @@ export class Bot {
     // 03.11.2026 08:01 (Pitch) : l'adresse suit le numéro de l'onglet — /zero5 = onglet 5, /zero6 = onglet 6 (/zero4 renvoie à l'onglet 5)
     // 04.11.2026 17:22 (Pitch : « tu enlèves tous les onglets de l'app et tu recommences à 0 que avec des vrais trades ») : une seule page.
     // Les anciens onglets fantômes sont cachés (redirigés), leurs données sont gardées.
+    if (u.pathname === "/lecons") return new Response(PAGE_LECONS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/reel") return new Response(PAGE_REEL, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/api/reel") { const N = this.N || {}, Z = N.reelZ || {}, R5 = new Set(this._z5r || (await this.state.storage.get("z5retires")) || []);
       const noms = new Set([...CATALOGUE.map((c) => c.nom + " BTC").filter((nom) => this.onglet5Garde(nom) && !R5.has(nom)), ...NOMS_ESTIMES]);
@@ -4373,6 +4374,7 @@ const PAGE_REEL = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><m
 <h1>Vrais trades — toutes les stratégies de l'onglet 5</h1>
 <div class="mu">Seulement des trades réels : chaque signal réellement reçu par le bot (moteur de Dublin) est joué sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix du signal + 5 c, frais compris) et réglé par le résultat officiel de Polymarket. 250 $ au plus par cycle et par stratégie, frais compris (trade réduit au reste, sinon ignoré). Aucun argent réel engagé. <b>Exception : les teneurs de marché (n° 3304 à 3309) sont ESTIMÉS</b> — ordres posés dans le carnet, impossibles à jouer sans vrais ordres.</div>
 <div class="mu" id="dep"></div>
+<div class="mu"><a href="/lecons" style="font-weight:600">📘 Leçons du projet (erreurs, corrections, vitesse)</a></div>
 <div class="mu"><a href="/excel-reel" style="font-weight:600">📥 Fichier Excel des vrais trades (une ligne par trade, N° et stratégie en deux colonnes, filtres)</a></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom" style="font-size:1.05em;padding:8px 10px;width:min(360px,90%);border-radius:8px;border:1px solid #8886"> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur résultat</option><option value="creux">Trier : plus petit creux</option><option value="n">Trier : plus de trades</option><option value="cycle">Trier : moins de mise par cycle</option></select></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
@@ -4389,6 +4391,232 @@ S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td><b>"+(x.num||"")+"</b></td><td>"+x.nom+(
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 t.addEventListener("change",maj);q.addEventListener("input",maj);maj();setInterval(maj,20000);
 </script></body></html>`;
+// 05.11.2026 (Pitch : « répète toutes les conneries … et toutes les façons que tu as corrigé … et la vitesse ») : page des leçons du projet
+const PAGE_LECONS = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Leçons du bot</title>${STYLE}<style>table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border:1px solid #8884;padding:6px;vertical-align:top;text-align:left}h1,h2{margin-top:18px}</style></head><body>
+<div class="mu"><a href="/reel">← Vrais trades</a></div>
+<h1>Leçons du bot de trading BTC 5 min Polymarket (oct.–nov. 2026)</h1>
+<p>À lire AVANT de construire ou de modifier un bot. Chaque ligne = un problème réellement rencontré → la correction faite.</p>
+<h2>1. Mesurer juste (les erreurs qui ont coûté le plus)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Problème rencontré</th>
+<th>Correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Les <strong>fantômes</strong> comptaient chaque trade au <strong>prix du signal</strong>, sans regarder ce que le carnet offrait vraiment → résultats surestimés (≈ 30 % puis bien plus).</td>
+<td><strong>Banc d'essai réel</strong> : chaque signal est rejoué sur le <strong>vrai carnet Polymarket</strong> (même rafale que le bot), frais compris, réglé par le <strong>résultat officiel</strong> de Polymarket.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Les fantômes (moteur Cloudflare + filtres appliqués après coup) comptaient des trades que le bot <strong>ne reçoit jamais</strong> : sur la 101/105, 32 trades sur 72 jamais envoyés par le moteur de Dublin.</td>
+<td>On ne mesure que les <strong>signaux réellement reçus par le bot</strong>. Page unique « Vrais trades » ; onglets fantômes cachés.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Règlement <strong>provisoire</strong> (prix OKX) compté comme définitif : 34 trades retournés après confirmation Polymarket (gagné ↔ perdu).</td>
+<td>Bilan, gain du jour, historique, séries : <strong>seulement les trades confirmés par Polymarket</strong> ; badge « en attente de confirmation ».</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Une stratégie choisie sur les fantômes (<strong>2114</strong> : +29 563 $ fantôme sur 5 jours) a perdu <strong>≈ −3 650 $</strong> au prix réel en 24 h.</td>
+<td><strong>Ne jamais choisir une stratégie sur des fantômes.</strong> Seulement sur le banc réel, plusieurs jours, plusieurs périodes.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Limite « prix du signal + 5 c » : sur un jeton à 0,02 on a payé 0,062 (×3), à 0,06 → 0,11 (×1,8). Un pari bon marché acheté 2-3× plus cher rapporte 2-3× moins quand il gagne, mais perd toute la mise.</td>
+<td>Le banc mesure aussi <strong>+1 c, +2 c, +20 % du prix</strong> (et des mises réduites) pour choisir la limite sur des vrais chiffres.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Multiplicateurs x6 à x12 justement sur les jetons pas chers → 250 $ misés sur des chances de 5-20 %.</td>
+<td>Vue « multiplicateur plafonné sous 0,20 » au banc ; à décider sur données réelles.</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>PAPER ≠ LIVE</strong> : PAPER achetait pendant 10 s, LIVE envoyait un seul ordre.</td>
+<td>Rafale LIVE identique (ordres FAK successifs 10 s, budget restant) ; PAPER attend aussi les 150 ms du délai preneur Polymarket.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Mise annoncée 50 $ alors que la stratégie (207) a un x2 intégré (≈ 105 $).</td>
+<td>Toujours donner la <strong>mise réelle</strong> (mise × multiplicateur).</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Chiffres du jour donnés depuis les fantômes (« faux aujourd'hui »).</td>
+<td>Dire clairement <strong>fantôme / provisoire / estimé / réel</strong> pour chaque chiffre.</td>
+</tr>
+</tbody>
+</table>
+<h2>2. Argent et comptes</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Problème</th>
+<th>Correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td>Plafond 250 $ par cycle appliqué <strong>avant les frais</strong> → cycles à 264-266 $.</td>
+<td>250 $ par cycle <strong>frais compris</strong>, pour <strong>toutes</strong> les stratégies, PAPER et LIVE (trade réduit au reste, sinon ignoré).</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Réserve système « 20 % » : chaque minuit, tout ce qui dépasse l'objectif du jour est mis de côté et <strong>jamais rejoué</strong> → capital de trading tombé à 16 $, bot bloqué toute la nuit <strong>sans prévenir</strong>.</td>
+<td><strong>Alerte téléphone (ntfy)</strong> dès qu'un signal est refusé faute de capital (1 fois / 30 min). Savoir où est l'argent : capital de trading ≠ réserve.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>En PAPER, <strong>recharge automatique de 1 000 $</strong> quand le capital tombait à zéro = argent inventé.</td>
+<td>Recharge supprimée (PAPER comme LIVE) ; correction comptable faite.</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Ma correction a retiré 1 000 $ alors que la recharge réelle était 994,41 $ (5,59 $ de trop).</td>
+<td>Toujours prendre le <strong>montant exact du journal</strong>, pas un chiffre rond.</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Journal de réconciliation affichant « ajusté +0,00 $ » alors que −660 $ (valeur lue après modification).</td>
+<td>Lire l'ancienne valeur <strong>avant</strong> de modifier.</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Rattrapage des trades manqués : ajouté à l'historique sans tenir compte des règles.</td>
+<td>Rattrapage = trades du banc réel, même règle 250 $/cycle, jamais deux fois le même.</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Un ordre sans réponse traité comme refusé.</td>
+<td>« À vérifier » : mise réservée, vérification sur le compte (5 s → plusieurs minutes), jamais conclu trop tôt.</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Configuration et déploiement</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Problème</th>
+<th>Correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>17</td>
+<td>Limite de <strong>15 cases</strong> découverte au moment du déploiement.</td>
+<td>Vérifier les limites avant ; demander à Pitch quelle case remplacer.</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Multiplicateur maximum d'un portefeuille trop bas (x6 au lieu de x12) → signal refusé à tort.</td>
+<td>Calculer le maximum réel : multiplicateur reçu × règle de la version.</td>
+</tr>
+<tr>
+<td>19</td>
+<td>« Enlever depuis le rang 84 » a aussi enlevé la 3304 sans le dire.</td>
+<td><strong>Lister les noms</strong> avant de retirer quoi que ce soit ; cacher, ne jamais effacer.</td>
+</tr>
+<tr>
+<td>20</td>
+<td>/zero5 ouvrait l'onglet 6.</td>
+<td>L'adresse suit le numéro de l'onglet.</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Excel : plantage Cloudflare (20 000 liens, tri qui recalculait les numéros 600 000 fois).</td>
+<td>Un lien par stratégie, numéros calculés une fois.</td>
+</tr>
+<tr>
+<td>22</td>
+<td>Fichier du banc (≈ 60 Mo) réécrit toutes les 15 s.</td>
+<td>Journal <strong>en ajout</strong> (une ligne par signal / règlement), compacté au démarrage.</td>
+</tr>
+<tr>
+<td>23</td>
+<td>Fantômes 3303/3304 à zéro : règlement seulement sur certains cycles, diagnostic gardé en mémoire.</td>
+<td>Tous les cycles ; diagnostic sauvegardé.</td>
+</tr>
+<tr>
+<td>24</td>
+<td>Le moteur téléchargeait son code depuis GitHub sans vérification.</td>
+<td>Paquet <strong>épinglé + empreinte SHA-256</strong> vérifiée ; mise à jour seulement sur action explicite.</td>
+</tr>
+<tr>
+<td>25</td>
+<td>Conteneur de Claude remplacé : dépôts et clé d'accès perdus.</td>
+<td>Tout passe par <strong>Replit</strong> (déploiement, lecture du VPS) ; dépôts re-clonés.</td>
+</tr>
+<tr>
+<td>26</td>
+<td><code>git pull</code> bloqué ; push refusé (dépôt modifié entre-temps, ou fichier de workflow sans droit).</td>
+<td><code>fetch</code> + <code>rebase</code> avec délai ; pas de nouveau workflow GitHub (minutes = dépense).</td>
+</tr>
+<tr>
+<td>27</td>
+<td>raw.githubusercontent.com renvoyait l'ancienne version (cache).</td>
+<td>Toujours une <strong>adresse figée sur le commit</strong>.</td>
+</tr>
+<tr>
+<td>28</td>
+<td>Sortie recopiée par Replit tronquée (texte entre « &lt; » et « &gt; » avalé).</td>
+<td>Pas de « &lt; » ni « &gt; » dans ce qu'on fait recopier.</td>
+</tr>
+<tr>
+<td>29</td>
+<td>Replit occupé → demande refusée.</td>
+<td>Attendre et réessayer ; une seule demande à la fois.</td>
+</tr>
+<tr>
+<td>30</td>
+<td>Tests cassés par l'environnement (MAX_CREUX absent, mode live en test).</td>
+<td>Variables de test explicites ; mode forcé à PAPER dans les tests.</td>
+</tr>
+<tr>
+<td>31</td>
+<td>Les deux moteurs (Cloudflare et Dublin) ne voient pas exactement la même chose → ils ne sont pas toujours d'accord.</td>
+<td>Une seule source d'achat (Dublin) et on mesure <strong>cette</strong> source.</td>
+</tr>
+<tr>
+<td>32</td>
+<td>Moteur : erreurs « trop de demandes » (HTTP 429) sur le prix d'ouverture Polymarket.</td>
+<td>Non résolu : à surveiller (le prix à battre vient aussi de Chainlink).</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Sécurité (déjà en place)</h2>
+<p>Pare-feu ; SSH durci ; mises à jour ; AIDE chaque nuit 03:30 ; auditd ; en-têtes web ; bot95 en lecture seule depuis internet ; LIVE impossible sans les 4 plafonds (MAX_MISE_ORDRE, MAX_MISE_CYCLE, MAX_PERTE_JOUR, MAX_CREUX) ; alertes ntfy ; aucune clé dans Git ni dans une conversation. Vérifié : rien de tout cela ne ralentit le bot.</p>
+<h2>5. Vitesse — tout ce qui a été fait</h2>
+<ol>
+<li>Serveur à <strong>Dublin</strong> (≈ 3,9 ms du moteur de Polymarket à Londres).</li>
+<li>Moteur de signaux <strong>sur le même serveur</strong> que le bot (127.0.0.1) au lieu de Cloudflare (≈ 19 ms aller-retour).</li>
+<li>Flux <strong>PolyBolt</strong> en mode auto : prix Polymarket ≈ 230-250 ms plus tôt que le flux RTDS.</li>
+<li>Binance via <strong>data-stream.binance.vision</strong> (Binance bloque Dublin : erreur 451).</li>
+<li>Chaque flux <strong>relancé après 10 s de silence</strong>.</li>
+<li>Moteur réévalué <strong>à chaque prix</strong>, au plus toutes les 50 ms (Binance, Coinbase, Chainlink).</li>
+<li><strong>Ordres pré-signés</strong>, paramètres du marché en cache : <strong>aucun appel réseau avant l'envoi</strong>.</li>
+<li><strong>Carnet en mémoire</strong> par websocket (cycle en cours + suivant, jamais coupé) : pas d'aller-retour pour connaître les prix.</li>
+<li>Connexion <strong>permanente</strong> et signée bot ↔ moteur.</li>
+<li>Chronométrage de chaque ordre : réception → envoi → réponse.</li>
+<li>Allègements : heure suisse calculée une fois par minute ; on ne réécrit que ce qui a changé.</li>
+<li>Limite incompressible : Polymarket exécute les ordres preneurs des marchés crypto <strong>150 ms</strong> après réception.</li>
+<li>Prototype d'exécuteur en <strong>Rust</strong> (branche rust-executeur), pas encore utilisé.</li>
+</ol>
+<h2>6. Méthode à garder</h2>
+<ul>
+<li>Une hypothèse à la fois, données réelles, aucune fuite du futur, verdict sur des jours inédits (méthode « étude fantôme »).</li>
+<li>Claude propose, Pitch décide. Tester avant chaque déploiement, vérifier après chaque action.</li>
+<li>Ce qu'on ne peut pas mesurer sans vrais ordres (place dans la file d'attente, concurrence) : seulement par un <strong>petit test LIVE</strong> plafonné.</li>
+</ul>
+</body></html>`;
 const NOM_3304 = "TENEUR DE MARCHÉ modèle BTC";   // 04.11.2026 : lignes de l'onglet 5 encore comptées en fantôme (estimées) : 3304 et ses variantes 3305-3308
 const NOMS_ESTIMES = new Set([NOM_3304, "TENEUR DE MARCHÉ retrait si les bourses bougent BTC", "TENEUR DE MARCHÉ prix penchés selon le stock BTC", "TENEUR DE MARCHÉ écart variable BTC", "TENEUR DE MARCHÉ arrêt 60 s avant la fin BTC", "TENEUR DE MARCHÉ file d'attente estimée BTC"]);
 const PF33_DEPUIS = "2026-11-04T13:00:00Z";      // 04.11.2026 14:00 heure de Paris : début des teneurs 3305-3308
