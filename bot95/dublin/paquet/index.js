@@ -27220,7 +27220,7 @@ var Bot = class {
   /** 05.11.2026 18:00 (Pitch : « tout le reste à 200 $ ») : reconstruction UNIQUE du tableau des vrais trades avec 200 $ par cycle, depuis son départ. */
   async reconstruireReel200() {
     if (this._reb200 || !this._reelMs || !this.N) return;
-    const etat = await this.state.storage.get("reel:rebuild200") || {};
+    const etat = await this.state.storage.get("reel:rebuild200b") || {};
     if (etat.at || (etat.essais || 0) >= 3) {
       this._reb200 = true;
       return;
@@ -27241,7 +27241,7 @@ var Bot = class {
     const R5 = new Set(this._z5r || await this.state.storage.get("z5retires") || []);
     const vus = this._prVus = this._prVus || await this.state.storage.get("prixreel:vus") || {};
     this._reb200 = true;
-    await this.state.storage.put("reel:rebuild200", { debut: (/* @__PURE__ */ new Date()).toISOString(), essais: (etat.essais || 0) + 1 });
+    await this.state.storage.put("reel:rebuild200b", { debut: (/* @__PURE__ */ new Date()).toISOString(), essais: (etat.essais || 0) + 1 });
     this._xbuf = {};
     const utiles = d.trades.filter((t) => t.num === 2110 || (() => {
       const c = catalogue_default.find((x) => x.n === t.num);
@@ -27259,7 +27259,7 @@ var Bot = class {
     for (let i = 0; i < E.length; i += 64) await this.state.storage.put(Object.fromEntries(E.slice(i, i + 64)));
     await this.state.storage.put("reel:palier", this._palR);
     await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
-    await this.state.storage.put("reel:rebuild200", { at: (/* @__PURE__ */ new Date()).toISOString(), trades: utiles.length });
+    await this.state.storage.put("reel:rebuild200b", { at: (/* @__PURE__ */ new Date()).toISOString(), trades: utiles.length });
   }
   /** 04.11.2026 17:22 : un trade dans le tableau des vrais trades — PLAFOND_REEL $ au plus par cycle et par stratégie (frais compris), trade réduit au reste, sinon ignoré. */
   compteReel(nom, heure, net, mise, start, ctx = {}) {
@@ -27278,7 +27278,7 @@ var Bot = class {
       }
       C2[ck] = deja + mise;
       if (Math.random() < 0.02) {
-        const lim = Math.floor(Date.now() / 1e3) - 3600;
+        const lim = start - 3600;
         for (const x of Object.keys(C2)) if (+x.split("|").pop() < lim) delete C2[x];
       }
     }
