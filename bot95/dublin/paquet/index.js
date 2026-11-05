@@ -24333,6 +24333,7 @@ var Bot = class {
       }
       return json(C2.r);
     }
+    if (u.pathname === "/lecons") return new Response(PAGE_LECONS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/reel") return new Response(PAGE_REEL, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/api/reel") {
       const N = this.N || {}, Z = N.reelZ || {}, R5 = new Set(this._z5r || await this.state.storage.get("z5retires") || []);
@@ -30382,6 +30383,7 @@ var PAGE_REEL = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><met
 <h1>Vrais trades \u2014 toutes les strat\xE9gies de l'onglet 5</h1>
 <div class="mu">Seulement des trades r\xE9els : chaque signal r\xE9ellement re\xE7u par le bot (moteur de Dublin) est jou\xE9 sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix du signal + 5 c, frais compris) et r\xE9gl\xE9 par le r\xE9sultat officiel de Polymarket. 250 $ au plus par cycle et par strat\xE9gie, frais compris (trade r\xE9duit au reste, sinon ignor\xE9). Aucun argent r\xE9el engag\xE9. <b>Exception : les teneurs de march\xE9 (n\xB0 3304 \xE0 3309) sont ESTIM\xC9S</b> \u2014 ordres pos\xE9s dans le carnet, impossibles \xE0 jouer sans vrais ordres.</div>
 <div class="mu" id="dep"></div>
+<div class="mu"><a href="/lecons" style="font-weight:600">\u{1F4D8} Le\xE7ons du projet (erreurs, corrections, vitesse)</a></div>
 <div class="mu"><a href="/excel-reel" style="font-weight:600">\u{1F4E5} Fichier Excel des vrais trades (une ligne par trade, N\xB0 et strat\xE9gie en deux colonnes, filtres)</a></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom" style="font-size:1.05em;padding:8px 10px;width:min(360px,90%);border-radius:8px;border:1px solid #8886"> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur r\xE9sultat</option><option value="creux">Trier : plus petit creux</option><option value="n">Trier : plus de trades</option><option value="cycle">Trier : moins de mise par cycle</option></select></div>
 <div id="app" style="margin-top:12px">Chargement\u2026</div>
@@ -30398,6 +30400,231 @@ S.map((x,i)=>"<tr><td>"+(i+1)+"</td><td><b>"+(x.num||"")+"</b></td><td>"+x.nom+(
 document.getElementById("app").innerHTML=h;}catch(e){document.getElementById("app").textContent="Erreur : "+e;}}
 t.addEventListener("change",maj);q.addEventListener("input",maj);maj();setInterval(maj,20000);
 <\/script></body></html>`;
+var PAGE_LECONS = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Le\xE7ons du bot</title>${STYLE}<style>table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border:1px solid #8884;padding:6px;vertical-align:top;text-align:left}h1,h2{margin-top:18px}</style></head><body>
+<div class="mu"><a href="/reel">\u2190 Vrais trades</a></div>
+<h1>Le\xE7ons du bot de trading BTC 5 min Polymarket (oct.\u2013nov. 2026)</h1>
+<p>\xC0 lire AVANT de construire ou de modifier un bot. Chaque ligne = un probl\xE8me r\xE9ellement rencontr\xE9 \u2192 la correction faite.</p>
+<h2>1. Mesurer juste (les erreurs qui ont co\xFBt\xE9 le plus)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Probl\xE8me rencontr\xE9</th>
+<th>Correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Les <strong>fant\xF4mes</strong> comptaient chaque trade au <strong>prix du signal</strong>, sans regarder ce que le carnet offrait vraiment \u2192 r\xE9sultats surestim\xE9s (\u2248 30 % puis bien plus).</td>
+<td><strong>Banc d'essai r\xE9el</strong> : chaque signal est rejou\xE9 sur le <strong>vrai carnet Polymarket</strong> (m\xEAme rafale que le bot), frais compris, r\xE9gl\xE9 par le <strong>r\xE9sultat officiel</strong> de Polymarket.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Les fant\xF4mes (moteur Cloudflare + filtres appliqu\xE9s apr\xE8s coup) comptaient des trades que le bot <strong>ne re\xE7oit jamais</strong> : sur la 101/105, 32 trades sur 72 jamais envoy\xE9s par le moteur de Dublin.</td>
+<td>On ne mesure que les <strong>signaux r\xE9ellement re\xE7us par le bot</strong>. Page unique \xAB Vrais trades \xBB ; onglets fant\xF4mes cach\xE9s.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>R\xE8glement <strong>provisoire</strong> (prix OKX) compt\xE9 comme d\xE9finitif : 34 trades retourn\xE9s apr\xE8s confirmation Polymarket (gagn\xE9 \u2194 perdu).</td>
+<td>Bilan, gain du jour, historique, s\xE9ries : <strong>seulement les trades confirm\xE9s par Polymarket</strong> ; badge \xAB en attente de confirmation \xBB.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Une strat\xE9gie choisie sur les fant\xF4mes (<strong>2114</strong> : +29 563 $ fant\xF4me sur 5 jours) a perdu <strong>\u2248 \u22123 650 $</strong> au prix r\xE9el en 24 h.</td>
+<td><strong>Ne jamais choisir une strat\xE9gie sur des fant\xF4mes.</strong> Seulement sur le banc r\xE9el, plusieurs jours, plusieurs p\xE9riodes.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Limite \xAB prix du signal + 5 c \xBB : sur un jeton \xE0 0,02 on a pay\xE9 0,062 (\xD73), \xE0 0,06 \u2192 0,11 (\xD71,8). Un pari bon march\xE9 achet\xE9 2-3\xD7 plus cher rapporte 2-3\xD7 moins quand il gagne, mais perd toute la mise.</td>
+<td>Le banc mesure aussi <strong>+1 c, +2 c, +20 % du prix</strong> (et des mises r\xE9duites) pour choisir la limite sur des vrais chiffres.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Multiplicateurs x6 \xE0 x12 justement sur les jetons pas chers \u2192 250 $ mis\xE9s sur des chances de 5-20 %.</td>
+<td>Vue \xAB multiplicateur plafonn\xE9 sous 0,20 \xBB au banc ; \xE0 d\xE9cider sur donn\xE9es r\xE9elles.</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>PAPER \u2260 LIVE</strong> : PAPER achetait pendant 10 s, LIVE envoyait un seul ordre.</td>
+<td>Rafale LIVE identique (ordres FAK successifs 10 s, budget restant) ; PAPER attend aussi les 150 ms du d\xE9lai preneur Polymarket.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Mise annonc\xE9e 50 $ alors que la strat\xE9gie (207) a un x2 int\xE9gr\xE9 (\u2248 105 $).</td>
+<td>Toujours donner la <strong>mise r\xE9elle</strong> (mise \xD7 multiplicateur).</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Chiffres du jour donn\xE9s depuis les fant\xF4mes (\xAB faux aujourd'hui \xBB).</td>
+<td>Dire clairement <strong>fant\xF4me / provisoire / estim\xE9 / r\xE9el</strong> pour chaque chiffre.</td>
+</tr>
+</tbody>
+</table>
+<h2>2. Argent et comptes</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Probl\xE8me</th>
+<th>Correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td>Plafond 250 $ par cycle appliqu\xE9 <strong>avant les frais</strong> \u2192 cycles \xE0 264-266 $.</td>
+<td>250 $ par cycle <strong>frais compris</strong>, pour <strong>toutes</strong> les strat\xE9gies, PAPER et LIVE (trade r\xE9duit au reste, sinon ignor\xE9).</td>
+</tr>
+<tr>
+<td>11</td>
+<td>R\xE9serve syst\xE8me \xAB 20 % \xBB : chaque minuit, tout ce qui d\xE9passe l'objectif du jour est mis de c\xF4t\xE9 et <strong>jamais rejou\xE9</strong> \u2192 capital de trading tomb\xE9 \xE0 16 $, bot bloqu\xE9 toute la nuit <strong>sans pr\xE9venir</strong>.</td>
+<td><strong>Alerte t\xE9l\xE9phone (ntfy)</strong> d\xE8s qu'un signal est refus\xE9 faute de capital (1 fois / 30 min). Savoir o\xF9 est l'argent : capital de trading \u2260 r\xE9serve.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>En PAPER, <strong>recharge automatique de 1 000 $</strong> quand le capital tombait \xE0 z\xE9ro = argent invent\xE9.</td>
+<td>Recharge supprim\xE9e (PAPER comme LIVE) ; correction comptable faite.</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Ma correction a retir\xE9 1 000 $ alors que la recharge r\xE9elle \xE9tait 994,41 $ (5,59 $ de trop).</td>
+<td>Toujours prendre le <strong>montant exact du journal</strong>, pas un chiffre rond.</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Journal de r\xE9conciliation affichant \xAB ajust\xE9 +0,00 $ \xBB alors que \u2212660 $ (valeur lue apr\xE8s modification).</td>
+<td>Lire l'ancienne valeur <strong>avant</strong> de modifier.</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Rattrapage des trades manqu\xE9s : ajout\xE9 \xE0 l'historique sans tenir compte des r\xE8gles.</td>
+<td>Rattrapage = trades du banc r\xE9el, m\xEAme r\xE8gle 250 $/cycle, jamais deux fois le m\xEAme.</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Un ordre sans r\xE9ponse trait\xE9 comme refus\xE9.</td>
+<td>\xAB \xC0 v\xE9rifier \xBB : mise r\xE9serv\xE9e, v\xE9rification sur le compte (5 s \u2192 plusieurs minutes), jamais conclu trop t\xF4t.</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Configuration et d\xE9ploiement</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Probl\xE8me</th>
+<th>Correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>17</td>
+<td>Limite de <strong>15 cases</strong> d\xE9couverte au moment du d\xE9ploiement.</td>
+<td>V\xE9rifier les limites avant ; demander \xE0 Pitch quelle case remplacer.</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Multiplicateur maximum d'un portefeuille trop bas (x6 au lieu de x12) \u2192 signal refus\xE9 \xE0 tort.</td>
+<td>Calculer le maximum r\xE9el : multiplicateur re\xE7u \xD7 r\xE8gle de la version.</td>
+</tr>
+<tr>
+<td>19</td>
+<td>\xAB Enlever depuis le rang 84 \xBB a aussi enlev\xE9 la 3304 sans le dire.</td>
+<td><strong>Lister les noms</strong> avant de retirer quoi que ce soit ; cacher, ne jamais effacer.</td>
+</tr>
+<tr>
+<td>20</td>
+<td>/zero5 ouvrait l'onglet 6.</td>
+<td>L'adresse suit le num\xE9ro de l'onglet.</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Excel : plantage Cloudflare (20 000 liens, tri qui recalculait les num\xE9ros 600 000 fois).</td>
+<td>Un lien par strat\xE9gie, num\xE9ros calcul\xE9s une fois.</td>
+</tr>
+<tr>
+<td>22</td>
+<td>Fichier du banc (\u2248 60 Mo) r\xE9\xE9crit toutes les 15 s.</td>
+<td>Journal <strong>en ajout</strong> (une ligne par signal / r\xE8glement), compact\xE9 au d\xE9marrage.</td>
+</tr>
+<tr>
+<td>23</td>
+<td>Fant\xF4mes 3303/3304 \xE0 z\xE9ro : r\xE8glement seulement sur certains cycles, diagnostic gard\xE9 en m\xE9moire.</td>
+<td>Tous les cycles ; diagnostic sauvegard\xE9.</td>
+</tr>
+<tr>
+<td>24</td>
+<td>Le moteur t\xE9l\xE9chargeait son code depuis GitHub sans v\xE9rification.</td>
+<td>Paquet <strong>\xE9pingl\xE9 + empreinte SHA-256</strong> v\xE9rifi\xE9e ; mise \xE0 jour seulement sur action explicite.</td>
+</tr>
+<tr>
+<td>25</td>
+<td>Conteneur de Claude remplac\xE9 : d\xE9p\xF4ts et cl\xE9 d'acc\xE8s perdus.</td>
+<td>Tout passe par <strong>Replit</strong> (d\xE9ploiement, lecture du VPS) ; d\xE9p\xF4ts re-clon\xE9s.</td>
+</tr>
+<tr>
+<td>26</td>
+<td><code>git pull</code> bloqu\xE9 ; push refus\xE9 (d\xE9p\xF4t modifi\xE9 entre-temps, ou fichier de workflow sans droit).</td>
+<td><code>fetch</code> + <code>rebase</code> avec d\xE9lai ; pas de nouveau workflow GitHub (minutes = d\xE9pense).</td>
+</tr>
+<tr>
+<td>27</td>
+<td>raw.githubusercontent.com renvoyait l'ancienne version (cache).</td>
+<td>Toujours une <strong>adresse fig\xE9e sur le commit</strong>.</td>
+</tr>
+<tr>
+<td>28</td>
+<td>Sortie recopi\xE9e par Replit tronqu\xE9e (texte entre \xAB &lt; \xBB et \xAB &gt; \xBB aval\xE9).</td>
+<td>Pas de \xAB &lt; \xBB ni \xAB &gt; \xBB dans ce qu'on fait recopier.</td>
+</tr>
+<tr>
+<td>29</td>
+<td>Replit occup\xE9 \u2192 demande refus\xE9e.</td>
+<td>Attendre et r\xE9essayer ; une seule demande \xE0 la fois.</td>
+</tr>
+<tr>
+<td>30</td>
+<td>Tests cass\xE9s par l'environnement (MAX_CREUX absent, mode live en test).</td>
+<td>Variables de test explicites ; mode forc\xE9 \xE0 PAPER dans les tests.</td>
+</tr>
+<tr>
+<td>31</td>
+<td>Les deux moteurs (Cloudflare et Dublin) ne voient pas exactement la m\xEAme chose \u2192 ils ne sont pas toujours d'accord.</td>
+<td>Une seule source d'achat (Dublin) et on mesure <strong>cette</strong> source.</td>
+</tr>
+<tr>
+<td>32</td>
+<td>Moteur : erreurs \xAB trop de demandes \xBB (HTTP 429) sur le prix d'ouverture Polymarket.</td>
+<td>Non r\xE9solu : \xE0 surveiller (le prix \xE0 battre vient aussi de Chainlink).</td>
+</tr>
+</tbody>
+</table>
+<h2>4. S\xE9curit\xE9 (d\xE9j\xE0 en place)</h2>
+<p>Pare-feu ; SSH durci ; mises \xE0 jour ; AIDE chaque nuit 03:30 ; auditd ; en-t\xEAtes web ; bot95 en lecture seule depuis internet ; LIVE impossible sans les 4 plafonds (MAX_MISE_ORDRE, MAX_MISE_CYCLE, MAX_PERTE_JOUR, MAX_CREUX) ; alertes ntfy ; aucune cl\xE9 dans Git ni dans une conversation. V\xE9rifi\xE9 : rien de tout cela ne ralentit le bot.</p>
+<h2>5. Vitesse \u2014 tout ce qui a \xE9t\xE9 fait</h2>
+<ol>
+<li>Serveur \xE0 <strong>Dublin</strong> (\u2248 3,9 ms du moteur de Polymarket \xE0 Londres).</li>
+<li>Moteur de signaux <strong>sur le m\xEAme serveur</strong> que le bot (127.0.0.1) au lieu de Cloudflare (\u2248 19 ms aller-retour).</li>
+<li>Flux <strong>PolyBolt</strong> en mode auto : prix Polymarket \u2248 230-250 ms plus t\xF4t que le flux RTDS.</li>
+<li>Binance via <strong>data-stream.binance.vision</strong> (Binance bloque Dublin : erreur 451).</li>
+<li>Chaque flux <strong>relanc\xE9 apr\xE8s 10 s de silence</strong>.</li>
+<li>Moteur r\xE9\xE9valu\xE9 <strong>\xE0 chaque prix</strong>, au plus toutes les 50 ms (Binance, Coinbase, Chainlink).</li>
+<li><strong>Ordres pr\xE9-sign\xE9s</strong>, param\xE8tres du march\xE9 en cache : <strong>aucun appel r\xE9seau avant l'envoi</strong>.</li>
+<li><strong>Carnet en m\xE9moire</strong> par websocket (cycle en cours + suivant, jamais coup\xE9) : pas d'aller-retour pour conna\xEEtre les prix.</li>
+<li>Connexion <strong>permanente</strong> et sign\xE9e bot \u2194 moteur.</li>
+<li>Chronom\xE9trage de chaque ordre : r\xE9ception \u2192 envoi \u2192 r\xE9ponse.</li>
+<li>All\xE8gements : heure suisse calcul\xE9e une fois par minute ; on ne r\xE9\xE9crit que ce qui a chang\xE9.</li>
+<li>Limite incompressible : Polymarket ex\xE9cute les ordres preneurs des march\xE9s crypto <strong>150 ms</strong> apr\xE8s r\xE9ception.</li>
+<li>Prototype d'ex\xE9cuteur en <strong>Rust</strong> (branche rust-executeur), pas encore utilis\xE9.</li>
+</ol>
+<h2>6. M\xE9thode \xE0 garder</h2>
+<ul>
+<li>Une hypoth\xE8se \xE0 la fois, donn\xE9es r\xE9elles, aucune fuite du futur, verdict sur des jours in\xE9dits (m\xE9thode \xAB \xE9tude fant\xF4me \xBB).</li>
+<li>Claude propose, Pitch d\xE9cide. Tester avant chaque d\xE9ploiement, v\xE9rifier apr\xE8s chaque action.</li>
+<li>Ce qu'on ne peut pas mesurer sans vrais ordres (place dans la file d'attente, concurrence) : seulement par un <strong>petit test LIVE</strong> plafonn\xE9.</li>
+</ul>
+</body></html>`;
 var NOM_3304 = "TENEUR DE MARCH\xC9 mod\xE8le BTC";
 var NOMS_ESTIMES = /* @__PURE__ */ new Set([NOM_3304, "TENEUR DE MARCH\xC9 retrait si les bourses bougent BTC", "TENEUR DE MARCH\xC9 prix pench\xE9s selon le stock BTC", "TENEUR DE MARCH\xC9 \xE9cart variable BTC", "TENEUR DE MARCH\xC9 arr\xEAt 60 s avant la fin BTC", "TENEUR DE MARCH\xC9 file d'attente estim\xE9e BTC"]);
 var PF33_DEPUIS = "2026-11-04T13:00:00Z";
