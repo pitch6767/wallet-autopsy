@@ -27268,8 +27268,8 @@ var Bot = class {
   }
   /** 05.11.2026 : teneurs de marché du tableau des vrais trades recomptés depuis leurs lignes, un seul résultat par cycle (doublons retirés). */
   async reconstruireTeneurs() {
-    if (this._recT || !this._reelMs || !this.N) return;
-    this._recT = true;
+    if (this._recTen || !this._reelMs || !this.N) return;
+    this._recTen = true;
     try {
       if (await this.state.storage.get("reel:teneurs2")) return;
       await this.state.storage.put("reel:teneurs2", { debut: (/* @__PURE__ */ new Date()).toISOString() });
