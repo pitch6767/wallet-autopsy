@@ -27213,14 +27213,15 @@ var Bot = class {
           zr.reserve = +PR.res.toFixed(2);
           zr.palier = pal;
         }
-        await this.state.storage.put("reel:palier", PR);
+        if (!this._xbuf) await this.state.storage.put("reel:palier", PR);
       }
     }
   }
   /** 05.11.2026 18:00 (Pitch : « tout le reste à 200 $ ») : reconstruction UNIQUE du tableau des vrais trades avec 200 $ par cycle, depuis son départ. */
   async reconstruireReel200() {
     if (this._reb200 || !this._reelMs || !this.N) return;
-    if (await this.state.storage.get("reel:rebuild200")) {
+    const etat = await this.state.storage.get("reel:rebuild200") || {};
+    if (etat.at || (etat.essais || 0) >= 3) {
       this._reb200 = true;
       return;
     }
@@ -27239,15 +27240,26 @@ var Bot = class {
     await this.state.storage.put("reel:palier", this._palR);
     const R5 = new Set(this._z5r || await this.state.storage.get("z5retires") || []);
     const vus = this._prVus = this._prVus || await this.state.storage.get("prixreel:vus") || {};
-    for (const t of [...d.trades].sort((a, b2) => Date.parse(a.ouvert) - Date.parse(b2.ouvert))) {
+    this._reb200 = true;
+    await this.state.storage.put("reel:rebuild200", { debut: (/* @__PURE__ */ new Date()).toISOString(), essais: (etat.essais || 0) + 1 });
+    this._xbuf = {};
+    const utiles = d.trades.filter((t) => t.num === 2110 || (() => {
+      const c = catalogue_default.find((x) => x.n === t.num);
+      return c && this.onglet5Garde(c.nom + " BTC");
+    })());
+    for (const t of utiles.sort((a, b2) => Date.parse(a.ouvert) - Date.parse(b2.ouvert))) {
       if (!vus[t.num + "|" + t.id] && t.endTs > Date.now() - 20 * 36e5) continue;
       const c = catalogue_default.find((x) => x.n === t.num);
       if (!c) continue;
       await this.alimenterReel(t, c.nom + " BTC", Math.floor(t.endTs / 1e3) - 300, t.side === "UP" ? "Up" : "Down", R5);
     }
+    const buf = this._xbuf;
+    this._xbuf = null;
+    const E = Object.entries(buf);
+    for (let i = 0; i < E.length; i += 64) await this.state.storage.put(Object.fromEntries(E.slice(i, i + 64)));
+    await this.state.storage.put("reel:palier", this._palR);
     await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
-    await this.state.storage.put("reel:rebuild200", { at: (/* @__PURE__ */ new Date()).toISOString(), trades: d.trades.length });
-    this._reb200 = true;
+    await this.state.storage.put("reel:rebuild200", { at: (/* @__PURE__ */ new Date()).toISOString(), trades: utiles.length });
   }
   /** 04.11.2026 17:22 : un trade dans le tableau des vrais trades — PLAFOND_REEL $ au plus par cycle et par stratégie (frais compris), trade réduit au reste, sinon ignoré. */
   compteReel(nom, heure, net, mise, start, ctx = {}) {
@@ -27273,6 +27285,10 @@ var Bot = class {
     zCompte(N.reelZ, nom, heure, net, false, mise, start);
     const prix = ctx.prix ?? null, lx = [heure, ctx.cote || null, prix, parts != null ? +(+parts).toFixed(4) : prix ? +(mise / prix).toFixed(3) : null, +(+net).toFixed(4), ctx.estime ? "estim\xE9 (teneur de march\xE9)" : "r\xE9el"];
     const kx = "xreel:" + nom + "|" + heure.slice(0, 10), QH = this._qh = this._qh || {};
+    if (this._xbuf) {
+      (this._xbuf[kx] = this._xbuf[kx] || []).push(lx);
+      return;
+    }
     QH[kx] = (QH[kx] || Promise.resolve()).then(() => this.state.storage.get(kx)).then((L) => {
       L = L || [];
       L.push(lx);
