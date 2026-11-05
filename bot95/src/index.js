@@ -2466,6 +2466,7 @@ export class Bot {
           z._src = "onglet 6"; z._depuisSrc = B && B.depuis && B.depuis[n] ? B.depuis[n] : ZERO5_DEPUIS; N.reel6[nom] = z; } }
       await zSauver(this.state.storage, "nv:reel6", N.reel6); await this.state.storage.put("prixreel:snap", new Date().toISOString());
     }
+    try { await this.reconstruireReel200(); } catch (err) { this.erreur("reconstruction vrais trades 200 $", err); }
     const dep = new Date(Math.floor(Math.max(this._prixReelMs, Date.now() - 6 * 3600000) / 300000) * 300000).toISOString();
     const r = await fetch("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=" + encodeURIComponent(dep), { headers: { "cache-control": "no-store" } });
     if (!r.ok) throw new Error("HTTP " + r.status);
@@ -2486,13 +2487,7 @@ export class Bot {
         // onglet 5 : la ligne du même numéro (et l'Excel de l'onglet 5 via zCompte)
         if (this.onglet5Garde(nom) && !R5.has(nom)) zCompte(N.zero4, nom, t.ouvert, t.pnl, false, t.mise, st);
         // 04.11.2026 17:22 : tableau unique des VRAIS trades (toutes les lignes de l'onglet 5), à zéro depuis la mise en ligne
-        if (this.onglet5Garde(nom) && !R5.has(nom) && Date.parse(t.ouvert) >= (this._reelMs || Infinity)) this.compteReel(nom, t.ouvert, t.pnl, t.mise, st, { cote, prix: t.prix, parts: t.parts });
-        if (t.num === 2110 && Date.parse(t.ouvert) >= (this._reelMs || Infinity)) { const PR = (this._palR = this._palR || (await this.state.storage.get("reel:palier")) || { cap: 6000, res: 0 });
-          const pal = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PR.cap / 6000))))), deja = (this._capR || {})["PORTEFEUILLE 101 + 105 palier x2 BTC|" + st] || 0, reste = 250 - deja;
-          if (reste > 0.01 && t.mise > 0) { const fac = Math.min(pal, reste / t.mise); let g = fac * t.pnl; if (g > 0) { PR.res += g / 2; g /= 2; } PR.cap += g;
-            this.compteReel("PORTEFEUILLE 101 + 105 palier x2 BTC", t.ouvert, fac * t.pnl, fac * t.mise, st, { cote, prix: t.prix, parts: fac * t.parts });
-            const zr = N.reelZ && N.reelZ["PORTEFEUILLE 101 + 105 palier x2 BTC"]; if (zr) { zr.capital = +PR.cap.toFixed(2); zr.reserve = +PR.res.toFixed(2); zr.palier = pal; }
-            await this.state.storage.put("reel:palier", PR); } }
+        await this.alimenterReel(t, nom, st, cote, R5);
         // n° 2130 : 101 + 105 sans blocage (n° 2110 réel) avec la gestion du capital du palier x2
         if (t.num === 2110) { const pal = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PA.cap / 6000))))), plaf = 250 * pal, deja = PC[st] || 0, reste = plaf - deja;
           if (reste > 0.01 && t.mise > 0) { const fac = Math.min(pal, reste / t.mise); PC[st] = deja + fac * t.mise; let g = fac * t.pnl; if (g > 0) { PA.res += g / 2; g /= 2; } PA.cap += g;
@@ -2511,12 +2506,50 @@ export class Bot {
     await this.state.storage.put("prixreel:vus", vus); await this.state.storage.put("palier5", PA);
     await zSauver(this.state.storage, "nv:zero4", N.zero4); await zSauver(this.state.storage, "nv:reel6", N.reel6); if (N.reelZ) await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
   }
-  /** 04.11.2026 17:22 : un trade dans le tableau des vrais trades — 250 $ au plus par cycle et par stratégie (frais compris), trade réduit au reste, sinon ignoré. */
+  /** 04.11.2026 : un trade du banc dans le tableau des vrais trades (ligne du même n° + palier x2 depuis la 2110). */
+  async alimenterReel(t, nom, st, cote, R5) {
+    if (!(Date.parse(t.ouvert) >= (this._reelMs || Infinity))) return;
+    const N = this.N;
+    if (this.onglet5Garde(nom) && !R5.has(nom)) this.compteReel(nom, t.ouvert, t.pnl, t.mise, st, { cote, prix: t.prix, parts: t.parts });
+    if (t.num === 2110) { const PR = (this._palR = this._palR || (await this.state.storage.get("reel:palier")) || { cap: 6000, res: 0 });
+      const pal = Math.min(5, Math.pow(2, Math.max(0, Math.floor(Math.log2(PR.cap / 6000))))), deja = (this._capR || {})["PORTEFEUILLE 101 + 105 palier x2 BTC|" + st] || 0, reste = PLAFOND_REEL - deja;
+      if (reste > 0.01 && t.mise > 0) { const fac = Math.min(pal, reste / t.mise); let g = fac * t.pnl; if (g > 0) { PR.res += g / 2; g /= 2; } PR.cap += g;
+        this.compteReel("PORTEFEUILLE 101 + 105 palier x2 BTC", t.ouvert, fac * t.pnl, fac * t.mise, st, { cote, prix: t.prix, parts: fac * t.parts });
+        const zr = N.reelZ && N.reelZ["PORTEFEUILLE 101 + 105 palier x2 BTC"]; if (zr) { zr.capital = +PR.cap.toFixed(2); zr.reserve = +PR.res.toFixed(2); zr.palier = pal; }
+        await this.state.storage.put("reel:palier", PR); } }
+  }
+  /** 05.11.2026 18:00 (Pitch : « tout le reste à 200 $ ») : reconstruction UNIQUE du tableau des vrais trades avec 200 $ par cycle, depuis son départ. */
+  async reconstruireReel200() {
+    if (this._reb200 || !this._reelMs || !this.N) return;
+    if (await this.state.storage.get("reel:rebuild200")) { this._reb200 = true; return; }
+    const depR = new Date(Math.floor(this._reelMs / 300000) * 300000).toISOString();
+    const r = await fetch("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=" + encodeURIComponent(depR), { headers: { "cache-control": "no-store" } });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!Array.isArray(d.trades) || !(Date.parse(d.depuis) <= this._reelMs)) return;   // le bot ne rend pas encore tout l'historique : on réessaiera
+    const N = this.N; N.reelZ = N.reelZ || {};
+    for (const k of Object.keys(N.reelZ)) if (!NOMS_ESTIMES.has(k)) delete N.reelZ[k];
+    const cles = [...(await this.state.storage.list({ prefix: "xreel:" })).keys()].filter((k) => !NOMS_ESTIMES.has(k.slice(6, k.lastIndexOf("|"))));
+    for (let i = 0; i < cles.length; i += 128) await this.state.storage.delete(cles.slice(i, i + 128));
+    this._capR = {}; this._palR = { cap: 6000, res: 0 }; await this.state.storage.put("reel:palier", this._palR);
+    const R5 = new Set(this._z5r || (await this.state.storage.get("z5retires")) || []);
+    const vus = (this._prVus = this._prVus || (await this.state.storage.get("prixreel:vus")) || {});
+    for (const t of [...d.trades].sort((a, b2) => Date.parse(a.ouvert) - Date.parse(b2.ouvert))) {
+      // pas encore passé par l'alimentation normale (récent et absent des « vus ») : elle le comptera elle-même, une seule fois
+      if (!vus[t.num + "|" + t.id] && t.endTs > Date.now() - 20 * 3600000) continue;
+      const c = CATALOGUE.find((x) => x.n === t.num); if (!c) continue;
+      await this.alimenterReel(t, c.nom + " BTC", Math.floor(t.endTs / 1000) - 300, t.side === "UP" ? "Up" : "Down", R5);
+    }
+    await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
+    await this.state.storage.put("reel:rebuild200", { at: new Date().toISOString(), trades: d.trades.length });
+    this._reb200 = true;
+  }
+  /** 04.11.2026 17:22 : un trade dans le tableau des vrais trades — PLAFOND_REEL $ au plus par cycle et par stratégie (frais compris), trade réduit au reste, sinon ignoré. */
   compteReel(nom, heure, net, mise, start, ctx = {}) {
     if (this.SG || !this.N || !this._reelMs || Date.parse(heure) < this._reelMs) return;
     const N = this.N; N.reelZ = N.reelZ || {};
     let parts = ctx.parts ?? null;
-    if (start && mise > 0) { const C = (this._capR = this._capR || {}), ck = nom + "|" + start, deja = C[ck] || 0, reste = 250 - deja;
+    if (start && mise > 0) { const C = (this._capR = this._capR || {}), ck = nom + "|" + start, deja = C[ck] || 0, reste = PLAFOND_REEL - deja;
       if (reste <= 0.01) return;
       if (mise > reste) { const f = reste / mise; net *= f; mise = reste; if (parts != null) parts *= f; }
       C[ck] = deja + mise; if (Math.random() < 0.02) { const lim = Math.floor(Date.now() / 1000) - 3600; for (const x of Object.keys(C)) if (+x.split("|").pop() < lim) delete C[x]; } }
@@ -4372,7 +4405,7 @@ const PRIX_REEL_NUMS = [101, 105, 107, 112, 109, 120, 121, 31, 127, 129, 35, 32,
 // 04.11.2026 17:22 : page unique des VRAIS trades
 const PAGE_REEL = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vrais trades</title>${STYLE}</head><body>
 <h1>Vrais trades — toutes les stratégies de l'onglet 5</h1>
-<div class="mu">Seulement des trades réels : chaque signal réellement reçu par le bot (moteur de Dublin) est joué sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix du signal + 5 c, frais compris) et réglé par le résultat officiel de Polymarket. 250 $ au plus par cycle et par stratégie, frais compris (trade réduit au reste, sinon ignoré). Aucun argent réel engagé. <b>Exception : les teneurs de marché (n° 3304 à 3309) sont ESTIMÉS</b> — ordres posés dans le carnet, impossibles à jouer sans vrais ordres.</div>
+<div class="mu">Seulement des trades réels : chaque signal réellement reçu par le bot (moteur de Dublin) est joué sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix du signal + 5 c, frais compris) et réglé par le résultat officiel de Polymarket. 200 $ au plus par cycle et par stratégie, frais compris (trade réduit au reste, sinon ignoré). Aucun argent réel engagé. <b>Exception : les teneurs de marché (n° 3304 à 3309) sont ESTIMÉS</b> — ordres posés dans le carnet, impossibles à jouer sans vrais ordres.</div>
 <div class="mu" id="dep"></div>
 <div class="mu"><a href="/lecons" style="font-weight:600">📘 Leçons du projet (erreurs, corrections, vitesse)</a></div>
 <div class="mu"><a href="/excel-reel" style="font-weight:600">📥 Fichier Excel des vrais trades (une ligne par trade, N° et stratégie en deux colonnes, filtres)</a></div>
@@ -4617,6 +4650,7 @@ const PAGE_LECONS = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
 <li>Ce qu'on ne peut pas mesurer sans vrais ordres (place dans la file d'attente, concurrence) : seulement par un <strong>petit test LIVE</strong> plafonné.</li>
 </ul>
 </body></html>`;
+const PLAFOND_REEL = 200;   // 05.11.2026 (Pitch : « tout le reste à 200 $ ») : vrais trades, au plus 200 $ par cycle et par stratégie, frais compris (avant : 250)
 const NOM_3304 = "TENEUR DE MARCHÉ modèle BTC";   // 04.11.2026 : lignes de l'onglet 5 encore comptées en fantôme (estimées) : 3304 et ses variantes 3305-3308
 const NOMS_ESTIMES = new Set([NOM_3304, "TENEUR DE MARCHÉ retrait si les bourses bougent BTC", "TENEUR DE MARCHÉ prix penchés selon le stock BTC", "TENEUR DE MARCHÉ écart variable BTC", "TENEUR DE MARCHÉ arrêt 60 s avant la fin BTC", "TENEUR DE MARCHÉ file d'attente estimée BTC"]);
 const PF33_DEPUIS = "2026-11-04T13:00:00Z";      // 04.11.2026 14:00 heure de Paris : début des teneurs 3305-3308
