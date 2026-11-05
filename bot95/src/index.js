@@ -2521,7 +2521,7 @@ export class Bot {
   /** 05.11.2026 18:00 (Pitch : « tout le reste à 200 $ ») : reconstruction UNIQUE du tableau des vrais trades avec 200 $ par cycle, depuis son départ. */
   async reconstruireReel200() {
     if (this._reb200 || !this._reelMs || !this.N) return;
-    const etat = (await this.state.storage.get("reel:rebuild200")) || {};
+    const etat = (await this.state.storage.get("reel:rebuild200b")) || {};
     if (etat.at || (etat.essais || 0) >= 3) { this._reb200 = true; return; }
     const depR = new Date(Math.floor(this._reelMs / 300000) * 300000).toISOString();
     const r = await fetch("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=" + encodeURIComponent(depR), { headers: { "cache-control": "no-store" } });
@@ -2536,7 +2536,7 @@ export class Bot {
     const R5 = new Set(this._z5r || (await this.state.storage.get("z5retires")) || []);
     const vus = (this._prVus = this._prVus || (await this.state.storage.get("prixreel:vus")) || {});
     this._reb200 = true;   // une seule tentative par démarrage de l'objet, 3 au plus en tout
-    await this.state.storage.put("reel:rebuild200", { debut: new Date().toISOString(), essais: (etat.essais || 0) + 1 });
+    await this.state.storage.put("reel:rebuild200b", { debut: new Date().toISOString(), essais: (etat.essais || 0) + 1 });
     this._xbuf = {};
     const utiles = d.trades.filter((t) => t.num === 2110 || (() => { const c = CATALOGUE.find((x) => x.n === t.num); return c && this.onglet5Garde(c.nom + " BTC"); })());
     for (const t of utiles.sort((a, b2) => Date.parse(a.ouvert) - Date.parse(b2.ouvert))) {
@@ -2549,7 +2549,7 @@ export class Bot {
     const E = Object.entries(buf); for (let i = 0; i < E.length; i += 64) await this.state.storage.put(Object.fromEntries(E.slice(i, i + 64)));
     await this.state.storage.put("reel:palier", this._palR);
     await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
-    await this.state.storage.put("reel:rebuild200", { at: new Date().toISOString(), trades: utiles.length });
+    await this.state.storage.put("reel:rebuild200b", { at: new Date().toISOString(), trades: utiles.length });
   }
   /** 04.11.2026 17:22 : un trade dans le tableau des vrais trades — PLAFOND_REEL $ au plus par cycle et par stratégie (frais compris), trade réduit au reste, sinon ignoré. */
   compteReel(nom, heure, net, mise, start, ctx = {}) {
@@ -2559,7 +2559,9 @@ export class Bot {
     if (start && mise > 0) { const C = (this._capR = this._capR || {}), ck = nom + "|" + start, deja = C[ck] || 0, reste = PLAFOND_REEL - deja;
       if (reste <= 0.01) return;
       if (mise > reste) { const f = reste / mise; net *= f; mise = reste; if (parts != null) parts *= f; }
-      C[ck] = deja + mise; if (Math.random() < 0.02) { const lim = Math.floor(Date.now() / 1000) - 3600; for (const x of Object.keys(C)) if (+x.split("|").pop() < lim) delete C[x]; } }
+      // 05.11.2026 : ménage par rapport au cycle traité (et non à l'heure actuelle) — sinon, pendant la reconstruction de vieux cycles,
+      // le compteur du cycle en cours pouvait être effacé et dépasser 200 $
+      C[ck] = deja + mise; if (Math.random() < 0.02) { const lim = start - 3600; for (const x of Object.keys(C)) if (+x.split("|").pop() < lim) delete C[x]; } }
     zCompte(N.reelZ, nom, heure, net, false, mise, start);
     const prix = ctx.prix ?? null, lx = [heure, ctx.cote || null, prix, parts != null ? +(+parts).toFixed(4) : (prix ? +(mise / prix).toFixed(3) : null), +(+net).toFixed(4), ctx.estime ? "estimé (teneur de marché)" : "réel"];
     const kx = "xreel:" + nom + "|" + heure.slice(0, 10), QH = (this._qh = this._qh || {});
