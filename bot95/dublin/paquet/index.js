@@ -24340,7 +24340,7 @@ var Bot = class {
       const noms = /* @__PURE__ */ new Set([...catalogue_default.map((c) => c.nom + " BTC").filter((nom) => this.onglet5Garde(nom) && !R5.has(nom)), ...NOMS_ESTIMES]);
       const vide = /* @__PURE__ */ __name(() => ({ n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {} }), "vide");
       const z9 = (N.zero4 || {})["TENEUR DE MARCH\xC9 file d'attente estim\xE9e BTC"] || {};
-      const L = [...noms].map((nom) => {
+      const L = [...noms].filter((nom) => nom !== "__tv").map((nom) => {
         const z = Z[nom] || vide();
         return {
           nom: nom.replace(/ BTC$/, ""),
@@ -27127,6 +27127,11 @@ var Bot = class {
     } catch (err) {
       this.erreur("reconstruction vrais trades 200 $", err);
     }
+    try {
+      await this.reconstruireTeneurs();
+    } catch (err) {
+      this.erreur("reconstruction teneurs", err);
+    }
     const dep = new Date(Math.floor(Math.max(this._prixReelMs, Date.now() - 6 * 36e5) / 3e5) * 3e5).toISOString();
     const r = await fetch("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=" + encodeURIComponent(dep), { headers: { "cache-control": "no-store" } });
     if (!r.ok) throw new Error("HTTP " + r.status);
@@ -27261,11 +27266,52 @@ var Bot = class {
     await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
     await this.state.storage.put("reel:rebuild200b", { at: (/* @__PURE__ */ new Date()).toISOString(), trades: utiles.length });
   }
+  /** 05.11.2026 : teneurs de marché du tableau des vrais trades recomptés depuis leurs lignes, un seul résultat par cycle (doublons retirés). */
+  async reconstruireTeneurs() {
+    if (this._recT || !this._reelMs || !this.N) return;
+    this._recT = true;
+    if (await this.state.storage.get("reel:teneurs1")) return;
+    await this.state.storage.put("reel:teneurs1", { debut: (/* @__PURE__ */ new Date()).toISOString() });
+    const N = this.N;
+    N.reelZ = N.reelZ || {};
+    const TV = N.reelZ.__tv = {}, maj = {};
+    for (const nom of NOMS_ESTIMES) {
+      const L = [], vus = /* @__PURE__ */ new Set();
+      for (const [k, v] of await this.state.storage.list({ prefix: "xreel:" + nom + "|" })) {
+        for (const l of v) {
+          if (vus.has(l[0])) continue;
+          vus.add(l[0]);
+          L.push(l);
+        }
+        maj[k] = [];
+      }
+      L.sort((a, b) => a[0] < b[0] ? -1 : 1);
+      delete N.reelZ[nom];
+      for (const l of L) {
+        const st = Math.floor(Date.parse(l[0]) / 1e3);
+        TV[nom + "|" + st] = 1;
+        zCompte(N.reelZ, nom, l[0], +l[4] || 0, false, 100, st);
+        (maj["xreel:" + nom + "|" + l[0].slice(0, 10)] = maj["xreel:" + nom + "|" + l[0].slice(0, 10)] || []).push(l);
+      }
+    }
+    const E = Object.entries(maj);
+    for (let i = 0; i < E.length; i += 64) await this.state.storage.put(Object.fromEntries(E.slice(i, i + 64)));
+    await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
+    await this.state.storage.put("reel:teneurs1", { at: (/* @__PURE__ */ new Date()).toISOString() });
+  }
   /** 04.11.2026 17:22 : un trade dans le tableau des vrais trades — PLAFOND_REEL $ au plus par cycle et par stratégie (frais compris), trade réduit au reste, sinon ignoré. */
   compteReel(nom, heure, net, mise, start, ctx = {}) {
     if (this.SG || !this.N || !this._reelMs || Date.parse(heure) < this._reelMs) return;
     const N = this.N;
     N.reelZ = N.reelZ || {};
+    if (ctx.estime && start) {
+      const TV = N.reelZ.__tv = N.reelZ.__tv || {}, cle = nom + "|" + start;
+      if (TV[cle]) return;
+      TV[cle] = 1;
+      if (Math.random() < 0.02) {
+        for (const x of Object.keys(TV)) if (+x.split("|").pop() < start - 2 * 86400) delete TV[x];
+      }
+    }
     let parts = ctx.parts ?? null;
     if (start && mise > 0) {
       const C2 = this._capR = this._capR || {}, ck = nom + "|" + start, deja = C2[ck] || 0, reste = PLAFOND_REEL - deja;
