@@ -7,5 +7,6 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "wallet-autopsy", "database_id": "A_REMPLACER_PAR_LE_WORKFLOW", "migrations_dir": "migrations" }
   ],
+  "limits": { "cpu_ms": 300000 },
   "triggers": { "crons": ["* * * * *", "*/2 * * * *"] }
 }

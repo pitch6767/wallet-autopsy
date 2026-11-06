@@ -31,6 +31,10 @@ function versV1(o) {
   return r;
 }
 
+// Champs lourds inutiles à l'app (mémoire du Worker)
+const LOURDS = ["icon", "bio", "profile_image", "profile_image_optimized"];
+const alleger = (o) => { if (o && typeof o === "object" && !Array.isArray(o)) for (const k of LOURDS) delete o[k]; return o; };
+
 const cache = new Map(); // requête de base → { rows, curseur, fini, t }
 
 export function estV1(u) {
@@ -63,12 +67,14 @@ export async function v1ViaV2(u, init, brut) {
     }
     const j = await r.json();
     const data = Array.isArray(j) ? j : (j && j.data) || [];
+    for (const d of data) { alleger(d); if (Array.isArray(d.holders)) d.holders.forEach(alleger); }
     e.rows.push(...data);
     const pg = j && j.pagination;
     e.curseur = pg && pg.next_cursor;
     if (!pg || !pg.has_more || !e.curseur || !data.length || x.pathname === "/holders") e.fini = true;
   }
-  if (cache.size > 200) for (const k of [...cache.keys()].slice(0, 100)) cache.delete(k);
+  if (e.fini && offset + limit >= e.rows.length) cache.delete(base); // lu jusqu'au bout : on libère la mémoire
+  if (cache.size > 20) for (const k of [...cache.keys()].slice(0, 10)) cache.delete(k);
   const lot = versV1(e.rows.slice(offset, offset + limit));
   return new Response(JSON.stringify(lot), { status: 200, headers: { "content-type": "application/json" } });
 }

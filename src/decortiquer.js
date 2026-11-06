@@ -11,8 +11,9 @@ const DATA = "https://data-api.polymarket.com";
 const GAMMA = "https://gamma-api.polymarket.com";
 const DUREE = { "5m": 300, "15m": 900 };
 const N_TIRAGES = 500;
-const MAX_SES_MARCHES = 60, MAX_AUTRES = 40, MOMENTS_PAR_MARCHE = 5, PAS_SCAN = 5;
+const MAX_SES_MARCHES = 50, MAX_AUTRES = 30, MOMENTS_PAR_MARCHE = 5, PAS_SCAN = 5;
 const CACHE_S = 6 * 3600;
+const VERSION = 2; // un résultat gardé en mémoire par une version plus ancienne est recalculé
 
 // ─── outils ───
 const usd = (x) => (x < 0 ? "−" : "") + "$" + Math.abs(x).toLocaleString("fr-CH", { maximumFractionDigits: Math.abs(x) >= 100 ? 0 : 2 });
@@ -23,6 +24,7 @@ const pct = (x, d = 3) => (x == null ? "—" : (x >= 0 ? "+" : "−") + Math.abs
 const q = (a, f) => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.max(0, Math.floor(f * (s.length - 1) + 0.5)))]; };
 const med = (a) => q(a, 0.5);
 const somme = (a) => a.reduce((x, y) => x + y, 0);
+const cts = (x) => (x == null ? "—" : (x >= 0 ? "+" : "−") + Math.abs(Math.round(x * 100)) + " c");
 const heureZ = (ts) => Number(new Date(ts * 1000).toLocaleString("en-GB", { hour: "2-digit", hour12: false, timeZone: "Europe/Zurich" }));
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -65,7 +67,7 @@ async function prixABattre(type, start) {
 
 async function tradesMarche(cid) {
   const rows = [];
-  for (let off = 0; off < 4000; off += 1000) {
+  for (let off = 0; off < 2000; off += 1000) {
     const r = await getJSON(`${DATA}/trades?market=${cid}&limit=1000&offset=${off}&takerOnly=true`);
     if (!Array.isArray(r) || !r.length) break;
     rows.push(...r);
@@ -108,10 +110,10 @@ export async function decortiquer(env, addr, refaire) {
   try { await env.DB.prepare("CREATE TABLE IF NOT EXISTS decortiques (wallet TEXT PRIMARY KEY, ts INTEGER, json TEXT)").run(); } catch {}
   if (!refaire) {
     const c = await env.DB.prepare("SELECT ts, json FROM decortiques WHERE wallet=?").bind(addr).first();
-    if (c && Date.now() / 1000 - c.ts < CACHE_S) return { ...JSON.parse(c.json), cache: true };
+    if (c && Date.now() / 1000 - c.ts < CACHE_S) { const j = JSON.parse(c.json); if (j.version === VERSION) return { ...j, cache: true }; }
   }
   const { marches: ms, meta } = await chargerMarches(env, addr);
-  const out = { adresse: addr, version: 1, calcule: Math.floor(Date.now() / 1000), sections: [], limites: [] };
+  const out = { adresse: addr, version: VERSION, calcule: Math.floor(Date.now() / 1000), sections: [], limites: [] };
   if (ms.length < 5) {
     out.titre = "Pas assez de marchés BTC résolus";
     out.sections.push({ titre: "Bilan", lignes: [`Seulement ${ms.length} marché(s) BTC résolu(s) dans son historique téléchargeable : impossible de décortiquer sérieusement.`] });
@@ -119,8 +121,8 @@ export async function decortiquer(env, addr, refaire) {
   }
   const R = rng(addr);
   bilan(out, ms, meta);
-  style(out, ms);
   talent(out, ms, R);
+  style(out, ms);
   await regles(out, env, ms, R);
   out.limites.push("Polymarket ne dit pas s'il attend dans le carnet ou s'il prend le prix affiché, ni ce qu'il fait ailleurs (Binance, autres plateformes) : ces gestes restent invisibles.");
   if (meta.tronque) out.limites.push("Historique limité par Polymarket aux 10 000 derniers trades.");
@@ -136,20 +138,23 @@ function bilan(out, ms, meta) {
   const jours = new Map();
   for (const m of ms) { const j = Math.floor(m.ts / 86400); jours.set(j, (jours.get(j) || 0) + m.pnl); }
   const dj = [...jours.values()];
-  const moy = somme(dj) / dj.length, sd = Math.sqrt(somme(dj.map((x) => (x - moy) ** 2)) / Math.max(1, dj.length - 1));
+  const moy = somme(dj) / dj.length;
+  const j0 = Math.floor(ms[0].ts / 86400), j1 = Math.floor(ms[ms.length - 1].ts / 86400);
+  const cal = []; for (let j = j0; j <= j1; j++) cal.push(jours.get(j) || 0); // jours sans trade = 0
+  const mc = somme(cal) / cal.length, sd = Math.sqrt(somme(cal.map((x) => (x - mc) ** 2)) / Math.max(1, cal.length - 1));
   // intervalle de confiance du ROI par tirage avec remise des marchés
   const R = rng(out.adresse + "ic"), rois = [];
   for (let k = 0; k < 500; k++) { let p = 0, c = 0; for (let i = 0; i < ms.length; i++) { const m = ms[Math.floor(R() * ms.length)]; p += m.pnl; c += m.cout; } rois.push(p / c); }
   const span = Math.max(1, (ms[ms.length - 1].ts - ms[0].ts) / 86400);
-  out.bilan = { marches: ms.length, pnl, cout, roi: pnl / cout, creux, joursActifs: dj.length, gainJour: moy, sharpeJour: sd ? (moy / sd) * Math.sqrt(365) : null };
+  out.bilan = { marches: ms.length, pnl, cout, roi: pnl / cout, creux, joursActifs: dj.length, gainJour: moy, sharpeJour: sd && cal.length >= 7 ? (mc / sd) * Math.sqrt(365) : null };
   out.titre = `${ms.length} marchés BTC, ${usd(pnl)} (ROI ${pc(pnl / cout)})`;
   out.sections.push({
     titre: "1. Son vrai bilan",
     lignes: [
       `<b>${usd(pnl)}</b> de gain net pour ${usd(cout)} misés sur ${ms.length} marchés BTC résolus, du ${new Date(ms[0].ts * 1000).toLocaleDateString("fr-CH")} au ${new Date(ms[ms.length - 1].ts * 1000).toLocaleDateString("fr-CH")} (${Math.max(1, Math.round(span))} jour${Math.round(span) > 1 ? "s" : ""}) : ROI <b>${pc(pnl / cout)}</b>, intervalle de confiance 95 % de ${pc(q(rois, 0.025))} à ${pc(q(rois, 0.975))}.`,
-      `${ms.filter((m) => m.gagne).length} marchés gagnants sur ${ms.length}. Pire creux depuis un sommet : <b>${usd(creux)}</b>. Gain moyen par jour actif : ${usd(moy)} sur ${dj.length} jours` + (out.bilan.sharpeJour != null ? `, ratio de Sharpe annualisé ${out.bilan.sharpeJour.toFixed(2).replace(".", ",")}.` : "."),
+      `${ms.filter((m) => m.gagne).length} marchés gagnants sur ${ms.length}. Pire creux depuis un sommet : <b>${usd(creux)}</b>. Gain moyen par jour actif : ${usd(moy)} sur ${dj.length} jours` + (out.bilan.sharpeJour != null ? `, ratio de Sharpe annualisé (jours calendaires) ${out.bilan.sharpeJour.toFixed(2).replace(".", ",")}.` : "."),
       (q(rois, 0.025) > 0 ? "Même dans le bas de la fourchette, il reste gagnant." : q(rois, 0.975) < 0 ? "Même dans le haut de la fourchette, il reste perdant." : "La fourchette passe par zéro : son résultat peut encore s'expliquer par la chance.")
-        + ` Gain calculé trade par trade avec les prix réellement payés (frais Polymarket compris dans ces prix).` + (meta.nonResolus ? ` ${meta.nonResolus} marchés non résolus ou introuvables sont exclus.` : ""),
+        + ` Gain calculé trade par trade avec les prix réellement payés ; d'éventuels frais de preneur facturés en plus ne sont pas visibles dans ces données.` + (meta.nonResolus ? ` ${meta.nonResolus} marchés non résolus ou introuvables sont exclus.` : ""),
     ],
   });
 }
@@ -195,7 +200,7 @@ function style(out, ms) {
     `<b>Heures (Suisse)</b> : ${blocs.map((b) => `${b.lib} ${b.n} marché${b.n > 1 ? "s" : ""} (${usd(b.p)})`).join(", ")}.`,
     `<b>Durées de marché</b> : ${Object.entries(types).map(([t, n]) => `${t} ${n}`).join(", ")}.`,
   ];
-  out.sections.push({ titre: "2. Son style", lignes });
+  out.sections.push({ titre: "3. Ses règles — son style", lignes });
 }
 
 // 3. Talent ou chance : son choix de côté à l'entrée, comparé à trois tirages
@@ -204,7 +209,7 @@ function talent(out, ms, R) {
   const lignes = [];
   if (e.length < 20) {
     lignes.push(`Seulement ${e.length} marchés avec une entrée avant la fin : trop peu pour séparer le talent de la chance.`);
-    out.sections.push({ titre: "3. Talent ou chance ?", lignes }); out.talent = null; return;
+    out.sections.push({ titre: "2. Talent ou chance ?", lignes }); out.talent = null; return;
   }
   // Modèle : sa première entrée, mise = tout ce qu'il a misé sur ce marché, gardée jusqu'au résultat
   const g = (cote, prix, gagnant, mise) => (cote === gagnant ? mise * (1 / prix - 1) : -mise);
@@ -218,7 +223,8 @@ function talent(out, ms, R) {
     for (const m of e) { const c = R() < 0.5 ? 0 : 1; h += g(c, c === m.e1cote ? m.e1prix : 1 - m.e1prix, m.gagnant, m.cout); }
     hs.push(h); if (h >= modele) hasardMieux++;
     // mauvais moment : ses mêmes choix (côté, prix, mise) placés sur d'autres de ses marchés
-    const perm = e.map((m) => m).sort(() => R() - 0.5);
+    const perm = e.slice();
+    for (let i = perm.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [perm[i], perm[j]] = [perm[j], perm[i]]; }
     let s = 0;
     for (let i = 0; i < e.length; i++) { const a = perm[i]; s += g(a.e1cote, a.e1prix, e[i].gagnant, a.cout); }
     mo.push(s); if (s >= modele) momentMieux++;
@@ -226,20 +232,21 @@ function talent(out, ms, R) {
   const pH = (hasardMieux + 1) / (N_TIRAGES + 1), pM = (momentMieux + 1) / (N_TIRAGES + 1);
   const coutE = somme(e.map((m) => m.cout));
   out.talent = { marches: e.length, modele, reel, inverse, pHasard: pH, pMoment: pM };
+  out.talentVerdict = modele <= 0 || inverse >= modele || pH > 0.05 ? "chance" : pM > 0.05 ? "prix" : "timing";
   let verdict;
   if (modele <= 0) verdict = "<b>Pas de talent visible à l'entrée</b> : en gardant simplement son premier choix jusqu'au résultat, il perdrait de l'argent.";
   else if (inverse >= modele) verdict = "<b>Pas de direction</b> : faire l'inverse de lui rapporterait autant.";
   else if (pH > 0.05) verdict = "<b>Chance probable</b> : des côtés tirés au hasard font aussi bien que lui trop souvent.";
-  else if (pM > 0.05) verdict = "<b>Talent de prix, pas de timing</b> : il bat le hasard, mais ses mêmes choix placés sur d'autres marchés font aussi bien. Ce qui gagne, c'est son niveau de prix, pas le moment.";
+  else if (pM > 0.05) verdict = "<b>Talent de prix, pas de timing</b> : il bat le hasard, mais ses mêmes positions prises dans d'autres fenêtres font aussi bien. Ce qui gagne, c'est son niveau de prix, pas le moment.";
   else verdict = "<b>Talent probable</b> : il bat le signal inversé, le hasard et le mauvais moment. C'est son timing qui gagne, pas la chance.";
   lignes.push(
     `Test sur ses ${e.length} marchés avec entrée avant la fin, en gardant <b>seulement sa première entrée jusqu'au résultat</b> (mise identique) : ${usd(modele)} (ROI ${pc(modele / coutE)}). Son résultat réel sur ces marchés, avec tout ce qu'il fait ensuite : ${usd(reel)} ; ses gestes après l'entrée ${reel >= modele ? "ajoutent" : "coûtent"} ${usd(Math.abs(reel - modele))}.`,
     `<b>Signal inversé</b> (l'autre côté, au prix complémentaire) : ${usd(inverse)}.`,
     `<b>Côté au hasard</b> (${N_TIRAGES} tirages, mêmes marchés, mêmes mises) : médiane ${usd(med(hs))} ; le hasard fait aussi bien ou mieux que lui dans ${pc(pH)} des tirages.`,
-    `<b>Mauvais moment</b> (${N_TIRAGES} tirages, ses mêmes côtés, prix et mises placés sur d'autres de ses marchés) : médiane ${usd(med(mo))} ; aussi bien ou mieux dans ${pc(pM)} des tirages.`,
+    `<b>Mauvais moment</b> (${N_TIRAGES} tirages : ses mêmes positions — côté, prix, mise — prises dans d'autres fenêtres de temps, c.-à-d. sur d'autres de ses marchés) : médiane ${usd(med(mo))} ; aussi bien ou mieux dans ${pc(pM)} des tirages.`,
     verdict + " (seuil : 5 %).",
   );
-  out.sections.push({ titre: "3. Talent ou chance ?", lignes });
+  out.sections.push({ titre: "2. Talent ou chance ?", lignes });
 }
 
 // 4. Ses règles : ce qui déclenche ses entrées, puis une règle candidate et sa reproduction
@@ -248,7 +255,7 @@ async function regles(out, env, ms, R) {
   const ok = ms.filter((m) => DUREE[m.type] && m.e1prix != null && m.avantFin != null && m.avantFin >= 0).slice(-MAX_SES_MARCHES);
   if (ok.length < 15) {
     lignes.push(`Seulement ${ok.length} marchés 5 min ou 15 min avec une entrée avant la fin : trop peu pour chercher ses règles.`);
-    out.sections.push({ titre: "4. Ses règles", lignes }); return;
+    out.sections.push({ titre: "4. Ce qui déclenche ses entrées", lignes }); return;
   }
   const typeP = ok.filter((m) => m.type === "5m").length >= ok.length / 2 ? "5m" : "15m";
   const D = DUREE[typeP];
@@ -279,7 +286,8 @@ async function regles(out, env, ms, R) {
     if (d == null) continue;
     const sd = m.e1cote === 0 ? d : -d;
     const p30 = prixA(m.trs, m.e1cote, t - 30);
-    E.push({ sec: m.avantFin, sd, ad: Math.abs(d), prix: m.e1prix, dp30: p30 != null ? m.e1prix - p30 : null, cote: m.e1cote, m });
+    const p0 = prixA(m.trs, m.e1cote, t - 1);
+    E.push({ sec: m.avantFin, sd, ad: Math.abs(d), prix: p0, dp30: p0 != null && p30 != null ? p0 - p30 : null, cote: m.e1cote, t: m.fin - m.avantFin, m });
   }
   // Moments ordinaires (mêmes marchés + marchés qu'il n'a pas joués), côté tiré au hasard
   const O = [];
@@ -292,7 +300,7 @@ async function regles(out, env, ms, R) {
   out.regles = { marchesSes: E.length, marchesAutres: autres.length, sourceBTC: B.source, type: typeP };
   if (E.length < 15) {
     lignes.push(`Contexte BTC trouvé pour seulement ${E.length} de ses marchés (source ${B.source}) : trop peu pour chercher ses règles.`);
-    out.sections.push({ titre: "4. Ses règles", lignes }); return;
+    out.sections.push({ titre: "4. Ce qui déclenche ses entrées", lignes }); return;
   }
   const fav = E.filter((x) => x.sd > 0).length / E.length;
   const favO = O.filter((x) => x.sd > 0).length / O.length;
@@ -302,21 +310,24 @@ async function regles(out, env, ms, R) {
     ["Achète le côté que le BTC favorise déjà", pc(fav), pc(favO)],
     ["Écart du BTC au prix à battre, vers son côté", pct(med(v(E, "sd"))), pct(med(v(O, "sd")))],
     ["Écart du BTC au prix à battre (taille)", pct(med(v(E, "ad"))).replace("+", ""), pct(med(v(O, "ad"))).replace("+", "")],
-    ["Prix payé pour le jeton", px(med(v(E, "prix"))), px(med(v(O, "prix")))],
-    ["Variation du jeton dans les 30 s avant", (med(v(E, "dp30")) ?? 0) >= 0 ? "+" + Math.round((med(v(E, "dp30")) || 0) * 100) + " c" : "−" + Math.abs(Math.round(med(v(E, "dp30")) * 100)) + " c", (med(v(O, "dp30")) ?? 0) >= 0 ? "+" + Math.round((med(v(O, "dp30")) || 0) * 100) + " c" : "−" + Math.abs(Math.round(med(v(O, "dp30")) * 100)) + " c"],
+    ["Prix du jeton juste avant (dernier trade)", px(med(v(E, "prix"))), px(med(v(O, "prix")))],
+    ["Variation du jeton dans les 30 s avant", cts(med(v(E, "dp30"))), cts(med(v(O, "dp30")))],
   ];
   lignes.push(`Ses ${E.length} dernières entrées sur les marchés ${typeP}, comparées à ${O.length} moments ordinaires tirés au hasard (sur ses marchés et sur ${autres.length} marchés qu'il n'a pas joués, côté tiré au hasard). Prix à battre officiel Polymarket ; BTC minute par minute (${B.source}, dernière minute terminée avant l'instant, donc sans information future).`);
   out.sections.push({ titre: "4. Ce qui déclenche ses entrées", lignes, table: { cols: ["", "Lui, à l'entrée (médiane)", "Moments ordinaires (médiane)"], rows: lignesT } });
 
-  // Règle candidate, construite uniquement à partir de son profil d'entrée
-  const s10 = q(v(E, "sec"), 0.1), s90 = q(v(E, "sec"), 0.9), p10 = q(v(E, "prix"), 0.05), p90 = q(v(E, "prix"), 0.95);
+  // Règle candidate : construite sur la moitié la plus ancienne de ses entrées, jugée sur la plus récente (jamais vue)
+  E.sort((a, b) => a.t - b.t);
+  const Eb = E.slice(0, Math.ceil(E.length / 2)), recents = new Set(E.slice(Math.ceil(E.length / 2)).map((x) => x.m.cid));
+  const s10 = q(v(Eb, "sec"), 0.1), s90 = q(v(Eb, "sec"), 0.9), p10 = q(v(Eb, "prix"), 0.05), p90 = q(v(Eb, "prix"), 0.95);
+  const favB = Eb.filter((x) => x.sd > 0).length / Eb.length;
   let modeCote = null, dMin = 0;
-  if (fav >= 0.65) { modeCote = "favori"; dMin = q(E.filter((x) => x.sd > 0).map((x) => x.ad), 0.1) || 0; }
-  else if (fav <= 0.35) { modeCote = "contre"; dMin = q(E.filter((x) => x.sd < 0).map((x) => x.ad), 0.1) || 0; }
-  else { const up = E.filter((x) => x.cote === 0).length / E.length; if (up >= 0.65) modeCote = "up"; else if (up <= 0.35) modeCote = "down"; }
+  if (favB >= 0.65) { modeCote = "favori"; dMin = q(Eb.filter((x) => x.sd > 0).map((x) => x.ad), 0.1) || 0; }
+  else if (favB <= 0.35) { modeCote = "contre"; dMin = q(Eb.filter((x) => x.sd < 0).map((x) => x.ad), 0.1) || 0; }
+  else { const up = Eb.filter((x) => x.cote === 0).length / Eb.length; if (up >= 0.65) modeCote = "up"; else if (up <= 0.35) modeCote = "down"; }
   const l2 = [];
   if (!modeCote) {
-    l2.push(`<b>Aucune règle simple trouvée</b> : il achète le côté favorisé par le BTC dans ${pc(fav)} des cas (contre ${pc(favO)} au hasard) et n'a pas de côté préféré. Son choix de côté vient soit du hasard (voir la partie 3), soit de quelque chose que ces données ne montrent pas (carnet d'ordres, autres plateformes, information plus rapide).`);
+    l2.push(`<b>Aucune règle simple trouvée</b> : il achète le côté favorisé par le BTC dans ${pc(favB)} des cas (contre ${pc(favO)} au hasard) et n'a pas de côté préféré. ` + (out.talentVerdict === "chance" ? "Avec le verdict de la partie 2, son choix de côté ressemble à du hasard." : "Pourtant la partie 2 montre un vrai avantage : il s'appuie sur quelque chose que ces données ne montrent pas (carnet d'ordres, autres plateformes, information plus rapide)."));
     out.sections.push({ titre: "5. Sa règle probable et ce qu'elle reproduit", lignes: l2 }); return;
   }
   const libCote = { favori: `le côté que le BTC favorise déjà, quand l'écart au prix à battre dépasse ${dMin.toFixed(3).replace(".", ",")} %`, contre: `le côté contre le BTC, quand l'écart au prix à battre dépasse ${dMin.toFixed(3).replace(".", ",")} %`, up: "toujours Up", down: "toujours Down" }[modeCote];
@@ -338,15 +349,15 @@ async function regles(out, env, ms, R) {
   for (const m of tous) {
     if (!m.trs.length || (modeCote !== "up" && modeCote !== "down" && !m.k)) continue;
     const f = declenche(m);
-    if (!m.autre) { nS++; if (!f) rien++; else if (f.c === m.e1cote) meme++; else oppose++; }
+    if (!m.autre) { if (!recents.has(m.cid)) continue; nS++; if (!f) rien++; else if (f.c === m.e1cote) meme++; else oppose++; }
     else if (f) firesA++;
     if (f) { nR++; coutR += 1; pnlR += f.c === m.gagnant ? 1 / f.p - 1 : -1; }
   }
   const nA = tous.filter((m) => m.autre && m.trs.length).length;
   out.regles.regle = regle;
   out.regles.reproduction = { memeCote: nS ? meme / nS : null, autreCote: nS ? oppose / nS : null, rien: nS ? rien / nS : null, declencheAilleurs: nA ? firesA / nA : null, roi: coutR ? pnlR / coutR : null, n: nR };
-  l2.push(`<b>Règle candidate</b> (écrite à partir de son profil d'entrée, 1 seul essai) : ${regle}`);
-  l2.push(`<b>Ce qu'elle reproduit</b> sur ${nS} de ses marchés : même côté que lui <b>${pc(meme / nS)}</b>, côté opposé ${pc(oppose / nS)}, ne se déclenche pas ${pc(rien / nS)}.`
+  l2.push(`<b>Règle candidate</b> (écrite à partir de la moitié la plus ancienne de ses entrées, 1 seul essai) : ${regle}`);
+  l2.push(`<b>Ce qu'elle reproduit</b> sur ses ${nS} marchés les plus récents (jamais utilisés pour l'écrire) : même côté que lui <b>${meme} fois (${pc(meme / nS)})</b>, côté opposé ${oppose} fois, ne se déclenche pas ${rien} fois.`
     + (meme / nS >= 0.7 ? " Elle colle bien à sa façon de faire." : meme / nS >= 0.4 ? " Elle explique une partie de ses choix, pas tout." : " Elle n'explique pas ses choix : il utilise autre chose."));
   if (nA) l2.push(`Sur ${nA} marchés qu'il n'a <b>pas</b> joués, la règle se déclenche dans ${pc(firesA / nA)} des cas` + (firesA / nA > 0.5 ? " : il est bien plus sélectif que la règle, il filtre avec quelque chose d'invisible ici." : "."));
   if (nR >= 10) l2.push(`Résultat fantôme de la règle (1 $ par marché, prix du dernier trade à l'instant du signal, sans écart ni frais en plus) : ROI <b>${pc(pnlR / coutR)}</b> sur ${nR} déclenchements. Avant toute décision, elle doit passer les 6 marches de vérification (étude fantôme complète).`);

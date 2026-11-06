@@ -40,7 +40,10 @@ jobs:
           { echo "=== /api/etude"; curl -sS -m 120 "$U/api/etude?addr=$A1" | head -c 600
             echo; echo "=== /api/wallet"; curl -sS -m 120 "$U/api/wallet?addr=$A1" | head -c 400
             echo; echo "=== data-api depuis GitHub"; curl -sS -m 30 "https://data-api.polymarket.com/trades?user=$A1&limit=2&offset=0&takerOnly=false" | head -c 600
-            echo; echo "=== /api/btc/etat"; curl -sS -m 30 "$U/api/btc/etat" | head -c 400; } > diagnostic/dec/chaine.txt 2>&1
+            echo; echo "=== /api/btc/etat"; curl -sS -m 30 "$U/api/btc/etat" | python3 -c "import json,sys;d=json.load(sys.stdin);[print(t['type'],'plus_recent',t['plus_recent'],'attente',t['attente']) for t in d.get('parType',[])]"
+            echo "=== maintenant $(date +%s)"
+            echo "=== /api/market"; curl -sS -m 120 "$U/api/market?q=btc-updown-5m-$(( $(date +%s) / 300 * 300 - 1800 ))" | head -c 500
+            echo; echo "=== /api/holders"; curl -sS -m 120 "$U/api/holders?q=btc-updown-5m-$(( $(date +%s) / 300 * 300 - 1800 ))" | head -c 500; } > diagnostic/dec/chaine.txt 2>&1
           npm i -q playwright@1 >/dev/null 2>&1 && npx -y playwright@1 install --with-deps chromium >/dev/null 2>&1
           cat > _cap.mjs <<'JS'
           import { chromium } from "playwright";
@@ -53,7 +56,8 @@ jobs:
             await p.goto(U + "/?addr=" + A, { waitUntil: "networkidle" });
             await p.evaluate((a) => { document.getElementById("addr").value = a; }, A);
             await p.click("#t1"); await p.click("#goW");
-            await p.waitForSelector(".dec button", { timeout: 120000 });
+            await p.waitForSelector(".dec button", { timeout: 180000 });
+            await p.locator(".dec").first().screenshot({ path: `diagnostic/dec/bouton-${nom}.png` });
             await p.click(".dec button");
             await p.waitForSelector(".dec-r, .dec .err", { timeout: 300000 });
             await p.locator(".dec").first().screenshot({ path: `diagnostic/dec/page-${nom}.png` });
