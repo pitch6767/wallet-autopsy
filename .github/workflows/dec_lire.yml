@@ -19,6 +19,11 @@ jobs:
             /usr/bin/time -f "%e s" curl -sS -m 300 "$U/api/decortiquer?addr=$A&refaire=1" -o diagnostic/dec/$A.json 2> diagnostic/dec/$A.temps
             echo "$A" >> diagnostic/dec/liste.txt
           done
+          A1=$(head -1 diagnostic/dec/liste.txt)
+          { echo "=== /api/etude"; curl -sS -m 120 "$U/api/etude?addr=$A1" | head -c 600
+            echo; echo "=== /api/wallet"; curl -sS -m 120 "$U/api/wallet?addr=$A1" | head -c 400
+            echo; echo "=== data-api depuis GitHub"; curl -sS -m 30 "https://data-api.polymarket.com/trades?user=$A1&limit=2&offset=0&takerOnly=false" | head -c 600
+            echo; echo "=== /api/btc/etat"; curl -sS -m 30 "$U/api/btc/etat" | head -c 400; } > diagnostic/dec/chaine.txt 2>&1
           npm i -q playwright@1 >/dev/null 2>&1 && npx -y playwright@1 install --with-deps chromium >/dev/null 2>&1
           cat > _cap.mjs <<'JS'
           import { chromium } from "playwright";
