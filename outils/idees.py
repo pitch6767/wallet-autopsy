@@ -2,7 +2,7 @@
 # (sig:BTC:<minute>, depuis le 19.10). Exécution PRUDENTE : achat au meilleur vendeur de la seconde SUIVANTE (1 s de retard), seulement la quantité
 # affichée à ce prix, mise 50 $, frais Polymarket 0,07 × p × (1 − p) par part. Résultat du cycle : moyenne Chainlink des 60 dernières secondes contre
 # le prix à battre (approximation du règlement Polymarket). Paramètres choisis sur 19.10 → 31.10 (apprentissage) ; verdict sur 01.11 → 05.11 (jours inédits).
-import json, sys, os, urllib.request, collections, datetime as dt, math, statistics
+import json, sys, os, urllib.request, urllib.parse, collections, datetime as dt, math, statistics
 BOT95, OUT = sys.argv[1], sys.argv[2]
 def get(u):
     with urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "etude"}), timeout=120) as r: return json.load(r)
@@ -108,20 +108,21 @@ def bilan(res):
 FILTRES = {"tout": lambda c: True, "nuit": lambda c: c["nuit"], "calme": lambda c: c["tend"] is not None and c["tend"] < 13.8, "nuit ou calme": lambda c: c["nuit"] or (c["tend"] is not None and c["tend"] < 13.8)}
 print("\n=== RÉSULTATS (exécution prudente, 50 $ par trade) ===")
 for nom, (fab, grille) in GRILLE.items():
+    PAR = {}
+    for p in grille:   # chaque jeu de paramètres calculé UNE fois sur tous les cycles
+        f = fab(p); PAR[p] = {s: r for s in cyc for r in [f(s)] if r}
     for fn, flt in FILTRES.items():
         meil = None
-        for p in grille:
-            f = fab(p); app = [r[0] for s, c in cyc.items() if APP(c["jour"]) and flt(c) for r in [f(s)] if r]
+        for p, RS in PAR.items():
+            app = [r[0] for s, r in RS.items() if APP(cyc[s]["jour"]) and flt(cyc[s])]
             n, pct, g, cr, _ = bilan(app)
             if n >= 30 and (meil is None or g > meil[1]): meil = (p, g, n, pct, cr)
         if not meil: print(f"{nom} [{fn}] : pas assez de trades"); continue
-        p = meil[0]; f = fab(p)
         test = collections.defaultdict(list)
-        for s, c in sorted(cyc.items()):
-            if TEST(c["jour"]) and flt(c):
-                r = f(s)
-                if r: test[c["jour"]].append(r[0])
+        for s in sorted(PAR[meil[0]]):
+            c = cyc[s]
+            if TEST(c["jour"]) and flt(c): test[c["jour"]].append(PAR[meil[0]][s][0])
         tous = [g for j in sorted(test) for g in test[j]]; n, pct, g, cr, _ = bilan(tous)
-        print(f"{nom} [{fn}] paramètres {p} | APPRENTISSAGE {meil[2]} trades, {meil[3]:.0f} % gagnés, {meil[1]:+.0f} $, creux {meil[4]:.0f} | "
-              f"JOURS INÉDITS {n} trades, {pct:.0f} % gagnés, {g:+.0f} $, creux {cr:.0f}, par jour {[round(sum(test[j])) for j in sorted(test)]}")
+        print(f"{nom} [{fn}] paramètres {meil[0]} | APPRENTISSAGE {meil[2]} trades, {meil[3]:.0f} % gagnés, {meil[1]:+.0f} $, creux {meil[4]:.0f} | "
+              f"JOURS INÉDITS {n} trades, {pct:.0f} % gagnés, {g:+.0f} $, creux {cr:.0f}, par jour {[round(sum(test[j])) for j in sorted(test)]}", flush=True)
 print("\nFIN")
