@@ -51,7 +51,12 @@ export async function v1ViaV2(u, init, brut) {
   if (!e || Date.now() - e.t > 60_000) { e = { rows: [], curseur: null, fini: false, t: Date.now() }; cache.set(base, e); }
   while (!e.fini && e.rows.length < offset + limit) {
     const url = `${base}&limit=${parPage}` + (e.curseur ? `&cursor=${encodeURIComponent(e.curseur)}` : "");
-    const r = await brut(url, init);
+    let r;
+    for (let essai = 0; ; essai++) { // limite de débit v2 : on patiente et on réessaie
+      r = await brut(url, init);
+      if ((r.status === 429 || r.status >= 500) && essai < 4) { await new Promise((ok) => setTimeout(ok, 1000 * (essai + 1))); continue; }
+      break;
+    }
     if (!r.ok) {
       if (e.rows.length > offset) break; // on rend ce qu'on a déjà
       return new Response(await r.text(), { status: r.status, headers: { "content-type": "application/json" } });

@@ -147,7 +147,7 @@ function bilan(out, ms, meta) {
     titre: "1. Son vrai bilan",
     lignes: [
       `<b>${usd(pnl)}</b> de gain net pour ${usd(cout)} misés sur ${ms.length} marchés BTC résolus, du ${new Date(ms[0].ts * 1000).toLocaleDateString("fr-CH")} au ${new Date(ms[ms.length - 1].ts * 1000).toLocaleDateString("fr-CH")} (${Math.max(1, Math.round(span))} jour${Math.round(span) > 1 ? "s" : ""}) : ROI <b>${pc(pnl / cout)}</b>, intervalle de confiance 95 % de ${pc(q(rois, 0.025))} à ${pc(q(rois, 0.975))}.`,
-      `${ms.filter((m) => m.gagne).length} marchés gagnants sur ${ms.length}. Pire creux depuis un sommet : <b>${usd(creux)}</b>. Gain moyen par jour actif : ${usd(moy)} sur ${dj.length} jours` + (out.bilan.sharpeJour != null ? `, ratio de Sharpe annualisé ${out.bilan.sharpeJour.toFixed(2)}.` : "."),
+      `${ms.filter((m) => m.gagne).length} marchés gagnants sur ${ms.length}. Pire creux depuis un sommet : <b>${usd(creux)}</b>. Gain moyen par jour actif : ${usd(moy)} sur ${dj.length} jours` + (out.bilan.sharpeJour != null ? `, ratio de Sharpe annualisé ${out.bilan.sharpeJour.toFixed(2).replace(".", ",")}.` : "."),
       (q(rois, 0.025) > 0 ? "Même dans le bas de la fourchette, il reste gagnant." : q(rois, 0.975) < 0 ? "Même dans le haut de la fourchette, il reste perdant." : "La fourchette passe par zéro : son résultat peut encore s'expliquer par la chance.")
         + ` Gain calculé trade par trade avec les prix réellement payés (frais Polymarket compris dans ces prix).` + (meta.nonResolus ? ` ${meta.nonResolus} marchés non résolus ou introuvables sont exclus.` : ""),
     ],
@@ -189,10 +189,10 @@ function style(out, ms) {
     `<b>Quel côté</b> : Up ${pc(up / e.length)}, Down ${pc(1 - up / e.length)}` + (Math.max(up, e.length - up) >= 0.65 * e.length ? " : il a un côté préféré, ses gains dépendent donc de la tendance du BTC." : " : pas de côté préféré."),
     `<b>Mises</b> : médiane ${usd(med(mises))} par marché, 90 % sous ${usd(q(mises, 0.9))}.`,
     nRenf
-      ? `<b>Renforcements</b> : sur ${nRenf} marchés (${pc(nRenf / e.length)}) il rachète le même côté après son entrée, en médiane à ${(med(ecarts) >= 0 ? "+" : "−") + Math.abs(med(ecarts) * 100).toFixed(0)} centimes de son premier prix (${med(ecarts) > 0.005 ? "il suit le mouvement" : med(ecarts) < -0.005 ? "il moyenne à la baisse" : "au même prix"}), pour ${(med(tailles) || 0).toFixed(1)} fois ce qu'il tenait déjà.` + (q(ecarts, 0.25) != null && Math.abs(q(ecarts, 0.75) - q(ecarts, 0.25)) < 0.03 && ecarts.length >= 10 ? " Écarts très réguliers : c'est une règle fixe (échelle), pas une habitude." : "")
+      ? `<b>Renforcements</b> : sur ${nRenf} marchés (${pc(nRenf / e.length)}) il rachète le même côté après son entrée, en médiane à ${(med(ecarts) >= 0 ? "+" : "−") + Math.abs(med(ecarts) * 100).toFixed(0)} centimes de son premier prix (${med(ecarts) > 0.005 ? "il suit le mouvement" : med(ecarts) < -0.005 ? "il moyenne à la baisse" : "au même prix"}), chaque rachat valant en médiane ${pc(med(tailles) || 0)} de ce qu'il tenait déjà.` + (q(ecarts, 0.25) != null && Math.abs(q(ecarts, 0.75) - q(ecarts, 0.25)) < 0.03 && ecarts.length >= 10 ? " Écarts très réguliers : c'est une règle fixe (échelle), pas une habitude." : "")
       : "<b>Renforcements</b> : il ne rachète presque jamais après son entrée.",
     `<b>Autres gestes</b> : il achète les deux côtés sur ${pc(deux / ms.length)} des marchés, revend avant la fin sur ${pc(rev / ms.length)}.`,
-    `<b>Heures (Suisse)</b> : ${blocs.map((b) => `${b.lib} ${b.n} marchés (${usd(b.p)})`).join(", ")}.`,
+    `<b>Heures (Suisse)</b> : ${blocs.map((b) => `${b.lib} ${b.n} marché${b.n > 1 ? "s" : ""} (${usd(b.p)})`).join(", ")}.`,
     `<b>Durées de marché</b> : ${Object.entries(types).map(([t, n]) => `${t} ${n}`).join(", ")}.`,
   ];
   out.sections.push({ titre: "2. Son style", lignes });
