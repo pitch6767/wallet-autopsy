@@ -22752,10 +22752,11 @@ var index_default = {
       if (m !== "GET" && m !== "HEAD" && m !== "OPTIONS" && pathname !== "/api/signal_by1") return new Response("interdit", { status: 403 });
     }
     {
-      const m = pathname.match(/^\/relais\/japon\/([1-4])(\/etat)?$/);
+      const m = pathname.match(/^\/relais\/japon\/([1-4])(?:\/(binance|okx|bybit))?(\/etat)?$/);
       if (m) {
-        if (!m[2] && (req.headers.get("cf-connecting-ip") || "") !== "72.11.157.70") return new Response("interdit", { status: 403 });
-        return env.RELAIS.get(env.RELAIS.idFromName("japon-" + m[1]), { locationHint: "apac" }).fetch(req);
+        if (!m[3] && (req.headers.get("cf-connecting-ip") || "") !== "72.11.157.70") return new Response("interdit", { status: 403 });
+        const flux = m[2] || "binance";
+        return env.RELAIS.get(env.RELAIS.idFromName("japon-" + m[1] + (flux === "binance" ? "" : "-" + flux)), { locationHint: "apac" }).fetch(new Request(req.url + (req.url.includes("?") ? "&" : "?") + "flux=" + flux, req));
       }
     }
     if (pathname.startsWith("/relais/binance/")) {
@@ -23000,16 +23001,28 @@ var RelaisJapon = class {
     if (this.ws || this.enCours) return;
     this.enCours = true;
     try {
-      const r = await fetch("https://fstream.binance.com/ws/btcusdt@bookTicker", { headers: { Upgrade: "websocket" } });
+      const URLS = { binance: "https://fstream.binance.com/ws/btcusdt@bookTicker", okx: "https://ws.okx.com:8443/ws/v5/public", bybit: "https://stream.bybit.com/v5/public/linear" };
+      const r = await fetch(URLS[this.flux] || URLS.binance, { headers: { Upgrade: "websocket" } });
       const ws = r.webSocket;
       if (!ws) {
-        this.err = "Binance a r\xE9pondu " + r.status;
+        this.err = this.flux + " a r\xE9pondu " + r.status;
         return;
       }
       ws.accept();
       this.ws = ws;
       this.err = null;
       this.depuis = (/* @__PURE__ */ new Date()).toISOString();
+      if (this.flux === "okx") ws.send(JSON.stringify({ op: "subscribe", args: [{ channel: "bbo-tbt", instId: "BTC-USDT-SWAP" }] }));
+      if (this.flux === "bybit") ws.send(JSON.stringify({ op: "subscribe", args: ["orderbook.1.BTCUSDT"] }));
+      if (this.flux !== "binance") {
+        clearInterval(this.ping);
+        this.ping = setInterval(() => {
+          try {
+            ws.send(this.flux === "okx" ? "ping" : JSON.stringify({ op: "ping" }));
+          } catch {
+          }
+        }, 2e4);
+      }
       ws.addEventListener("message", (e) => {
         this.n++;
         const t = Date.now();
@@ -23035,6 +23048,7 @@ var RelaisJapon = class {
     }
   }
   async fetch(req) {
+    if (!this.flux) this.flux = new URL(req.url).searchParams.get("flux") || "binance";
     if (!this.colo) {
       try {
         const t = await (await fetch("https://www.cloudflare.com/cdn-cgi/trace")).text();
@@ -23042,7 +23056,7 @@ var RelaisJapon = class {
       } catch {
       }
     }
-    if (req.headers.get("Upgrade") !== "websocket") return Response.json({ colo: this.colo, clients: this.clients.size, messages: this.n, connecteBinance: !!this.ws, depuis: this.depuis, erreur: this.err });
+    if (req.headers.get("Upgrade") !== "websocket") return Response.json({ flux: this.flux, colo: this.colo, clients: this.clients.size, messages: this.n, connecteBinance: !!this.ws, depuis: this.depuis, erreur: this.err });
     const [a, b] = Object.values(new WebSocketPair());
     b.accept();
     this.clients.add(b);
