@@ -56,7 +56,7 @@ print("coins retenus :", len(coins))
 def signatures(mint):
     """toutes les signatures (de la plus récente à la plus ancienne), on garde les NB_TX plus anciennes"""
     toutes = []; avant = None
-    for _ in range(400):
+    for page in range(60):   # 06.11 : au plus 60 000 signatures par coin, sinon on ne remonte jamais au début (le 1er essai a tenu 5 h sans finir)
         p = {"limit": 1000}
         if avant: p["before"] = avant
         r = rpc("getSignaturesForAddress", [mint, p])
@@ -64,6 +64,7 @@ def signatures(mint):
         toutes += [x for x in r if not x.get("err")]
         if len(r) < 1000: break
         avant = r[-1]["signature"]
+    else: return None
     toutes.sort(key=lambda x: (x.get("blockTime") or 0, x.get("slot") or 0))
     return toutes[:NB_TX]
 
@@ -96,6 +97,7 @@ def financeur(wallet):
 def etudier(c):
     mint = c["mint"]
     sigs = signatures(mint)
+    if sigs is None: return dict(c, erreur="plus de 60 000 transactions : début du coin hors de portée")
     if len(sigs) < 200: return dict(c, erreur=f"trop peu de transactions ({len(sigs)})")
     with ThreadPoolExecutor(6) as ex: T = list(ex.map(lambda s: analyser(tx(s["signature"]), mint), sigs))
     T = [x for x in T if x]; T.sort(key=lambda x: x["t"])
@@ -190,6 +192,7 @@ def sauver():
     subprocess.run("git add etude/bot5min/ && git commit -qm 'Étude clusters : sauvegarde intermédiaire [skip ci]' && for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push -q && break; sleep 5; done", shell=True)
 for i, c in enumerate(coins):
     if c["mint"] in faits: continue
+    print(f"… début {c['nom']} {time.strftime('%H:%M:%S')}", flush=True)
     try: r = etudier(c)
     except Exception as e: r = dict(c, erreur=str(e)[:100])
     R.append(r); sauver(); print(f"[{i+1}/{len(coins)}] {c['nom']} : {json.dumps({k: v for k, v in r.items() if k not in ('mint',)}, default=str)[:700]}", flush=True)
