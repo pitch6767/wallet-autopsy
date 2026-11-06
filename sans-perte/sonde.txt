@@ -1,25 +1,28 @@
-=== sonde.mjs
+=== sonde2.mjs
 
-######## pnl-subgraph/0.0.14
-{"errors":[{"message":"This Polymarket subgraph endpoint is paused and deprecated following Polymarket’s migration to V2 — the data is stale and incorrect. Stop using it. For activity, positions, and balances use the Goldsky Edge Data API: https://edge.goldsky.com/data/docs/ . Other datasets: Goldsk
+### status
+200 {"data":{"computed_at":"2026-11-06T09:04:12Z","age_seconds":17,"serving":{"lag_seconds":8,"worst":"pnl","mechanisms":[{"name":"activity_feed","age_seconds":0},{"name":"custody_balances","age_seconds":0,"blocks_behind":1},{"name":"pnl","age_seconds":8,"blocks_behind":7}]},"ingestion":{"cursors":201,"network":"polygon","chain_id":137,"max_synced_block":96833597,"min_synced_block":96833596,"most_lagged":{"source":"auto_redeem_binary_redemption","block":96833596,"behind_max":1},"lagging":[{"source":"auto_redeem_binary_redemption","block":96833596,"behind_max":1},{"source":"auto_redeem_neg_risk_redemption","block":96833596,"behind_max":1},{"source":"auto_redeem_v2_binary_redemption","block":96833596,"behind_max":1},{"source":"auto_redeem_v3_binary_redemption","block":96833596,"behind_max":1},{"source":"binary_module_event_prepared","block":96833596,"behind_max":1}]}}}
 
-######## pnl-subgraph/prod
-{"errors":[{"message":"This Polymarket subgraph endpoint is paused and deprecated following Polymarket’s migration to V2 — the data is stale and incorrect. Stop using it. For activity, positions, and balances use the Goldsky Edge Data API: https://edge.goldsky.com/data/docs/ . Other datasets: Goldsk
+### leaderboard
+200 {"data":[{"rank":1,"user_id":"0x85f031d069de300055900c4055c1baeb6bde3f67","pnl":467249.87343937,"volume":0.0,"user_name":"RJW1","profile_image":"","x_username":"","verified":false},{"rank":2,"user_id":"0xd9e0aaca471f489be338fd0f91a26e8669a805f2","pnl":381475.91992359754,"volume":212127.11925500003,"user_name":"0xD9E0AACa471f48F91A26E8669A805f2","profile_image":"","x_username":"","verified":false},{"rank":3,"user_id":"0x5268527977f700f9bf9b6d5cd843859e4e70135d","pnl":118008.07594147898,"volume":281431.2804190002,"user_name":"HomeRunHazard","profile_image":"","x_username":"","verified":false}],"pagination":{"limit":3,"offset":0,"has_more":true,"next_cursor":"eyJkYXRhIjp7InR5cGUiOiJsZWFkZXJib2FyZCIsInBhcmFtcyI6eyJsIjozLCJvIjozLCJzIjoiUE5MIiwidCI6ImRheSIsImMiOiJvdmVyYWxsIn19LCJzaWciOiIwYmVkNWM5MTNkMWFiZDljMjQ4ZTgxMGUwNTI5MjVkZCJ9"}}
 
-######## positions-subgraph/0.0.7
-{"errors":[{"message":"This Polymarket subgraph endpoint is paused and deprecated following Polymarket’s migration to V2 — the data is stale and incorrect. Stop using it. For activity, positions, and balances use the Goldsky Edge Data API: https://edge.goldsky.com/data/docs/ . Other datasets: Goldsk
+### leaderboard PERIOD ALL
+200 {"data":[{"rank":1,"user_id":"0x56687bf447db6ffa42ffe2204a05edaa20f55839","pnl":22053933.752321,"volume":43013258.515682,"user_name":"Theo4","profile_image":"","x_username":"","verified":false},{"rank":2,"user_id":"0x204f72f35326db932158cba6adff0b9a1da95e14","pnl":18482425.513018,"volume":1850584673.0643005,"user_name":"swisstony","profile_image":"","x_username":"","verified":false}],"pagination":{"limit":2,"offset":0,"has_more":true,"next_cursor":"eyJkYXRhIjp7InR5cGUiOiJsZWFkZXJib2FyZCIsInBhcmFtcyI6eyJsIjoyLCJvIjoyLCJzIjoiUE5MIiwidCI6ImFsbCIsImMiOiJvdmVyYWxsIn19LCJzaWciOiIyMjE3NmFjNDMzYWU2NDIwZDFiMjJmODJlZmI0ZjVkYyJ9"}}
+wallet test undefined
 
-######## positions-subgraph/prod
-{"errors":[{"message":"This Polymarket subgraph endpoint is paused and deprecated following Polymarket’s migration to V2 — the data is stale and incorrect. Stop using it. For activity, positions, and balances use the Goldsky Edge Data API: https://edge.goldsky.com/data/docs/ . Other datasets: Goldsk
+### trades global 2023
+200 {"data":[{"proxy_wallet":"0x4794657547f6f40d83eac4dfad7cd2b2e7f3cc92","side":"BUY","token_id":"24610336946272984501609168000839432677998789204266020439762307702887816516867","condition_id":"0xf52bce3c5a8aa6aa1c7fb95a8deb61cd8295f3dfa276ec4368a3c8d84d19818b","size":2.067797,"price":0.5899998888,"timestamp":1793955868,"title":"Bitcoin Up or Down - November 6, 4:05AM-4:10AM ET","slug":"btc-updown-5m-1793955900","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/BTC+fullsize.png","event_slug":"btc-updown-5m-1793955900","outcome":"Down","outcome_index":1,"name":"KouraTrading","pseudonym":"Quick-Witted-Factory","bio":"","profile_image":"","profile_image_optimized":"","transaction_hash":"0x7454b372d0e22c8aa45ba8c67fec22fac688b888768ce2f4057c410aaef03a33"},{"proxy_wallet":"0xc69bd5567b40ef4d11922eaa57e1f9be1c642076","side":"BUY","token_id":"33339798372916037220786136133406478491116150628220441951753426683441228279665","condition_id":"0xefa17dee3af09f69f9ddf245b969aa4efbe7c71cdf06ee49d694408bc33e2ed2","size":5.0,"price":0.002,"timestamp":1793955868,"title":"Will Shakhtar Donetsk win the 2026-27 UEFA Champions League Championship?","slug":"will-shakhtar-donetsk-win-the-2026-27-uefa-champions-league-championship-20260701202025578","icon":"","event_slug":"uefa-champions-league-2027-champion-20260701202025549","outcome":"Yes","outcome_index":0,"name":"vtcchampion52","pseudonym":"Ultimate-Underpass","bio":"challenger fiora","profile_image":"https://polymarket-upload.s3.us-eas
 
-######## activity-subgraph/0.0.4
-{"errors":[{"message":"This Polymarket subgraph endpoint is paused and deprecated following Polymarket’s migration to V2 — the data is stale and incorrect. Stop using it. For activity, positions, and balances use the Goldsky Edge Data API: https://edge.goldsky.com/data/docs/ . Other datasets: Goldsk
+### trades global now
+200 {"data":[{"proxy_wallet":"0x4794657547f6f40d83eac4dfad7cd2b2e7f3cc92","side":"BUY","token_id":"24610336946272984501609168000839432677998789204266020439762307702887816516867","condition_id":"0xf52bce3c5a8aa6aa1c7fb95a8deb61cd8295f3dfa276ec4368a3c8d84d19818b","size":2.067797,"price":0.5899998888,"timestamp":1793955868,"title":"Bitcoin Up or Down - November 6, 4:05AM-4:10AM ET","slug":"btc-updown-5m-1793955900","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/BTC+fullsize.png","event_slug":"btc-updown-5m-1793955900","outcome":"Down","outcome_index":1,"name":"KouraTrading","pseudonym":"Quick-Witted-Factory","bio":"","profile_image":"","profile_image_optimized":"","transaction_hash":"0x7454b372d0e22c8aa45ba8c67fec22fac688b888768ce2f4057c410aaef03a33"},{"proxy_wallet":"0xc69bd5567b40ef4d11922eaa57e1f9be1c642076","side":"BUY","token_id":"33339798372916037220786136133406478491116150628220441951753426683441228279665","condition_id":"0xefa17dee3af09f69f9ddf245b969aa4efbe7c71cdf06ee49d694408bc33e2ed2","size":5.0,"price":0.002,"timestamp":1793955868,"title":"Will Shakhtar Donetsk win the 2026-27 UEFA Champions League Championship?","slug":"will-shakhtar-donetsk-win-the-2026-27-uefa-champions-league-championship-20260701202025578","icon":"","event_slug":"uefa-champions-league-2027-champion-20260701202025549","outcome":"Yes","outcome_index":0,"name":"vtcchampion52","pseudonym":"Ultimate-Underpass","bio":"challenger fiora","profile_image":"https://polymarket-upload.s3.us-eas
 
-######## activity-subgraph/prod
-{"errors":[{"message":"This Polymarket subgraph endpoint is paused and deprecated following Polymarket’s migration to V2 — the data is stale and incorrect. Stop using it. For activity, positions, and balances use the Goldsky Edge Data API: https://edge.goldsky.com/data/docs/ . Other datasets: Goldsk
-
-######## orderbook-subgraph/0.0.1
-{"errors":[{"message":"This Polymarket subgraph endpoint is paused and deprecated following Polymarket’s migration to V2 — the data is stale and incorrect. Stop using it. For activity, positions, and balances use the Goldsky Edge Data API: https://edge.goldsky.com/data/docs/ . Other datasets: Goldsk
-
-######## orderbook-subgraph/prod
-{"errors":[{"message":"This Polymarket subgraph endpoint is paused and deprecated following Polymarket’s migration to V2 — the data is stale and incorrect. Stop using it. For activity, positions, and balances use the Goldsky Edge Data API: https://edge.goldsky.com/data/docs/ . Other datasets: Goldsk
+### goldsky openapi
+200 {"components":{"schemas":{"ActivityItem":{"properties":{"address":{"description":"Owner wallet address (40-hex, 0x-prefixed). Same field name and\nsemantics across positions, balances, and activity.","type":["string","null"]},"amount_shares":{"format":"double","type":["number","null"]},"amount_u
+PATH /data/blocks/{chain} get Blocks
+PATH /data/blocks/{chain}/head get Chain head
+PATH /data/feeds/tokens get Tokens
+PATH /data/feeds/wallets/balances get Wallet balances
+PATH /data/feeds/wallets/transfers get Wallet transfers
+PATH /data/polymarket/activity get Activities
+PATH /data/polymarket/balances get Balances
+PATH /data/polymarket/positions get Positions
