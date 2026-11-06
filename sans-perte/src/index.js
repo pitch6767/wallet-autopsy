@@ -1,145 +1,70 @@
-// sans-perte — cherche sur Polymarket les portefeuilles qui n'ont jamais perdu une position
-// Source : API publique Polymarket v2 (classement tous temps trié par gain + positions par portefeuille)
+// sans-perte — ÉTAPE TEST : peut-on lire gratuitement toute l'histoire des trades Polymarket sur la blockchain Polygon ?
 import { DurableObject } from 'cloudflare:workers';
 
-const D = 'https://data-api.polymarket.com/v2';
-const MIN_POS = 20;            // décision de Pitch : 20 minimum
-const SEUIL = -0.005;          // en dessous d'un demi-centime = vraie perte (au-dessus = bruit d'arrondi)
-const PAGES_CLASSEMENT = 30;   // pages de 50 lues par réveil
-const LOT = 36;                // portefeuilles vérifiés par réveil
-const PARALLELE = 6;
+const RPCS = ['https://polygon-rpc.com', 'https://polygon.drpc.org', 'https://polygon-bor-rpc.publicnode.com',
+  'https://1rpc.io/matic', 'https://polygon.llamarpc.com', 'https://polygon-pokt.nodies.app'];
+const TRANSFER = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+// anciennes bourses Polymarket (V1), pour tester l'accès à l'historique ancien
+const V1 = ['0x4bfb41d5b3570defd03c39a9a4d8de6bd8b8982e', '0xc5d563a36ae78145c45a50134d48a1215220f80a'];
 
-async function api(path) {
-  for (let essai = 0; essai < 3; essai++) {
-    const r = await fetch(D + path, { headers: { accept: 'application/json', 'user-agent': 'sans-perte/1.0' } });
-    if (r.status === 429) { const e = new Error('429'); e.retry = +(r.headers.get('retry-after') || 30); throw e; }
-    if (r.status >= 500) { await new Promise(s => setTimeout(s, 800 * (essai + 1))); continue; }
-    if (!r.ok) throw new Error(r.status + ' ' + (await r.text()).slice(0, 120));
-    return r.json();
-  }
-  throw new Error('5xx répété');
+async function rpc(url, method, params, ms = 25000) {
+  const t = Date.now();
+  try {
+    const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }), signal: AbortSignal.timeout(ms) });
+    const txt = await r.text(); let j; try { j = JSON.parse(txt); } catch { return { ok: false, ms: Date.now() - t, err: r.status + ' ' + txt.slice(0, 120) }; }
+    if (j.error) return { ok: false, ms: Date.now() - t, err: JSON.stringify(j.error).slice(0, 160) };
+    return { ok: true, ms: Date.now() - t, res: j.result };
+  } catch (e) { return { ok: false, ms: Date.now() - t, err: e.message }; }
 }
+const hex = n => '0x' + n.toString(16);
 
 export class Scan extends DurableObject {
-  constructor(ctx, env) {
-    super(ctx, env);
-    this.sql = ctx.storage.sql;
-    this.sql.exec(`CREATE TABLE IF NOT EXISTS etat(k TEXT PRIMARY KEY, v TEXT)`);
-    this.sql.exec(`CREATE TABLE IF NOT EXISTS w(addr TEXT PRIMARY KEY, nom TEXT, rang INT, pnl REAL, vol REAL,
-      statut TEXT DEFAULT 'a_verifier', pire REAL, pire_titre TEXT, nb_pos INT, dernier_ts INT, verifie_at INT, erreur TEXT)`);
-    this.sql.exec(`CREATE INDEX IF NOT EXISTS w_statut ON w(statut, rang)`);
-  }
-  get(k, d = null) { const r = this.sql.exec(`SELECT v FROM etat WHERE k=?`, k).toArray(); return r.length ? r[0].v : d; }
-  set(k, v) { this.sql.exec(`INSERT INTO etat(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v`, k, String(v)); }
-
-  async demarrer() { if (!(await this.ctx.storage.getAlarm())) await this.ctx.storage.setAlarm(Date.now() + 1000); return this.etat(); }
-
-  async alarm() {
-    let pause = 2000;
-    try {
-      if (this.get('classement_fini') !== '1') await this.lireClassement();
-      await this.verifierLot();
-    } catch (e) {
-      if (e.retry) { pause = e.retry * 1000; this.set('dernier_429', new Date().toISOString()); }
-      else this.set('derniere_erreur', new Date().toISOString() + ' ' + e.message);
-    }
-    this.set('dernier_reveil', new Date().toISOString());
-    const reste = this.sql.exec(`SELECT count(*) n FROM w WHERE statut='a_verifier'`).one().n;
-    if (reste > 0 || this.get('classement_fini') !== '1') await this.ctx.storage.setAlarm(Date.now() + pause);
-    else this.set('fini_at', new Date().toISOString());
-  }
-
-  async lireClassement() {
-    let cur = this.get('curseur', '');
-    for (let p = 0; p < PAGES_CLASSEMENT; p++) {
-      const k = await api('/leaderboard?limit=50&timePeriod=ALL&orderBy=PNL' + (cur ? '&cursor=' + encodeURIComponent(cur) : ''));
-      let fini = false;
-      for (const x of k.data) {
-        if (!(x.pnl > 0)) { fini = true; break; }   // un portefeuille sans perte a forcément un gain > 0
-        this.sql.exec(`INSERT INTO w(addr,nom,rang,pnl,vol) VALUES(?,?,?,?,?) ON CONFLICT(addr) DO UPDATE SET pnl=excluded.pnl, vol=excluded.vol, rang=excluded.rang, nom=excluded.nom`,
-          x.user_id, x.user_name || '', x.rank, x.pnl, x.volume || 0);
+  async test() {
+    const R = { debut: new Date().toISOString() };
+    // 1. découvrir les contrats et événements d'un trade actuel (V2)
+    const tr = await (await fetch('https://data-api.polymarket.com/v2/trades?limit=60')).json();
+    const txs = [...new Set(tr.data.map(x => x.transaction_hash))].slice(0, 6);
+    const tally = {}; let okRpc = null;
+    for (const tx of txs) {
+      for (const u of (okRpc ? [okRpc] : RPCS)) {
+        const r = await rpc(u, 'eth_getTransactionReceipt', [tx]);
+        if (r.ok && r.res) { okRpc = u; for (const l of r.res.logs) { const k = l.address.toLowerCase() + ' ' + l.topics[0]; tally[k] = (tally[k] || 0) + 1; } break; }
       }
-      cur = k.pagination && k.pagination.next_cursor;
-      this.set('curseur', cur || '');
-      this.set('classement_lus', this.sql.exec(`SELECT count(*) n FROM w`).one().n);
-      if (fini || !cur) { this.set('classement_fini', '1'); this.set('classement_fini_at', new Date().toISOString()); return; }
     }
-  }
-
-  async verifierLot() {
-    const lot = this.sql.exec(`SELECT addr FROM w WHERE statut='a_verifier' ORDER BY rang LIMIT ?`, LOT).toArray();
-    for (let i = 0; i < lot.length; i += PARALLELE) {
-      const res = await Promise.allSettled(lot.slice(i, i + PARALLELE).map(x => this.verifier(x.addr)));
-      const r429 = res.find(r => r.status === 'rejected' && r.reason && r.reason.retry);
-      res.forEach((r, j) => {
-        const a = lot[i + j].addr;
-        if (r.status === 'fulfilled') {
-          const v = r.value;
-          this.sql.exec(`UPDATE w SET statut=?, pire=?, pire_titre=?, nb_pos=?, dernier_ts=?, verifie_at=?, erreur=NULL WHERE addr=?`,
-            v.statut, v.pire ?? null, v.titre ?? null, v.nb ?? null, v.dernier ?? null, Date.now(), a);
-        } else if (!r.reason.retry) {
-          this.sql.exec(`UPDATE w SET statut='erreur', erreur=?, verifie_at=? WHERE addr=?`, String(r.reason.message).slice(0, 200), Date.now(), a);
+    R.rpc_recu = okRpc;
+    R.evenements_dans_trades = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 12);
+    const cible = R.evenements_dans_trades.find(([k]) => !k.endsWith(TRANSFER) && !k.includes('0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63'));
+    if (!cible) return R;
+    const [adr, topic] = cible[0].split(' ');
+    R.cible = { contrat: adr, evenement: topic };
+    // 2. chaque RPC : hauteur, taille de fenêtre acceptée, vitesse
+    R.rpcs = [];
+    for (const u of RPCS) {
+      const h = await rpc(u, 'eth_blockNumber', [], 10000);
+      const e = { rpc: u, ok: h.ok, err: h.err };
+      if (h.ok) {
+        const head = parseInt(h.res, 16); e.bloc = head; e.fenetres = [];
+        for (const w of [100, 1000, 5000, 10000, 50000]) {
+          const r = await rpc(u, 'eth_getLogs', [{ address: adr, topics: [topic], fromBlock: hex(head - w), toBlock: hex(head - 1) }]);
+          e.fenetres.push({ blocs: w, ok: r.ok, ms: r.ms, nb: r.ok ? r.res.length : null, err: r.err });
+          if (!r.ok) break;
         }
-      });
-      if (r429) throw r429.reason;
-    }
-  }
-
-  // Une position perdante = gain réalisé négatif, ou position terminée (marché résolu / fermée) avec gain total négatif.
-  // Les positions encore ouvertes (marché pas résolu) ne comptent pas comme perdues.
-  async verifier(addr) {
-    const a = await api(`/positions?user=${addr}&sort_by=REALIZED_PNL&sort_direction=ASC&limit=1`);
-    const p0 = a.data[0];
-    if (p0 && p0.realized_pnl < SEUIL) return { statut: 'perdant', pire: p0.realized_pnl, titre: p0.title };
-    let cur = '';
-    for (let page = 0; page < 10; page++) {
-      const b = await api(`/positions?user=${addr}&sort_by=TOTAL_PNL&sort_direction=ASC&limit=100` + (cur ? '&cursor=' + encodeURIComponent(cur) : ''));
-      let stop = false;
-      for (const x of b.data) {
-        if (!(x.total_pnl < SEUIL)) { stop = true; break; }
-        if (x.status !== 'OPEN') return { statut: 'perdant', pire: x.total_pnl, titre: x.title };
+        // historique ancien : bloc ~45 M (2023)
+        const v = await rpc(u, 'eth_getLogs', [{ address: V1, fromBlock: hex(45000000), toBlock: hex(45000999) }]);
+        e.historique_2023 = { ok: v.ok, ms: v.ms, nb: v.ok ? v.res.length : null, err: v.err };
       }
-      cur = b.pagination && b.pagination.next_cursor;
-      if (stop || !cur) break;
-      if (page === 9) return { statut: 'erreur_trop_ouvertes' };
+      R.rpcs.push(e);
     }
-    // nombre de positions terminées (marchés), on s'arrête dès qu'on atteint le minimum
-    let nb = 0; cur = '';
-    for (let page = 0; page < 40 && nb < MIN_POS; page++) {
-      const c = await api(`/positions?user=${addr}&limit=500` + (cur ? '&cursor=' + encodeURIComponent(cur) : ''));
-      nb += c.data.filter(x => x.status !== 'OPEN').length;
-      cur = c.pagination && c.pagination.next_cursor;
-      if (!cur) break;
-    }
-    const act = await api(`/activity?user=${addr}&limit=1`);
-    const dernier = act.data[0] ? act.data[0].timestamp : null;
-    return { statut: nb >= MIN_POS ? 'gagnant' : 'trop_peu', nb, dernier, pire: 0 };
-  }
-
-  etat() {
-    const c = {}; for (const r of this.sql.exec(`SELECT statut, count(*) n FROM w GROUP BY statut`)) c[r.statut] = r.n;
-    const e = {}; for (const r of this.sql.exec(`SELECT k,v FROM etat WHERE k<>'curseur'`)) e[r.k] = r.v;
-    return { compteurs: c, ...e };
-  }
-  liste() {
-    return this.sql.exec(`SELECT addr,nom,rang,pnl,vol,nb_pos,dernier_ts,verifie_at FROM w WHERE statut='gagnant' ORDER BY pnl DESC`).toArray();
-  }
-  echantillon(statut, n) {
-    return this.sql.exec(`SELECT addr,nom,rang,pnl,pire,pire_titre,nb_pos,erreur FROM w WHERE statut=? ORDER BY rang LIMIT ?`, statut, n).toArray();
+    R.fin = new Date().toISOString();
+    return R;
   }
 }
-
-const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
-
+const json = o => new Response(JSON.stringify(o, null, 1), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 export default {
   async fetch(req, env) {
     const u = new URL(req.url);
-    const scan = env.SCAN.get(env.SCAN.idFromName('principal'));
-    if (u.pathname === '/api/etat') return json(await scan.etat());
-    if (u.pathname === '/api/liste') return json(await scan.liste());
-    if (u.pathname === '/api/demarrer') return json(await scan.demarrer());
-    if (u.pathname === '/api/echantillon') return json(await scan.echantillon(u.searchParams.get('statut') || 'perdant', +(u.searchParams.get('n') || 20)));
+    if (u.pathname === '/api/test') return json(await env.SCAN.get(env.SCAN.idFromName('test')).test());
     return env.ASSETS.fetch(req);
-  },
-  async scheduled(ev, env) { await env.SCAN.get(env.SCAN.idFromName('principal')).demarrer(); }
+  }
 };
