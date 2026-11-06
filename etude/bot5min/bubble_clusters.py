@@ -180,12 +180,19 @@ def etudier(c):
         res.pop("_rap", None)
     return res
 
-R = []
+# 06.11.2026 (Pitch : « si ça plante on perd tout ») : sauvegarde poussée sur GitHub APRÈS CHAQUE COIN, et reprise là où on s'était arrêté
+import os, subprocess
+FICH = "etude/bot5min/bubble_clusters_resultats.json"
+R = json.load(open(FICH)) if os.path.exists(FICH) else []
+faits = {r.get("mint") for r in R}
+def sauver():
+    json.dump(R, open(FICH, "w"), indent=1, default=str)
+    subprocess.run("git add etude/bot5min/ && git commit -qm 'Étude clusters : sauvegarde intermédiaire [skip ci]' && for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push -q && break; sleep 5; done", shell=True)
 for i, c in enumerate(coins):
+    if c["mint"] in faits: continue
     try: r = etudier(c)
     except Exception as e: r = dict(c, erreur=str(e)[:100])
-    R.append(r); print(f"[{i+1}/{len(coins)}] {c['nom']} : {json.dumps({k: v for k, v in r.items() if k not in ('mint',)}, default=str)[:700]}", flush=True)
-json.dump(R, open("etude/bot5min/bubble_clusters_resultats.json", "w"), indent=1, default=str)
+    R.append(r); sauver(); print(f"[{i+1}/{len(coins)}] {c['nom']} : {json.dumps({k: v for k, v in r.items() if k not in ('mint',)}, default=str)[:700]}", flush=True)
 print("\n=== RÉSUMÉ (20 $ par coin, prix réels des échanges, frais 1 % à l'achat et à la vente) ===")
 for X in SEUILS:
     E = [r[f"seuil{X}"] for r in R if r.get(f"seuil{X}", {}).get("entree")]
