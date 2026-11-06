@@ -1,0 +1,47 @@
+name: Deploy Sans-perte
+on:
+  push:
+    branches: [main]
+    paths: [sans-perte/src/**, sans-perte/public/**, sans-perte/wrangler.jsonc, sans-perte/demande.txt, .github/workflows/sans_perte.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: sans-perte
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deployer et controler
+        run: |
+          set +e
+          cd sans-perte
+          U=https://sans-perte.pitch67.workers.dev
+          code=$(curl -sS -m 20 -o /tmp/avant.html -w "%{http_code}" $U/)
+          if [ "$code" = "200" ] && ! grep -q "sans-perte-app" /tmp/avant.html; then
+            echo "STOP : un autre Worker nommé sans-perte existe déjà, rien n'a été déployé" > controle.txt
+          else
+            if ! grep -q "suivi" demande.txt 2>/dev/null; then npx -y wrangler@4 deploy > /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log; sleep 10; fi
+            {
+              tail -12 /tmp/d.log 2>/dev/null
+              echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" $U/
+              echo "=== demarrer"; curl -sS -m 30 $U/api/demarrer; echo
+              sleep 90
+              echo "=== etat"; curl -sS -m 30 $U/api/etat; echo
+              echo "=== perdants"; curl -sS -m 30 "$U/api/echantillon?statut=perdant&n=8"; echo
+              echo "=== erreurs"; curl -sS -m 30 "$U/api/echantillon?statut=erreur&n=5"; echo
+              echo "=== trop_peu"; curl -sS -m 30 "$U/api/echantillon?statut=trop_peu&n=5"; echo
+            } > controle.txt 2>&1
+            curl -sS -m 60 $U/api/liste > liste.json
+          fi
+          cd ..; git config user.name controle; git config user.email bot@users.noreply.github.com
+          git add sans-perte/controle.txt sans-perte/liste.json; git commit -m "Controle sans-perte [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done

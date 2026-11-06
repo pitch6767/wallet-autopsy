@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sans perte</title>
+<!-- sans-perte-app -->
+<style>
+:root{--bg:#0f1115;--carte:#181b22;--txt:#e8e9ec;--doux:#9aa0ab;--vert:#3ecf8e;--ligne:#262a33;--accent:#6aa9ff}
+@media (prefers-color-scheme: light){:root{--bg:#f6f7f9;--carte:#fff;--txt:#14161a;--doux:#5d6470;--vert:#118a55;--ligne:#e3e6eb;--accent:#1f6fe0}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 2px}h2{font-size:17px;margin:22px 0 8px}
+.doux{color:var(--doux);font-size:13px}
+.etat{background:var(--carte);border:1px solid var(--ligne);border-radius:12px;padding:12px;margin:12px 0}
+.barre{height:8px;background:var(--ligne);border-radius:6px;overflow:hidden;margin-top:8px}.barre i{display:block;height:100%;background:var(--vert)}
+.choix{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.choix button{background:var(--carte);color:var(--txt);border:1px solid var(--ligne);border-radius:8px;padding:6px 10px;font:inherit}
+.choix button.on{border-color:var(--accent);color:var(--accent)}
+.w{background:var(--carte);border:1px solid var(--ligne);border-radius:12px;padding:10px 12px;margin:8px 0}
+.w a{color:var(--accent);text-decoration:none;font-weight:600;word-break:break-all}
+.ch{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:4px;font-size:13px;color:var(--doux)}
+.ch b{color:var(--txt);font-weight:600}.g{color:var(--vert)!important}
+</style>
+</head>
+<body>
+<main>
+<h1>Portefeuilles Polymarket sans perte</h1>
+<div class="doux">Aucune position perdante sur toute leur histoire, au moins 20 positions terminées. Les positions encore ouvertes ne comptent pas.</div>
+<div class="etat" id="etat">Chargement…</div>
+<div class="choix"><span class="doux">« Trade toujours » = un trade dans les</span>
+<button data-j="7">7 j</button><button data-j="30">30 j</button><button data-j="90">90 j</button></div>
+<h2>Tradent toujours <span class="doux" id="nA"></span></h2><div id="actifs"></div>
+<h2>Ont arrêté <span class="doux" id="nS"></span></h2>
+<div class="doux">Recherche d'un éventuel nouveau portefeuille : à venir.</div>
+<div id="stop"></div>
+</main>
+<script>
+let J=30;try{J=+localStorage.getItem('j')||30}catch(e){}
+const f=n=>n==null?'—':(Math.abs(n)>=1e6?(n/1e6).toFixed(2)+' M$':Math.abs(n)>=1e3?(n/1e3).toFixed(1)+' k$':n.toFixed(0)+' $');
+const d=t=>t?new Date(t*1000).toLocaleDateString('fr-CH',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let L=[];
+function carte(x){const nom=x.nom&&x.nom.toLowerCase()!==x.addr?x.nom:x.addr.slice(0,10)+'…';
+return `<div class="w"><a href="https://polymarket.com/profile/${x.addr}" target="_blank" rel="noopener">${esc(nom)}</a>
+<div class="ch"><span>Gain <b class="g">${f(x.pnl)}</b></span><span>Volume <b>${f(x.vol)}</b></span><span>Positions ≥ <b>${x.nb_pos}</b></span><span>Dernier trade <b>${d(x.dernier_ts)}</b></span><span>Rang #${x.rang}</span></div>
+<div class="doux" style="margin-top:4px;word-break:break-all">${x.addr}</div></div>`}
+function rendre(){document.querySelectorAll('.choix button').forEach(b=>b.classList.toggle('on',+b.dataset.j===J));
+const lim=Date.now()/1000-J*86400,a=L.filter(x=>x.dernier_ts>=lim),s=L.filter(x=>!(x.dernier_ts>=lim));
+document.getElementById('nA').textContent='('+a.length+')';document.getElementById('nS').textContent='('+s.length+')';
+document.getElementById('actifs').innerHTML=a.map(carte).join('')||'<div class="doux">Aucun pour l\'instant.</div>';
+document.getElementById('stop').innerHTML=s.map(carte).join('')||'<div class="doux">Aucun pour l\'instant.</div>'}
+document.querySelectorAll('.choix button').forEach(b=>b.onclick=()=>{J=+b.dataset.j;try{localStorage.setItem('j',J)}catch(e){}rendre()});
+async function charger(){try{
+const e=await (await fetch('/api/etat')).json(),c=e.compteurs||{},tot=Object.values(c).reduce((a,b)=>a+b,0),av=c.a_verifier||0,pct=tot?Math.round((tot-av)/tot*100):0;
+document.getElementById('etat').innerHTML=`<b>${e.fini_at?'Scan terminé':'Scan en cours'}</b> — ${tot.toLocaleString('fr-CH')} portefeuilles lus dans le classement${e.classement_fini==='1'?' (complet)':' (lecture en cours)'}, ${(tot-av).toLocaleString('fr-CH')} vérifiés.
+<div class="doux">Éliminés (au moins une perte) : ${(c.perdant||0).toLocaleString('fr-CH')} · moins de 20 positions : ${(c.trop_peu||0).toLocaleString('fr-CH')} · erreurs : ${((c.erreur||0)+(c.erreur_trop_ouvertes||0)).toLocaleString('fr-CH')}</div><div class="barre"><i style="width:${pct}%"></i></div>`;
+L=await (await fetch('/api/liste')).json();rendre()}catch(err){document.getElementById('etat').textContent='Erreur de chargement'}}
+charger();setInterval(charger,60000);
+</script>
+</body>
+</html>
