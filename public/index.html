@@ -81,7 +81,7 @@ tr.det td{white-space:normal;text-align:left;background:var(--bg);padding:10px 1
 .verdict.ok{border-color:var(--ok);color:var(--ink)}
 .cons{border-top:1px solid var(--line);padding:10px 0}
 .cons p{margin:4px 0;font-size:13px;line-height:1.5}
-.dec-r table{width:100%;table-layout:fixed}.dec-r th,.dec-r td{white-space:normal;word-break:break-word;font-size:12px}.dec-r th:first-child,.dec-r td:first-child{width:46%}
+.decl-l{padding:6px 0;border-bottom:1px solid var(--line)}.decl-t{font-size:13px}.decl-v{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px}
 .lien{border:0;background:none;color:var(--acc);padding:4px 0;cursor:pointer;font-size:13px}
 </style>
 </head>
@@ -352,7 +352,7 @@ async function decortiquer(box, refaire){
     let h = '<div class="st dec-r"><div class="stt">Décortiqué : ' + esc(d.titre || "") + '</div>';
     for (const s of d.sections) {
       h += '<div class="cons"><div class="mt">' + esc(s.titre) + '</div>' + s.lignes.map(l => '<p>' + l + '</p>').join("");
-      if (s.table) h += '<div class="scroll"><table class="w"><tr>' + s.table.cols.map(c => '<th>' + esc(c) + '</th>').join("") + '</tr>' + s.table.rows.map(r => '<tr>' + r.map((c, i) => '<td' + (i ? '' : ' style="text-align:left"') + '>' + esc(c) + '</td>').join("") + '</tr>').join("") + '</table></div>';
+      if (s.table) h += '<div class="decl">' + s.table.rows.map(r => '<div class="decl-l"><div class="decl-t">' + esc(r[0]) + '</div><div class="decl-v"><span><b>Lui :</b> ' + esc(r[1]) + '</span><span class="mute">Ordinaire : ' + esc(r[2]) + '</span></div></div>').join("") + '</div>';
       h += '</div>';
     }
     if (d.limites && d.limites.length) h += '<p class="note">Limites : ' + d.limites.map(esc).join(" ") + '</p>';

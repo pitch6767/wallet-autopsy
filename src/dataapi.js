@@ -53,7 +53,10 @@ export async function v1ViaV2(u, init, brut) {
   const parPage = x.pathname === "/holders" ? limit : 1000;
   let e = cache.get(base);
   if (!e || Date.now() - e.t > 60_000) { e = { rows: [], curseur: null, fini: false, t: Date.now() }; cache.set(base, e); }
+  while (e.lecture) await e.lecture; // une autre requête lit déjà la page suivante : on l'attend
   while (!e.fini && e.rows.length < offset + limit) {
+    let fin; e.lecture = new Promise((ok) => (fin = ok));
+    try {
     const url = `${base}&limit=${parPage}` + (e.curseur ? `&cursor=${encodeURIComponent(e.curseur)}` : "");
     let r;
     for (let essai = 0; ; essai++) { // limite de débit v2 : on patiente et on réessaie
@@ -72,6 +75,7 @@ export async function v1ViaV2(u, init, brut) {
     const pg = j && j.pagination;
     e.curseur = pg && pg.next_cursor;
     if (!pg || !pg.has_more || !e.curseur || !data.length || x.pathname === "/holders") e.fini = true;
+    } finally { e.lecture = null; fin(); }
   }
   if (e.fini && offset + limit >= e.rows.length) cache.delete(base); // lu jusqu'au bout : on libère la mémoire
   if (cache.size > 20) for (const k of [...cache.keys()].slice(0, 10)) cache.delete(k);
