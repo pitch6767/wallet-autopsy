@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS decortiques (wallet TEXT PRIMARY KEY, ts INTEGER, json TEXT);

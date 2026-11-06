@@ -83,6 +83,12 @@ async function infosMarches(env, cids, slugs) {
 }
 
 export async function etude(env, addr) {
+  const r = await chargerMarches(env, addr);
+  return analyser(r.addr, r.marches, r.meta);
+}
+
+// Télécharge les trades BTC du portefeuille et les rattache aux marchés résolus.
+export async function chargerMarches(env, addr) {
   addr = String(addr || "").toLowerCase();
   if (!/^0x[0-9a-f]{40}$/.test(addr)) throw new Error("Adresse invalide.");
   const { rows, tronque } = await tradesWallet(addr);
@@ -142,7 +148,7 @@ export async function etude(env, addr) {
     });
   }
   marches.sort((a, b) => a.ts - b.ts);
-  return analyser(addr, marches, { tronque, autres, totalTrades: rows.length, btcTrades: btc.length, nonResolus: M.size - marches.length });
+  return { addr, marches, meta: { tronque, autres, totalTrades: rows.length, btcTrades: btc.length, nonResolus: M.size - marches.length } };
 }
 
 // ─── Analyse : chaque détecteur renvoie un constat ou rien ───

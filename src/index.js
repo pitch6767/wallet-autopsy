@@ -1,4 +1,5 @@
 import { etude } from "./etude.js";
+import { decortiquer } from "./decortiquer.js";
 import { tourDeCollecte, etatCollecte, classement, tourEtudes, conseils } from "./collect.js";
 // wallet-autopsy — profilage de portefeuilles Polymarket
 // Lecture seule : uniquement les API publiques de Polymarket, aucune clé, aucun ordre.
@@ -14,6 +15,7 @@ export default {
     try {
       if (url.pathname === "/api/wallet") return json(await walletReport(url.searchParams));
       if (url.pathname === "/api/etude") return json(await etude(env, url.searchParams.get("addr")));
+      if (url.pathname === "/api/decortiquer") return json(await decortiquer(env, url.searchParams.get("addr"), url.searchParams.get("refaire") === "1"));
       if (url.pathname === "/api/btc/classement") return json(await classement(env, url.searchParams));
       if (url.pathname === "/api/btc/tour") return json(await tourDeCollecte(env));
       if (url.pathname === "/api/btc/conseils") return json(await conseils(env));

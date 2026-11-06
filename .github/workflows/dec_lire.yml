@@ -1,0 +1,43 @@
+name: Decortiquer - controle
+on:
+  push:
+    branches: [main]
+    paths: [diagnostic/dec_demande.txt]
+permissions:
+  contents: write
+jobs:
+  lire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decortiquer et capturer
+        run: |
+          set +e
+          U=https://wallet-autopsy.pitch67.workers.dev
+          mkdir -p diagnostic/dec
+          for A in $(grep -oE '0x[0-9a-fA-F]{40}' diagnostic/dec_demande.txt; grep -q auto diagnostic/dec_demande.txt && curl -sS -m 30 $U/api/btc/copiables | python3 -c "import json,sys;print('\n'.join(w['wallet'] for w in json.load(sys.stdin)[:2]))"); do
+            /usr/bin/time -f "%e s" curl -sS -m 300 "$U/api/decortiquer?addr=$A&refaire=1" -o diagnostic/dec/$A.json 2> diagnostic/dec/$A.temps
+            echo "$A" >> diagnostic/dec/liste.txt
+          done
+          npm i -q playwright@1 >/dev/null 2>&1 && npx -y playwright@1 install --with-deps chromium >/dev/null 2>&1
+          cat > _cap.mjs <<'JS'
+          import { chromium } from "playwright";
+          import fs from "fs";
+          const U = "https://wallet-autopsy.pitch67.workers.dev";
+          const A = fs.readFileSync("diagnostic/dec/liste.txt", "utf8").trim().split("\n")[0];
+          const b = await chromium.launch();
+          for (const [nom, vp] of [["iphone", { width: 390, height: 844 }], ["ordi", { width: 1280, height: 900 }]]) {
+            const p = await b.newPage({ viewport: vp, deviceScaleFactor: 2 });
+            await p.goto(U + "/?addr=" + A, { waitUntil: "networkidle" });
+            await p.evaluate((a) => { document.getElementById("addr").value = a; }, A);
+            await p.click("#t1"); await p.click("#goW");
+            await p.waitForSelector(".dec button", { timeout: 120000 });
+            await p.click(".dec button");
+            await p.waitForSelector(".dec-r, .dec .err", { timeout: 300000 });
+            await p.locator(".dec").first().screenshot({ path: `diagnostic/dec/page-${nom}.png` });
+          }
+          await b.close();
+          JS
+          timeout 900 node _cap.mjs > diagnostic/dec/capture.log 2>&1
+          git config user.name controle; git config user.email bot@users.noreply.github.com
+          git add diagnostic/dec; git commit -m "Decortiquer lu [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done

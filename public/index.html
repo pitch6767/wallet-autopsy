@@ -337,8 +337,27 @@ async function rendreEtude(cible, a){
     if (!cible.isConnected) return;
     cible.innerHTML = '<div class="st"><div class="stt">' + esc(e.titre) + ' <span class="mute">— étude de ' + e.marches + ' marchés BTC</span></div>'
       + e.constats.map(c => '<p>' + c.texte + '</p>').join("")
-      + '<p class="verdict ' + (e.copiable ? "ok" : "") + '"><b>Pour copier :</b> ' + e.verdict + '</p></div>';
+      + '<p class="verdict ' + (e.copiable ? "ok" : "") + '"><b>Pour copier :</b> ' + e.verdict + '</p></div>'
+      + boutonDec(a);
   } catch(err) { delete etudeCache[a]; cible.innerHTML = '<p class="err">Étude impossible : ' + esc(err.message) + '</p>'; }
+}
+function boutonDec(a){ return '<div class="dec" data-a="' + a + '"><button class="go" style="margin-top:10px" onclick="event.stopPropagation();decortiquer(this.parentNode)">Décortiquer sa stratégie</button></div>'; }
+const decCache = {};
+async function decortiquer(box, refaire){
+  const a = box.dataset.a;
+  box.innerHTML = '<p class="mute">Décorticage en cours : ses trades, le prix à battre, le BTC minute par minute et les trades de chaque marché. Compte 30 s à 2 min…</p>';
+  try {
+    const d = (!refaire && decCache[a]) || (decCache[a] = await api("/api/decortiquer?addr=" + a + (refaire ? "&refaire=1" : "")));
+    let h = '<div class="st dec-r"><div class="stt">Décortiqué : ' + esc(d.titre || "") + '</div>';
+    for (const s of d.sections) {
+      h += '<div class="cons"><div class="mt">' + esc(s.titre) + '</div>' + s.lignes.map(l => '<p>' + l + '</p>').join("");
+      if (s.table) h += '<div class="scroll"><table class="w"><tr>' + s.table.cols.map(c => '<th>' + esc(c) + '</th>').join("") + '</tr>' + s.table.rows.map(r => '<tr>' + r.map((c, i) => '<td' + (i ? '' : ' style="text-align:left"') + '>' + esc(c) + '</td>').join("") + '</tr>').join("") + '</table></div>';
+      h += '</div>';
+    }
+    if (d.limites && d.limites.length) h += '<p class="note">Limites : ' + d.limites.map(esc).join(" ") + '</p>';
+    h += '<p class="note">Calculé le ' + new Date(d.calcule * 1000).toLocaleString("fr-CH", { timeZone: "Europe/Paris" }) + ' (heure de Paris)' + (d.cache ? ', résultat gardé en mémoire 6 h' : '') + '. <button class="lien" onclick="event.stopPropagation();decortiquer(this.closest(\'.dec\'),1)">Recalculer</button></p></div>';
+    box.innerHTML = h;
+  } catch(err) { delete decCache[a]; box.innerHTML = '<p class="err">Décorticage impossible : ' + esc(err.message) + '</p>' + '<button class="lien" onclick="event.stopPropagation();decortiquer(this.parentNode)">Réessayer</button>'; }
 }
 const histCache = {};
 function ouvrir(tr, a, fen){
@@ -418,6 +437,7 @@ function rendW(d){
    + (d.activiteIndisponible ? ' <b class="warn">Fusions et remboursements indisponibles.</b>' : '')
    + ' — ' + f0(d.lignes.trades) + ' trades, ' + f0(d.lignes.activite) + ' mouvements.</div></div>';
 
+  { const ad = $("addr").value.trim().toLowerCase(); if (/^0x[0-9a-f]{40}$/.test(ad)) h += '<div class="card"><div class="mt">Sa stratégie sur les marchés BTC</div><div class="note">Bilan réel, talent ou chance (signal inversé, hasard, mauvais moment), ce qui déclenche ses entrées et sa règle probable.</div>' + boutonDec(ad) + '</div>'; }
   if (!d.marches.length) h += '<div class="card mute">Aucun marché trouvé' + (d.filtre ? ' avec ce filtre' : '') + '.</div>';
   for (const m of d.marches) {
     const link = m.eventSlug ? 'https://polymarket.com/event/' + encodeURIComponent(m.eventSlug) : null;
