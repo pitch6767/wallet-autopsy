@@ -4,8 +4,8 @@
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
-  "durable_objects": { "bindings": [{ "name": "BOT", "class_name": "Bot" }, { "name": "SONDE", "class_name": "Sonde" }] },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Bot"] }, { "tag": "v2", "new_sqlite_classes": ["Sonde"] }, { "tag": "maker-realism-20261012", "new_sqlite_classes": ["RealismStore"] }],
+  "durable_objects": { "bindings": [{ "name": "BOT", "class_name": "Bot" }, { "name": "SONDE", "class_name": "Sonde" }, { "name": "RELAIS", "class_name": "RelaisJapon" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Bot"] }, { "tag": "v2", "new_sqlite_classes": ["Sonde"] }, { "tag": "maker-realism-20261012", "new_sqlite_classes": ["RealismStore"] }, { "tag": "relais-japon-20261106", "new_sqlite_classes": ["RelaisJapon"] }],
   "vars": { "MODE_REEL": "non", "MISE_REEL": "50", "SIGNAL_FLUX": "oui", "SIGNAL_NUMS": "101,201,121,28,119", "CHAINLINK_SOURCE": "auto" },
   "triggers": { "crons": ["* * * * *"] }
 }
