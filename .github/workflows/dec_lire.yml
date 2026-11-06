@@ -26,6 +26,10 @@ jobs:
               CID=$(curl -sS -m 30 "$D/v2/trades?user=$A1&limit=1" | python3 -c "import json,sys;j=json.load(sys.stdin);d=j.get('data',j) if isinstance(j,dict) else j;print(d[0].get('condition_id') or d[0].get('conditionId'))")
               echo "=== condition $CID"; curl -sS -m 30 "$D/v2/trades?condition=$CID&limit=2&taker_only=true" | head -c 1500; echo
               echo "=== pagination"; curl -sS -m 30 "$D/v2/trades?condition=$CID&limit=1000&taker_only=true" | python3 -c "import json,sys;j=json.load(sys.stdin);print(len(j.get('data',[])), json.dumps(j.get('pagination')))"
+              NC=$(curl -sS -m 30 "$D/v2/trades?condition=$CID&limit=3&taker_only=true" | python3 -c "import json,sys;print(json.load(sys.stdin)['pagination']['next_cursor'])")
+              echo "=== page 1 ts"; curl -sS -m 30 "$D/v2/trades?condition=$CID&limit=3&taker_only=true" | python3 -c "import json,sys;print([r['timestamp'] for r in json.load(sys.stdin)['data']])"
+              for cp in cursor next_cursor after; do echo "=== page 2 via $cp"; curl -sS -m 30 "$D/v2/trades?condition=$CID&limit=3&taker_only=true&$cp=$NC" | python3 -c "import json,sys;j=json.load(sys.stdin);print([r['timestamp'] for r in j.get('data',[])], str(j)[:200] if not j.get('data') else '')"; done
+              for q in "v2/holders?condition=$CID&limit=2" "v2/positions?user=$A1&status=CLOSED&limit=2" "v2/activity?user=$A1&condition=$CID&type=SPLIT,MERGE,REDEEM&limit=2" "v2/trades?user=$A1&limit=2&taker_only=false"; do echo "=== $q"; curl -sS -m 30 "$D/$q" | head -c 1200; echo; done
               echo "=== gamma event"; curl -sS -m 30 "https://gamma-api.polymarket.com/events?slug=btc-updown-5m-1794000000" | head -c 300; echo
               echo "=== coinbase"; curl -sS -m 30 "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=60" | head -c 200; echo
             } > diagnostic/dec/sonde.txt 2>&1
