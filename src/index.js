@@ -1,3 +1,5 @@
+import { installer } from "./dataapi.js";
+installer(); // API Polymarket v1 retirée le 02.11.2026 : traduction v1 → v2
 import { etude } from "./etude.js";
 import { decortiquer } from "./decortiquer.js";
 import { tourDeCollecte, etatCollecte, classement, tourEtudes, conseils } from "./collect.js";
