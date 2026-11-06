@@ -152,10 +152,12 @@ export default {
     // 06.11.2026 (Pitch : « gagner les 160 ms de retard sur Binance… on fait cela maintenant ») : relais du flux Binance perp (meilleur prix BTCUSDT)
     // depuis un objet placé en Asie-Pacifique, près des serveurs de Binance (Tokyo). Dublin s'y connecte en plus du flux direct et garde le plus rapide.
     // Données publiques de Binance seulement, rien n'est stocké, aucun ordre. Connexion réservée au serveur de Dublin ; l'état est lisible par tous.
-    { const m = pathname.match(/^\/relais\/japon\/([1-4])(\/etat)?$/);
+    // 06.11.2026 : Binance refuse Cloudflare (403) → les relais servent aussi OKX et Bybit (…/japon/<1-4>/<binance|okx|bybit>)
+    { const m = pathname.match(/^\/relais\/japon\/([1-4])(?:\/(binance|okx|bybit))?(\/etat)?$/);
       if (m) {
-        if (!m[2] && (req.headers.get("cf-connecting-ip") || "") !== "72.11.157.70") return new Response("interdit", { status: 403 });
-        return env.RELAIS.get(env.RELAIS.idFromName("japon-" + m[1]), { locationHint: "apac" }).fetch(req);
+        if (!m[3] && (req.headers.get("cf-connecting-ip") || "") !== "72.11.157.70") return new Response("interdit", { status: 403 });
+        const flux = m[2] || "binance";
+        return env.RELAIS.get(env.RELAIS.idFromName("japon-" + m[1] + (flux === "binance" ? "" : "-" + flux)), { locationHint: "apac" }).fetch(new Request(req.url + (req.url.includes("?") ? "&" : "?") + "flux=" + flux, req));
       } }
     if (pathname.startsWith("/relais/binance/")) {
       if ((req.headers.get("cf-connecting-ip") || "") !== "72.11.157.70") return new Response("interdit", { status: 403 });
@@ -297,10 +299,14 @@ export class RelaisJapon {
   async connecter() {
     if (this.ws || this.enCours) return; this.enCours = true;
     try {
-      const r = await fetch("https://fstream.binance.com/ws/btcusdt@bookTicker", { headers: { Upgrade: "websocket" } });
+      const URLS = { binance: "https://fstream.binance.com/ws/btcusdt@bookTicker", okx: "https://ws.okx.com:8443/ws/v5/public", bybit: "https://stream.bybit.com/v5/public/linear" };
+      const r = await fetch(URLS[this.flux] || URLS.binance, { headers: { Upgrade: "websocket" } });
       const ws = r.webSocket;
-      if (!ws) { this.err = "Binance a répondu " + r.status; return; }
+      if (!ws) { this.err = this.flux + " a répondu " + r.status; return; }
       ws.accept(); this.ws = ws; this.err = null; this.depuis = new Date().toISOString();
+      if (this.flux === "okx") ws.send(JSON.stringify({ op: "subscribe", args: [{ channel: "bbo-tbt", instId: "BTC-USDT-SWAP" }] }));
+      if (this.flux === "bybit") ws.send(JSON.stringify({ op: "subscribe", args: ["orderbook.1.BTCUSDT"] }));
+      if (this.flux !== "binance") { clearInterval(this.ping); this.ping = setInterval(() => { try { ws.send(this.flux === "okx" ? "ping" : JSON.stringify({ op: "ping" })); } catch { /* rien */ } }, 20000); }
       ws.addEventListener("message", (e) => {
         this.n++; const t = Date.now(); const d = typeof e.data === "string" ? e.data : "";
         for (const c of this.clients) { try { c.send(t + "|" + d); } catch { this.clients.delete(c); } }
@@ -310,8 +316,9 @@ export class RelaisJapon {
     } catch (err) { this.err = String(err); } finally { this.enCours = false; }
   }
   async fetch(req) {
+    if (!this.flux) this.flux = new URL(req.url).searchParams.get("flux") || "binance";
     if (!this.colo) { try { const t = await (await fetch("https://www.cloudflare.com/cdn-cgi/trace")).text(); this.colo = (t.match(/colo=(\w+)/) || [])[1] || null; } catch { /* rien */ } }
-    if (req.headers.get("Upgrade") !== "websocket") return Response.json({ colo: this.colo, clients: this.clients.size, messages: this.n, connecteBinance: !!this.ws, depuis: this.depuis, erreur: this.err });
+    if (req.headers.get("Upgrade") !== "websocket") return Response.json({ flux: this.flux, colo: this.colo, clients: this.clients.size, messages: this.n, connecteBinance: !!this.ws, depuis: this.depuis, erreur: this.err });
     const [a, b] = Object.values(new WebSocketPair()); b.accept(); this.clients.add(b);
     const off = () => this.clients.delete(b); b.addEventListener("close", off); b.addEventListener("error", off);
     await this.connecter();
