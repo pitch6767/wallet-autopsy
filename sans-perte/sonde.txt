@@ -1,15 +1,20 @@
-=== sonde4.mjs
-sort=realized_pnl_asc -> 200 1156203 | 960876 | 791221
-sort_by=REALIZEDPNL&sort_direction=ASC -> 400 {"error":"invalid position sortBy: REALIZEDPNL","code":"invalid_request","parameter":"sort_by","retryable":false,"trace_id":"68055d6b0cf944a39e2522f1bcb1b57f"}
-sortBy=REALIZEDPNL&sortDirection=ASC -> 400 {"error":"invalid position sortBy: REALIZEDPNL","code":"invalid_request","parameter":"sort_by","retryable":false,"trace_id":"a4de502813134c3b8c051a4cb9a71d13"}
-order_by=realized_pnl&order=asc -> 200 1156203 | 960876 | 791221
-sort=pnl_asc -> 200 1156203 | 960876 | 791221
-limit500 -> 500 neg: 0 has_more true
-
-user-stats FULL {"data":{"proxy_wallet":"0x204f72f35326db932158cba6adff0b9a1da95e14","trades":203104,"biggest_win":1188300.188282,"views":1408695,"join_date":1753800366,"all_time_pnl":{"timestamp":1793879800,"source_block":96782896,"realized_market_pnl":18482425.513018,"realized_lp_pnl":0.0,"realized_combo_pnl":0.0,"unrealized_pnl":0.0,"fees_refunded":2220210.393429,"maker_rebate":364881.274,"taker_rebate":2118300.0405,"reward_income":111255.4657,"yield_income":0.0,"referral_income":0.0,"deposits":null,"withdrawals":null,"realized_pnl":18482425.513018,"wallet_income":2594436.7802,"position_pnl":18482425.513018,"settled_pnl":21076862.293218,"economic_pnl":21076862.293218,"trade_pnl":23534533.451993,"sponsored_income":111255.4657,"fees":-7272318.332404,"fees_paid":-5052107.938975,"cashflow_net":null,"volume":1848848363.156314,"volume_usdc":1005948824.406403,"trade_count":6044066}}}
-
-activity 200 {"data":[{"proxy_wallet":"0x204f72f35326db932158cba6adff0b9a1da95e14","timestamp":1793116292,"condition_id":"0x6596ac7eb4ef77dd2865d41db60501996cea54a4e21bfa56709325dab35683d8","type":"REDEEM","size":61.450674,"usdc_size":0.0,"transaction_hash":"0x2c5397af766d6a62ea857f269a698ed164eecf167f94fea68592d6586e2af339","price":0.0,"token_id":"37774001186921178177391305905439859752804738384887934000030271047504358121845","side":"","outcome_index":1,"title":"KBO: Lotte Giants vs. Doosan Bears","slug":"kbo-lot-doo-2026-08-22","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/kbo-8cac2c2a6e.png","event_slug":"kbo-lot-doo-2026-08-22","outcome":"Doosan Bears","name":"swisstony","pseudonym":"Frail-Possible","bio":"So long, and thanks for all the fish","profile_image":"","profile_image_optimized":""},{"proxy_wallet":"0x204f72f35326db932158cba6adff0b9a1da95e14","timestamp":1792639338,"condition_id":"0xe41e4bab14c489414487a1901505453ccb7dc315ef02abc36e96d7e9a801a27a","type":"REDEEM","size":21.347314,"usdc_size":0.0,"transaction_hash":"0xc53a3c55e73df5ad4d60ccecd31b2f0649412630de09a485bfb3fa882b48f491","price":0.0,"token_id":"17570245295809945460967543571662053663053205404946658639160859787829581517113","side":"","outcome_index":1,"title":"Brooklyn FC vs. Birmingham Legion FC: Both Teams to Score","slug":"uslc-bro-bir-2026-08-08-btts","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/soccer-leagues/uslc.png","event_slug":"uslc-bro-bir-2026-08-08-more-markets","outcome":"N
-
-activity transfer 400 {"error":"unknown activity type: TRANSFER","code":"invalid_request","parameter":"type","retryable":false,"trace_id":"a4816128ee8546f49a4e812c30455520"}
-
-classement: lus 71000 en 240 s ; dernier {"rank":71000,"user_id":"0xd0644d18ce0cc103afc35cfcfc306e772b5ea9dd","pnl":1313.55,"volume":52669,"user_name":"Bae99love","profile_image":"","x_username":"","verified":false}
+=== sonde5.mjs
+REALIZED_PNL ASC -> 200 -1004362 | -808518 | -655735
+realized_pnl ASC -> 200 -1004362 | -808518 | -655735
+CASHPNL ASC -> 400 {"error":"invalid position sortBy: CASHPNL","code":"invalid_request","parameter":"sort_by","retryable":false,"trace_id":"f625ebbeef9940098fe47f7e5f76936a"}
+PNL ASC -> 400 {"error":"invalid position sortBy: PNL","code":"invalid_request","parameter":"sort_by","retryable":false,"trace_id":"994cfcb16f124c818c3cfe4ff8b16752"}
+TOTAL_PNL ASC -> 200 -1004362 | -808518 | -655735
+PERCENTPNL ASC -> 400 {"error":"invalid position sortBy: PERCENTPNL","code":"invalid_request","parameter":"sort_by","retryable":false,"trace_id":"a3ff1048d9b949eb96f43df1f432c353"}
+CURRENT ASC -> 400 {"error":"invalid position sortBy: CURRENT","code":"invalid_request","parameter":"sort_by","retryable":false,"trace_id":"d7462f3636434ead970228d2df59fb8d"}
+TOKENS ASC -> 200 -1004362 | -808518 | -655735
+RESOLVING ASC -> 400 {"error":"invalid position sortBy: RESOLVING","code":"invalid_request","parameter":"sort_by","retryable":false,"trace_id":"9c7d0b5e8f5044c1a57b8c4a570dd7aa"}
+last_event_at ASC -> 400 {"error":"invalid position sortBy: LAST_EVENT_AT","code":"invalid_request","parameter":"sort_by","retryable":false,"trace_id":"d2bbd048b3cf4ab0812faf40ca2e26ab"
+LAST_EVENT_AT ASC -> 400 {"error":"invalid position sortBy: LAST_EVENT_AT","code":"invalid_request","parameter":"sort_by","retryable":false,"trace_id":"53cafe7ee3dc492abab1ffdb0c128730"
+0x204f72f3 CLOSED positions 100000 negatives 0 pnl min 65 pages 200
+0x204f72f3 REDEEMABLE_LOST positions 0 negatives 0 pnl min 1000000000000000000 pages 1
+0x204f72f3 REDEEMABLE positions 0 negatives 0 pnl min 1000000000000000000 pages 1
+0x204f72f3 OPEN positions 0 negatives 0 pnl min 1000000000000000000 pages 1
+0x47946575 CLOSED positions 5220 negatives 1680 pnl min -320 pages 11
+0x47946575 REDEEMABLE_LOST positions 874 negatives 757 pnl min -2 pages 2
+0x47946575 REDEEMABLE positions 874 negatives 757 pnl min -2 pages 2
+0x47946575 OPEN positions 875 negatives 757 pnl min -2 pages 2
