@@ -34,7 +34,9 @@ def v(t, c):
 starts = sorted(set(int(v(t, "start")) for t in R if v(t, "start")))
 def jour(s): return (dt.datetime.fromtimestamp(s, dt.timezone.utc) + dt.timedelta(hours=1)).strftime("%Y-%m-%d")
 def nuit(s): return (dt.datetime.fromtimestamp(s, dt.timezone.utc) + dt.timedelta(hours=1)).hour < 8
-APP = lambda j: "2026-10-19" <= j <= "2026-10-31"; TEST = lambda j: "2026-11-01" <= j <= "2026-11-05"
+# données seconde par seconde gardées seulement depuis le 02.11 : apprentissage 02.11 → 04.11, verdict 05.11 → 06.11 (jours inédits)
+A0, A1, T0, T1 = (sys.argv[3:7] + ["2026-11-02", "2026-11-04", "2026-11-05", "2026-11-06"][len(sys.argv[3:7]):])
+APP = lambda j: A0 <= j <= A1; TEST = lambda j: T0 <= j <= T1
 cyc = {}
 for s in starts:
     k = v(s + 150, "prix_a_battre") or v(s + 10, "prix_a_battre")
@@ -116,7 +118,7 @@ for nom, (fab, grille) in GRILLE.items():
         for p, RS in PAR.items():
             app = [r[0] for s, r in RS.items() if APP(cyc[s]["jour"]) and flt(cyc[s])]
             n, pct, g, cr, _ = bilan(app)
-            if n >= 30 and (meil is None or g > meil[1]): meil = (p, g, n, pct, cr)
+            if n >= 20 and (meil is None or g > meil[1]): meil = (p, g, n, pct, cr)
         if not meil: print(f"{nom} [{fn}] : pas assez de trades"); continue
         test = collections.defaultdict(list)
         for s in sorted(PAR[meil[0]]):
