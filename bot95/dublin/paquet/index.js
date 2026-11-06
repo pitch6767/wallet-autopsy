@@ -22751,6 +22751,13 @@ var index_default = {
       const m = req.method.toUpperCase();
       if (m !== "GET" && m !== "HEAD" && m !== "OPTIONS" && pathname !== "/api/signal_by1") return new Response("interdit", { status: 403 });
     }
+    {
+      const m = pathname.match(/^\/relais\/japon\/([1-4])(\/etat)?$/);
+      if (m) {
+        if (!m[2] && (req.headers.get("cf-connecting-ip") || "") !== "72.11.157.70") return new Response("interdit", { status: 403 });
+        return env.RELAIS.get(env.RELAIS.idFromName("japon-" + m[1]), { locationHint: "apac" }).fetch(req);
+      }
+    }
     if (pathname.startsWith("/relais/binance/")) {
       if ((req.headers.get("cf-connecting-ip") || "") !== "72.11.157.70") return new Response("interdit", { status: 403 });
       const u = new URL(req.url), cible = "https://stream.binance.com:443/" + pathname.slice("/relais/binance/".length) + u.search;
@@ -22976,6 +22983,76 @@ async function sondeBinance(duree = 20) {
   return out;
 }
 __name(sondeBinance, "sondeBinance");
+var RelaisJapon = class {
+  static {
+    __name(this, "RelaisJapon");
+  }
+  constructor(state, env) {
+    this.state = state;
+    this.clients = /* @__PURE__ */ new Set();
+    this.ws = null;
+    this.n = 0;
+    this.colo = null;
+    this.err = null;
+    this.depuis = null;
+  }
+  async connecter() {
+    if (this.ws || this.enCours) return;
+    this.enCours = true;
+    try {
+      const r = await fetch("https://fstream.binance.com/ws/btcusdt@bookTicker", { headers: { Upgrade: "websocket" } });
+      const ws = r.webSocket;
+      if (!ws) {
+        this.err = "Binance a r\xE9pondu " + r.status;
+        return;
+      }
+      ws.accept();
+      this.ws = ws;
+      this.err = null;
+      this.depuis = (/* @__PURE__ */ new Date()).toISOString();
+      ws.addEventListener("message", (e) => {
+        this.n++;
+        const t = Date.now();
+        const d = typeof e.data === "string" ? e.data : "";
+        for (const c of this.clients) {
+          try {
+            c.send(t + "|" + d);
+          } catch {
+            this.clients.delete(c);
+          }
+        }
+      });
+      const fin = /* @__PURE__ */ __name(() => {
+        this.ws = null;
+        if (this.clients.size) setTimeout(() => this.connecter(), 1e3);
+      }, "fin");
+      ws.addEventListener("close", fin);
+      ws.addEventListener("error", fin);
+    } catch (err) {
+      this.err = String(err);
+    } finally {
+      this.enCours = false;
+    }
+  }
+  async fetch(req) {
+    if (!this.colo) {
+      try {
+        const t = await (await fetch("https://www.cloudflare.com/cdn-cgi/trace")).text();
+        this.colo = (t.match(/colo=(\w+)/) || [])[1] || null;
+      } catch {
+      }
+    }
+    if (req.headers.get("Upgrade") !== "websocket") return Response.json({ colo: this.colo, clients: this.clients.size, messages: this.n, connecteBinance: !!this.ws, depuis: this.depuis, erreur: this.err });
+    const [a, b] = Object.values(new WebSocketPair());
+    b.accept();
+    this.clients.add(b);
+    const off = /* @__PURE__ */ __name(() => this.clients.delete(b), "off");
+    b.addEventListener("close", off);
+    b.addEventListener("error", off);
+    await this.connecter();
+    return new Response(null, { status: 101, webSocket: a });
+  }
+};
 var Sonde = class {
   static {
     __name(this, "Sonde");
@@ -31131,6 +31208,7 @@ var RealismStore = class {
 export {
   Bot,
   RealismStore,
+  RelaisJapon,
   Sonde,
   index_default as default
 };
