@@ -1,20 +1,19 @@
 === /api/etude
-{"adresse":"0xb89d0b6e96e790afa900b53476b8f267a94d1d4f","marches":244,"meta":{"tronque":true,"autres":0,"totalTrades":10500,"btcTrades":10500,"nonResolus":80},"constats":[{"poids":85,"texte":"Ce que vivrait quelqu'un qui le copie (235 marchés, hors 9 marchés achetés après la clôture, classés par le prix de sa première entrée, tout ce qu'il fait ensuite compris) — première entrée moins de 0,10 $ : 12 marchés, bon côté 0 fois pour 1 attendues par le prix, résultat final −$725 (ROI -100 %) ; première entrée 0,10 à 0,30 $ : 49 marchés, bon côté 15 fois pour 11 attendues parcurl: (23) Failure writing output to destination, passed 1369 returned 1354
-
+{"adresse":"0xb89d0b6e96e790afa900b53476b8f267a94d1d4f","marches":244,"meta":{"tronque":true,"autres":0,"totalTrades":10500,"btcTrades":10500,"nonResolus":80},"constats":[{"poids":85,"texte":"Ce que vivrait quelqu'un qui le copie (235 marchés, hors 9 marchés achetés après la clôture, classés par le prix de sa première entrée, tout ce qu'il fait ensuite compris) — première entrée moins de 0,10 $ : 12 marchés, bon côté 0 fois pour 1 attendues par le prix, résultat final −$725 (ROI -100 %) ; première entrée 0,10 à 0,30 $ : 49 marchés, bon côté 15 fois pour 11 attendues par
 === /api/wallet
-{"adresse":"0xb89d0b6e96e790afa900b53476b8f267a94d1d4f","filtre":null,"market":null,"lignes":{"trades":10000,"activite":492},"tronque":true,"activiteIndisponible":false,"synthese":{"marches":310,"trades":10000,"volumeAchats":241355.7958188723,"marchesDeuxCotes":4,"marchesSousUn":4,"margePairesTotale":1384.490143633067,"pairesTotales":4855.960344,"fluxRealise":58962.96002320746,"ecartMedianSec":0,"curl: (23) Failure writing output to destination, passed 1369 returned 1354
+{"adresse":"0xb89d0b6e96e790afa900b53476b8f267a94d1d4f","filtre":null,"market":null,"lignes":{"trades":10000,"activite":492},"tronque":true,"activiteIndisponible":false,"synthese":{"marches":310,"trades":10000,"volumeAchats":241355.7958188723,"marchesDeuxCotes":4,"marchesSousUn":4,"margePairesTotale":1384.490143633067,"pairesTotales":4855.960344,"fluxRealise":58962.96002320746,"ecartMedianSec":0,"curl: (23) Failure writing output to destination, passed 1360 returned 0
 
 === data-api depuis GitHub
 {"error":"Data API v1 has been retired","migration":"https://data-api.polymarket.com/v2/","docs":"https://docs.polymarket.com/api-reference/data-api/overview"}
 === /api/btc/etat
-15m plus_recent 1794007800 attente 0
-1h plus_recent 1794006000 attente 0
-1j plus_recent 1793638800 attente 0
-4h plus_recent 1793653200 attente 0
-5m plus_recent 1794007800 attente 0
-=== maintenant 1794008059
+15m plus_recent 1794008700 attente 309
+1h plus_recent 1794006000 attente 78
+1j plus_recent 1793984400 attente 3
+4h plus_recent 1793998800 attente 19
+5m plus_recent 1794008700 attente 932
+=== maintenant 1794009123
 === /api/market
-{"titre":"Bitcoin Up or Down - November 6, 6:00PM-6:05PM ET","question":"Bitcoin Up or Down - November 6, 6:00PM-6:05PM ET","conditionId":"0x6efc0efcec69bde24202bcae877e317254d4cf60bcd5f1eea73d37485dc3b4f0","slug":"btc-updown-5m-1794006000","issues":["Up","Down"],"prix":[0,1],"resolu":true,"ferme":true,"fin":"2026-11-06T23:05:00Z","autresMarches":null,"tronque":false,"activiteLuePourTop":40,"synthese":{"portefeuilles":834,"trades":5126,"volumeAchats":53742.25239904216,"automates":52,"deuxCotes":curl: (23) Failure writing output to destination, passed 1369 returned 1354
+{"titre":"Bitcoin Up or Down - November 6, 6:20PM-6:25PM ET","question":"Bitcoin Up or Down - November 6, 6:20PM-6:25PM ET","conditionId":"0x119bd79b8604bba392d0f208e52a67173de555a9525edb2da403510010250259","slug":"btc-updown-5m-1794007200","issues":["Up","Down"],"prix":[1,0],"resolu":true,"ferme":true,"fin":"2026-11-06T23:25:00Z","autresMarches":null,"tronque":false,"activiteLuePourTop":40,"synthese":{"portefeuilles":681,"trades":3962,"volumeAchats":38776.79903003515,"automates":54,"deuxCotes":curl: (23) Failure writing output to destination, passed 1360 returned 0
 
 === /api/holders
-{"titre":"Bitcoin Up or Down - November 6, 6:00PM-6:05PM ET","marches":[{"conditionId":"0x6efc0efcec69bde24202bcae877e317254d4cf60bcd5f1eea73d37485dc3b4f0","question":"Bitcoin Up or Down - November 6, 6:00PM-6:05PM ET","slug":"btc-updown-5m-1794006000","cotes":[{"token":"95261130998171896844444780447672604406971684066109005022840943726395054250993","detenteurs":[{"adresse":"0x82ebb00dd88cdc1faced07d693900a490c24f2b4","nom":"Paulymarketer","parts":1298.317292,"issue":"Up"},{"adresse":"0x85fc9f252
+{"titre":"Bitcoin Up or Down - November 6, 6:20PM-6:25PM ET","marches":[{"conditionId":"0x119bd79b8604bba392d0f208e52a67173de555a9525edb2da403510010250259","question":"Bitcoin Up or Down - November 6, 6:20PM-6:25PM ET","slug":"btc-updown-5m-1794007200","cotes":[{"token":"30204070004507379921325131119366502490567318917346834466368923052513921776199","detenteurs":[{"adresse":"0x0282426687fabe2af72f033aa2f23bdf9f119ff5","nom":"_test_i075_T1","parts":150.204763,"issue":"Up"},{"adresse":"0x3dcbd9523b
