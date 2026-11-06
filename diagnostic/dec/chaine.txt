@@ -1,8 +1,10 @@
 === /api/etude
-{"adresse":"0xb89d0b6e96e790afa900b53476b8f267a94d1d4f","marches":0,"meta":{"tronque":false,"autres":0,"totalTrades":0,"btcTrades":0,"nonResolus":0},"constats":[],"titre":"Aucun marché BTC exploitable","verdict":"Pas de marché BTC Up or Down résolu dans son historique téléchargeable.","copiable":false}
+{"adresse":"0xb89d0b6e96e790afa900b53476b8f267a94d1d4f","marches":244,"meta":{"tronque":true,"autres":0,"totalTrades":10500,"btcTrades":10500,"nonResolus":80},"constats":[{"poids":85,"texte":"Ce que vivrait quelqu'un qui le copie (235 marchés, hors 9 marchés achetés après la clôture, classés par le prix de sa première entrée, tout ce qu'il fait ensuite compris) — première entrée moins de 0,10 $ : 12 marchés, bon côté 0 fois pour 1 attendues par le prix, résultat final −$725 (ROI -100 %) ; première entrée 0,10 à 0,30 $ : 49 marchés, bon côté 15 fois pour 11 attendues parcurl: Failed writing body
+
 === /api/wallet
-{"erreur":"Polymarket a répondu 429 sur /trades"}
+{"adresse":"0xb89d0b6e96e790afa900b53476b8f267a94d1d4f","filtre":null,"market":null,"lignes":{"trades":10000,"activite":492},"tronque":true,"activiteIndisponible":false,"synthese":{"marches":310,"trades":10000,"volumeAchats":241355.7958188723,"marchesDeuxCotes":4,"marchesSousUn":4,"margePairesTotale":1384.490143633067,"pairesTotales":4855.960344,"fluxRealise":58962.96002320746,"ecartMedianSec":0,"curl: (23) Failure writing output to destination, passed 1369 returned 1354
+
 === data-api depuis GitHub
 {"error":"Data API v1 has been retired","migration":"https://data-api.polymarket.com/v2/","docs":"https://docs.polymarket.com/api-reference/data-api/overview"}
 === /api/btc/etat
-{"parType":[{"type":"15m","traites":11752,"attente":0,"echecs":386,"plus_ancien":1783074600,"plus_recent":1794006000,"trades":33234353,"tronques":129},{"type":"1h","traites":2937,"attente":1,"echecs":96,"plus_ancien":1783072800,"plus_recent":1793656800,"trades":6219061,"tronques":0},{"type":"1j","traites":123,"attente":0,"echecs":4,"plus_ancien":1783094400,"plus_recent":1793638800,"trades":501275,
+{"parType":[{"type":"15m","traites":11753,"attente":0,"echecs":386,"plus_ancien":1783074600,"plus_recent":1794006900,"trades":33238959,"tronques":129},{"type":"1h","traites":2938,"attente":0,"echecs":96,"plus_ancien":1783072800,"plus_recent":1794006000,"trades":6221105,"tronques":0},{"type":"1j","traites":123,"attente":0,"echecs":4,"plus_ancien":1783094400,"plus_recent":1793638800,"trades":501275,
