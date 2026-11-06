@@ -1,37 +1,15 @@
-=== sonde3.mjs
+=== sonde4.mjs
+sort=realized_pnl_asc -> 200 1156203 | 960876 | 791221
+sort_by=REALIZEDPNL&sort_direction=ASC -> 400 {"error":"invalid position sortBy: REALIZEDPNL","code":"invalid_request","parameter":"sort_by","retryable":false,"trace_id":"68055d6b0cf944a39e2522f1bcb1b57f"}
+sortBy=REALIZEDPNL&sortDirection=ASC -> 400 {"error":"invalid position sortBy: REALIZEDPNL","code":"invalid_request","parameter":"sort_by","retryable":false,"trace_id":"a4de502813134c3b8c051a4cb9a71d13"}
+order_by=realized_pnl&order=asc -> 200 1156203 | 960876 | 791221
+sort=pnl_asc -> 200 1156203 | 960876 | 791221
+limit500 -> 500 neg: 0 has_more true
 
-## /data/polymarket/positions
-Open positions per wallet and market token — size, average entry price, and running realized PnL.
- param address query REQUIRED 
- param token_id query  
- param min_amount query  
- param include_zero query  
- param sort query  Sort by amount_desc (default), amount_asc, realized_pnl_desc, or last_updated_at_desc, with token_id ascending for ties. NULL sort values sort as zero: before p
- param limit query  
- param cursor query  
+user-stats FULL {"data":{"proxy_wallet":"0x204f72f35326db932158cba6adff0b9a1da95e14","trades":203104,"biggest_win":1188300.188282,"views":1408695,"join_date":1753800366,"all_time_pnl":{"timestamp":1793879800,"source_block":96782896,"realized_market_pnl":18482425.513018,"realized_lp_pnl":0.0,"realized_combo_pnl":0.0,"unrealized_pnl":0.0,"fees_refunded":2220210.393429,"maker_rebate":364881.274,"taker_rebate":2118300.0405,"reward_income":111255.4657,"yield_income":0.0,"referral_income":0.0,"deposits":null,"withdrawals":null,"realized_pnl":18482425.513018,"wallet_income":2594436.7802,"position_pnl":18482425.513018,"settled_pnl":21076862.293218,"economic_pnl":21076862.293218,"trade_pnl":23534533.451993,"sponsored_income":111255.4657,"fees":-7272318.332404,"fees_paid":-5052107.938975,"cashflow_net":null,"volume":1848848363.156314,"volume_usdc":1005948824.406403,"trade_count":6044066}}}
 
-## /data/polymarket/activity
-Wallet activity newest first — trade fills and matches, plus splits, merges and redeems, with the counterparty on each maker row.
- param address query  
- param token_id query  
- param event_type query  
- param side query  
- param order_type query  
- param start_time query  
- param end_time query  
- param start_block query  
- param end_block query  
- param min_amount_usdc query  
- param sort query  
- param limit query  
- param cursor query  
+activity 200 {"data":[{"proxy_wallet":"0x204f72f35326db932158cba6adff0b9a1da95e14","timestamp":1793116292,"condition_id":"0x6596ac7eb4ef77dd2865d41db60501996cea54a4e21bfa56709325dab35683d8","type":"REDEEM","size":61.450674,"usdc_size":0.0,"transaction_hash":"0x2c5397af766d6a62ea857f269a698ed164eecf167f94fea68592d6586e2af339","price":0.0,"token_id":"37774001186921178177391305905439859752804738384887934000030271047504358121845","side":"","outcome_index":1,"title":"KBO: Lotte Giants vs. Doosan Bears","slug":"kbo-lot-doo-2026-08-22","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/kbo-8cac2c2a6e.png","event_slug":"kbo-lot-doo-2026-08-22","outcome":"Doosan Bears","name":"swisstony","pseudonym":"Frail-Possible","bio":"So long, and thanks for all the fish","profile_image":"","profile_image_optimized":""},{"proxy_wallet":"0x204f72f35326db932158cba6adff0b9a1da95e14","timestamp":1792639338,"condition_id":"0xe41e4bab14c489414487a1901505453ccb7dc315ef02abc36e96d7e9a801a27a","type":"REDEEM","size":21.347314,"usdc_size":0.0,"transaction_hash":"0xc53a3c55e73df5ad4d60ccecd31b2f0649412630de09a485bfb3fa882b48f491","price":0.0,"token_id":"17570245295809945460967543571662053663053205404946658639160859787829581517113","side":"","outcome_index":1,"title":"Brooklyn FC vs. Birmingham Legion FC: Both Teams to Score","slug":"uslc-bro-bir-2026-08-08-btts","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/soccer-leagues/uslc.png","event_slug":"uslc-bro-bir-2026-08-08-more-markets","outcome":"N
 
-security [{"api_key":[]}]
+activity transfer 400 {"error":"unknown activity type: TRANSFER","code":"invalid_request","parameter":"type","retryable":false,"trace_id":"a4816128ee8546f49a4e812c30455520"}
 
-classement ALL : portefeuilles lus 20000 pages 400 dernier {"rank":20000,"user_id":"0x224ac20bfeb111e36935901725f96e8b34a3fa87","pnl":7116.973882,"volume":16323.340569000002,"user_name":"0x224ac20bfeb111e36935901725f96e8b34a3fa87","profile_image":"","x_username":"","verified":false}
-
-## positions REDEEMABLE_LOST {"data":[],"pagination":{"limit":2,"offset":0,"has_more":false,"next_cursor":null}}
-
-## positions CLOSED {"data":[{"proxy_wallet":"0x204f72f35326db932158cba6adff0b9a1da95e14","token_id":"12895713634933367223676558147527749758143822673340639855731583908529004951892","condition_id":"0xe690620297dfea974d20df84b4cf90460e46a26ec864353482717b90509a3c0b","current_size":0.0,"avg_price":0.4499,"entry_cost_usdc":0.0,"entry_fees_usdc":13774.398982,"total_cost_usdc":13774.398982,"current_price":1.0,"current_value":0.0,"total_size":2367206.9474,"realized_pnl":1156202.6574,"unrealized_pnl":0.0,"total_pnl":1156202.6574,"percent_pnl":0.0,"percent_realized_pnl":108.5465,"status":"CLOSED","redeemable":false,"mergeable":false,"negative_risk":true,"archived":false,"title":"Will Germany win on 2026-06-25?","slug":"fifwc-ecu-ger-2026-06-25-ger","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/soccer ball-bba4025f77.png","event_id":"351769","event_slug":"fifwc-ecu-ger-2026-06-25","outcome":"No","outcome_index":1,"opposite_outcome":"Yes","opposite_token_id":"101279272797775203956659007084828831261331275405585994446661991301016814257223","end_date":"2026-06-25","last_event_at":1782425653,"first_entry_at":1781352507,"name":"swisstony","profile_image":"","verified":false},{"proxy_wallet":"0x204f72f3
-
-## user-stats {"data":{"proxy_wallet":"0x204f72f35326db932158cba6adff0b9a1da95e14","trades":203104,"biggest_win":1188300.188282,"views":1408695,"join_date":1753800366,"all_time_pnl":{"timestamp":1793879800,"source_block":96782896,"realized_market_pnl":18482425.513018,"realized_lp_pnl":0.0,"realized_combo_pnl":0.0,"unrealized_pnl":0.0,"fees_refunded":2220210.393429,"maker_rebate":364881.274,"taker_rebate":2118300.0405,"reward_income":111255.4657,"yield_income":0.0,"referral_income":0.0,"deposits":null,"withdrawals":null,"realized_pnl":18482425.513018,"wallet_income":2594436.7802,"position_pnl":18482425.513018,"settled_pnl":21076862.293218,"economic_pnl":21076862.293218,"trade_pnl":23534533.451993,"sponsored_income":111255.4657,"fees":-7272318.332404,"fees_paid":-5052107.938975,"cashflow_net":null,"volume
+classement: lus 71000 en 240 s ; dernier {"rank":71000,"user_id":"0xd0644d18ce0cc103afc35cfcfc306e772b5ea9dd","pnl":1313.55,"volume":52669,"user_name":"Bae99love","profile_image":"","x_username":"","verified":false}
