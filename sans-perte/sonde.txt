@@ -1,28 +1,37 @@
-=== sonde2.mjs
+=== sonde3.mjs
 
-### status
-200 {"data":{"computed_at":"2026-11-06T09:04:12Z","age_seconds":17,"serving":{"lag_seconds":8,"worst":"pnl","mechanisms":[{"name":"activity_feed","age_seconds":0},{"name":"custody_balances","age_seconds":0,"blocks_behind":1},{"name":"pnl","age_seconds":8,"blocks_behind":7}]},"ingestion":{"cursors":201,"network":"polygon","chain_id":137,"max_synced_block":96833597,"min_synced_block":96833596,"most_lagged":{"source":"auto_redeem_binary_redemption","block":96833596,"behind_max":1},"lagging":[{"source":"auto_redeem_binary_redemption","block":96833596,"behind_max":1},{"source":"auto_redeem_neg_risk_redemption","block":96833596,"behind_max":1},{"source":"auto_redeem_v2_binary_redemption","block":96833596,"behind_max":1},{"source":"auto_redeem_v3_binary_redemption","block":96833596,"behind_max":1},{"source":"binary_module_event_prepared","block":96833596,"behind_max":1}]}}}
+## /data/polymarket/positions
+Open positions per wallet and market token — size, average entry price, and running realized PnL.
+ param address query REQUIRED 
+ param token_id query  
+ param min_amount query  
+ param include_zero query  
+ param sort query  Sort by amount_desc (default), amount_asc, realized_pnl_desc, or last_updated_at_desc, with token_id ascending for ties. NULL sort values sort as zero: before p
+ param limit query  
+ param cursor query  
 
-### leaderboard
-200 {"data":[{"rank":1,"user_id":"0x85f031d069de300055900c4055c1baeb6bde3f67","pnl":467249.87343937,"volume":0.0,"user_name":"RJW1","profile_image":"","x_username":"","verified":false},{"rank":2,"user_id":"0xd9e0aaca471f489be338fd0f91a26e8669a805f2","pnl":381475.91992359754,"volume":212127.11925500003,"user_name":"0xD9E0AACa471f48F91A26E8669A805f2","profile_image":"","x_username":"","verified":false},{"rank":3,"user_id":"0x5268527977f700f9bf9b6d5cd843859e4e70135d","pnl":118008.07594147898,"volume":281431.2804190002,"user_name":"HomeRunHazard","profile_image":"","x_username":"","verified":false}],"pagination":{"limit":3,"offset":0,"has_more":true,"next_cursor":"eyJkYXRhIjp7InR5cGUiOiJsZWFkZXJib2FyZCIsInBhcmFtcyI6eyJsIjozLCJvIjozLCJzIjoiUE5MIiwidCI6ImRheSIsImMiOiJvdmVyYWxsIn19LCJzaWciOiIwYmVkNWM5MTNkMWFiZDljMjQ4ZTgxMGUwNTI5MjVkZCJ9"}}
+## /data/polymarket/activity
+Wallet activity newest first — trade fills and matches, plus splits, merges and redeems, with the counterparty on each maker row.
+ param address query  
+ param token_id query  
+ param event_type query  
+ param side query  
+ param order_type query  
+ param start_time query  
+ param end_time query  
+ param start_block query  
+ param end_block query  
+ param min_amount_usdc query  
+ param sort query  
+ param limit query  
+ param cursor query  
 
-### leaderboard PERIOD ALL
-200 {"data":[{"rank":1,"user_id":"0x56687bf447db6ffa42ffe2204a05edaa20f55839","pnl":22053933.752321,"volume":43013258.515682,"user_name":"Theo4","profile_image":"","x_username":"","verified":false},{"rank":2,"user_id":"0x204f72f35326db932158cba6adff0b9a1da95e14","pnl":18482425.513018,"volume":1850584673.0643005,"user_name":"swisstony","profile_image":"","x_username":"","verified":false}],"pagination":{"limit":2,"offset":0,"has_more":true,"next_cursor":"eyJkYXRhIjp7InR5cGUiOiJsZWFkZXJib2FyZCIsInBhcmFtcyI6eyJsIjoyLCJvIjoyLCJzIjoiUE5MIiwidCI6ImFsbCIsImMiOiJvdmVyYWxsIn19LCJzaWciOiIyMjE3NmFjNDMzYWU2NDIwZDFiMjJmODJlZmI0ZjVkYyJ9"}}
-wallet test undefined
+security [{"api_key":[]}]
 
-### trades global 2023
-200 {"data":[{"proxy_wallet":"0x4794657547f6f40d83eac4dfad7cd2b2e7f3cc92","side":"BUY","token_id":"24610336946272984501609168000839432677998789204266020439762307702887816516867","condition_id":"0xf52bce3c5a8aa6aa1c7fb95a8deb61cd8295f3dfa276ec4368a3c8d84d19818b","size":2.067797,"price":0.5899998888,"timestamp":1793955868,"title":"Bitcoin Up or Down - November 6, 4:05AM-4:10AM ET","slug":"btc-updown-5m-1793955900","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/BTC+fullsize.png","event_slug":"btc-updown-5m-1793955900","outcome":"Down","outcome_index":1,"name":"KouraTrading","pseudonym":"Quick-Witted-Factory","bio":"","profile_image":"","profile_image_optimized":"","transaction_hash":"0x7454b372d0e22c8aa45ba8c67fec22fac688b888768ce2f4057c410aaef03a33"},{"proxy_wallet":"0xc69bd5567b40ef4d11922eaa57e1f9be1c642076","side":"BUY","token_id":"33339798372916037220786136133406478491116150628220441951753426683441228279665","condition_id":"0xefa17dee3af09f69f9ddf245b969aa4efbe7c71cdf06ee49d694408bc33e2ed2","size":5.0,"price":0.002,"timestamp":1793955868,"title":"Will Shakhtar Donetsk win the 2026-27 UEFA Champions League Championship?","slug":"will-shakhtar-donetsk-win-the-2026-27-uefa-champions-league-championship-20260701202025578","icon":"","event_slug":"uefa-champions-league-2027-champion-20260701202025549","outcome":"Yes","outcome_index":0,"name":"vtcchampion52","pseudonym":"Ultimate-Underpass","bio":"challenger fiora","profile_image":"https://polymarket-upload.s3.us-eas
+classement ALL : portefeuilles lus 20000 pages 400 dernier {"rank":20000,"user_id":"0x224ac20bfeb111e36935901725f96e8b34a3fa87","pnl":7116.973882,"volume":16323.340569000002,"user_name":"0x224ac20bfeb111e36935901725f96e8b34a3fa87","profile_image":"","x_username":"","verified":false}
 
-### trades global now
-200 {"data":[{"proxy_wallet":"0x4794657547f6f40d83eac4dfad7cd2b2e7f3cc92","side":"BUY","token_id":"24610336946272984501609168000839432677998789204266020439762307702887816516867","condition_id":"0xf52bce3c5a8aa6aa1c7fb95a8deb61cd8295f3dfa276ec4368a3c8d84d19818b","size":2.067797,"price":0.5899998888,"timestamp":1793955868,"title":"Bitcoin Up or Down - November 6, 4:05AM-4:10AM ET","slug":"btc-updown-5m-1793955900","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/BTC+fullsize.png","event_slug":"btc-updown-5m-1793955900","outcome":"Down","outcome_index":1,"name":"KouraTrading","pseudonym":"Quick-Witted-Factory","bio":"","profile_image":"","profile_image_optimized":"","transaction_hash":"0x7454b372d0e22c8aa45ba8c67fec22fac688b888768ce2f4057c410aaef03a33"},{"proxy_wallet":"0xc69bd5567b40ef4d11922eaa57e1f9be1c642076","side":"BUY","token_id":"33339798372916037220786136133406478491116150628220441951753426683441228279665","condition_id":"0xefa17dee3af09f69f9ddf245b969aa4efbe7c71cdf06ee49d694408bc33e2ed2","size":5.0,"price":0.002,"timestamp":1793955868,"title":"Will Shakhtar Donetsk win the 2026-27 UEFA Champions League Championship?","slug":"will-shakhtar-donetsk-win-the-2026-27-uefa-champions-league-championship-20260701202025578","icon":"","event_slug":"uefa-champions-league-2027-champion-20260701202025549","outcome":"Yes","outcome_index":0,"name":"vtcchampion52","pseudonym":"Ultimate-Underpass","bio":"challenger fiora","profile_image":"https://polymarket-upload.s3.us-eas
+## positions REDEEMABLE_LOST {"data":[],"pagination":{"limit":2,"offset":0,"has_more":false,"next_cursor":null}}
 
-### goldsky openapi
-200 {"components":{"schemas":{"ActivityItem":{"properties":{"address":{"description":"Owner wallet address (40-hex, 0x-prefixed). Same field name and\nsemantics across positions, balances, and activity.","type":["string","null"]},"amount_shares":{"format":"double","type":["number","null"]},"amount_u
-PATH /data/blocks/{chain} get Blocks
-PATH /data/blocks/{chain}/head get Chain head
-PATH /data/feeds/tokens get Tokens
-PATH /data/feeds/wallets/balances get Wallet balances
-PATH /data/feeds/wallets/transfers get Wallet transfers
-PATH /data/polymarket/activity get Activities
-PATH /data/polymarket/balances get Balances
-PATH /data/polymarket/positions get Positions
+## positions CLOSED {"data":[{"proxy_wallet":"0x204f72f35326db932158cba6adff0b9a1da95e14","token_id":"12895713634933367223676558147527749758143822673340639855731583908529004951892","condition_id":"0xe690620297dfea974d20df84b4cf90460e46a26ec864353482717b90509a3c0b","current_size":0.0,"avg_price":0.4499,"entry_cost_usdc":0.0,"entry_fees_usdc":13774.398982,"total_cost_usdc":13774.398982,"current_price":1.0,"current_value":0.0,"total_size":2367206.9474,"realized_pnl":1156202.6574,"unrealized_pnl":0.0,"total_pnl":1156202.6574,"percent_pnl":0.0,"percent_realized_pnl":108.5465,"status":"CLOSED","redeemable":false,"mergeable":false,"negative_risk":true,"archived":false,"title":"Will Germany win on 2026-06-25?","slug":"fifwc-ecu-ger-2026-06-25-ger","icon":"https://polymarket-upload.s3.us-east-2.amazonaws.com/soccer ball-bba4025f77.png","event_id":"351769","event_slug":"fifwc-ecu-ger-2026-06-25","outcome":"No","outcome_index":1,"opposite_outcome":"Yes","opposite_token_id":"101279272797775203956659007084828831261331275405585994446661991301016814257223","end_date":"2026-06-25","last_event_at":1782425653,"first_entry_at":1781352507,"name":"swisstony","profile_image":"","verified":false},{"proxy_wallet":"0x204f72f3
+
+## user-stats {"data":{"proxy_wallet":"0x204f72f35326db932158cba6adff0b9a1da95e14","trades":203104,"biggest_win":1188300.188282,"views":1408695,"join_date":1753800366,"all_time_pnl":{"timestamp":1793879800,"source_block":96782896,"realized_market_pnl":18482425.513018,"realized_lp_pnl":0.0,"realized_combo_pnl":0.0,"unrealized_pnl":0.0,"fees_refunded":2220210.393429,"maker_rebate":364881.274,"taker_rebate":2118300.0405,"reward_income":111255.4657,"yield_income":0.0,"referral_income":0.0,"deposits":null,"withdrawals":null,"realized_pnl":18482425.513018,"wallet_income":2594436.7802,"position_pnl":18482425.513018,"settled_pnl":21076862.293218,"economic_pnl":21076862.293218,"trade_pnl":23534533.451993,"sponsored_income":111255.4657,"fees":-7272318.332404,"fees_paid":-5052107.938975,"cashflow_net":null,"volume
