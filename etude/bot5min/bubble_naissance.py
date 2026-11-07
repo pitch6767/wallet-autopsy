@@ -9,6 +9,7 @@
 Résultat pour 20 $ par coin. Sauvegarde poussée sur GitHub après chaque événement et toutes les 15 minutes.
 07.11 : transactions Solana « version 1 » acceptées (refusées avant → chaque appel échouait et réessayait : étude bloquée) ; nœud drpc retiré (400).
 07.11 (2e) : 1 h sans aucun coin enregistré → journal poussé toutes les 5 min et étapes affichées, pour voir où ça bloque.
+07.11 (3e) : VRAIE cause : le workflow ne donne l'identité git qu'à la fin → aucune sauvegarde intermédiaire ne passait. Corrigé ici.
 """
 import json, time, urllib.request, collections, datetime as dt, random, threading, os, subprocess
 from concurrent.futures import ThreadPoolExecutor
@@ -68,6 +69,7 @@ DEBUT = time.time(); DUREE = 4 * 3600 + 30 * 60          # le workflow est coup�
 MAX_COINS = 25; AGE_MAX_H = 2; PAGES_MAX = 15; OFFRE = 1_000_000_000
 FICH = "etude/bot5min/bubble_naissance_resultats.json"
 R = json.load(open(FICH)) if os.path.exists(FICH) else {}
+subprocess.run("git config user.name tests; git config user.email bot@users.noreply.github.com", shell=True)   # 07.11 : sans identité git, toutes les sauvegardes en cours d'étude échouaient en silence
 dernier_push = [0.0]; verrou_git = threading.Lock()
 def sauver(force=False):
     with verrou_git:
