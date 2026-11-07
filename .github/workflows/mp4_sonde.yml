@@ -1,0 +1,19 @@
+name: MP4 - sonde
+on: { workflow_dispatch: {} }
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          echo "@@@DEBUT"
+          for q in ffmpeg "video converter" "youtube downloader h264" "youtube video downloader mp4"; do
+            echo "===== $q"
+            curl -s -m 30 "https://api.apify.com/v2/store?limit=15&search=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$q")" | python3 -c "
+          import json,sys
+          for a in json.load(sys.stdin)['data']['items']:
+              s=a.get('stats') or {}
+              print(a['username']+'~'+a['name'],'|',s.get('totalUsers'),'users |',(a.get('title') or '')[:60],'|',(a.get('description') or '')[:200].replace('\n',' '))
+          "
+          done
+          echo "@@@FIN"
