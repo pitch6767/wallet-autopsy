@@ -1,39 +1,42 @@
-# 07.11.2026 — sonde unique : quelles routes permettent encore de récupérer un MP4 YouTube depuis un serveur ?
+# 07.11.2026 — sonde : lit la fiche publique (entrées / sorties) des modules Apify de téléchargement YouTube
 name: MP4 - sonde
 on:
   workflow_dispatch:
     inputs:
-      id: { description: "ID video", required: true, default: "jNQXAC9IVRw" }
+      id: { description: "inutilise", required: false, default: "x" }
 permissions:
   contents: write
 jobs:
   s:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: denoland/setup-deno@v2
-        with: { deno-version: v2.x }
-      - env: { ID: "${{ github.event.inputs.id }}" }
-        run: |
+      - run: |
           set +e
-          mkdir -p mp4_sonde; O=mp4_sonde/resultat.txt; : > $O
-          U="https://www.youtube.com/watch?v=$ID"
-          for V in $ID aircAruvnKk; do
-            echo "== piped $V" >> $O
-            curl -s -m 30 https://api.piped.private.coffee/streams/$V -o /tmp/s.json
-            python3 - "$V" >> $O <<'P'
-          import json,sys
-          try: d=json.load(open("/tmp/s.json"))
-          except Exception as e: print("json:",e, open("/tmp/s.json").read()[:200]); sys.exit()
-          print("titre:",d.get("title"),"| duree:",d.get("duration"),"| uploader:",d.get("uploader"),"| erreur:",d.get("error"))
-          vs=d.get("videoStreams") or []
-          print("flux video:",len(vs),"| audio:",len(d.get("audioStreams") or []),"| hls:",bool(d.get("hls")))
-          for v in vs: print("  ",v.get("quality"),v.get("format"),"videoOnly=",v.get("videoOnly"),v.get("url","")[:90])
-          m=[v for v in vs if not v.get("videoOnly")]
-          open("/tmp/u.txt","w").write((m[0]["url"] if m else (vs[0]["url"] if vs else "")))
+          mkdir -p mp4_sonde; O=mp4_sonde/apify.txt; : > $O
+          for A in streamers~youtube-video-downloader memo23~youtube-video-downloader; do
+            echo "===== $A" >> $O
+            curl -s -m 30 "https://api.apify.com/v2/acts/$A" > /tmp/a.json
+            python3 - >> $O <<'P'
+          import json
+          d=json.load(open("/tmp/a.json")).get("data",{})
+          print("titre:",d.get("title"),"| modifie:",d.get("modifiedAt"))
+          print("prix:",json.dumps(d.get("pricingInfos") or d.get("pricingInfo"))[:600])
+          print("stats:",json.dumps(d.get("stats"))[:300])
+          tb=(d.get("taggedBuilds") or {}).get("latest") or {}
+          print("build:",tb)
+          open("/tmp/b.txt","w").write(tb.get("buildId",""))
           P
-            U2=$(cat /tmp/u.txt); [ -n "$U2" ] && { curl -s -m 120 -L -o /tmp/f.mp4 -w "telechargement: HTTP %{http_code} %{size_download} octets en %{time_total}s\n" "$U2" >> $O; file /tmp/f.mp4 >> $O; }
+            B=$(cat /tmp/b.txt); curl -s -m 30 "https://api.apify.com/v2/actor-builds/$B" > /tmp/b.json
+            python3 - >> $O <<'P'
+          import json
+          d=json.load(open("/tmp/b.json")).get("data",{})
+          print("SCHEMA ENTREE:", (d.get("inputSchema") or "")[:3000])
+          print("README:", (d.get("readme") or "")[:5000])
+          ad=d.get("actorDefinition") or {}
+          print("SORTIE:", json.dumps(ad.get("storages") or ad.get("output") or {})[:1500])
+          P
           done
           git config user.name mp4; git config user.email bot@users.noreply.github.com
-          git add mp4_sonde && git commit -qm "MP4 sonde [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
+          git add mp4_sonde && git commit -qm "MP4 sonde apify [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
