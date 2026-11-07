@@ -117,7 +117,8 @@ jobs:
         run: |
           set +e
           U=https://mp4.pitch67.workers.dev
-          echo "@@@DEBUT"; curl -s $U/api/etat; echo
+          echo "@@@DEBUT"; curl -s $U/api/etat | tee /tmp/e.json; echo
+          RUN=$(python3 -c "import json;l=json.load(open('/tmp/e.json'))['liste'];print([x['run'] for x in l if x['id']=='$RUN'][0])"); echo "run=$RUN"
           curl -s -o /tmp/f.mp4 -D /tmp/h.txt -w "fichier HTTP %{http_code} %{size_download}o\n" "$U/api/fichier?run=$RUN"; grep -iE "content-(type|disposition|length)|accept-ranges" /tmp/h.txt
           ffprobe -v error -show_entries format=duration:stream=codec_type,codec_name,codec_tag_string,width,height -of compact /tmp/f.mp4
           echo "== Range voir=1"; curl -s -r 1000-1999 -o /dev/null -D - "$U/api/fichier?run=$RUN&voir=1" | grep -iE "^HTTP|content-range|content-length|accept-ranges"
