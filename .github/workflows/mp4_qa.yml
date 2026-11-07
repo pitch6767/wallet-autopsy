@@ -8,13 +8,13 @@ on:
       qualite: { description: "qualite (mode ui)", required: false, default: "360p" }
 jobs:
   qa:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - name: Preparer Playwright
         run: |
-          mkdir -p /tmp/qa && cd /tmp/qa && npm init -y >/dev/null && npm i -s playwright@1.48.2 >/dev/null 2>&1
-          npx playwright install --with-deps webkit chromium >/dev/null 2>&1
+          mkdir -p /tmp/qa && cd /tmp/qa && npm init -y >/dev/null && npm i -s playwright@1.55.0 2>&1 | tail -3
+          npx playwright install --with-deps webkit chromium 2>&1 | tail -5
           sudo apt-get -qq install -y ffmpeg >/dev/null 2>&1; echo pret
       - name: Controles API et securite
         if: ${{ github.event.inputs.mode == 'statique' }}
