@@ -3,26 +3,14 @@ on: { workflow_dispatch: {} }
 jobs:
   s:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 3
     steps:
       - run: |
           echo "@@@DEBUT"
-          for A in marielise.dev~youtube-video-downloader dami_studio~youtube-video-downloader thenetaji~youtube-video-downloader coder2077~youtube-video-downloader hipersoft~youtube-downloader; do
-            echo "===== $A"
-            curl -s -m 30 "https://api.apify.com/v2/acts/$A" > /tmp/a.json
-            B=$(python3 -c "import json;d=json.load(open('/tmp/a.json'))['data'];s=d.get('stats') or {};r=s.get('publicActorRunStats30Days') or {};print(((d.get('taggedBuilds') or {}).get('latest') or {}).get('buildId',''))")
-            python3 -c "import json;d=json.load(open('/tmp/a.json'))['data'];s=d.get('stats') or {};print('modif',d.get('modifiedAt'),'| 30j',json.dumps(s.get('publicActorRunStats30Days')));p=(d.get('pricingInfos') or [{}])[-1];print('prix',json.dumps(p)[:700])"
-            curl -s -m 30 "https://api.apify.com/v2/actor-builds/$B" > /tmp/b.json
-            python3 - <<'P'
-          import json,re
-          d=json.load(open("/tmp/b.json")).get("data",{})
-          sc=d.get("inputSchema") or ""
-          try:
-              j=json.loads(sc)
-              for k,v in j.get("properties",{}).items(): print("  ENTREE",k,"|",v.get("type"),"|",json.dumps(v.get("enum") or v.get("default"))[:150],"|",(v.get("description") or "")[:150].replace("\n"," "))
-          except Exception as e: print("schema?",e)
-          rd=d.get("readme") or ""
-          for m in re.finditer(r"(?i).{0,120}(h\.?264|avc|codec|iphone|vp9).{0,120}",rd): print("  README:",m.group(0).replace("\n"," "))
-          P
-          done
+          curl -s -m 30 "https://api.apify.com/v2/acts/marielise.dev~youtube-video-downloader" | python3 -c "
+          import json,sys
+          d=json.load(sys.stdin)['data']; p=(d.get('pricingInfos') or [{}])[-1]
+          print(p.get('reasonForChange'))
+          for k,v in (p.get('pricingPerEvent') or {}).get('actorChargeEvents',{}).items(): print(k,'|',v.get('eventTitle'),'|',v.get('eventPriceUsd'),'|',json.dumps(v.get('eventTieredPricingUsd'))[:200],'|',(v.get('eventDescription') or '')[:200])
+          "
           echo "@@@FIN"
