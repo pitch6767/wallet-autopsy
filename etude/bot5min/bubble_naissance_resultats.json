@@ -848,7 +848,10 @@
      "7KJNZBHxkaNgx2jp4mjy1D3oCMe16SXL3EAebVqqA2VV",
      "Fy9devCKSZqULhaPcpNvmdt5viCFXwayk4MWgZTBTRXG",
      "Hr8qBguhUYi2apMyMLxZ75n5AVYbUHJtzGYpDLnxSMeW"
-    ]
+    ],
+    "gain20_p2": 14.21,
+    "gain20_p5": 6.74,
+    "gain20_p30": 6.31
    },
    "10": {
     "t": 1794023766,
@@ -861,20 +864,36 @@
      "7KJNZBHxkaNgx2jp4mjy1D3oCMe16SXL3EAebVqqA2VV",
      "Fy9devCKSZqULhaPcpNvmdt5viCFXwayk4MWgZTBTRXG",
      "Hr8qBguhUYi2apMyMLxZ75n5AVYbUHJtzGYpDLnxSMeW"
-    ]
+    ],
+    "gain20_p2": 14.21,
+    "gain20_p5": 6.74,
+    "gain20_p30": 6.31
    }
   },
   "suivi": {
-   "37a5exF2PaxossXGZyW6YKWmqUPi1vB738mkHSYkbbyJ": null,
-   "3MsmKPyBqMTXaEcj2DgnZZ2au5dcxwUsbnzqh4KY9arx": null,
-   "7KJNCJf3gZopSHwTud7XgpaX33YqJ91AHxo3xsJktkVV": null,
-   "7KJNZBHxkaNgx2jp4mjy1D3oCMe16SXL3EAebVqqA2VV": null,
-   "Fy9devCKSZqULhaPcpNvmdt5viCFXwayk4MWgZTBTRXG": null,
-   "Hr8qBguhUYi2apMyMLxZ75n5AVYbUHJtzGYpDLnxSMeW": null
+   "37a5exF2PaxossXGZyW6YKWmqUPi1vB738mkHSYkbbyJ": "3AntXvHki4UuPK5oPLnYYnwA65zZE8VXDB946nNwcpDN1LMu1ryyAmD49cegu5qjCUPjUgWSCVEGidcreb4cqkwr",
+   "3MsmKPyBqMTXaEcj2DgnZZ2au5dcxwUsbnzqh4KY9arx": "5ZJHhgsJSBTSaHD6pGyhSxbkDMfw6oyLHfh3BpzR8iegfUR3PLZZTvxNq1tcyKhhYr32VW3QvSci3nLZsrLbwUaN",
+   "7KJNCJf3gZopSHwTud7XgpaX33YqJ91AHxo3xsJktkVV": "4BRDY8STy8DKVwUfGkgH3wkuUwtnS1dhEF7BEmcaGbyVqfVHLVivV6MZDqsSLZd3jUWPdXoMNX5C4YjTxczRGYue",
+   "7KJNZBHxkaNgx2jp4mjy1D3oCMe16SXL3EAebVqqA2VV": "5U3HwdKkx4xKnj6s2tRekkozN3WUwsrp1PJrejAuNDo5aR19Ry6K7jGA19fTGtDbMVNeisxWvY2ohryg5WtSHyTK",
+   "Fy9devCKSZqULhaPcpNvmdt5viCFXwayk4MWgZTBTRXG": "5EepghH5EZyQV8Yijx9bSEXup7hqqtExQm4dapD9qovaS3zUXY75ByKXg3ktg3YJaX8MMEz4V6UzW6LSMS8jZ65j",
+   "Hr8qBguhUYi2apMyMLxZ75n5AVYbUHJtzGYpDLnxSMeW": "5BSP6pcLgJoM2yfzYYj5YeHLTQABduauLfdjEE6Jh2AM8wpSB7JD8AiaKubfR5cjpm1jK9U5hoiZg3HFrdKxY1mG"
   },
-  "rap": {},
-  "sortie": null,
-  "vente_groupe_t": null
+  "rap": {
+   "37a5exF2PaxossXGZyW6YKWmqUPi1vB738mkHSYkbbyJ": [
+    "Hr8qBguhUYi2apMyMLxZ75n5AVYbUHJtzGYpDLnxSMeW"
+   ],
+   "Fy9devCKSZqULhaPcpNvmdt5viCFXwayk4MWgZTBTRXG": [
+    "7KJNCJf3gZopSHwTud7XgpaX33YqJ91AHxo3xsJktkVV",
+    "7KJNZBHxkaNgx2jp4mjy1D3oCMe16SXL3EAebVqqA2VV"
+   ]
+  },
+  "sortie": {
+   "t": 1794023774,
+   "p2": 5.418589686784755e-08,
+   "p5": 4.235516540991728e-08,
+   "p30": 4.1681013673483455e-08
+  },
+  "vente_groupe_t": 1794023777
  },
  "9rTksPSRbVvomohrf3AdaGBDCgiFRAALymE8bjZopump": {
   "mint": "9rTksPSRbVvomohrf3AdaGBDCgiFRAALymE8bjZopump",
@@ -959,5 +978,99 @@
   "courbe": "8s1KNbPB9eUVAFiXyQXxFw3Qz4Vezau3geYdu6V8s9ut",
   "seuils": {},
   "erreur": "aucun groupe de 3 portefeuilles ou plus"
+ },
+ "CQmoUY1EZdNpXQFq1B6pyqkRZ3YwUGH4skRXUaTbpump": {
+  "mint": "CQmoUY1EZdNpXQFq1B6pyqkRZ3YwUGH4skRXUaTbpump",
+  "nom": "MCH / SOL",
+  "age_min": 4,
+  "tx_1h": 132,
+  "transactions_vues": 170,
+  "groupes": 0,
+  "plus_gros_groupe": 0,
+  "courbe": "EMKrtFo32haXCk4wLnNQoEr5WmfNW1aQwp9tpXtVfs8e",
+  "seuils": {},
+  "erreur": "aucun groupe de 3 portefeuilles ou plus"
+ },
+ "8JSxaoGTdAshuuSJ5T5VKuvUn3fPz5Rm3uwdwAo3pump": {
+  "mint": "8JSxaoGTdAshuuSJ5T5VKuvUn3fPz5Rm3uwdwAo3pump",
+  "nom": "DOOYET / SOL",
+  "age_min": 4,
+  "tx_1h": 131,
+  "transactions_vues": 167,
+  "groupes": 0,
+  "plus_gros_groupe": 0,
+  "courbe": "EP83VTBomWP2Uh1AfcXDWkdw5aKywGkX5CcZV9MQ1FUZ",
+  "seuils": {},
+  "erreur": "aucun groupe de 3 portefeuilles ou plus"
+ },
+ "5hFBc2J8zjkmf2k81PtkqCDv2b2JnDWZf9agahCgpump": {
+  "mint": "5hFBc2J8zjkmf2k81PtkqCDv2b2JnDWZf9agahCgpump",
+  "nom": "ch / SOL",
+  "age_min": 3,
+  "tx_1h": 121,
+  "erreur": "trop peu de transactions (128)"
+ },
+ "EwxoFdSFJBQAcwDy6stpRuLcVhkAHpyLaq63WFrpump": {
+  "mint": "EwxoFdSFJBQAcwDy6stpRuLcVhkAHpyLaq63WFrpump",
+  "nom": "CLEFT / SOL",
+  "age_min": 6,
+  "tx_1h": 117,
+  "erreur": "trop peu de transactions (125)"
+ },
+ "4xA4s2gwxD6y5jFMzxBboHEdAJyAq31yYf5Up2hipump": {
+  "mint": "4xA4s2gwxD6y5jFMzxBboHEdAJyAq31yYf5Up2hipump",
+  "nom": "ELIZABETH / SOL",
+  "age_min": 5,
+  "tx_1h": 114,
+  "erreur": "trop peu de transactions (120)"
+ },
+ "51ukzb88Vpbv7H4xTuFKh1DafGKcfPp4wcVnAzNdpump": {
+  "mint": "51ukzb88Vpbv7H4xTuFKh1DafGKcfPp4wcVnAzNdpump",
+  "nom": "TRIRD / SOL",
+  "age_min": 5,
+  "tx_1h": 113,
+  "erreur": "trop peu de transactions (114)"
+ },
+ "DPVtNd6brpcbXWrnM8s3HT7p2y2CJPA2VaSSQqnTpump": {
+  "mint": "DPVtNd6brpcbXWrnM8s3HT7p2y2CJPA2VaSSQqnTpump",
+  "nom": "BetOnBlak / SOL",
+  "age_min": 3,
+  "tx_1h": 108,
+  "erreur": "trop peu de transactions (111)"
+ },
+ "9ywfUXKoGGn2UjgfZr41FsjJcA8TySYooaJECsLSpump": {
+  "mint": "9ywfUXKoGGn2UjgfZr41FsjJcA8TySYooaJECsLSpump",
+  "nom": "ch / SOL",
+  "age_min": 2,
+  "tx_1h": 103,
+  "erreur": "trop peu de transactions (120)"
+ },
+ "72hQVmCqqSKgUvdtgfkKt7hpJVXYFz1buesT1214pump": {
+  "mint": "72hQVmCqqSKgUvdtgfkKt7hpJVXYFz1buesT1214pump",
+  "nom": "VERIFIED / SOL",
+  "age_min": 5,
+  "tx_1h": 103,
+  "erreur": "trop peu de transactions (107)"
+ },
+ "8d7agh22f2eVAfr51g39cTLaNGUsFaiadaMcUV6Apump": {
+  "mint": "8d7agh22f2eVAfr51g39cTLaNGUsFaiadaMcUV6Apump",
+  "nom": "chance / SOL",
+  "age_min": 5,
+  "tx_1h": 103,
+  "erreur": "trop peu de transactions (111)"
+ },
+ "EPB36hNwEohPjTYdvi1UQZrj8ZiAKozXdJoZBBSApump": {
+  "mint": "EPB36hNwEohPjTYdvi1UQZrj8ZiAKozXdJoZBBSApump",
+  "nom": "REEM / SOL",
+  "age_min": 5,
+  "tx_1h": 101,
+  "erreur": "trop peu de transactions (105)"
+ },
+ "DQVgjP8gB7tMF4UcaVzeKmVb6VxTp9jEsWhrUCu7pump": {
+  "mint": "DQVgjP8gB7tMF4UcaVzeKmVb6VxTp9jEsWhrUCu7pump",
+  "nom": "NOBELL / SOL",
+  "age_min": 1,
+  "tx_1h": 100,
+  "erreur": "trop peu de transactions (138)"
  }
 }
