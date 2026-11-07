@@ -1,0 +1,17 @@
+name: Sonde Solana
+on:
+  push:
+    branches: [main]
+    paths: [etude/sonde_solana.py]
+permissions:
+  contents: write
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 -u etude/sonde_solana.py > etude/journal_sonde_solana.txt 2>&1
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          git add etude/journal_sonde_solana.txt; git commit -m "Sonde Solana [skip ci]"; for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push && break; sleep 5; done
