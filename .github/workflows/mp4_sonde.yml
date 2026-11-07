@@ -1,0 +1,58 @@
+# 07.11.2026 — sonde unique : quelles routes permettent encore de récupérer un MP4 YouTube depuis un serveur ?
+name: MP4 - sonde
+on:
+  workflow_dispatch:
+    inputs:
+      id: { description: "ID video", required: true, default: "jNQXAC9IVRw" }
+permissions:
+  contents: write
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with: { deno-version: v2.x }
+      - env: { ID: "${{ github.event.inputs.id }}" }
+        run: |
+          set +e
+          mkdir -p mp4_sonde; O=mp4_sonde/resultat.txt; : > $O
+          U="https://www.youtube.com/watch?v=$ID"
+          pip install -q -U "yt-dlp[default]" bgutil-ytdlp-pot-provider >/dev/null 2>&1
+          echo "== yt-dlp $(yt-dlp --version)" >> $O
+          for C in default "tv" "web_safari" "mweb" "tv_simply" "web_embedded"; do
+            A=""; [ "$C" != default ] && A="--extractor-args youtube:player_client=$C"
+            timeout 90 yt-dlp $A -f "b[ext=mp4]/b" -o "/tmp/v_$C.%(ext)s" "$U" > /tmp/l 2>&1
+            echo "-- client $C : code $? ; $(ls -la /tmp/v_$C.* 2>/dev/null | awk '{print $5, $9}')" >> $O; grep -E "ERROR" /tmp/l | head -2 >> $O
+          done
+          echo "== bgutil (jeton PO)" >> $O
+          git clone -q --depth 1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider /tmp/bg 2>>$O
+          (cd /tmp/bg/server && npm ci -s >/dev/null 2>&1 && npx tsc >/dev/null 2>&1; nohup node build/main.js > /tmp/bg.log 2>&1 &) ; sleep 8
+          timeout 120 yt-dlp -f "b[ext=mp4]/b" -o "/tmp/v_bg.%(ext)s" "$U" > /tmp/l 2>&1
+          echo "-- bgutil : code $? ; $(ls -la /tmp/v_bg.* 2>/dev/null | awk '{print $5}')" >> $O; grep -E "ERROR|PO" /tmp/l | head -3 >> $O
+          echo "== cobalt (instances publiques)" >> $O
+          curl -s -m 20 https://instances.cobalt.best/api/instances.json -o /tmp/ci.json
+          python3 - >> $O <<'P'
+          import json,subprocess,os
+          vid=os.environ["ID"]
+          try: L=json.load(open("/tmp/ci.json"))
+          except Exception as e: print("liste:",e); L=[]
+          n=0
+          for i in L:
+              api=i.get("api") or "";
+              if not api or not (i.get("services") or {}).get("youtube"): continue
+              n+=1
+              if n>12: break
+              u=("https://"+api) if not api.startswith("http") else api
+              r=subprocess.run(["curl","-s","-m","25","-X","POST",u,"-H","accept: application/json","-H","content-type: application/json","-d",json.dumps({"url":"https://www.youtube.com/watch?v="+vid})],capture_output=True,text=True)
+              print("--",u,":",r.stdout[:160].replace("\n"," "))
+          print("instances youtube testees:",n)
+          P
+          echo "== piped / invidious" >> $O
+          for H in https://pipedapi.kavin.rocks https://api.piped.private.coffee https://pipedapi.adminforge.de; do
+            echo "-- $H : $(curl -s -m 20 $H/streams/$ID | head -c 160)" >> $O; done
+          for H in https://inv.nadeko.net https://yewtu.be https://invidious.nerdvpn.de; do
+            echo "-- $H : $(curl -s -m 20 "$H/api/v1/videos/$ID?local=true" | head -c 160)" >> $O; done
+          git config user.name mp4; git config user.email bot@users.noreply.github.com
+          git add mp4_sonde && git commit -qm "MP4 sonde [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
