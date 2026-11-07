@@ -10,13 +10,14 @@ Résultat pour 20 $ par coin. Sauvegarde poussée sur GitHub après chaque évé
 07.11 : transactions Solana « version 1 » acceptées (refusées avant → chaque appel échouait et réessayait : étude bloquée) ; nœud drpc retiré (400).
 07.11 (2e) : 1 h sans aucun coin enregistré → journal poussé toutes les 5 min et étapes affichées, pour voir où ça bloque.
 07.11 (3e) : VRAIE cause : le workflow ne donne l'identité git qu'à la fin → aucune sauvegarde intermédiaire ne passait. Corrigé ici.
+07.11 (4e) : lire 1200 transactions prenait plus de 13 min par coin (limites des serveurs publics) → 300 premières transactions (les groupes achètent en premier) et 20 plus gros portefeuilles.
 """
 import json, time, urllib.request, collections, datetime as dt, random, threading, os, subprocess
 from concurrent.futures import ThreadPoolExecutor
 
 RPCS = ["https://api.mainnet-beta.solana.com", "https://solana-rpc.publicnode.com"]
 GT = "https://api.geckoterminal.com/api/v2"
-NB_COINS = 30; NB_TX = 1200; SEUILS = [5, 10, 20]
+NB_COINS = 30; NB_TX = 300; SEUILS = [5, 10, 20]
 verrou = threading.Lock(); appels = collections.Counter()
 
 def http(url, corps=None, essais=6):
@@ -119,8 +120,8 @@ def evenements(sigs, mint):
 def preparer(c):
     log("  préparation", c["nom"]); sigs = histoire(c["mint"]); log("   historique :", None if sigs is None else len(sigs), "transactions,", dict(appels))
     if sigs is None: return dict(c, erreur="histoire déjà trop longue")
-    if len(sigs) < 200: return dict(c, erreur=f"trop peu de transactions ({len(sigs)})")
-    E = evenements(sigs[:1200], c["mint"]); log("   transactions lues :", len(E), dict(appels))
+    if len(sigs) < 150: return dict(c, erreur=f"trop peu de transactions ({len(sigs)})")
+    E = evenements(sigs[:NB_TX], c["mint"]); log("   transactions lues :", len(E), dict(appels))
     courbe = None; solde = collections.defaultdict(float); liens = collections.defaultdict(set)
     for e in E:
         if courbe is None and e["d_tok"]: courbe = min(e["d_tok"], key=lambda k: e["d_tok"][k])
@@ -128,7 +129,7 @@ def preparer(c):
             for b in e["gagnants"]:
                 if b != courbe: liens[a].add(b); liens[b].add(a)
         for k, v in e["d_tok"].items(): solde[k] += v
-    gros = sorted([k for k in solde if k != courbe], key=lambda k: -max(0, solde[k]))[:40]
+    gros = sorted([k for k in solde if k != courbe], key=lambda k: -max(0, solde[k]))[:20]
     with ThreadPoolExecutor(6) as ex: F = dict(zip(gros, ex.map(financeur, gros)))
     log("   financeurs lus :", sum(1 for v in F.values() if v), "/", len(F))
     pf = collections.defaultdict(list)
