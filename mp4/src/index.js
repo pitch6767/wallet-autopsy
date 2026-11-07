@@ -3,7 +3,7 @@
 // donc le téléchargement est fait par un module Apify. La clé Apify est collée dans l'app et gardée
 // dans le Durable Object (jamais dans le code). Chaque appareil s'identifie une fois avec cette clé
 // et reçoit un cookie d'accès : sans lui, personne ne peut dépenser le crédit Apify ni voir les fichiers.
-const VERSION = "1.2.0";
+const VERSION = "1.2.1";
 const API = "https://api.apify.com/v2";
 // Clé publique de Claude : signe les requêtes de test lancées depuis GitHub Actions (aucun secret ici)
 const ADMIN_JWK = { kty: "EC", crv: "P-256", x: "qHxOme14PLpJvoFAVS56fwXobWwBtQtUxrCz2655BDo", y: "HGUc5w5DlL_4nn5qgI47CDFx6yDEXzfh8alXgN9i0mk" };
@@ -140,7 +140,7 @@ export class Coffre {
     if (id) try { const o = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent("https://www.youtube.com/watch?v=" + id)}`); if (o.ok) titre = (await o.json()).title || ""; } catch {}
     if (titre) await this.s.put("titre:" + run.id, titre);
     const liste = (await this.s.get("liste")) || [];
-    liste.unshift({ run: run.id, id, qualite, t: Date.now(), statut: "en cours", titre });
+    liste.unshift({ run: run.id, id, qualite, t: Date.now(), statut: "en cours", titre, m: acteur });
     await this.s.put("liste", liste.slice(0, 50));
     return run.id;
   }
@@ -155,7 +155,9 @@ export class Coffre {
         const connecte = await this.estConnecte(req);
         const base = { app: "mp4-app", version: VERSION, cle: !!cle, connecte };
         if (!connecte) return json(base);
-        const liste = (await this.s.get("liste")) || [];
+        // Seules les conversions faites avec le module actuel (H.264, lisible sur iPhone) sont gardées
+        const liste = ((await this.s.get("liste")) || []).filter((x) => x.m === MODULE.acteur);
+        await this.s.put("liste", liste);
         for (const x of liste.filter((x) => x.statut === "en cours").slice(0, 5)) { try { await this.rafraichir(x.run); } catch {} }
         return json({ ...base, liste: ((await this.s.get("liste")) || []).slice(0, 20) });
       }
@@ -168,6 +170,7 @@ export class Coffre {
         if (donnee.length < 20 || /\s/.test(donnee)) return json({ erreur: "Ce n'est pas une clé Apify complète." }, 400);
         const r = await fetch(`${API}/users/me?token=${encodeURIComponent(donnee)}`);
         if (!r.ok) return json({ erreur: "Apify refuse cette clé (vérifie que tu as copié toute la clé)." }, 400);
+        if (cle) { const anciens = await this.s.list({ prefix: "acces:" }); await this.s.delete([...anciens.keys()]); } // nouvelle clé : tous les appareils doivent se reconnecter
         await this.s.put("cle", donnee);
         return json({ ok: true }, 200, { "set-cookie": await this.ouvrirSession() });
       }
@@ -181,12 +184,6 @@ export class Coffre {
         const q = ["360", "480", "720", "1080"].includes(String(b.qualite).replace("p", "")) ? String(b.qualite).replace("p", "") : "720";
         const run = await this.lancer(MODULE.acteur, MODULE.entree(`https://www.youtube.com/watch?v=${id}`, q), id, q + "p");
         return json({ run });
-      }
-
-      // Test d'un autre module Apify (Claude seulement)
-      if (u.pathname === "/api/essai" && req.method === "POST" && admin) {
-        const b = await req.json().catch(() => ({}));
-        return json({ run: await this.lancer(b.acteur, b.entree, b.id || null, "essai") });
       }
 
       if (u.pathname === "/api/suivi") {

@@ -18,7 +18,8 @@ main{max-width:560px;margin:0 auto}
 h1{font-size:26px;margin:8px 0 4px}.sous{color:var(--gris);margin:0 0 20px;font-size:15px}
 .carte{background:var(--carte);border:1px solid var(--trait);border-radius:14px;padding:16px;margin-bottom:16px}
 label{display:block;font-size:14px;color:var(--gris);margin-bottom:6px}
-input,select{appearance:none;-webkit-appearance:none;width:100%;font-size:16px;padding:12px;border:1px solid var(--trait);border-radius:10px;background:var(--fond);color:var(--encre)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23888' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+input,select{appearance:none;-webkit-appearance:none;width:100%;font-size:16px;padding:12px;border:1px solid var(--trait);border-radius:10px;background-color:var(--fond);color:var(--encre)}
 button,.bouton{display:block;width:100%;margin-top:12px;font-size:17px;font-weight:600;padding:14px;border:0;border-radius:10px;background:var(--action);color:#fff;text-align:center;text-decoration:none;cursor:pointer}
 button:disabled{opacity:.5}
 .second{background:transparent;color:var(--encre);border:1px solid var(--trait)}
@@ -70,7 +71,9 @@ button:disabled{opacity:.5}
 const $ = (i) => document.getElementById(i);
 const api = async (p, b) => {
   try {
-    const r = await fetch(p, b ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b), credentials: "same-origin" } : { credentials: "same-origin" });
+    const ctl = new AbortController(); const minuterie = setTimeout(() => ctl.abort(), 25000);
+    const r = await fetch(p, { ...(b ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) } : {}), credentials: "same-origin", signal: ctl.signal });
+    clearTimeout(minuterie);
     return await r.json().catch(() => ({ erreur: "Réponse illisible du serveur (code " + r.status + ")." }));
   } catch { return { erreur: "Pas de connexion internet.", reseau: true }; }
 };
@@ -90,7 +93,7 @@ async function etat() {
   $("liste").innerHTML = l.map((x) => {
     const lien = encodeURIComponent(x.run);
     const actions = x.statut === "prêt" ? `<span><a href="/api/fichier?run=${lien}&voir=1" target="_blank">Ouvrir</a> · <a href="/api/fichier?run=${lien}">Télécharger</a></span>` : "";
-    return `<div class="ligne"><span>${esc(x.titre || "Vidéo " + (x.id || ""))}<br><span class="petit">${new Date(x.t).toLocaleString("fr-CH", { timeZone: "Europe/Paris", dateStyle: "short", timeStyle: "short" })} · ${esc(x.qualite)} · ${esc(x.statut)}${x.message ? " — " + esc(x.message) : ""}</span></span>${actions}</div>`;
+    return `<div class="ligne"><span>${esc(x.titre || "Vidéo YouTube")}<br><span class="petit">${new Date(x.t).toLocaleString("fr-CH", { timeZone: "Europe/Paris", dateStyle: "short", timeStyle: "short" })} · ${esc(x.qualite)} · ${esc(x.statut)}${x.message ? " — " + esc(x.message) : ""}</span></span>${actions}</div>`;
   }).join("");
 }
 
@@ -107,7 +110,7 @@ $("btnGo").onclick = async () => {
   if (enCours) return;
   $("res").innerHTML = ""; $("msg").className = "msg"; $("msg").textContent = "Envoi…"; $("btnGo").disabled = true;
   const j = await api("/api/lancer", { url: $("url").value, qualite: $("qualite").value });
-  if (!j.run) { $("btnGo").disabled = false; $("msg").className = "msg err"; $("msg").textContent = j.erreur || "Erreur"; return; }
+  if (!j.run) { $("btnGo").disabled = false; if (j.reseau) j.erreur = "Pas de réponse du serveur. Vérifie ta connexion et réessaie."; $("msg").className = "msg err"; $("msg").textContent = j.erreur || "Erreur"; return; }
   enCours = j.run; const t0 = Date.now(); etat();
   const fin = () => { enCours = null; $("btnGo").disabled = false; };
   const tour = async () => {
