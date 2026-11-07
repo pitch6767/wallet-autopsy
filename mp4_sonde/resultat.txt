@@ -1,36 +1,20 @@
-== yt-dlp 2026.10.26
--- client default : code 1 ; 
-ERROR: [youtube] jNQXAC9IVRw: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
--- client tv : code 1 ; 
-ERROR: [youtube] jNQXAC9IVRw: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
--- client web_safari : code 1 ; 
-ERROR: [youtube] jNQXAC9IVRw: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
--- client mweb : code 1 ; 
-ERROR: [youtube] jNQXAC9IVRw: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
--- client tv_simply : code 1 ; 
-ERROR: [youtube] jNQXAC9IVRw: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
--- client web_embedded : code 1 ; 
-ERROR: [youtube] jNQXAC9IVRw: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
-== bgutil (jeton PO)
--- bgutil : code 1 ; 
-ERROR: [youtube] jNQXAC9IVRw: Sign in to confirm you’re not a bot. This helps protect our community. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
-== cobalt (instances publiques)
-liste: [Errno 2] No such file or directory: '/tmp/ci.json'
-instances youtube testees: 0
-== piped / invidious
--- https://pipedapi.kavin.rocks : 
--- https://api.piped.private.coffee : {"title":"Me at the zoo","description":"Microplastics are accumulating in human brains at an alarming rate<br><a href=\"https://www.youtube.com/watch?v=0PT5c1z3
--- https://pipedapi.adminforge.de : <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html><head>
-<title>301 Moved Permanently</title>
-</head><body>
-<h1>M
--- https://inv.nadeko.net : Endpoint disabled
--- https://yewtu.be : <html>
-<head><title>403 Forbidden</title></head>
-<body>
-<center><h1>403 Forbidden</h1></center>
-<hr><center>openresty</center>
-</body>
-</html>
--- https://invidious.nerdvpn.de : {"error":"Authentication required"}
+== piped jNQXAC9IVRw
+titre: Me at the zoo | duree: 19 | uploader: jawed | erreur: None
+flux video: 1 | audio: 0 | hls: False
+   240p MPEG_4 videoOnly= False https://proxy.piped.private.coffee/videoplayback?bui=AZFAFb_H8WI2HWf6VEJYATEj91UYL0YFCfxst
+telechargement: HTTP 403 0 octets en 3.341030s
+/tmp/f.mp4: empty
+== piped aircAruvnKk
+titre: None | duree: None | uploader: None | erreur: org.schabi.newpipe.extractor.exceptions.SignInConfirmNotBotException: YouTube probably temporarily blocked anonymous watch access with this IP , got error LOGIN_REQUIRED: "Sign in to confirm that you're not a bot"
+	at org.schabi.newpipe.extractor.services.youtube.extractors.YoutubeStreamExtractor.checkPlayabilityStatus(YoutubeStreamExtractor.java:905)
+	at org.schabi.newpipe.extractor.services.youtube.extractors.YoutubeStreamExtractor.fetchAndroidClient(YoutubeStreamExtractor.java:955)
+	at org.schabi.newpipe.extractor.services.youtube.extractors.YoutubeStreamExtractor.onFetchPage(YoutubeStreamExtractor.java:862)
+	at org.schabi.newpipe.extractor.Extractor.fetchPage(Extractor.java:60)
+	at org.schabi.newpipe.extractor.stream.StreamInfo.getInfo(StreamInfo.java:77)
+	at org.schabi.newpipe.extractor.stream.StreamInfo.getInfo(StreamInfo.java:72)
+	at org.schabi.newpipe.extractor.stream.StreamInfo.getInfo(StreamInfo.java:67)
+	at me.kavin.piped.server.handlers.StreamHandlers.lambda$streamsResponse$0(StreamHandlers.java:54)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+
+flux video: 0 | audio: 0 | hls: False
