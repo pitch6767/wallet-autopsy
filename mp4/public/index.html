@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MP4">
 <style>
-:root{--fond:#f6f5f2;--carte:#fff;--encre:#1d1c1a;--gris:#6b6862;--trait:#e2dfd8;--action:#c8321e;--ok:#1f7a3a}
+:root{color-scheme:light dark;--fond:#f6f5f2;--carte:#fff;--encre:#1d1c1a;--gris:#6b6862;--trait:#e2dfd8;--action:#c8321e;--ok:#1f7a3a}
 @media (prefers-color-scheme:dark){:root{--fond:#161514;--carte:#211f1d;--encre:#f1eee8;--gris:#a29d94;--trait:#34312d;--action:#ff5a40;--ok:#4cc272}}
 *{box-sizing:border-box}html,body{margin:0}
 body{background:var(--fond);color:var(--encre);font:16px/1.5 -apple-system,system-ui,sans-serif;padding:16px;padding-top:calc(16px + env(safe-area-inset-top))}
@@ -18,7 +18,7 @@ main{max-width:560px;margin:0 auto}
 h1{font-size:26px;margin:8px 0 4px}.sous{color:var(--gris);margin:0 0 20px;font-size:15px}
 .carte{background:var(--carte);border:1px solid var(--trait);border-radius:14px;padding:16px;margin-bottom:16px}
 label{display:block;font-size:14px;color:var(--gris);margin-bottom:6px}
-input,select{width:100%;font-size:16px;padding:12px;border:1px solid var(--trait);border-radius:10px;background:var(--fond);color:var(--encre)}
+input,select{appearance:none;-webkit-appearance:none;width:100%;font-size:16px;padding:12px;border:1px solid var(--trait);border-radius:10px;background:var(--fond);color:var(--encre)}
 button,.bouton{display:block;width:100%;margin-top:12px;font-size:17px;font-weight:600;padding:14px;border:0;border-radius:10px;background:var(--action);color:#fff;text-align:center;text-decoration:none;cursor:pointer}
 button:disabled{opacity:.5}
 .second{background:transparent;color:var(--encre);border:1px solid var(--trait)}
@@ -35,7 +35,7 @@ button:disabled{opacity:.5}
   <p class="sous">Colle un lien YouTube, récupère le fichier MP4. <span id="ver" class="petit"></span></p>
 
   <section class="carte" id="boxCle" hidden>
-    <label for="cle">Clé Apify (une seule fois)</label>
+    <label for="cle" id="labelCle">Clé Apify (une seule fois)</label>
     <input id="cle" type="password" autocomplete="off" placeholder="apify_api_…">
     <div id="boxAncienne" hidden style="margin-top:10px">
       <label for="ancienne">Ancienne clé (pour la remplacer)</label>
@@ -47,7 +47,7 @@ button:disabled{opacity:.5}
 
   <section class="carte" id="boxConv" hidden>
     <label for="url">Lien YouTube</label>
-    <input id="url" type="url" inputmode="url" placeholder="https://youtu.be/…" autocomplete="off">
+    <input id="url" type="text" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://youtu.be/…" autocomplete="off">
     <div style="margin-top:10px">
       <label for="qualite">Qualité</label>
       <select id="qualite"><option>360p</option><option>480p</option><option selected>720p</option><option>1080p</option></select>
@@ -60,59 +60,70 @@ button:disabled{opacity:.5}
   <section class="carte" id="boxListe" hidden>
     <label>Dernières conversions</label>
     <div id="liste"></div>
-    <p class="petit">Les fichiers restent disponibles environ 3 jours.</p>
+    <p class="petit">Les fichiers restent disponibles environ 3 jours. Pour mettre une vidéo dans Photos : touche « Ouvrir », puis le bouton Partager (carré avec une flèche vers le haut), puis « Enregistrer la vidéo ».</p>
   </section>
 
   <p class="petit"><a href="#" id="lienChanger" style="color:var(--gris)" hidden>Changer la clé Apify</a></p>
 </main>
 <script>
 const $ = (i) => document.getElementById(i);
-const api = async (p, b) => { const r = await fetch(p, b ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) } : {}); const j = await r.json().catch(() => ({ erreur: "Réponse illisible (HTTP " + r.status + ")" })); return j; };
+const api = async (p, b) => {
+  try {
+    const r = await fetch(p, b ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b), credentials: "same-origin" } : { credentials: "same-origin" });
+    return await r.json().catch(() => ({ erreur: "Réponse illisible du serveur (code " + r.status + ")." }));
+  } catch { return { erreur: "Pas de connexion internet.", reseau: true }; }
+};
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 let enCours = null;
 
 async function etat() {
   const e = await api("/api/etat");
+  if (e.reseau) return;
   $("ver").textContent = "v" + (e.version || "?");
   try { if (e.version && sessionStorage.getItem("v") !== e.version) { const avant = sessionStorage.getItem("v"); sessionStorage.setItem("v", e.version); if (avant) location.reload(); } } catch {}
-  $("boxCle").hidden = !!e.cle; $("boxConv").hidden = !e.cle; $("lienChanger").hidden = !e.cle;
+  const ok = !!e.connecte;
+  $("boxCle").hidden = ok; $("boxConv").hidden = !ok; $("lienChanger").hidden = !ok;
+  $("labelCle").textContent = e.cle ? "Colle ta clé Apify pour reconnaître cet appareil (une seule fois)" : "Clé Apify (une seule fois)";
   const l = e.liste || [];
   $("boxListe").hidden = !l.length;
-  $("liste").innerHTML = l.map((x) => `<div class="ligne"><span>${esc(x.titre || x.id)}<br><span class="petit">${new Date(x.t).toLocaleString("fr-CH", { timeZone: "Europe/Paris" })} · ${esc(x.qualite)} · ${esc(x.statut)}</span></span>${x.statut === "prêt" ? `<a href="/api/fichier?run=${encodeURIComponent(x.run)}">MP4</a>` : ""}</div>`).join("");
+  $("liste").innerHTML = l.map((x) => {
+    const lien = encodeURIComponent(x.run);
+    const actions = x.statut === "prêt" ? `<span><a href="/api/fichier?run=${lien}&voir=1" target="_blank">Ouvrir</a> · <a href="/api/fichier?run=${lien}">Télécharger</a></span>` : "";
+    return `<div class="ligne"><span>${esc(x.titre || "Vidéo " + (x.id || ""))}<br><span class="petit">${new Date(x.t).toLocaleString("fr-CH", { timeZone: "Europe/Paris", dateStyle: "short", timeStyle: "short" })} · ${esc(x.qualite)} · ${esc(x.statut)}${x.message ? " — " + esc(x.message) : ""}</span></span>${actions}</div>`;
+  }).join("");
 }
 
 $("btnCle").onclick = async () => {
   $("btnCle").disabled = true; $("msgCle").className = "msg"; $("msgCle").textContent = "Vérification de la clé…";
   const j = await api("/api/cle", { cle: $("cle").value, ancienne: $("ancienne").value });
   $("btnCle").disabled = false;
-  if (j.ok) { $("cle").value = ""; $("ancienne").value = ""; $("msgCle").textContent = ""; await etat(); }
+  if (j.ok) { $("cle").value = ""; $("ancienne").value = ""; $("msgCle").textContent = ""; $("boxAncienne").hidden = true; await etat(); }
   else { $("msgCle").className = "msg err"; $("msgCle").textContent = j.erreur || "Erreur"; }
 };
-$("lienChanger").onclick = (ev) => { ev.preventDefault(); $("boxCle").hidden = false; $("boxAncienne").hidden = false; };
+$("lienChanger").onclick = (ev) => { ev.preventDefault(); $("boxCle").hidden = false; $("boxAncienne").hidden = false; $("labelCle").textContent = "Nouvelle clé Apify"; };
 
 $("btnGo").onclick = async () => {
   if (enCours) return;
   $("res").innerHTML = ""; $("msg").className = "msg"; $("msg").textContent = "Envoi…"; $("btnGo").disabled = true;
   const j = await api("/api/lancer", { url: $("url").value, qualite: $("qualite").value });
   if (!j.run) { $("btnGo").disabled = false; $("msg").className = "msg err"; $("msg").textContent = j.erreur || "Erreur"; return; }
-  enCours = j.run; const t0 = Date.now();
+  enCours = j.run; const t0 = Date.now(); etat();
+  const fin = () => { enCours = null; $("btnGo").disabled = false; };
   const tour = async () => {
-    const s = await api("/api/suivi?run=" + encodeURIComponent(enCours));
+    const s = await api("/api/suivi?run=" + encodeURIComponent(j.run));
     const sec = Math.round((Date.now() - t0) / 1000);
+    if (s.reseau) { $("msg").textContent = `Connexion perdue, nouvel essai… (${sec} s)`; setTimeout(tour, 5000); return; }
     if (s.erreur) { fin(); $("msg").className = "msg err"; $("msg").textContent = s.erreur; return; }
-    if (s.statut === "SUCCEEDED") {
-      fin();
-      if (s.pret) {
-        $("msg").className = "msg ok"; $("msg").textContent = "Prêt : " + (s.titre || "vidéo");
-        $("res").innerHTML = `<a class="bouton" href="/api/fichier?run=${encodeURIComponent(j.run)}">Télécharger le MP4</a><a class="bouton second" href="/api/fichier?run=${encodeURIComponent(j.run)}&voir=1" target="_blank">Ouvrir la vidéo</a>`;
-      } else { $("msg").className = "msg err"; $("msg").textContent = s.message || "Pas de fichier"; }
+    if (s.statut === "SUCCEEDED" && s.pret) {
+      fin(); $("msg").className = "msg ok"; $("msg").textContent = "Prêt : " + (s.titre || "vidéo");
+      const l = encodeURIComponent(j.run);
+      $("res").innerHTML = `<a class="bouton" href="/api/fichier?run=${l}&voir=1" target="_blank">Ouvrir la vidéo</a><a class="bouton second" href="/api/fichier?run=${l}">Télécharger le fichier MP4</a><p class="petit">Pour la mettre dans Photos : « Ouvrir la vidéo », puis le bouton Partager, puis « Enregistrer la vidéo ».</p>`;
       etat(); return;
     }
-    if (["FAILED", "ABORTED", "TIMED-OUT"].includes(s.statut)) { fin(); $("msg").className = "msg err"; $("msg").textContent = "Échec Apify : " + (s.message || s.statut); etat(); return; }
-    $("msg").textContent = `Conversion en cours… ${sec} s`;
+    if (s.message || ["FAILED", "ABORTED", "TIMED-OUT"].includes(s.statut)) { fin(); $("msg").className = "msg err"; $("msg").textContent = s.message || "La conversion a échoué."; etat(); return; }
+    $("msg").textContent = `Conversion en cours… ${sec} s (tu peux fermer l'app, elle sera dans la liste)`;
     setTimeout(tour, 4000);
   };
-  const fin = () => { enCours = null; $("btnGo").disabled = false; };
   setTimeout(tour, 3000);
 };
 etat();

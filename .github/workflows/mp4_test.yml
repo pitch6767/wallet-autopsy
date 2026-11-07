@@ -1,27 +1,43 @@
-# Contrôle de bout en bout du convertisseur MP4 (une conversion réelle, petite vidéo)
+# Contrôle de bout en bout du convertisseur MP4. Requêtes signées par Claude (ts + sig, valables 10 min).
 name: MP4 - test
 on:
   workflow_dispatch:
     inputs:
-      url: { description: "lien YouTube", required: true, default: "https://www.youtube.com/watch?v=jNQXAC9IVRw" }
-      qualite: { description: "qualite", required: true, default: "360p" }
+      ts: { required: true }
+      sig: { required: true }
+      essais: { description: "JSON : liste de {acteur, entree, id} ou {url, qualite}", required: true }
 jobs:
   t:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
-      - env: { URL: "${{ github.event.inputs.url }}", Q: "${{ github.event.inputs.qualite }}" }
+      - env: { TS: "${{ github.event.inputs.ts }}", SIG: "${{ github.event.inputs.sig }}", ESSAIS: "${{ github.event.inputs.essais }}" }
         run: |
-          set +e
-          U=https://mp4.pitch67.workers.dev
-          echo "@@@DEBUT"
-          echo "== etat"; curl -s $U/api/etat; echo
-          R=$(curl -s -X POST $U/api/lancer -H 'content-type: application/json' -d "{\"url\":\"$URL\",\"qualite\":\"$Q\"}"); echo "== lancer $R"
-          RUN=$(echo "$R" | python3 -c "import json,sys;print(json.load(sys.stdin).get('run',''))")
-          if [ -n "$RUN" ]; then
-            for i in $(seq 1 120); do S=$(curl -s "$U/api/suivi?run=$RUN&debug=1"); echo "$(date +%T) $S" | cut -c1-1500; echo "$S" | grep -qE '"statut":"(SUCCEEDED|FAILED|ABORTED|TIMED-OUT)"|erreur' && break; sleep 5; done
-            curl -s -o /tmp/v.mp4 -D /tmp/h.txt -w "== fichier HTTP %{http_code} %{size_download} octets en %{time_total}s\n" "$U/api/fichier?run=$RUN"
-            grep -iE "content-(type|disposition|length)" /tmp/h.txt; file /tmp/v.mp4
-            sudo apt-get -qq install -y ffmpeg >/dev/null 2>&1; ffprobe -v error -show_entries format=duration:stream=codec_type,codec_name,width,height -of compact /tmp/v.mp4
-          fi
-          echo "@@@FIN"
+          sudo apt-get -qq install -y ffmpeg >/dev/null 2>&1
+          cat > /tmp/t.py <<'P'
+          import json,os,subprocess,time,urllib.request
+          U="https://mp4.pitch67.workers.dev"; H={"x-admin-ts":os.environ["TS"],"x-admin-sig":os.environ["SIG"],"content-type":"application/json"}
+          def req(p,b=None):
+              r=urllib.request.Request(U+p,data=json.dumps(b).encode() if b is not None else None,headers=H,method="POST" if b is not None else "GET")
+              try: return json.load(urllib.request.urlopen(r,timeout=60))
+              except urllib.error.HTTPError as e: return {"http":e.code,"corps":e.read().decode()[:300]}
+          print("etat",req("/api/etat"))
+          runs=[]
+          for e in json.loads(os.environ["ESSAIS"]):
+              r=req("/api/essai",e) if "acteur" in e else req("/api/lancer",e)
+              print("lance",e.get("acteur") or e.get("url"),r); runs.append((e,r.get("run"),time.time()))
+          for e,run,t0 in runs:
+              if not run: continue
+              while time.time()-t0<900:
+                  s=req("/api/suivi?run="+run)
+                  if s.get("statut") in ("SUCCEEDED","FAILED","ABORTED","TIMED-OUT") or s.get("erreur") or s.get("http"): break
+                  time.sleep(6)
+              it=s.pop("item",None)
+              print("====",e.get("acteur") or e.get("url"),"en",int(time.time()-t0),"s :",json.dumps(s)[:300])
+              if it: print("  item:",json.dumps({k:(v[:90] if isinstance(v,str) else v) for k,v in it.items() if not isinstance(v,(dict,list))})[:900])
+              if s.get("pret"):
+                  subprocess.run(["curl","-s","-o","/tmp/v.mp4","-H","x-admin-ts: "+H["x-admin-ts"],"-H","x-admin-sig: "+H["x-admin-sig"],"-w","  fichier HTTP %{http_code} %{size_download} octets\n",U+"/api/fichier?run="+run])
+                  subprocess.run("ffprobe -v error -show_entries format=duration:stream=codec_name,profile,width,height -of compact /tmp/v.mp4 | sed 's/^/  /'",shell=True)
+                  subprocess.run(["curl","-s","-o","/dev/null","-D","-","-r","1000-1999","-H","x-admin-ts: "+H["x-admin-ts"],"-H","x-admin-sig: "+H["x-admin-sig"],U+"/api/fichier?run="+run+"&voir=1"])
+          P
+          echo "@@@DEBUT"; python3 /tmp/t.py 2>&1; echo "@@@FIN"
