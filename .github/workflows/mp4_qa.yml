@@ -6,6 +6,8 @@ on:
       mode: { description: "statique ou ui", required: true, default: "statique" }
       url: { description: "lien YouTube (mode ui)", required: false, default: "" }
       qualite: { description: "qualite (mode ui)", required: false, default: "360p" }
+permissions:
+  contents: write
 jobs:
   qa:
     runs-on: ubuntu-24.04
@@ -109,6 +111,11 @@ jobs:
           EOF
           node u.js
           echo "@@@DEBUT ffprobe"; ls -l /tmp/ui.mp4 && file /tmp/ui.mp4 && ffprobe -v error -show_entries format=duration:stream=codec_type,codec_name,codec_tag_string,width,height -of compact /tmp/ui.mp4; echo "@@@FIN"
-      - uses: actions/upload-artifact@v4
+      - name: Publier les captures sur la branche qa-mp4
         if: always()
-        with: { name: captures, path: /tmp/qa/*.png, if-no-files-found: ignore }
+        run: |
+          mkdir -p /tmp/br && cd /tmp/br && git init -q && git checkout -q -b qa-mp4
+          cp /tmp/qa/*.png . 2>/dev/null; ls
+          git config user.name qa; git config user.email bot@users.noreply.github.com
+          git add -A && git commit -qm "captures QA mp4 ${{ github.run_id }} [skip ci]"
+          git push -qf https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} qa-mp4:qa-mp4-${{ github.run_id }}
