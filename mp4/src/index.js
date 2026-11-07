@@ -2,7 +2,7 @@
 // YouTube bloque tous les serveurs (GitHub, Cloudflare, Piped, Invidious : testé le 07.11.2026),
 // donc le téléchargement est fait par le module Apify « streamers/youtube-video-downloader ».
 // La clé Apify est collée une fois dans l'app et gardée dans le Durable Object (jamais dans le code).
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 const ACTEUR = "streamers~youtube-video-downloader";
 const API = "https://api.apify.com/v2";
 
@@ -90,8 +90,11 @@ export class Coffre {
           method: "POST", headers: { "content-type": "application/json" },
           body: JSON.stringify({ videos: [{ url: `https://www.youtube.com/watch?v=${id}` }], storeInKVStore: true, preferredQuality: qualite, preferredFormat: "mp4" }),
         });
+        let titre = "";
+        try { const o = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent("https://www.youtube.com/watch?v=" + id)}`); if (o.ok) titre = (await o.json()).title || ""; } catch {}
+        if (titre) await this.s.put("titre:" + run.id, titre);
         const liste = (await this.s.get("liste")) || [];
-        liste.unshift({ run: run.id, id, qualite, t: Date.now(), statut: "en cours" });
+        liste.unshift({ run: run.id, id, qualite, t: Date.now(), statut: "en cours", titre });
         await this.s.put("liste", liste.slice(0, 50));
         return json({ run: run.id });
       }
@@ -104,7 +107,7 @@ export class Coffre {
           const items = await this.apify(`/datasets/${run.defaultDatasetId}/items?clean=1&limit=5`);
           const it = (Array.isArray(items) ? items : [])[0] || {};
           const lien = trouverLien(it);
-          out.titre = it.title || it.videoTitle || it.name || "";
+          out.titre = (await this.s.get("titre:" + runId)) || it.title || String(it.fileKey || "").replace(/^[\w-]{11}_/, "").replace(/\.mp4$/i, "") || "";
           out.pret = !!lien;
           if (u.searchParams.get("debug")) out.item = Object.fromEntries(Object.entries(it).map(([k, v]) => [k, typeof v === "string" ? v.slice(0, 80) : (v && typeof v === "object" ? "{" + Object.keys(v).join(",").slice(0, 120) + "}" : v)]));
           if (!lien) out.message = "Apify a fini sans fichier : " + JSON.stringify(it).slice(0, 300);
