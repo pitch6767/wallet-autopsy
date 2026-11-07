@@ -16,7 +16,7 @@ jobs:
           sudo apt-get -qq install -y ffmpeg >/dev/null 2>&1
           cat > /tmp/t.py <<'P'
           import json,os,subprocess,time,urllib.request
-          U="https://mp4.pitch67.workers.dev"; H={"x-admin-ts":os.environ["TS"],"x-admin-sig":os.environ["SIG"],"content-type":"application/json"}
+          U="https://mp4.pitch67.workers.dev"; H={"x-admin-ts":os.environ["TS"],"x-admin-sig":os.environ["SIG"],"content-type":"application/json","user-agent":"Mozilla/5.0 mp4-test"}
           def req(p,b=None):
               r=urllib.request.Request(U+p,data=json.dumps(b).encode() if b is not None else None,headers=H,method="POST" if b is not None else "GET")
               try: return json.load(urllib.request.urlopen(r,timeout=60))
