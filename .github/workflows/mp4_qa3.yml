@@ -1,0 +1,33 @@
+# Controle qualite independant MP4, tour 3 (constat seulement, ne modifie pas l'app)
+name: MP4 - QA tour 3
+on:
+  workflow_dispatch:
+    inputs:
+      ts: { required: true }
+      sig: { required: true }
+      convertir: { description: "oui = 1 conversion reelle", required: true, default: "non" }
+permissions:
+  contents: write
+jobs:
+  qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparer
+        run: |
+          mkdir -p /tmp/qa && cd /tmp/qa && npm init -y >/dev/null && npm i -s playwright@1.55.0 2>&1 | tail -2
+          npx playwright install --with-deps webkit chromium 2>&1 | tail -2
+          sudo apt-get -qq install -y ffmpeg >/dev/null 2>&1; echo pret
+      - name: Controles
+        env: { TS: "${{ github.event.inputs.ts }}", SIG: "${{ github.event.inputs.sig }}", CONV: "${{ github.event.inputs.convertir }}" }
+        run: |
+          cd /tmp/qa && cp $GITHUB_WORKSPACE/.github/qa3/q.js . && echo "@@@DEBUT" && node q.js 2>&1; echo "@@@FIN"
+      - name: Publier les captures
+        if: always()
+        run: |
+          mkdir -p /tmp/br && cd /tmp/br && git init -q && git checkout -q -b x
+          cp /tmp/qa/*.png . 2>/dev/null; ls
+          git config user.name qa; git config user.email bot@users.noreply.github.com
+          git add -A && git commit -qm "captures QA3 mp4 ${{ github.run_id }} [skip ci]"
+          git push -qf https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} x:qa-mp4-t3-${{ github.run_id }}
