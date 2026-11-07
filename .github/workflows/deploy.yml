@@ -2,7 +2,7 @@ name: Deploy Cloudflare
 on:
   push:
     branches: [main]
-    paths-ignore: [diagnostic/dec_demande.txt, diagnostic/dec/**, .github/workflows/dec_lire.yml, bot95/**, sublime/**, video/**, radar-ia/**, .github/workflows/radar-ia.yml, .github/workflows/video.yml, .github/workflows/sublime.yml, etude/**, .github/workflows/bot95.yml, .github/workflows/bot5min.yml]
+    paths-ignore: [mp4/**, .github/workflows/mp4.yml, mp4_sonde/**, .github/workflows/mp4_sonde.yml, diagnostic/dec_demande.txt, diagnostic/dec/**, .github/workflows/dec_lire.yml, bot95/**, sublime/**, video/**, radar-ia/**, .github/workflows/radar-ia.yml, .github/workflows/video.yml, .github/workflows/sublime.yml, etude/**, .github/workflows/bot95.yml, .github/workflows/bot5min.yml]
   workflow_dispatch:
 permissions:
   contents: write
