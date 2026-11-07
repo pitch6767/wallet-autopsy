@@ -7,11 +7,12 @@
      envoient leurs jetons au même portefeuille → prix des vrais échanges du coin 2 s, 5 s et 30 s plus tard (−1 % de frais), et délai
      jusqu'à la première vente du groupe.
 Résultat pour 20 $ par coin. Sauvegarde poussée sur GitHub après chaque événement et toutes les 15 minutes.
+07.11 : transactions Solana « version 1 » acceptées (refusées avant → chaque appel échouait et réessayait : étude bloquée) ; nœud drpc retiré (400).
 """
 import json, time, urllib.request, collections, datetime as dt, random, threading, os, subprocess
 from concurrent.futures import ThreadPoolExecutor
 
-RPCS = ["https://api.mainnet-beta.solana.com", "https://solana-rpc.publicnode.com", "https://solana.drpc.org"]
+RPCS = ["https://api.mainnet-beta.solana.com", "https://solana-rpc.publicnode.com"]
 GT = "https://api.geckoterminal.com/api/v2"
 NB_COINS = 30; NB_TX = 1200; SEUILS = [5, 10, 20]
 verrou = threading.Lock(); appels = collections.Counter()
@@ -36,7 +37,7 @@ def rpc(methode, params):
 
 
 def tx(sig):
-    return rpc("getTransaction", [sig, {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0, "commitment": "confirmed"}])
+    return rpc("getTransaction", [sig, {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 1, "commitment": "confirmed"}])
 
 def analyser(t, mint):
     """→ liste de mouvements : (portefeuille, Δjetons, ΔSOL) et transferts de jetons (source → destination)"""
