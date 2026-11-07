@@ -111,6 +111,28 @@ jobs:
           EOF
           node u.js
           echo "@@@DEBUT ffprobe"; ls -l /tmp/ui.mp4 && file /tmp/ui.mp4 && ffprobe -v error -show_entries format=duration:stream=codec_type,codec_name,codec_tag_string,width,height -of compact /tmp/ui.mp4; echo "@@@FIN"
+      - name: Verification sans conversion (fichier deja pret)
+        if: ${{ github.event.inputs.mode == 'verif' }}
+        env: { RUN: "${{ github.event.inputs.url }}" }
+        run: |
+          set +e
+          U=https://mp4.pitch67.workers.dev
+          echo "@@@DEBUT"; curl -s $U/api/etat; echo
+          curl -s -o /tmp/f.mp4 -D /tmp/h.txt -w "fichier HTTP %{http_code} %{size_download}o\n" "$U/api/fichier?run=$RUN"; grep -iE "content-(type|disposition|length)|accept-ranges" /tmp/h.txt
+          ffprobe -v error -show_entries format=duration:stream=codec_type,codec_name,codec_tag_string,width,height -of compact /tmp/f.mp4
+          echo "== Range voir=1"; curl -s -r 1000-1999 -o /dev/null -D - "$U/api/fichier?run=$RUN&voir=1" | grep -iE "^HTTP|content-range|content-length|accept-ranges"
+          cd /tmp/qa && cat > v.js <<'EOS'
+          const { webkit, devices } = require('playwright');
+          (async () => {
+            const b = await webkit.launch(); const c = await b.newContext({ ...devices['iPhone 13'], locale: 'fr-CH', acceptDownloads: true });
+            const p = await c.newPage(); await p.goto('https://mp4.pitch67.workers.dev/'); await p.waitForSelector('#boxListe:not([hidden])');
+            const a = p.locator('#liste a').first(); console.log('lien liste', await a.getAttribute('href'));
+            const dl = p.waitForEvent('download', { timeout: 60000 }).then(d => 'download ' + d.suggestedFilename()).catch(e => 'pas de download: ' + e.message.split('\n')[0]);
+            await a.click().catch(e => console.log('clic', e.message)); console.log(await dl); console.log('url apres clic', p.url());
+            await p.waitForTimeout(3000); await p.screenshot({ path: 'apres_clic.png' }); await b.close();
+          })();
+          EOS
+          node v.js; echo "@@@FIN"
       - name: Publier les captures sur la branche qa-mp4
         if: always()
         run: |
