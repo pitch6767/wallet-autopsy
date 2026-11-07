@@ -3,15 +3,17 @@
 // donc le téléchargement est fait par un module Apify. La clé Apify est collée dans l'app et gardée
 // dans le Durable Object (jamais dans le code). Chaque appareil s'identifie une fois avec cette clé
 // et reçoit un cookie d'accès : sans lui, personne ne peut dépenser le crédit Apify ni voir les fichiers.
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 const API = "https://api.apify.com/v2";
 // Clé publique de Claude : signe les requêtes de test lancées depuis GitHub Actions (aucun secret ici)
 const ADMIN_JWK = { kty: "EC", crv: "P-256", x: "qHxOme14PLpJvoFAVS56fwXobWwBtQtUxrCz2655BDo", y: "HGUc5w5DlL_4nn5qgI47CDFx6yDEXzfh8alXgN9i0mk" };
 
-// Module Apify utilisé et construction de son entrée
+// Module Apify utilisé : marielise.dev, choisi le 07.11.2026 car c'est le seul testé qui livre du H.264 + AAC
+// (lisible sur iPhone). Prix : 0,01 $/min en 360p, 0,015 $ en 480p, 0,02 $ en 720p, 0,03 $ en 1080p.
+// Le proxy résidentiel payant (0,05 $/Mo) reste désactivé.
 const MODULE = {
-  acteur: "streamers~youtube-video-downloader",
-  entree: (url, q) => ({ videos: [{ url }], storeInKVStore: true, preferredQuality: q + "p", preferredFormat: "mp4" }),
+  acteur: "marielise.dev~youtube-video-downloader",
+  entree: (url, q) => ({ urls: [{ url }], quality: q, format: "default", residentialProxyMode: "disabled" }),
 };
 
 const json = (o, s = 200, h = {}) => new Response(JSON.stringify(o), { status: s, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...h } });
@@ -114,12 +116,12 @@ export class Coffre {
     if (run.status === "SUCCEEDED") {
       const items = await this.apify(`/datasets/${run.defaultDatasetId}/items?clean=1&limit=5`);
       const it = (Array.isArray(items) ? items : [])[0] || {};
-      const lien = it.error ? null : trouverLien(it);
+      const lien = it.error || it.status === "error" || it.ok === false ? null : trouverLien(it);
       out.item = it;
       out.titre = (await this.s.get("titre:" + runId)) || it.title || String(it.fileKey || "").replace(/^[\w-]{11}_/, "").replace(/\.mp4$/i, "") || "";
       out.pret = !!lien;
       if (!lien) out.message = francais(it.error || it.note || "NO_RESULTS");
-      await this.s.put("lien:" + runId, { lien, titre: out.titre });
+      await this.s.put("lien:" + runId, { lien, titre: out.titre, taille: Number(it.fileSizeBytes) || 0 });
     } else if (["FAILED", "ABORTED", "TIMED-OUT"].includes(run.status)) out.message = francais(run.statusMessage, run.status);
     const liste = (await this.s.get("liste")) || [];
     const e = liste.find((x) => x.run === runId);
@@ -199,7 +201,7 @@ export class Coffre {
         if (!f || !f.lien) return json({ erreur: "Fichier introuvable (les fichiers sont effacés après ~3 jours)." }, 404);
         let src = f.lien;
         if (src.includes("api.apify.com")) src += (src.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(cle);
-        return this.servir(req, src, f.titre, !!u.searchParams.get("voir"));
+        return this.servir(req, src, f.titre, !!u.searchParams.get("voir"), f.taille);
       }
 
       return json({ erreur: "Adresse inconnue." }, 404);
@@ -209,14 +211,14 @@ export class Coffre {
   }
 
   // Sert le fichier en respectant les demandes partielles (Range) qu'exige la lecture vidéo sur iPhone
-  async servir(req, src, titre, voir) {
+  async servir(req, src, titre, voir, taille) {
     const range = req.headers.get("range");
     const r = await fetch(src, { headers: range ? { range } : {} });
     if (!r.ok && r.status !== 206) return json({ erreur: "Le fichier n'est plus disponible." }, 502);
     const nom = ((titre || "video").replace(/[\\/:*?"<>|]+/g, " ").trim().slice(0, 120) || "video") + ".mp4";
     const h = new Headers({ "content-type": "video/mp4", "accept-ranges": "bytes", "cache-control": "private, max-age=3600",
       "content-disposition": `${voir ? "inline" : "attachment"}; filename="video.mp4"; filename*=UTF-8''${encodeURIComponent(nom)}` });
-    const total = Number(r.headers.get("content-length") || 0);
+    const total = Number(r.headers.get("content-length") || 0) || (r.status === 200 ? Number(taille) || 0 : 0);
     const m = range && range.match(/^bytes=(\d*)-(\d*)$/);
     if (r.status === 206 || !m || !total) {
       for (const k of ["content-length", "content-range"]) if (r.headers.get(k)) h.set(k, r.headers.get(k));
