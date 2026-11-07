@@ -220,6 +220,7 @@ function afficher(o) {
   const faits = o.tirages.filter(t => t.etat === 'ok');
   const avenir = o.tirages.filter(t => t.etat === 'a_venir');
   if (o.total > 0) { v.className = 'gagne'; v.innerHTML = `🎉 Tu as gagné<div class="gros">${chf(o.total)}</div>${avenir.length ? `<div>${avenir.length} tirage(s) encore à venir</div>` : ''}`; }
+  else if (!faits.length && !avenir.length) { v.className = 'perdu'; v.innerHTML = `<div class="gros" style="font-size:22px">Pas de tirage à cette date</div>Vérifie la date lue ci-dessous et corrige-la<br>`; }
   else if (!faits.length) { v.className = 'attend'; v.innerHTML = `<div class="gros" style="font-size:24px">Tirage pas encore publié</div>${o.tirages.map(t => dateFr(t.date)).join('<br>')}`; }
   else { v.className = 'perdu'; v.innerHTML = `<div class="gros" style="font-size:26px">Pas de gain</div>${avenir.length ? `${avenir.length} tirage(s) encore à venir` : 'cette fois-ci'}`; }
   montrer(v, true);
