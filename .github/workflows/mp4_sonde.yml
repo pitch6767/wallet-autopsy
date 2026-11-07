@@ -19,40 +19,21 @@ jobs:
           set +e
           mkdir -p mp4_sonde; O=mp4_sonde/resultat.txt; : > $O
           U="https://www.youtube.com/watch?v=$ID"
-          pip install -q -U "yt-dlp[default]" bgutil-ytdlp-pot-provider >/dev/null 2>&1
-          echo "== yt-dlp $(yt-dlp --version)" >> $O
-          for C in default "tv" "web_safari" "mweb" "tv_simply" "web_embedded"; do
-            A=""; [ "$C" != default ] && A="--extractor-args youtube:player_client=$C"
-            timeout 90 yt-dlp $A -f "b[ext=mp4]/b" -o "/tmp/v_$C.%(ext)s" "$U" > /tmp/l 2>&1
-            echo "-- client $C : code $? ; $(ls -la /tmp/v_$C.* 2>/dev/null | awk '{print $5, $9}')" >> $O; grep -E "ERROR" /tmp/l | head -2 >> $O
-          done
-          echo "== bgutil (jeton PO)" >> $O
-          git clone -q --depth 1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider /tmp/bg 2>>$O
-          (cd /tmp/bg/server && npm ci -s >/dev/null 2>&1 && npx tsc >/dev/null 2>&1; nohup node build/main.js > /tmp/bg.log 2>&1 &) ; sleep 8
-          timeout 120 yt-dlp -f "b[ext=mp4]/b" -o "/tmp/v_bg.%(ext)s" "$U" > /tmp/l 2>&1
-          echo "-- bgutil : code $? ; $(ls -la /tmp/v_bg.* 2>/dev/null | awk '{print $5}')" >> $O; grep -E "ERROR|PO" /tmp/l | head -3 >> $O
-          echo "== cobalt (instances publiques)" >> $O
-          curl -s -m 20 https://instances.cobalt.best/api/instances.json -o /tmp/ci.json
-          python3 - >> $O <<'P'
-          import json,subprocess,os
-          vid=os.environ["ID"]
-          try: L=json.load(open("/tmp/ci.json"))
-          except Exception as e: print("liste:",e); L=[]
-          n=0
-          for i in L:
-              api=i.get("api") or "";
-              if not api or not (i.get("services") or {}).get("youtube"): continue
-              n+=1
-              if n>12: break
-              u=("https://"+api) if not api.startswith("http") else api
-              r=subprocess.run(["curl","-s","-m","25","-X","POST",u,"-H","accept: application/json","-H","content-type: application/json","-d",json.dumps({"url":"https://www.youtube.com/watch?v="+vid})],capture_output=True,text=True)
-              print("--",u,":",r.stdout[:160].replace("\n"," "))
-          print("instances youtube testees:",n)
+          for V in $ID aircAruvnKk; do
+            echo "== piped $V" >> $O
+            curl -s -m 30 https://api.piped.private.coffee/streams/$V -o /tmp/s.json
+            python3 - "$V" >> $O <<'P'
+          import json,sys
+          try: d=json.load(open("/tmp/s.json"))
+          except Exception as e: print("json:",e, open("/tmp/s.json").read()[:200]); sys.exit()
+          print("titre:",d.get("title"),"| duree:",d.get("duration"),"| uploader:",d.get("uploader"),"| erreur:",d.get("error"))
+          vs=d.get("videoStreams") or []
+          print("flux video:",len(vs),"| audio:",len(d.get("audioStreams") or []),"| hls:",bool(d.get("hls")))
+          for v in vs: print("  ",v.get("quality"),v.get("format"),"videoOnly=",v.get("videoOnly"),v.get("url","")[:90])
+          m=[v for v in vs if not v.get("videoOnly")]
+          open("/tmp/u.txt","w").write((m[0]["url"] if m else (vs[0]["url"] if vs else "")))
           P
-          echo "== piped / invidious" >> $O
-          for H in https://pipedapi.kavin.rocks https://api.piped.private.coffee https://pipedapi.adminforge.de; do
-            echo "-- $H : $(curl -s -m 20 $H/streams/$ID | head -c 160)" >> $O; done
-          for H in https://inv.nadeko.net https://yewtu.be https://invidious.nerdvpn.de; do
-            echo "-- $H : $(curl -s -m 20 "$H/api/v1/videos/$ID?local=true" | head -c 160)" >> $O; done
+            U2=$(cat /tmp/u.txt); [ -n "$U2" ] && { curl -s -m 120 -L -o /tmp/f.mp4 -w "telechargement: HTTP %{http_code} %{size_download} octets en %{time_total}s\n" "$U2" >> $O; file /tmp/f.mp4 >> $O; }
+          done
           git config user.name mp4; git config user.email bot@users.noreply.github.com
           git add mp4_sonde && git commit -qm "MP4 sonde [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
