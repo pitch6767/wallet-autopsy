@@ -3,3 +3,4 @@
 # 07.11.2026 (Pitch : « oui ») : étude des groupes de portefeuilles (Bubblemaps) sur des memecoins pris À LA NAISSANCE, suivis en direct.
 exec(open("etude/bot5min/bubble_naissance.py", encoding="utf-8").read())
 # relance 2026-11-07T00:20:28 : transactions version 1
+# relance 2026-11-07T01:22:19 : étapes affichées et journal poussé toutes les 5 min

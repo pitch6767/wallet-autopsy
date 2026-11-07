@@ -8,6 +8,7 @@
      jusqu'à la première vente du groupe.
 Résultat pour 20 $ par coin. Sauvegarde poussée sur GitHub après chaque événement et toutes les 15 minutes.
 07.11 : transactions Solana « version 1 » acceptées (refusées avant → chaque appel échouait et réessayait : étude bloquée) ; nœud drpc retiré (400).
+07.11 (2e) : 1 h sans aucun coin enregistré → journal poussé toutes les 5 min et étapes affichées, pour voir où ça bloque.
 """
 import json, time, urllib.request, collections, datetime as dt, random, threading, os, subprocess
 from concurrent.futures import ThreadPoolExecutor
@@ -21,7 +22,7 @@ def http(url, corps=None, essais=6):
     for i in range(essais):
         try:
             req = urllib.request.Request(url, data=json.dumps(corps).encode() if corps else None, headers={"content-type": "application/json", "user-agent": "etude-clusters"})
-            with urllib.request.urlopen(req, timeout=40) as r: return json.load(r)
+            with urllib.request.urlopen(req, timeout=15) as r: return json.load(r)
         except Exception as e:
             if i == essais - 1: return None
             time.sleep(1.5 * (i + 1) + random.random())
@@ -67,12 +68,13 @@ DEBUT = time.time(); DUREE = 4 * 3600 + 30 * 60          # le workflow est coup�
 MAX_COINS = 25; AGE_MAX_H = 2; PAGES_MAX = 15; OFFRE = 1_000_000_000
 FICH = "etude/bot5min/bubble_naissance_resultats.json"
 R = json.load(open(FICH)) if os.path.exists(FICH) else {}
-dernier_push = [0.0]
+dernier_push = [0.0]; verrou_git = threading.Lock()
 def sauver(force=False):
-    json.dump(R, open(FICH, "w"), indent=1, default=str)
-    if not force and time.time() - dernier_push[0] < 900: return
-    dernier_push[0] = time.time()
-    subprocess.run("git add etude/bot5min/ && git commit -qm 'Étude naissance : sauvegarde intermédiaire [skip ci]' && for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push -q && break; sleep 5; done", shell=True)
+    with verrou_git:
+        json.dump(R, open(FICH, "w"), indent=1, default=str)
+        if not force and time.time() - dernier_push[0] < 600: return
+        dernier_push[0] = time.time()
+        subprocess.run("git add etude/bot5min/ && git commit -qm 'Étude naissance : sauvegarde intermédiaire [skip ci]' && for k in 1 2 3 4 5; do git pull --rebase --autostash -q origin main && git push -q && break; sleep 5; done", shell=True)
 def log(*a): print(time.strftime("%H:%M:%S"), *a, flush=True)
 
 def nouveaux_coins():
@@ -113,10 +115,10 @@ def evenements(sigs, mint):
     return E
 
 def preparer(c):
-    sigs = histoire(c["mint"])
+    log("  préparation", c["nom"]); sigs = histoire(c["mint"]); log("   historique :", None if sigs is None else len(sigs), "transactions,", dict(appels))
     if sigs is None: return dict(c, erreur="histoire déjà trop longue")
     if len(sigs) < 200: return dict(c, erreur=f"trop peu de transactions ({len(sigs)})")
-    E = evenements(sigs[:1200], c["mint"])
+    E = evenements(sigs[:1200], c["mint"]); log("   transactions lues :", len(E), dict(appels))
     courbe = None; solde = collections.defaultdict(float); liens = collections.defaultdict(set)
     for e in E:
         if courbe is None and e["d_tok"]: courbe = min(e["d_tok"], key=lambda k: e["d_tok"][k])
@@ -126,6 +128,7 @@ def preparer(c):
         for k, v in e["d_tok"].items(): solde[k] += v
     gros = sorted([k for k in solde if k != courbe], key=lambda k: -max(0, solde[k]))[:40]
     with ThreadPoolExecutor(6) as ex: F = dict(zip(gros, ex.map(financeur, gros)))
+    log("   financeurs lus :", sum(1 for v in F.values() if v), "/", len(F))
     pf = collections.defaultdict(list)
     for w, f in F.items():
         if f: pf[f].append(w)
@@ -207,6 +210,10 @@ def suivre(c):
                     log("   RAPATRIEMENT", c["nom"], json.dumps(c["sortie"], default=str)); sauver(True)
 
 # 1. coins nés depuis moins de 2 h, découverts toutes les 20 minutes pendant les 2 premières heures
+def pousse_journal():          # 07.11 : journal poussé toutes les 5 min, pour voir l'avancement pendant l'étude
+    while True:
+        time.sleep(300); sauver(True)
+threading.Thread(target=pousse_journal, daemon=True).start()
 log("départ"); dernier_tour = 0
 while time.time() - DEBUT < DUREE:
     if time.time() - DEBUT < 2 * 3600 and time.time() - dernier_tour > 1200 and sum(1 for c in R.values() if "seuils" in c and "erreur" not in c) < MAX_COINS:
