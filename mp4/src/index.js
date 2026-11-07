@@ -106,6 +106,7 @@ export class Coffre {
           const lien = trouverLien(it);
           out.titre = it.title || it.videoTitle || it.name || "";
           out.pret = !!lien;
+          if (u.searchParams.get("debug")) out.item = it;
           if (!lien) out.message = "Apify a fini sans fichier : " + JSON.stringify(it).slice(0, 300);
           await this.s.put("lien:" + runId, { lien, titre: out.titre });
         }

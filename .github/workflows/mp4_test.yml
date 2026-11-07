@@ -19,7 +19,7 @@ jobs:
           R=$(curl -s -X POST $U/api/lancer -H 'content-type: application/json' -d "{\"url\":\"$URL\",\"qualite\":\"$Q\"}"); echo "== lancer $R"
           RUN=$(echo "$R" | python3 -c "import json,sys;print(json.load(sys.stdin).get('run',''))")
           if [ -n "$RUN" ]; then
-            for i in $(seq 1 120); do S=$(curl -s "$U/api/suivi?run=$RUN"); echo "$(date +%T) $S" | cut -c1-400; echo "$S" | grep -qE '"statut":"(SUCCEEDED|FAILED|ABORTED|TIMED-OUT)"|erreur' && break; sleep 5; done
+            for i in $(seq 1 120); do S=$(curl -s "$U/api/suivi?run=$RUN&debug=1"); echo "$(date +%T) $S" | cut -c1-1500; echo "$S" | grep -qE '"statut":"(SUCCEEDED|FAILED|ABORTED|TIMED-OUT)"|erreur' && break; sleep 5; done
             curl -s -o /tmp/v.mp4 -D /tmp/h.txt -w "== fichier HTTP %{http_code} %{size_download} octets en %{time_total}s\n" "$U/api/fichier?run=$RUN"
             grep -iE "content-(type|disposition|length)" /tmp/h.txt; file /tmp/v.mp4
             sudo apt-get -qq install -y ffmpeg >/dev/null 2>&1; ffprobe -v error -show_entries format=duration:stream=codec_type,codec_name,width,height -of compact /tmp/v.mp4
