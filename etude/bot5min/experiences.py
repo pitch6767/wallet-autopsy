@@ -6,3 +6,4 @@ exec(open("etude/bot5min/bubble_naissance.py", encoding="utf-8").read())
 # relance 2026-11-07T01:22:19 : étapes affichées et journal poussé toutes les 5 min
 # relance 2026-11-07T01:32:59 : identité git donnée au départ (sauvegardes intermédiaires refusées avant)
 # relance 2026-11-07T01:49:30 : 300 premières transactions par coin (1200 = 13 min par coin)
+# relance 2026-11-07T02:01:38 : nœuds centraux retirés (faux groupes de 754 portefeuilles / 79 %), résultats repris à zéro

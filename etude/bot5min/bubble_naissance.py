@@ -11,6 +11,7 @@ Résultat pour 20 $ par coin. Sauvegarde poussée sur GitHub après chaque évé
 07.11 (2e) : 1 h sans aucun coin enregistré → journal poussé toutes les 5 min et étapes affichées, pour voir où ça bloque.
 07.11 (3e) : VRAIE cause : le workflow ne donne l'identité git qu'à la fin → aucune sauvegarde intermédiaire ne passait. Corrigé ici.
 07.11 (4e) : lire 1200 transactions prenait plus de 13 min par coin (limites des serveurs publics) → 300 premières transactions (les groupes achètent en premier) et 20 plus gros portefeuilles.
+07.11 (5e) : nœuds centraux retirés (plus de 15 liens ou plus de 30 % des jetons) — ils fabriquaient des faux groupes.
 """
 import json, time, urllib.request, collections, datetime as dt, random, threading, os, subprocess
 from concurrent.futures import ThreadPoolExecutor
@@ -139,6 +140,13 @@ def preparer(c):
         for a in ws:
             for b in ws:
                 if a != b: liens[a].add(b)
+    # 07.11 (5e) : les premiers résultats donnaient un « groupe » de 754 portefeuilles et un autre à 79 % des jetons → reliés par un nœud central
+    # (piscine d'échange, routeur, distributeur), pas par un vrai groupe. Comme Bubblemaps, on retire ces nœuds : plus de 15 liens, ou plus de 30 % des jetons.
+    centres = {k for k in liens if len(liens[k]) > 15} | {k for k in solde if solde[k] > 0.3 * OFFRE}
+    for k in list(liens):
+        if k in centres: liens[k] = set()
+        else: liens[k] -= centres
+    gros = [k for k in gros if k not in centres]
     def groupe(w):
         vu = {w}; pile = [w]
         while pile:
