@@ -1,4 +1,41 @@
 profils : [('NIULAI4', '0x44832d0d2ec11187c1e77d786feb15f6a50254c6')]
 portefeuille : 0x44832d0d2ec11187c1e77d786feb15f6a50254c6
-pnl HTTP Error 410: Gone
-activité HTTP Error 410: Gone
+positions fermées lues : 12000, gain réalisé total +838342 $, gagnantes 12000
+gain réalisé par jour de fin du marché :
+  2026-10-15 +10674
+  2026-10-16 +10188
+  2026-10-17 +18883
+  2026-10-18 +10580
+  2026-10-19 +14268
+  2026-10-20 +9202
+  2026-10-21 +10407
+  2026-10-22 +7720
+  2026-10-23 +7999
+  2026-10-24 +13638
+  2026-10-25 +8972
+  2026-10-26 +11145
+  2026-10-27 +7790
+  2026-10-28 +12921
+  2026-10-29 +12284
+  2026-10-30 +21734
+  2026-10-31 +28958
+  2026-11-01 +749
+  2026-11-02 +8613
+  2026-11-03 +11064
+  2026-11-04 +9426
+  2026-11-05 +7831
+  2026-11-06 +11609
+  2026-11-07 +11361
+  2026-11-08 +4004
+/home/runner/work/wallet-autopsy/wallet-autopsy/etude/sonde_solana.py:47: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+  print("\nactivités lues :", len(A), "de", dt.datetime.utcfromtimestamp(min(int(a["timestamp"] if isinstance(a["timestamp"], (int,float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z","+00:00")).timestamp()) for a in A)), "à", dt.datetime.utcfromtimestamp(max(int(a["timestamp"] if isinstance(a["timestamp"], (int,float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z","+00:00")).timestamp()) for a in A)))
+
+activités lues : 12000 de 2026-11-05 01:14:48 à 2026-11-08 15:44:18
+Counter({'TRADE': 11401, 'REDEEM': 593, 'MAKER_REBATE': 3, 'TAKER_REBATE': 3})
+marchés : [('BTC 5m', 11401)]
+côtés : Counter({'BUY': 11401})
+prix d'achat : médiane 0.72 ; tranches Counter({'0,70-0,90': 3528, '>=0,90': 2388, '0,40-0,70': 2177, '0,15-0,40': 1708, '0,05-0,15': 1073, '<0,05': 527})
+taille des trades $ : médiane 5.61 moyenne 11.31 max 140.57 ; total 128998
+seconde du cycle à l'achat : Counter({'240-270': 5873, '270-300': 1344, 'après': 18})
+
+sur la période lue : 518 marchés, résultat +1703 $ (marchés encore ouverts comptés à 0), gagnants 273, rewards 0
