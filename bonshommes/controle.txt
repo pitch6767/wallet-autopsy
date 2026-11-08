@@ -1,0 +1,30 @@
+Uploaded 3 of 3 assets
+✨ Success! Uploaded 3 files (0.79 sec)
+
+Total Upload: 63.41 KiB / gzip: 16.45 KiB
+Worker Startup Time: 1 ms
+Your Worker has access to the following bindings:
+Binding                    Resource            
+env.COFFRE (Coffre)        Durable Object      
+env.ATELIER (Atelier)      Durable Object      
+env.ASSETS                 Assets              
+
+The following containers are available:
+- bonshommes-atelier (/home/runner/work/wallet-autopsy/wallet-autopsy/bonshommes/container/Dockerfile)
+
+Uploaded bonshommes (3.25 sec)
+Untagged: bonshommes-atelier:wrangler-ec464959-e187-4fac-a8e5-bdd114f29bcc
+Deleted: sha256:de89b1ff3d9105ce6ecd5b41cf52caa06dc17cddad0b6ae78f663036c6a9c915
+
+Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mA request to the Cloudflare API (/accounts/0ed933adade0cc382cc2334fadefd457/containers/me) failed.[0m
+
+
+🪵  Logs were written to "/home/runner/.config/.wrangler/logs/wrangler-2026-11-08_18-04-00_654.log"
+code sortie: 1
+=== page
+404
+=== etat
+error code: 1042
+
