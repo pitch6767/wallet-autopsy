@@ -2,10 +2,20 @@
 import json, urllib.request, collections, datetime as dt, statistics as st
 def get(u):
     with urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "Mozilla/5.0"}), timeout=60) as r: return json.load(r)
-s = get("https://gamma-api.polymarket.com/public-search?q=niulai4&search_profiles=true")
-P = [p for p in s.get("profiles", []) if (p.get("name") or "").lower() == "niulai4" or (p.get("pseudonym") or "").lower() == "niulai4"] or s.get("profiles", [])
-print("profils :", [(p.get("name"), p.get("proxyWallet")) for p in s.get("profiles", [])][:5])
-W = P[0]["proxyWallet"]; print("portefeuille :", W)
+import re, sys, traceback
+W = None
+try:
+    s = get("https://gamma-api.polymarket.com/public-search?q=niulai4&search_profiles=true")
+    P = [p for p in s.get("profiles", []) if (p.get("name") or "").lower() == "niulai4"] or s.get("profiles", [])
+    print("profils :", [(p.get("name"), p.get("proxyWallet")) for p in s.get("profiles", [])][:5]); W = P[0]["proxyWallet"]
+except Exception as e: print("recherche", repr(e))
+if not W:
+    try:
+        h = urllib.request.urlopen(urllib.request.Request("https://polymarket.com/@niulai4", headers={"user-agent": "Mozilla/5.0"}), timeout=60).read().decode("utf8", "ignore")
+        m = re.findall(r'"proxyWallet":"(0x[0-9a-fA-F]{40})"', h) or re.findall(r'(0x[0-9a-fA-F]{40})', h); print("page :", m[:3]); W = m[0]
+    except Exception as e: print("page", repr(e))
+print("portefeuille :", W)
+if not W: sys.exit(0)
 # courbe de gain par jour
 for iv in ["all"]:
     try:
@@ -23,6 +33,7 @@ while off < 3000:
     except Exception as e: print("activité", e); break
     if not r: break
     A += r; off += 500
+if not A: sys.exit(0)
 print("\nactivités lues :", len(A), "de", dt.datetime.utcfromtimestamp(min(a["timestamp"] for a in A)), "à", dt.datetime.utcfromtimestamp(max(a["timestamp"] for a in A)))
 print(collections.Counter(a["type"] for a in A))
 T = [a for a in A if a["type"] == "TRADE"]
