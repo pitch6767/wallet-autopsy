@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bonshommes</title>
+<meta name="app" content="bonshommes-app">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icone.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bonshommes">
+<style>
+:root{color-scheme:light dark;--fond:#f6f4ef;--carte:#fff;--encre:#1d1c1a;--gris:#6b6862;--trait:#e2ded5;--action:#1f6feb;--ok:#1f7a3a;--err:#c8321e}
+@media (prefers-color-scheme:dark){:root{--fond:#151514;--carte:#211f1d;--encre:#f1eee8;--gris:#a29d94;--trait:#34312d;--action:#4c8dff;--ok:#4cc272;--err:#ff6a52}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--fond);color:var(--encre);font:16px/1.5 -apple-system,system-ui,sans-serif;padding:16px;padding-top:calc(16px + env(safe-area-inset-top))}
+main{max-width:600px;margin:0 auto}
+h1{font-size:26px;margin:8px 0 2px}.sous{color:var(--gris);margin:0 0 18px;font-size:15px}
+.carte{background:var(--carte);border:1px solid var(--trait);border-radius:14px;padding:16px;margin-bottom:16px}
+label{display:block;font-size:14px;color:var(--gris);margin:12px 0 6px}label:first-child{margin-top:0}
+input,select,textarea{appearance:none;-webkit-appearance:none;width:100%;font:inherit;font-size:16px;padding:12px;border:1px solid var(--trait);border-radius:10px;background-color:var(--fond);color:var(--encre)}
+textarea{min-height:96px;resize:vertical}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23888' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.deux{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,.bouton{display:block;width:100%;margin-top:14px;font-size:17px;font-weight:600;padding:14px;border:0;border-radius:10px;background:var(--action);color:#fff;text-align:center;text-decoration:none;cursor:pointer}
+button:disabled{opacity:.5}.second{background:transparent;color:var(--encre);border:1px solid var(--trait)}
+.msg{margin-top:12px;font-size:15px}.err{color:var(--err)}.ok{color:var(--ok)}
+.barre{height:8px;background:var(--trait);border-radius:4px;overflow:hidden;margin-top:10px}.barre>div{height:100%;background:var(--action);width:0;transition:width .5s}
+.ligne{padding:12px 0;border-top:1px solid var(--trait)}.ligne:first-child{border-top:0;padding-top:0}
+.ligne b{display:block}.ligne a{color:var(--action);font-weight:600;margin-right:14px}
+.petit{font-size:13px;color:var(--gris)}
+video{width:100%;border-radius:10px;margin-top:12px;background:#000}
+</style>
+</head>
+<body>
+<main>
+  <h1>Bonshommes</h1>
+  <p class="sous">Un sujet → une vidéo de bonshommes bâtons, avec voix et sous-titres. <span id="ver" class="petit"></span></p>
+
+  <section class="carte" id="boxCle" hidden>
+    <label for="cle" id="labelCle">Clé Gemini (une seule fois)</label>
+    <input id="cle" type="password" autocomplete="off" placeholder="AIza…">
+    <div id="boxAncienne" hidden><label for="ancienne">Ancienne clé (pour la remplacer)</label><input id="ancienne" type="password" autocomplete="off"></div>
+    <button id="btnCle">Enregistrer la clé</button>
+    <div id="msgCle" class="msg"></div>
+    <p class="petit">La clé se crée sur https://aistudio.google.com/apikey (facturation activée : Google ne dessine pas gratuitement).</p>
+  </section>
+
+  <section class="carte" id="boxNouv" hidden>
+    <label for="sujet">Sujet, idée ou texte</label>
+    <textarea id="sujet" placeholder="Ex. : Pourquoi on remet toujours tout à demain"></textarea>
+    <div class="deux">
+      <div><label for="style">Style</label>
+        <select id="style"><option value="minimal">Dessin minimal</option><option value="couleur">Dessin en couleur</option><option value="bonnet">Bonnet rouge</option><option value="prehistoire">Préhistoire</option></select></div>
+      <div><label for="duree">Durée</label>
+        <select id="duree"><option value="30">30 secondes</option><option value="60" selected>1 minute</option><option value="90">1 min 30</option><option value="120">2 minutes</option></select></div>
+      <div><label for="format">Format</label>
+        <select id="format"><option value="16:9">YouTube (large)</option><option value="9:16">Short / TikTok</option></select></div>
+      <div><label for="voix">Voix</label>
+        <select id="voix"><option value="Charon">Charon (homme, posée)</option><option value="Fenrir">Fenrir (homme, énergique)</option><option value="Orus">Orus (homme, grave)</option><option value="Kore">Kore (femme, claire)</option><option value="Aoede">Aoede (femme, douce)</option><option value="Leda">Leda (femme, jeune)</option></select></div>
+    </div>
+    <p class="petit" id="cout">Coût Gemini estimé : ~0,55 $ pour 1 minute (≈ 0,04 $ par image).</p>
+    <button id="btnGo">Fabriquer la vidéo</button>
+    <div id="msg" class="msg"></div>
+    <div class="barre" id="barre" hidden><div></div></div>
+  </section>
+
+  <section class="carte" id="boxListe" hidden>
+    <label>Mes vidéos</label>
+    <div id="liste"></div>
+  </section>
+  <p class="petit"><a href="#" id="lienChanger" style="color:var(--gris)" hidden>Changer la clé Gemini</a></p>
+</main>
+<script>
+const $ = (i) => document.getElementById(i);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const api = async (p, b) => {
+  try {
+    const ctl = new AbortController(), m = setTimeout(() => ctl.abort(), 30000);
+    const r = await fetch(p, { ...(b !== undefined ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) } : {}), signal: ctl.signal });
+    clearTimeout(m); return await r.json().catch(() => ({ erreur: "Réponse illisible du serveur (code " + r.status + ")." }));
+  } catch { return { erreur: "Pas de réponse du serveur. Vérifie ta connexion.", reseau: true }; }
+};
+const STYLES = { minimal: "Dessin minimal", couleur: "Dessin en couleur", bonnet: "Bonnet rouge", prehistoire: "Préhistoire" };
+let suivi = null;
+
+function rendre(l) {
+  $("boxListe").hidden = !l.length;
+  $("liste").innerHTML = l.map((x) => {
+    const d = new Date(x.t).toLocaleString("fr-CH", { timeZone: "Europe/Paris", dateStyle: "short", timeStyle: "short" });
+    const info = `${d} · ${STYLES[x.style] || "Dessin minimal"} · ${x.format === "9:16" ? "Short" : "YouTube"}${x.secondes ? " · " + x.secondes + " s" : ""}${x.cout ? " · " + x.cout.toFixed(2) + " $" : ""}`;
+    let corps = "";
+    if (x.statut === "prête") corps = `<div style="margin-top:6px"><a href="/api/fichier?id=${x.id}&voir=1" target="_blank">Regarder</a><a href="/api/fichier?id=${x.id}">Télécharger</a><a href="#" data-sup="${x.id}" style="color:var(--gris);font-weight:400">Supprimer</a></div>`;
+    else if (x.statut === "échec") corps = `<div class="err petit">${esc(x.message || "Échec")}</div><a href="#" data-sup="${x.id}" style="color:var(--gris);font-weight:400">Retirer</a>`;
+    else corps = `<div class="petit">${esc(x.etape || "En cours")} — ${x.pct || 0} %</div>`;
+    return `<div class="ligne"><b>${esc(x.titre || x.sujet)}</b><span class="petit">${info}</span>${corps}</div>`;
+  }).join("");
+  document.querySelectorAll("[data-sup]").forEach((a) => a.onclick = async (ev) => { ev.preventDefault(); if (!confirm("Supprimer cette vidéo ?")) return; await fetch("/api/supprimer?id=" + a.dataset.sup, { method: "POST" }); etat(); });
+}
+
+async function etat() {
+  const e = await api("/api/etat");
+  if (e.reseau) return;
+  $("ver").textContent = "v" + (e.version || "?");
+  try { if (e.version && sessionStorage.getItem("v") !== e.version) { const avant = sessionStorage.getItem("v"); sessionStorage.setItem("v", e.version); if (avant) location.reload(); } } catch {}
+  $("boxCle").hidden = !!e.cle; $("boxNouv").hidden = !e.cle; $("lienChanger").hidden = !e.cle;
+  const l = e.liste || []; rendre(l);
+  const enCours = l.find((x) => x.statut === "en cours");
+  if (enCours && !suivi) suivre(enCours.id);
+}
+
+function suivre(id) {
+  suivi = id; $("btnGo").disabled = true; $("barre").hidden = false;
+  const tour = async () => {
+    const s = await api("/api/suivi?id=" + id);
+    if (s.reseau) { $("msg").className = "msg"; $("msg").textContent = "Connexion perdue, nouvel essai…"; setTimeout(tour, 6000); return; }
+    $("barre").firstElementChild.style.width = (s.pct || 0) + "%";
+    if (s.statut === "prête") { fini(); $("msg").className = "msg ok"; $("msg").innerHTML = `Prête : ${esc(s.titre || "ta vidéo")}<video src="/api/fichier?id=${id}&voir=1" controls playsinline></video><a class="bouton" href="/api/fichier?id=${id}">Télécharger le MP4</a><p class="petit">Pour la mettre dans Photos : touche « Regarder » dans la liste, puis le bouton Partager, puis « Enregistrer la vidéo ».</p>`; etat(); return; }
+    if (s.statut === "échec" || (s.erreur && !s.statut)) { fini(); $("msg").className = "msg err"; $("msg").textContent = s.message || s.erreur; etat(); return; }
+    $("msg").className = "msg"; $("msg").textContent = `${s.etape || "En cours"}… ${s.pct || 0} % (2 à 5 minutes ; tu peux fermer l'app, elle continue)`;
+    setTimeout(tour, 5000);
+  };
+  const fini = () => { suivi = null; $("btnGo").disabled = false; $("barre").hidden = true; };
+  tour();
+}
+
+$("btnGo").onclick = async () => {
+  $("msg").className = "msg"; $("msg").textContent = "Envoi à l'atelier…"; $("btnGo").disabled = true;
+  const j = await api("/api/lancer", { sujet: $("sujet").value, style: $("style").value, duree: $("duree").value, format: $("format").value, voix: $("voix").value });
+  if (!j.id) { $("btnGo").disabled = false; $("msg").className = "msg err"; $("msg").textContent = j.erreur || "Erreur"; return; }
+  etat(); suivre(j.id);
+};
+$("duree").onchange = () => { const n = Math.round($("duree").value / 5) + 1; $("cout").textContent = `Coût Gemini estimé : ~${(n * 0.04 + 0.05).toFixed(2)} $ (≈ 0,04 $ par image, ${n} images).`; };
+$("btnCle").onclick = async () => {
+  $("btnCle").disabled = true; $("msgCle").className = "msg"; $("msgCle").textContent = "Vérification de la clé…";
+  const j = await api("/api/cle", { cle: $("cle").value, ancienne: $("ancienne").value });
+  $("btnCle").disabled = false;
+  if (j.ok) { $("cle").value = ""; $("ancienne").value = ""; $("boxAncienne").hidden = true; $("msgCle").textContent = ""; etat(); }
+  else { $("msgCle").className = "msg err"; $("msgCle").textContent = j.erreur || "Erreur"; }
+};
+$("lienChanger").onclick = (ev) => { ev.preventDefault(); $("boxCle").hidden = false; $("boxAncienne").hidden = false; $("labelCle").textContent = "Nouvelle clé Gemini"; };
+$("duree").onchange();
+etat();
+</script>
+</body>
+</html>
