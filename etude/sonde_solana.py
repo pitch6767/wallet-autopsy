@@ -44,29 +44,46 @@ if F:
         jours[str(e)[:10]] += p
     print("gain réalisé par jour de fin du marché :"); [print(" ", j, f"{v:+.0f}") for j, v in sorted(jours.items())[-25:]]
 if not A: sys.exit(0)
-print("\nactivités lues :", len(A), "de", dt.datetime.utcfromtimestamp(min(int(a["timestamp"] if isinstance(a["timestamp"], (int,float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z","+00:00")).timestamp()) for a in A)), "à", dt.datetime.utcfromtimestamp(max(int(a["timestamp"] if isinstance(a["timestamp"], (int,float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z","+00:00")).timestamp()) for a in A)))
-print(collections.Counter(a["type"] for a in A))
-T = [a for a in A if a["type"] == "TRADE"]
-print("marchés :", collections.Counter(("BTC" if "Bitcoin" in a.get("title", "") else a.get("title", "")[:30]) + (" 5m" if "-5m-" in a.get("slug", "") or ":" in a.get("title", "") else "") for a in T).most_common(6))
-print("côtés :", collections.Counter(a["side"] for a in T))
-pr = [a["price"] for a in T if a["side"] == "BUY"]
-print("prix d'achat : médiane", st.median(pr), "; tranches", collections.Counter("<0,05" if p < .05 else "0,05-0,15" if p < .15 else "0,15-0,40" if p < .4 else "0,40-0,70" if p < .7 else "0,70-0,90" if p < .9 else ">=0,90" for p in pr))
-us = [a["usdcSize"] for a in T]
-print("taille des trades $ : médiane", round(st.median(us), 2), "moyenne", round(st.mean(us), 2), "max", round(max(us), 2), "; total", round(sum(us)))
-# moment dans le cycle (slug btc-updown-5m-<debut>)
-sec = []
+# 08.11.2026 (Pitch : « je veux un truc comme lui ») : rétro-ingénierie de ses achats — à chaque achat : secondes restantes, écart du BTC
+# depuis le début du cycle (Binance 1 s), côté acheté (celui qui mène ?), prix payé ; résultat par réglement approximé Binance (fin vs début).
+T = [a for a in A if a["type"] == "TRADE" and a.get("slug", "").startswith("btc-updown-5m-")]
+ts = lambda a: int(a["timestamp"] if isinstance(a["timestamp"], (int, float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z", "+00:00")).timestamp())
+t0, t1 = min(ts(a) for a in T) - 400, max(ts(a) for a in T) + 400
+PX = {}; deb = t0 * 1000
+while deb < t1 * 1000:
+    try: k = get(f"https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1s&limit=1000&startTime={deb}")
+    except Exception as e: print("binance", repr(e)); break
+    if not k: break
+    for x in k: PX[x[0] // 1000] = (float(x[1]), float(x[4]))
+    deb = k[-1][0] + 1000
+print("secondes BTC lues :", len(PX))
+def px(t, ouv=False):
+    for d in range(0, 5):
+        if t - d in PX: return PX[t - d][0 if ouv else 1]
+    return None
+R = []
 for a in T:
-    sl = a.get("slug", "")
-    if sl.startswith("btc-updown-5m-"):
-        try: sec.append(int(a["timestamp"] if isinstance(a["timestamp"], (int,float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z","+00:00")).timestamp()) - int(sl.rsplit("-", 1)[1]))
-        except: pass
-if sec: print("seconde du cycle à l'achat :", collections.Counter("0-60" if x < 60 else "60-180" if x < 180 else "180-240" if x < 240 else "240-270" if x < 270 else "270-300" if x < 300 else "après" for x in sec))
-# résultat par marché sur la période lue (achats - ventes + rachats)
-M = collections.defaultdict(float)
-for a in A:
-    k = a.get("conditionId")
-    if a["type"] == "TRADE": M[k] += (-a["usdcSize"] if a["side"] == "BUY" else a["usdcSize"])
-    elif a["type"] in ("REDEEM", "MERGE"): M[k] += a["usdcSize"]
-    elif a["type"] == "REWARD": M["reward"] += a["usdcSize"]
-v = [x for k, x in M.items() if k != "reward"]
-print(f"\nsur la période lue : {len(v)} marchés, résultat {sum(v):+.0f} $ (marchés encore ouverts comptés à 0), gagnants {sum(x>0 for x in v)}, rewards {M['reward']:.0f}")
+    debut = int(a["slug"].rsplit("-", 1)[1]); t = ts(a)
+    p0, pt, pf = px(debut, True), px(t), px(debut + 299)
+    if not (p0 and pt and pf): continue
+    up = (a.get("outcome") or "").lower().startswith("up") or str(a.get("outcomeIndex", a.get("outcome_index"))) == "0"
+    d = 1e4 * (pt - p0) / p0; gagne = (pf >= p0) == up
+    R.append(dict(sec=300 - (t - debut), d=d if up else -d, prix=a["price"], usd=a["usdcSize"], gagne=gagne, pnl=(a["usdcSize"] / a["price"] if gagne else 0) - a["usdcSize"]))
+print("achats analysés :", len(R), "; côté qui mène au moment de l'achat :", f"{100*sum(r['d']>0 for r in R)/len(R):.0f} %")
+print("résultat approximé (règlement Binance) :", f"{sum(r['pnl'] for r in R):+.0f} $ sur {sum(r['usd'] for r in R):.0f} $ misés, gagnés {100*sum(r['gagne'] for r in R)/len(R):.0f} %")
+def tab(nom, f, cles):
+    print(f"\n=== par {nom} : achats / gagnés % / prix médian / gain par 1 $ ===")
+    for c_ in cles:
+        X = [r for r in R if f(r) == c_]
+        if X: print(c_, "|", len(X), f"| {100*sum(r['gagne'] for r in X)/len(X):.0f} %", f"| {st.median(r['prix'] for r in X):.2f}", f"| {sum(r['pnl'] for r in X)/sum(r['usd'] for r in X):+.3f}")
+tab("secondes restantes", lambda r: "≤10" if r["sec"] <= 10 else "11-30" if r["sec"] <= 30 else "31-45" if r["sec"] <= 45 else "46-60" if r["sec"] <= 60 else ">60", ["≤10", "11-30", "31-45", "46-60", ">60"])
+tab("avance du côté acheté (pb)", lambda r: "contre" if r["d"] < 0 else "0-2" if r["d"] < 2 else "2-5" if r["d"] < 5 else "5-10" if r["d"] < 10 else "10-20" if r["d"] < 20 else ">20", ["contre", "0-2", "2-5", "5-10", "10-20", ">20"])
+tab("prix payé", lambda r: "<0,15" if r["prix"] < .15 else "0,15-0,50" if r["prix"] < .5 else "0,50-0,80" if r["prix"] < .8 else "0,80-0,90" if r["prix"] < .9 else "0,90-0,95" if r["prix"] < .95 else ">=0,95", ["<0,15", "0,15-0,50", "0,50-0,80", "0,80-0,90", "0,90-0,95", ">=0,95"])
+print("\n=== prix médian payé selon avance (pb) × secondes restantes (achats) ===")
+for dd in ["contre", "0-2", "2-5", "5-10", "10-20", ">20"]:
+    lig = []
+    for ss in ["≤10", "11-30", "31-45", "46-60"]:
+        X = [r for r in R if ("contre" if r["d"] < 0 else "0-2" if r["d"] < 2 else "2-5" if r["d"] < 5 else "5-10" if r["d"] < 10 else "10-20" if r["d"] < 20 else ">20") == dd and ("≤10" if r["sec"] <= 10 else "11-30" if r["sec"] <= 30 else "31-45" if r["sec"] <= 45 else "46-60" if r["sec"] <= 60 else ">60") == ss]
+        lig.append(f"{len(X)}x {st.median(r['prix'] for r in X):.2f} {100*sum(r['gagne'] for r in X)/len(X):.0f}% {sum(r['pnl'] for r in X)/sum(r['usd'] for r in X):+.2f}" if X else "—")
+    print(dd, "|", " | ".join(lig))
+sys.exit(0)
