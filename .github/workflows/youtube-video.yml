@@ -1,8 +1,8 @@
-name: YouTube - une video (sous-titres)
+name: YouTube - une video (sous-titres + description)
 on:
   workflow_dispatch:
     inputs:
-      url: { description: "URL de la video", required: true }
+      url: { description: "url", required: true }
 permissions:
   contents: write
 jobs:
@@ -10,21 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - env:
-          URL: ${{ github.event.inputs.url }}
-        run: |
+      - run: |
           pip install -q yt-dlp
-          mkdir -p youtube /tmp/s
-          ID=$(yt-dlp --get-id "$URL" 2>/tmp/err.txt || echo inconnu)
-          OUT=youtube/$ID.txt
-          yt-dlp --skip-download --print "TITRE: %(title)s" --print "CHAINE: %(channel)s" --print "DUREE: %(duration_string)s" --print "DATE: %(upload_date)s" "$URL" > $OUT 2>>/tmp/err.txt || true
-          yt-dlp --skip-download --write-auto-subs --write-subs --sub-langs "fr.*,en.*" --sub-format vtt -o "/tmp/s/%(id)s.%(ext)s" "$URL" >>/tmp/err.txt 2>&1 || true
-          F=$(ls /tmp/s/*.vtt 2>/dev/null | grep -E '\.fr' | head -1); [ -z "$F" ] && F=$(ls /tmp/s/*.vtt 2>/dev/null | grep -E '\.en' | head -1)
-          echo "SOUS-TITRES: ${F:-aucun}" >> $OUT
-          echo "----" >> $OUT
-          if [ -n "$F" ]; then
-            grep -v -E '^(WEBVTT|Kind:|Language:|NOTE)' "$F" | grep -v -- '-->' | sed -e 's/<[^>]*>//g' -e 's/&nbsp;/ /g' | awk 'NF && $0!=prev {print; prev=$0}' | awk '!seen[$0]++' >> $OUT
-          fi
-          echo "---- ERREURS" >> $OUT; tail -20 /tmp/err.txt >> $OUT
+          URL="${{ github.event.inputs.url }}"
+          ID=$(yt-dlp --get-id "$URL" 2>/dev/null || echo inconnu)
+          mkdir -p youtube; F=youtube/$ID.txt
+          yt-dlp --skip-download --print "TITRE: %(title)s" --print "CHAINE: %(channel)s" --print "DUREE: %(duration)s s" --print "VUES: %(view_count)s" --print "DESCRIPTION: %(description)s" "$URL" > $F 2>&1 || true
+          yt-dlp --skip-download --write-auto-subs --write-subs --sub-langs "fr.*,en.*" --sub-format vtt -o "/tmp/s.%(ext)s" "$URL" >> /tmp/err.txt 2>&1 || true
+          echo "--- SOUS-TITRES ---" >> $F
+          for v in /tmp/s.*.vtt; do [ -f "$v" ] && { echo "[$v]"; grep -v -E '^(WEBVTT|Kind:|Language:|[0-9:.]+ -->|\s*$)' "$v" | sed 's/<[^>]*>//g' | awk '!seen[$0]++'; } >> $F; done
+          tail -5 /tmp/err.txt >> $F
           git config user.name youtube; git config user.email bot@users.noreply.github.com
           git add youtube && git commit -qm "youtube $ID [skip ci]" && for k in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
