@@ -32,7 +32,8 @@ def feat(debut):
     f = {}
     f["agit 1 h (actuel)"] = 1e4 * st.pstdev([math.log(K[j][4] / K[j - 5][4]) for j in range(i - 55, i + 1, 5)])
     f["tendance 1 h"] = abs(1e4 * math.log(K[i][4] / K[i - 60][4]))
-    m30 = r1(i, 30); f["efficacité 30 min"] = abs(sum(m30)) / max(1e-12, sum(abs(x) for x in m30))
+    for w in (2, 3, 5, 10, 15, 20, 30, 45):   # 08.11 20 h 47 (Pitch : « efficacité sur d'autres périodes, de 1 à 45 min ? »)
+        m = r1(i, w); f[f"efficacité {w:02d} min"] = abs(sum(m)) / max(1e-12, sum(abs(x) for x in m))
     f["vol 15 min / vol 2 h"] = st.pstdev(r1(i, 15)) / max(1e-12, st.pstdev(r1(i, 120)))
     f["vol 15 min"] = 1e4 * st.pstdev(r1(i, 15))
     f["volume 15 min / 6 h"] = sum(K[j][5] for j in range(i - 14, i + 1)) / 15 / max(1e-9, sum(K[j][5] for j in range(i - 359, i + 1)) / 360)
@@ -63,10 +64,10 @@ for rap, lent in [(2171, 2172), (12112, 2172)]:
     print(f"\n######## rapide = {rap}, lente = {lent}  — gain total | creux | trades | 1re moitié | 2e moitié")
     for nom, ch in [(f"toujours {rap}", lambda d: True), (f"toujours {lent}", lambda d: False), ("suivre la gagnante 2 h", suiveur(rap, lent))]:
         g, cr, n, a, b = evalue(rap, lent, ch); print(f"{nom:34s} | {g:+7.0f} | -{cr:5.0f} | {n:4d} | {a:+7.0f} | {b:+7.0f}")
-    for k in noms:
+    for k in [x for x in noms if x.startswith("efficacité") or x.startswith("agit")]:
         vals = sorted(f[k] for f in F.values() if f and k in f)
         if not vals: continue
-        seuils = sorted({vals[int(len(vals) * q)] for q in (0.3, 0.5, 0.7)}) if k != "agenda (semaine 14-22 h)" else [0.5]
+        seuils = sorted({vals[int(len(vals) * q)] for q in (0.2, 0.35, 0.5, 0.65, 0.8)}) if k != "agenda (semaine 14-22 h)" else [0.5]
         if k == "agit 1 h (actuel)": seuils = sorted(set(seuils + [5.0]))
         if k == "tendance 1 h": seuils = sorted(set(seuils + [13.8]))
         for s_ in seuils:
