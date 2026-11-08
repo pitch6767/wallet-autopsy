@@ -22,10 +22,12 @@ jobs:
       - run: |
           pip install -q faster-whisper
           python3 - "${{ github.event.inputs.fichier }}" "${{ github.event.inputs.modele }}" <<'P'
-          import sys
+          import sys, subprocess, numpy as np
           from faster_whisper import WhisperModel
           f, m = sys.argv[1], sys.argv[2]
-          seg, info = WhisperModel(m, compute_type="int8").transcribe(f, vad_filter=True)
+          brut = subprocess.run(["ffmpeg", "-v", "error", "-i", f, "-f", "f32le", "-ac", "1", "-ar", "16000", "-"], capture_output=True, check=True).stdout
+          audio = np.frombuffer(brut, dtype=np.float32)
+          seg, info = WhisperModel(m, compute_type="int8").transcribe(audio, vad_filter=True)
           L = [f"[{int(s.start)//60:02d}:{int(s.start)%60:02d}] {s.text.strip()}" for s in seg]
           open(f.rsplit(".", 1)[0] + ".txt", "w").write(f"langue: {info.language} ({info.language_probability:.2f})\n" + "\n".join(L) + "\n")
           P
