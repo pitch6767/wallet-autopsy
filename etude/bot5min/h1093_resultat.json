@@ -1,0 +1,670 @@
+{
+ "T-60 (principal)": {
+  "avant_fin_s": 60,
+  "seuil_cvd_usd": 241144,
+  "marches_mesures": 3775,
+  "nulB_part_hasard_aussi_bon": {
+   "apprentissage": 0.78,
+   "P1 13-19.10": 0.46,
+   "P2 20-26.10": 0.442,
+   "P3 27.10-02.11": 0.382,
+   "P4 03-08.11": 0.668
+  },
+  "resultats": {
+   "H : divergence, côté du flux": {
+    "apprentissage": {
+     "n": 66,
+     "net": -512.8,
+     "par_jour": -96.7,
+     "creux": -513.7,
+     "mise_max": 50.0,
+     "ic95": [
+      -1026.0,
+      -55.9
+     ],
+     "gagnes": 45,
+     "par_dollar": -25.5
+    },
+    "P1 13-19.10": {
+     "n": 83,
+     "net": -140.6,
+     "par_jour": -20.2,
+     "creux": -703.8,
+     "mise_max": 50.0,
+     "ic95": [
+      -971.8,
+      735.7
+     ],
+     "gagnes": 51,
+     "par_dollar": -4.8
+    },
+    "P2 20-26.10": {
+     "n": 71,
+     "net": 251.9,
+     "par_jour": 36.4,
+     "creux": -595.3,
+     "mise_max": 50.0,
+     "ic95": [
+      -776.9,
+      1921.4
+     ],
+     "gagnes": 46,
+     "par_dollar": 10.3
+    },
+    "P3 27.10-02.11": {
+     "n": 106,
+     "net": 1661.6,
+     "par_jour": 243.4,
+     "creux": -634.6,
+     "mise_max": 50.0,
+     "ic95": [
+      -1069.4,
+      6053.5
+     ],
+     "gagnes": 50,
+     "par_dollar": 40.0
+    },
+    "P4 03-08.11": {
+     "n": 89,
+     "net": -555.6,
+     "par_jour": -115.0,
+     "creux": -1080.3,
+     "mise_max": 50.0,
+     "ic95": [
+      -1669.9,
+      1022.3
+     ],
+     "gagnes": 43,
+     "par_dollar": -17.0
+    },
+    "jugement 13.10-08.11": {
+     "n": 349,
+     "net": 1217.2,
+     "par_jour": 46.8,
+     "creux": -1253.3,
+     "mise_max": 50.0,
+     "ic95": [
+      -2664.6,
+      6549.7
+     ],
+     "gagnes": 48,
+     "par_dollar": 9.5
+    }
+   },
+   "nul A : divergence, côté du prix": {
+    "apprentissage": {
+     "n": 64,
+     "net": 39.3,
+     "par_jour": 7.4,
+     "creux": -268.3,
+     "mise_max": 50.0,
+     "ic95": [
+      -575.6,
+      597.2
+     ],
+     "gagnes": 48,
+     "par_dollar": 1.8
+    },
+    "P1 13-19.10": {
+     "n": 81,
+     "net": -98.5,
+     "par_jour": -14.1,
+     "creux": -760.2,
+     "mise_max": 50.0,
+     "ic95": [
+      -1347.8,
+      1621.5
+     ],
+     "gagnes": 37,
+     "par_dollar": -3.7
+    },
+    "P2 20-26.10": {
+     "n": 72,
+     "net": 246.1,
+     "par_jour": 35.6,
+     "creux": -414.3,
+     "mise_max": 50.0,
+     "ic95": [
+      -579.2,
+      1088.1
+     ],
+     "gagnes": 50,
+     "par_dollar": 9.7
+    },
+    "P3 27.10-02.11": {
+     "n": 107,
+     "net": 71.6,
+     "par_jour": 10.5,
+     "creux": -540.9,
+     "mise_max": 50.0,
+     "ic95": [
+      -867.0,
+      1387.7
+     ],
+     "gagnes": 44,
+     "par_dollar": 1.8
+    },
+    "P4 03-08.11": {
+     "n": 86,
+     "net": -196.9,
+     "par_jour": -40.7,
+     "creux": -611.8,
+     "mise_max": 50.0,
+     "ic95": [
+      -1067.0,
+      837.5
+     ],
+     "gagnes": 51,
+     "par_dollar": -6.7
+    },
+    "jugement 13.10-08.11": {
+     "n": 346,
+     "net": 22.3,
+     "par_jour": 0.9,
+     "creux": -1018.0,
+     "mise_max": 50.0,
+     "ic95": [
+      -2156.9,
+      2383.7
+     ],
+     "gagnes": 45,
+     "par_dollar": 0.2
+    }
+   },
+   "nul C : flux fort ET prix d'accord, côté du flux": {
+    "apprentissage": {
+     "n": 204,
+     "net": -123.8,
+     "par_jour": -22.5,
+     "creux": -987.0,
+     "mise_max": 50.0,
+     "ic95": [
+      -1193.0,
+      1062.4
+     ],
+     "gagnes": 62,
+     "par_dollar": -1.7
+    },
+    "P1 13-19.10": {
+     "n": 221,
+     "net": -234.0,
+     "par_jour": -33.6,
+     "creux": -900.1,
+     "mise_max": 50.0,
+     "ic95": [
+      -1510.8,
+      1082.0
+     ],
+     "gagnes": 58,
+     "par_dollar": -2.8
+    },
+    "P2 20-26.10": {
+     "n": 219,
+     "net": -1295.6,
+     "par_jour": -189.0,
+     "creux": -1416.0,
+     "mise_max": 50.0,
+     "ic95": [
+      -2403.2,
+      -195.5
+     ],
+     "gagnes": 57,
+     "par_dollar": -15.7
+    },
+    "P3 27.10-02.11": {
+     "n": 234,
+     "net": -259.3,
+     "par_jour": -37.4,
+     "creux": -853.3,
+     "mise_max": 50.0,
+     "ic95": [
+      -1335.7,
+      1154.7
+     ],
+     "gagnes": 58,
+     "par_dollar": -2.9
+    },
+    "P4 03-08.11": {
+     "n": 213,
+     "net": -961.1,
+     "par_jour": -172.2,
+     "creux": -1003.2,
+     "mise_max": 50.0,
+     "ic95": [
+      -2497.0,
+      889.5
+     ],
+     "gagnes": 56,
+     "par_dollar": -12.0
+    },
+    "jugement 13.10-08.11": {
+     "n": 887,
+     "net": -2750.0,
+     "par_jour": -103.4,
+     "creux": -3381.9,
+     "mise_max": 50.0,
+     "ic95": [
+      -5468.6,
+      72.7
+     ],
+     "gagnes": 57,
+     "par_dollar": -8.2
+    }
+   },
+   "tous les marchés, côté du flux fort": {
+    "apprentissage": {
+     "n": 270,
+     "net": -636.6,
+     "par_jour": -115.5,
+     "creux": -1210.0,
+     "mise_max": 50.0,
+     "ic95": [
+      -1599.8,
+      305.4
+     ],
+     "gagnes": 58,
+     "par_dollar": -6.7
+    },
+    "P1 13-19.10": {
+     "n": 304,
+     "net": -374.6,
+     "par_jour": -53.7,
+     "creux": -1091.6,
+     "mise_max": 50.0,
+     "ic95": [
+      -1421.1,
+      616.2
+     ],
+     "gagnes": 56,
+     "par_dollar": -3.3
+    },
+    "P2 20-26.10": {
+     "n": 290,
+     "net": -1043.7,
+     "par_jour": -149.4,
+     "creux": -1846.3,
+     "mise_max": 50.0,
+     "ic95": [
+      -2949.0,
+      963.2
+     ],
+     "gagnes": 54,
+     "par_dollar": -9.7
+    },
+    "P3 27.10-02.11": {
+     "n": 340,
+     "net": 1402.3,
+     "par_jour": 202.4,
+     "creux": -1232.6,
+     "mise_max": 50.0,
+     "ic95": [
+      -2140.5,
+      7180.0
+     ],
+     "gagnes": 55,
+     "par_dollar": 10.7
+    },
+    "P4 03-08.11": {
+     "n": 302,
+     "net": -1516.7,
+     "par_jour": -271.8,
+     "creux": -1827.1,
+     "mise_max": 50.0,
+     "ic95": [
+      -3695.0,
+      661.6
+     ],
+     "gagnes": 52,
+     "par_dollar": -13.5
+    },
+    "jugement 13.10-08.11": {
+     "n": 1236,
+     "net": -1532.8,
+     "par_jour": -57.6,
+     "creux": -3179.1,
+     "mise_max": 50.0,
+     "ic95": [
+      -6821.9,
+      5442.1
+     ],
+     "gagnes": 55,
+     "par_dollar": -3.3
+    }
+   }
+  }
+ },
+ "T-30 (secondaire)": {
+  "avant_fin_s": 30,
+  "seuil_cvd_usd": 254623,
+  "marches_mesures": 1257,
+  "nulB_part_hasard_aussi_bon": {
+   "apprentissage": 0.584,
+   "P1 13-19.10": 0.562,
+   "P2 20-26.10": 0.092,
+   "P3 27.10-02.11": 0.27,
+   "P4 03-08.11": 0.56
+  },
+  "resultats": {
+   "H : divergence, côté du flux": {
+    "apprentissage": {
+     "n": 22,
+     "net": -194.0,
+     "par_jour": -43.8,
+     "creux": -217.5,
+     "mise_max": 50.0,
+     "ic95": [
+      -320.9,
+      -41.6
+     ],
+     "gagnes": 50,
+     "par_dollar": -27.2
+    },
+    "P1 13-19.10": {
+     "n": 21,
+     "net": -262.6,
+     "par_jour": -47.0,
+     "creux": -308.9,
+     "mise_max": 50.0,
+     "ic95": [
+      -457.7,
+      -50.6
+     ],
+     "gagnes": 57,
+     "par_dollar": -27.0
+    },
+    "P2 20-26.10": {
+     "n": 20,
+     "net": -101.3,
+     "par_jour": -16.7,
+     "creux": -179.4,
+     "mise_max": 50.0,
+     "ic95": [
+      -338.0,
+      78.8
+     ],
+     "gagnes": 65,
+     "par_dollar": -12.3
+    },
+    "P3 27.10-02.11": {
+     "n": 34,
+     "net": 486.7,
+     "par_jour": 72.7,
+     "creux": -462.0,
+     "mise_max": 50.0,
+     "ic95": [
+      -622.2,
+      2465.9
+     ],
+     "gagnes": 41,
+     "par_dollar": 44.5
+    },
+    "P4 03-08.11": {
+     "n": 16,
+     "net": -19.6,
+     "par_jour": -4.3,
+     "creux": -104.6,
+     "mise_max": 50.0,
+     "ic95": [
+      -222.6,
+      213.7
+     ],
+     "gagnes": 38,
+     "par_dollar": -4.5
+    },
+    "jugement 13.10-08.11": {
+     "n": 91,
+     "net": 103.2,
+     "par_jour": 4.1,
+     "creux": -870.1,
+     "mise_max": 50.0,
+     "ic95": [
+      -1177.6,
+      2214.5
+     ],
+     "gagnes": 49,
+     "par_dollar": 3.1
+    }
+   },
+   "nul A : divergence, côté du prix": {
+    "apprentissage": {
+     "n": 19,
+     "net": 538.3,
+     "par_jour": 121.5,
+     "creux": -293.3,
+     "mise_max": 50.0,
+     "ic95": [
+      -564.6,
+      2370.9
+     ],
+     "gagnes": 37,
+     "par_dollar": 100.7
+    },
+    "P1 13-19.10": {
+     "n": 29,
+     "net": -159.0,
+     "par_jour": -25.9,
+     "creux": -303.8,
+     "mise_max": 50.0,
+     "ic95": [
+      -575.9,
+      159.4
+     ],
+     "gagnes": 31,
+     "par_dollar": -19.9
+    },
+    "P2 20-26.10": {
+     "n": 21,
+     "net": -348.8,
+     "par_jour": -57.4,
+     "creux": -348.8,
+     "mise_max": 50.0,
+     "ic95": [
+      -538.4,
+      -180.2
+     ],
+     "gagnes": 24,
+     "par_dollar": -69.0
+    },
+    "P3 27.10-02.11": {
+     "n": 32,
+     "net": -505.6,
+     "par_jour": -75.6,
+     "creux": -506.4,
+     "mise_max": 50.0,
+     "ic95": [
+      -1006.4,
+      -83.3
+     ],
+     "gagnes": 53,
+     "par_dollar": -43.0
+    },
+    "P4 03-08.11": {
+     "n": 19,
+     "net": 106.0,
+     "par_jour": 23.5,
+     "creux": -133.9,
+     "mise_max": 50.0,
+     "ic95": [
+      -233.0,
+      623.9
+     ],
+     "gagnes": 42,
+     "par_dollar": 19.2
+    },
+    "jugement 13.10-08.11": {
+     "n": 101,
+     "net": -907.3,
+     "par_jour": -35.6,
+     "creux": -1240.8,
+     "mise_max": 50.0,
+     "ic95": [
+      -1738.2,
+      -61.1
+     ],
+     "gagnes": 39,
+     "par_dollar": -29.9
+    }
+   },
+   "nul C : flux fort ET prix d'accord, côté du flux": {
+    "apprentissage": {
+     "n": 68,
+     "net": -332.6,
+     "par_jour": -61.1,
+     "creux": -362.0,
+     "mise_max": 50.0,
+     "ic95": [
+      -560.6,
+      -76.6
+     ],
+     "gagnes": 56,
+     "par_dollar": -15.2
+    },
+    "P1 13-19.10": {
+     "n": 81,
+     "net": -1153.1,
+     "par_jour": -167.0,
+     "creux": -1153.1,
+     "mise_max": 50.0,
+     "ic95": [
+      -1597.6,
+      -777.1
+     ],
+     "gagnes": 41,
+     "par_dollar": -41.3
+    },
+    "P2 20-26.10": {
+     "n": 64,
+     "net": 641.5,
+     "par_jour": 91.8,
+     "creux": -305.5,
+     "mise_max": 50.0,
+     "ic95": [
+      -414.8,
+      2478.1
+     ],
+     "gagnes": 47,
+     "par_dollar": 31.1
+    },
+    "P3 27.10-02.11": {
+     "n": 63,
+     "net": -649.1,
+     "par_jour": -96.7,
+     "creux": -840.4,
+     "mise_max": 50.0,
+     "ic95": [
+      -1359.4,
+      156.5
+     ],
+     "gagnes": 38,
+     "par_dollar": -31.4
+    },
+    "P4 03-08.11": {
+     "n": 78,
+     "net": 360.2,
+     "par_jour": 66.3,
+     "creux": -353.5,
+     "mise_max": 50.0,
+     "ic95": [
+      -615.2,
+      1920.8
+     ],
+     "gagnes": 53,
+     "par_dollar": 15.4
+    },
+    "jugement 13.10-08.11": {
+     "n": 286,
+     "net": -800.4,
+     "par_jour": -30.2,
+     "creux": -1514.1,
+     "mise_max": 50.0,
+     "ic95": [
+      -3031.9,
+      2045.3
+     ],
+     "gagnes": 45,
+     "par_dollar": -8.6
+    }
+   },
+   "tous les marchés, côté du flux fort": {
+    "apprentissage": {
+     "n": 90,
+     "net": -526.6,
+     "par_jour": -96.7,
+     "creux": -556.0,
+     "mise_max": 50.0,
+     "ic95": [
+      -761.5,
+      -199.4
+     ],
+     "gagnes": 54,
+     "par_dollar": -18.1
+    },
+    "P1 13-19.10": {
+     "n": 102,
+     "net": -1415.7,
+     "par_jour": -205.0,
+     "creux": -1415.7,
+     "mise_max": 50.0,
+     "ic95": [
+      -1813.3,
+      -1019.5
+     ],
+     "gagnes": 44,
+     "par_dollar": -37.6
+    },
+    "P2 20-26.10": {
+     "n": 84,
+     "net": 540.3,
+     "par_jour": 77.3,
+     "creux": -434.2,
+     "mise_max": 50.0,
+     "ic95": [
+      -479.8,
+      2395.2
+     ],
+     "gagnes": 51,
+     "par_dollar": 18.7
+    },
+    "P3 27.10-02.11": {
+     "n": 97,
+     "net": -162.5,
+     "par_jour": -24.1,
+     "creux": -1254.1,
+     "mise_max": 50.0,
+     "ic95": [
+      -1810.9,
+      1986.8
+     ],
+     "gagnes": 39,
+     "par_dollar": -5.1
+    },
+    "P4 03-08.11": {
+     "n": 94,
+     "net": 340.7,
+     "par_jour": 62.7,
+     "creux": -331.9,
+     "mise_max": 50.0,
+     "ic95": [
+      -582.2,
+      1730.7
+     ],
+     "gagnes": 50,
+     "par_dollar": 12.3
+    },
+    "jugement 13.10-08.11": {
+     "n": 377,
+     "net": -697.2,
+     "par_jour": -26.3,
+     "creux": -2102.7,
+     "mise_max": 50.0,
+     "ic95": [
+      -3461.4,
+      2757.6
+     ],
+     "gagnes": 46,
+     "par_dollar": -5.5
+    }
+   }
+  }
+ }
+}
