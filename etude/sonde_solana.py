@@ -16,25 +16,35 @@ if not W:
     except Exception as e: print("page", repr(e))
 print("portefeuille :", W)
 if not W: sys.exit(0)
-# courbe de gain par jour
-for iv in ["all"]:
-    try:
-        c = get(f"https://user-pnl-api.polymarket.com/user-pnl?user_address={W}&interval={iv}&fidelity=1d")
-        print("\n=== gain cumulé par jour ===")
-        prev = None
-        for x in c:
-            d = dt.datetime.utcfromtimestamp(x["t"]).strftime("%m-%d"); v = x["p"]
-            print(d, f"{v:+.0f}", "" if prev is None else f"(jour {v-prev:+.0f})"); prev = v
-    except Exception as e: print("pnl", e)
-# activité récente : trades + rachats
-A = []; off = 0
-while off < 3000:
-    try: r = get(f"https://data-api.polymarket.com/activity?user={W}&limit=500&offset={off}")
-    except Exception as e: print("activité", e); break
-    if not r: break
-    A += r; off += 500
+# API v1 retirée le 02.11.2026 → v2 (réponse {data, pagination}, curseur), champs snake_case
+def v2(chemin, extra=""):
+    out = []; cur = None
+    for _ in range(12):
+        u = f"https://data-api.polymarket.com/v2/{chemin}?user={W}&limit=1000{extra}" + (f"&cursor={urllib.parse.quote(cur)}" if cur else "")
+        try: r = get(u)
+        except Exception as e: print(chemin, repr(e)); break
+        d = r.get("data", r) if isinstance(r, dict) else r
+        out += d; pg = r.get("pagination", {}) if isinstance(r, dict) else {}
+        cur = pg.get("cursor") or pg.get("next_cursor")
+        if not d or not cur or not pg.get("has_more", True): break
+    return out
+import urllib.parse
+def c(o):
+    for k, v in list(o.items()):
+        cc = re.sub(r"_([a-z])", lambda m: m.group(1).upper(), k); o.setdefault(cc, v)
+    o.setdefault("usdcSize", o.get("usdc_size")); o.setdefault("conditionId", o.get("condition_id")); return o
+A = [c(a) for a in v2("activity")]
+F = [c(a) for a in v2("positions", "&status=CLOSED")]
+if F:
+    pn = [float(x.get("realizedPnl") or x.get("realized_pnl") or x.get("totalPnl") or x.get("total_pnl") or 0) for x in F]
+    print(f"positions fermées lues : {len(F)}, gain réalisé total {sum(pn):+.0f} $, gagnantes {sum(p>0 for p in pn)}")
+    jours = collections.defaultdict(float)
+    for x, p in zip(F, pn):
+        e = x.get("endDate") or x.get("end_date") or ""
+        jours[str(e)[:10]] += p
+    print("gain réalisé par jour de fin du marché :"); [print(" ", j, f"{v:+.0f}") for j, v in sorted(jours.items())[-25:]]
 if not A: sys.exit(0)
-print("\nactivités lues :", len(A), "de", dt.datetime.utcfromtimestamp(min(a["timestamp"] for a in A)), "à", dt.datetime.utcfromtimestamp(max(a["timestamp"] for a in A)))
+print("\nactivités lues :", len(A), "de", dt.datetime.utcfromtimestamp(min(int(a["timestamp"] if isinstance(a["timestamp"], (int,float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z","+00:00")).timestamp()) for a in A)), "à", dt.datetime.utcfromtimestamp(max(int(a["timestamp"] if isinstance(a["timestamp"], (int,float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z","+00:00")).timestamp()) for a in A)))
 print(collections.Counter(a["type"] for a in A))
 T = [a for a in A if a["type"] == "TRADE"]
 print("marchés :", collections.Counter(("BTC" if "Bitcoin" in a.get("title", "") else a.get("title", "")[:30]) + (" 5m" if "-5m-" in a.get("slug", "") or ":" in a.get("title", "") else "") for a in T).most_common(6))
@@ -48,7 +58,7 @@ sec = []
 for a in T:
     sl = a.get("slug", "")
     if sl.startswith("btc-updown-5m-"):
-        try: sec.append(a["timestamp"] - int(sl.rsplit("-", 1)[1]))
+        try: sec.append(int(a["timestamp"] if isinstance(a["timestamp"], (int,float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z","+00:00")).timestamp()) - int(sl.rsplit("-", 1)[1]))
         except: pass
 if sec: print("seconde du cycle à l'achat :", collections.Counter("0-60" if x < 60 else "60-180" if x < 180 else "180-240" if x < 240 else "240-270" if x < 270 else "270-300" if x < 300 else "après" for x in sec))
 # résultat par marché sur la période lue (achats - ventes + rachats)
