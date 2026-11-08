@@ -30,6 +30,7 @@ jobs:
             npx -y wrangler@4 deploy > /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log
             sleep 20
             { tail -25 /tmp/d.log
+              echo "=== journal wrangler"; grep -h -i -E "containers/me|code\"|message|unauthor|forbidden|not entitled|plan|permission" ~/.config/.wrangler/logs/*.log | tail -15 | cut -c1-400
               echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" $U/
               echo "=== etat"; curl -sS -m 30 -A "Mozilla/5.0" "$U/api/etat"; echo
             } > controle.txt 2>&1
