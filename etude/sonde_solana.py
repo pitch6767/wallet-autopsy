@@ -47,6 +47,8 @@ if not A: sys.exit(0)
 # 08.11.2026 (Pitch : « je veux un truc comme lui ») : rétro-ingénierie de ses achats — à chaque achat : secondes restantes, écart du BTC
 # depuis le début du cycle (Binance 1 s), côté acheté (celui qui mène ?), prix payé ; résultat par réglement approximé Binance (fin vs début).
 T = [a for a in A if a["type"] == "TRADE" and a.get("slug", "").startswith("btc-updown-5m-")]
+for a in T[:3]: print("EXEMPLE", json.dumps({k: v for k, v in a.items() if not isinstance(v, (dict, list))}, default=str)[:900])
+print("outcomes :", collections.Counter((a.get("outcome"), a.get("outcome_index"), a.get("outcomeIndex")) for a in T).most_common(6))
 ts = lambda a: int(a["timestamp"] if isinstance(a["timestamp"], (int, float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z", "+00:00")).timestamp())
 t0, t1 = min(ts(a) for a in T) - 400, max(ts(a) for a in T) + 400
 PX = {}; deb = t0 * 1000
