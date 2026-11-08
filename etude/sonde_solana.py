@@ -32,46 +32,32 @@ for j in J:
     h1 = [1e4 * (C[i + 11][1][1] - C[i][1][0]) / C[i][1][0] for i in range(len(C) - 11)]
     print(f"{j} | {100*(c-o)/o:+.2f} % | {100*(hi-lo)/o:.2f} % | {100*sum(m>0 for m in mv)/len(mv):.0f} % | {st.mean(abs(m) for m in mv):.1f} | {sum(abs(m)>10 for m in mv)} / {len(mv)} | {max(h1, key=abs):+.0f}")
 
-# résultat par stratégie et par jour
-P = collections.defaultdict(lambda: collections.defaultdict(lambda: [0, 0.0, 0]))
-for t in T: x = P[t["num"]][t["j"]]; x[0] += 1; x[1] += t["pnl"]; x[2] += t["gagne"]
-tot = {n: sum(v[1] for v in d.values()) for n, d in P.items()}
-print("\n=== gain par stratégie et par jour ($, fantôme, réglé Polymarket) — stratégies avec au moins 30 trades, triées par le dernier jour ===")
-print("n° | " + " | ".join(J) + " | total | trades")
-L = [n for n in P if sum(v[0] for v in P[n].values()) >= 30]
-for n in sorted(L, key=lambda n: -P[n][J[-1]][1])[:45]:
-    print(n, "|", " | ".join(f"{P[n][j][1]:+.0f} ({P[n][j][0]})" for j in J), f"| {tot[n]:+.0f} | {sum(v[0] for v in P[n].values())}")
-print("... les 10 pires du dernier jour :")
-for n in sorted(L, key=lambda n: P[n][J[-1]][1])[:10]:
-    print(n, "|", " | ".join(f"{P[n][j][1]:+.0f} ({P[n][j][0]})" for j in J), f"| {tot[n]:+.0f}")
-
-# somme de toutes les stratégies par jour (pour repérer les « grands jours »)
-print("\n=== tous signaux confondus, par jour : trades, gagnés %, gain total, gain moyen par trade ===")
-for j in J:
-    X = [t for t in T if t["j"] == j]
-    print(j, len(X), f"{100*sum(t['gagne'] for t in X)/len(X):.0f} %", f"{sum(t['pnl'] for t in X):+.0f}", f"{st.mean(t['pnl'] for t in X):+.2f}")
-
-# caractéristiques des trades (signaux uniques) : prix, seconde du cycle, sens par rapport au BTC du cycle et de l'heure d'avant
-U = {}
-for t in T: U.setdefault((t["endTs"], t["side"], round(t["prixSignal"], 2)), t)
-def tranche(p): return "<0,15" if p < .15 else "0,15-0,30" if p < .3 else "0,30-0,50" if p < .5 else "0,50-0,70" if p < .7 else ">=0,70"
-def sens1h(t):
-    e = t["endTs"] - 300000; a = cyc.get(e - 3600000 + 300000); b = cyc.get(e)
-    if not a or not b: return "?"
-    m = 1e4 * (b[1] - a[0]) / a[0]; up = t["side"] == "UP"
-    return "plat (<15 pb)" if abs(m) < 15 else ("dans le sens de l'heure" if (m > 0) == up else "contre l'heure")
-for nom, f in [("prix d'entrée", lambda t: tranche(t["prix"])), ("seconde du cycle", lambda t: "0-60" if t["sec"] < 60 else "60-120" if t["sec"] < 120 else "120-180" if t["sec"] < 180 else "180-240" if t["sec"] < 240 else "240-300"),
-               ("sens / BTC heure d'avant", sens1h), ("côté", lambda t: t["side"])]:
-    print(f"\n=== signaux uniques par {nom} : jour → trades / gagnés % / gain moyen par 1 $ misé ===")
-    for g in sorted({f(t) for t in U.values()}):
-        lig = []
-        for j in J:
-            X = [t for t in U.values() if t["j"] == j and f(t) == g]
-            lig.append(f"{len(X)} / {100*sum(t['gagne'] for t in X)/len(X):.0f} % / {sum(t['pnl'] for t in X)/max(1e-9, sum(t['mise'] for t in X)):+.2f}" if X else "—")
-        print(g, "|", " | ".join(lig))
-# dernier jour : heures
-print(f"\n=== {J[-1]} par heure (signaux uniques) : trades, gagnés %, gain par 1 $, mouvement BTC de l'heure (pb) ===")
-for h in range(24):
-    X = [t for t in U.values() if t["j"] == J[-1] and t["h"] == h]
-    C = sorted((e, v) for e, v in cyc.items() if jour(e) == J[-1] and dt.datetime.fromtimestamp(e / 1000, PZ).hour == h)
-    if X: print(h, len(X), f"{100*sum(t['gagne'] for t in X)/len(X):.0f} %", f"{sum(t['pnl'] for t in X)/sum(t['mise'] for t in X):+.2f}", f"{1e4*(C[-1][1][1]-C[0][1][0])/C[0][1][0]:+.0f}" if C else "")
+# 08.11 (Pitch : « tu rajoutes les stratégies qui cartonnent quand ça bouge beaucoup ») : régime connu AVANT le cycle =
+# mouvement moyen |clôture − ouverture| des 12 cycles 5 min précédents (1 h). calme < 4 pb, moyen 4–8, agité >= 8.
+ordre = sorted(cyc)
+def regime(endTs):
+    i = next((k for k, e in enumerate(ordre) if e >= endTs - 300000), None)
+    if i is None or i < 12: return None
+    m = st.mean(abs(1e4 * (cyc[e][1] - cyc[e][0]) / cyc[e][0]) for e in ordre[i - 12:i])
+    return "calme" if m < 4 else "moyen" if m < 8 else "agité"
+cache = {}
+for t in T:
+    if t["endTs"] not in cache: cache[t["endTs"]] = regime(t["endTs"])
+    t["r"] = cache[t["endTs"]]
+print("\ncycles par régime :", collections.Counter(cache.values()))
+R = ["calme", "moyen", "agité"]
+P = collections.defaultdict(lambda: collections.defaultdict(list))
+for t in sorted(T, key=lambda t: t["endTs"]):
+    if t["r"]: P[t["num"]][t["r"]].append(t)
+def stats(L):
+    if not L: return "—"
+    g = sum(t["pnl"] for t in L); cum = pic = creux = 0
+    for t in L: cum += t["pnl"]; pic = max(pic, cum); creux = max(creux, pic - cum)
+    jours = collections.defaultdict(float)
+    for t in L: jours[t["j"]] += t["pnl"]
+    return f"{g:+.0f} $ ({len(L)} tr, {100*sum(t['gagne'] for t in L)/len(L):.0f} %, creux -{creux:.0f}, jours neg {sum(v<0 for v in jours.values())}/{len(jours)}, mise moy {st.mean(t['mise'] for t in L):.0f})"
+for r in R:
+    L = [n for n in P if len(P[n][r]) >= 25]
+    print(f"\n=== régime {r} : 25 meilleures stratégies (au moins 25 trades dans ce régime) — et ce qu'elles font dans les autres régimes ===")
+    for n in sorted(L, key=lambda n: -sum(t["pnl"] for t in P[n][r]))[:25]:
+        print(n, "|", r, stats(P[n][r]), "|| " + " | ".join(f"{x}: {stats(P[n][x])}" for x in R if x != r))
