@@ -9,3 +9,4 @@ for n in [2171, 2172, 12112] + list(range(600001, 600009)):
     print(n, G[n][0], "trades", round(G[n][1]), "$")
 big = sorted([t for t in T if t["num"] == 2171], key=lambda t: -t["pnl"])[:3]
 print("plus gros gains 2171 :", [(t["ouvert"][11:19], t["side"], round(t["prix"], 2), round(t["pnl"])) for t in big])
+# relance 20:08:30
