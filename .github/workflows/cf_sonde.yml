@@ -1,0 +1,24 @@
+name: CF - sonde
+on: { workflow_dispatch: {} }
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - env: { T: "${{ secrets.CLOUDFLARE_API_TOKEN }}", A: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" }
+        run: |
+          echo "@@@DEBUT"
+          for p in "user/tokens/verify" "accounts/$A/tokens/verify" "accounts/$A/tokens/permission_groups" "user/tokens/permission_groups" "accounts/$A/containers/me" "accounts/$A/workers/subscription" "accounts/$A/subscriptions"; do
+            echo "== $p"; curl -s -m 20 -H "Authorization: Bearer $T" "https://api.cloudflare.com/client/v4/$p" | python3 -c "
+          import json,sys
+          d=json.load(sys.stdin); r=d.get('result')
+          print('ok' if d.get('success') else 'ECHEC', json.dumps(d.get('errors'))[:200])
+          if isinstance(r,list):
+              for x in r:
+                  n=x.get('name','') if isinstance(x,dict) else str(x)
+                  if any(k in n.lower() for k in ['container','cloudchamber','worker']) : print('  ',n, x.get('id',''), x.get('scopes',''))
+                  elif 'rate_plan' in json.dumps(x): print('  ', json.dumps(x)[:300])
+          elif r: print('  ',json.dumps(r)[:300])
+          "
+          done
+          echo "@@@FIN"
