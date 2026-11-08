@@ -63,16 +63,29 @@ def px(t, ouv=False):
     for d in range(0, 5):
         if t - d in PX: return PX[t - d][0 if ouv else 1]
     return None
+# résultat officiel : gamma-api (outcomePrices) par lots de slugs
+RES = {}
+sl = sorted({a["slug"] for a in T})
+for i in range(0, len(sl), 40):
+    try:
+        q = "&".join("slug=" + x for x in sl[i:i + 40])
+        for m in get("https://gamma-api.polymarket.com/markets?closed=true&limit=100&" + q):
+            op = json.loads(m.get("outcomePrices") or "[]")
+            if len(op) == 2 and max(map(float, op)) > 0.99: RES[m["slug"]] = float(op[0]) > 0.99   # True = Up gagne
+    except Exception as e: print("gamma", repr(e)); break
+print("marchés réglés lus :", len(RES), "/", len(sl))
 R = []
 for a in T:
     debut = int(a["slug"].rsplit("-", 1)[1]); t = ts(a)
     p0, pt, pf = px(debut, True), px(t), px(debut + 299)
     if not (p0 and pt and pf): continue
     up = (a.get("outcome") or "").lower().startswith("up") or str(a.get("outcomeIndex", a.get("outcome_index"))) == "0"
-    d = 1e4 * (pt - p0) / p0; gagne = (pf >= p0) == up
-    R.append(dict(sec=300 - (t - debut), d=d if up else -d, prix=a["price"], usd=a["usdcSize"], gagne=gagne, pnl=(a["usdcSize"] / a["price"] if gagne else 0) - a["usdcSize"]))
+    if a["slug"] not in RES: continue
+    d = 1e4 * (pt - p0) / p0; gagne = RES[a["slug"]] == up; acc = (pf >= p0) == RES[a["slug"]]
+    R.append(dict(sec=300 - (t - debut), d=d if up else -d, prix=a["price"], usd=a["usdcSize"], gagne=gagne, pnl=(a["usdcSize"] / a["price"] if gagne else 0) - a["usdcSize"], acc=acc))
 print("achats analysés :", len(R), "; côté qui mène au moment de l'achat :", f"{100*sum(r['d']>0 for r in R)/len(R):.0f} %")
-print("résultat approximé (règlement Binance) :", f"{sum(r['pnl'] for r in R):+.0f} $ sur {sum(r['usd'] for r in R):.0f} $ misés, gagnés {100*sum(r['gagne'] for r in R)/len(R):.0f} %")
+print("Binance donne le bon gagnant :", f"{100*sum(r['acc'] for r in R)/len(R):.0f} %")
+print("résultat (règlement officiel Polymarket) :", f"{sum(r['pnl'] for r in R):+.0f} $ sur {sum(r['usd'] for r in R):.0f} $ misés, gagnés {100*sum(r['gagne'] for r in R)/len(R):.0f} %")
 def tab(nom, f, cles):
     print(f"\n=== par {nom} : achats / gagnés % / prix médian / gain par 1 $ ===")
     for c_ in cles:
