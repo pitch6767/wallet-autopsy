@@ -1,6 +1,6 @@
 profils : [('NIULAI4', '0x44832d0d2ec11187c1e77d786feb15f6a50254c6')]
 portefeuille : 0x44832d0d2ec11187c1e77d786feb15f6a50254c6
-positions fermées lues : 12000, gain réalisé total +838342 $, gagnantes 12000
+positions fermées lues : 12000, gain réalisé total +838348 $, gagnantes 12000
 gain réalisé par jour de fin du marché :
   2026-10-15 +10674
   2026-10-16 +10188
@@ -26,16 +26,37 @@ gain réalisé par jour de fin du marché :
   2026-11-05 +7831
   2026-11-06 +11609
   2026-11-07 +11361
-  2026-11-08 +4004
-/home/runner/work/wallet-autopsy/wallet-autopsy/etude/sonde_solana.py:47: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
-  print("\nactivités lues :", len(A), "de", dt.datetime.utcfromtimestamp(min(int(a["timestamp"] if isinstance(a["timestamp"], (int,float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z","+00:00")).timestamp()) for a in A)), "à", dt.datetime.utcfromtimestamp(max(int(a["timestamp"] if isinstance(a["timestamp"], (int,float)) else dt.datetime.fromisoformat(str(a["timestamp"]).replace("Z","+00:00")).timestamp()) for a in A)))
+  2026-11-08 +4010
+secondes BTC lues : 311999
+achats analysés : 7237 ; côté qui mène au moment de l'achat : 50 %
+résultat approximé (règlement Binance) : -3627 $ sur 95110 $ misés, gagnés 49 %
 
-activités lues : 12000 de 2026-11-05 01:14:48 à 2026-11-08 15:44:18
-Counter({'TRADE': 11401, 'REDEEM': 593, 'MAKER_REBATE': 3, 'TAKER_REBATE': 3})
-marchés : [('BTC 5m', 11401)]
-côtés : Counter({'BUY': 11401})
-prix d'achat : médiane 0.72 ; tranches Counter({'0,70-0,90': 3528, '>=0,90': 2388, '0,40-0,70': 2177, '0,15-0,40': 1708, '0,05-0,15': 1073, '<0,05': 527})
-taille des trades $ : médiane 5.61 moyenne 11.31 max 140.57 ; total 128998
-seconde du cycle à l'achat : Counter({'240-270': 5873, '270-300': 1344, 'après': 18})
+=== par secondes restantes : achats / gagnés % / prix médian / gain par 1 $ ===
+≤10 | 158 | 38 % | 0.60 | -0.363
+11-30 | 1204 | 52 % | 0.55 | -0.002
+31-45 | 1981 | 49 % | 0.46 | +0.008
+46-60 | 3894 | 49 % | 0.48 | -0.049
 
-sur la période lue : 518 marchés, résultat +1703 $ (marchés encore ouverts comptés à 0), gagnants 273, rewards 0
+=== par avance du côté acheté (pb) : achats / gagnés % / prix médian / gain par 1 $ ===
+contre | 3454 | 18 % | 0.28 | -0.577
+0-2 | 2584 | 74 % | 0.62 | +0.278
+2-5 | 768 | 82 % | 0.70 | +0.274
+5-10 | 296 | 88 % | 0.79 | +0.230
+10-20 | 91 | 97 % | 0.88 | +0.134
+>20 | 44 | 100 % | 0.69 | +0.494
+
+=== par prix payé : achats / gagnés % / prix médian / gain par 1 $ ===
+<0,15 | 1596 | 35 % | 0.07 | +4.273
+0,15-0,50 | 1993 | 42 % | 0.31 | +0.247
+0,50-0,80 | 1771 | 53 % | 0.66 | -0.195
+0,80-0,90 | 985 | 59 % | 0.85 | -0.315
+0,90-0,95 | 622 | 70 % | 0.92 | -0.277
+>=0,95 | 270 | 73 % | 0.96 | -0.209
+
+=== prix médian payé selon avance (pb) × secondes restantes (achats) ===
+contre | 98x 0.75 0% -1.00 | 597x 0.43 14% -0.70 | 911x 0.35 18% -0.53 | 1848x 0.22 19% -0.47
+0-2 | 35x 0.05 100% +1.97 | 353x 0.55 90% +0.64 | 763x 0.58 71% +0.28 | 1433x 0.70 72% +0.15
+2-5 | 7x 0.12 100% +0.97 | 174x 0.79 84% +0.31 | 169x 0.46 83% +0.52 | 418x 0.71 80% +0.16
+5-10 | 18x 0.16 100% +0.89 | 48x 0.50 100% +0.56 | 110x 0.85 89% +0.16 | 120x 0.83 80% +0.04
+10-20 | — | 13x 0.88 100% +0.13 | 20x 0.90 100% +0.18 | 58x 0.85 95% +0.12
+>20 | — | 19x 0.70 100% +0.33 | 8x 0.79 100% +0.37 | 17x 0.66 100% +0.70
