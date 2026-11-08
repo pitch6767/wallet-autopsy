@@ -20,12 +20,12 @@ jobs:
           path: ~/.cache/huggingface
           key: whisper-${{ github.event.inputs.modele }}
       - run: |
-          pip install -q faster-whisper
+          pip install -q faster-whisper imageio-ffmpeg
           python3 - "${{ github.event.inputs.fichier }}" "${{ github.event.inputs.modele }}" <<'P'
-          import sys, subprocess, numpy as np
+          import sys, subprocess, numpy as np, imageio_ffmpeg
           from faster_whisper import WhisperModel
           f, m = sys.argv[1], sys.argv[2]
-          brut = subprocess.run(["ffmpeg", "-v", "error", "-i", f, "-f", "f32le", "-ac", "1", "-ar", "16000", "-"], capture_output=True, check=True).stdout
+          brut = subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-v", "error", "-i", f, "-f", "f32le", "-ac", "1", "-ar", "16000", "-"], capture_output=True, check=True).stdout
           audio = np.frombuffer(brut, dtype=np.float32)
           seg, info = WhisperModel(m, compute_type="int8").transcribe(audio, vad_filter=True)
           L = [f"[{int(s.start)//60:02d}:{int(s.start)%60:02d}] {s.text.strip()}" for s in seg]
