@@ -3,7 +3,7 @@
 // donc le téléchargement est fait par un module Apify. La clé Apify est collée dans l'app et gardée
 // dans le Durable Object (jamais dans le code). Chaque appareil s'identifie une fois avec cette clé
 // et reçoit un cookie d'accès : sans lui, personne ne peut dépenser le crédit Apify ni voir les fichiers.
-const VERSION = "1.2.1";
+const VERSION = "1.3.0";
 const API = "https://api.apify.com/v2";
 // Clé publique de Claude : signe les requêtes de test lancées depuis GitHub Actions (aucun secret ici)
 const ADMIN_JWK = { kty: "EC", crv: "P-256", x: "qHxOme14PLpJvoFAVS56fwXobWwBtQtUxrCz2655BDo", y: "HGUc5w5DlL_4nn5qgI47CDFx6yDEXzfh8alXgN9i0mk" };
@@ -152,7 +152,7 @@ export class Coffre {
       const cle = await this.s.get("cle");
 
       if (u.pathname === "/api/etat") {
-        const connecte = await this.estConnecte(req);
+        const connecte = !!cle; // plus de reconnaissance d'appareil : la clé enregistrée suffit
         const base = { app: "mp4-app", version: VERSION, cle: !!cle, connecte };
         if (!connecte) return json(base);
         // Seules les conversions faites avec le module actuel (H.264, lisible sur iPhone) sont gardées
@@ -175,7 +175,7 @@ export class Coffre {
         return json({ ok: true }, 200, { "set-cookie": await this.ouvrirSession() });
       }
 
-      if (!(await this.estConnecte(req))) return json({ erreur: "Cet appareil n'est pas reconnu : colle ta clé Apify une fois." }, 401);
+      if (!cle) return json({ erreur: "Aucune clé Apify enregistrée dans l'app." }, 401);
 
       if (u.pathname === "/api/lancer" && req.method === "POST") {
         const b = await req.json().catch(() => ({}));
