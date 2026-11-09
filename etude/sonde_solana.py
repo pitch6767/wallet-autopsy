@@ -24,31 +24,21 @@ for t in T:
     t["F"] = dict(mv=mv, vol=vol, sens="avec" if (mv > 0) == (t["side"] == "UP") else "contre", sec=sec, h=dt.datetime.fromtimestamp(d, PZ).hour)
 T = [t for t in T if t["F"] and t["j"] in ("06", "07", "08", "09")]
 JJ = ["06", "07", "08", "09"]
-print("=== gain par jour ($) ===")
-for n in AUJ + NOUS:
-    X = [t for t in T if t["num"] == n]
-    print(f"{n:>7}", " | ".join(f"{d}: {sum(t['pnl'] for t in X if t['j']==d):+6.0f} ({sum(t['j']==d for t in X):3d})" for d in JJ), f"| total {sum(t['pnl'] for t in X):+6.0f}")
-def profil(nom, X):
-    if not X: print(nom, "—"); return
-    g = [t for t in X if t["gagne"]]
-    print(f"\n### {nom} : {len(X)} trades, gagnés {100*len(g)/len(X):.0f} %, gain {sum(t['pnl'] for t in X):+.0f} $, gain pour 1 $ {sum(t['pnl'] for t in X)/sum(t['mise'] for t in X):+.2f}")
-    print("  prix médian", round(st.median(t["prix"] for t in X), 3), "| prix médian des gagnants", round(st.median(t["prix"] for t in g), 3) if g else "—")
-    print("  seconde médiane", round(st.median(t["F"]["sec"] for t in X)), "| côté", dict(collections.Counter(t["side"] for t in X)), "| sens / BTC 1 h", dict(collections.Counter(t["F"]["sens"] for t in X)))
-    print("  BTC : |mv 1 h| médian", round(st.median(abs(t["F"]["mv"]) for t in X), 1), "pb | vol 1 min médiane", round(st.median(t["F"]["vol"] for t in X), 2))
-    for lab, f in [("prix", lambda t: "<0,10" if t["prix"] < .1 else "0,10-0,25" if t["prix"] < .25 else "0,25-0,50" if t["prix"] < .5 else ">=0,50"),
-                   ("sens", lambda t: t["F"]["sens"]), ("seconde", lambda t: "0-60" if t["F"]["sec"] < 60 else "60-180" if t["F"]["sec"] < 180 else "180+")]:
-        out = []
-        for k in sorted({f(t) for t in X}):
-            Y = [t for t in X if f(t) == k]; out.append(f"{k}: {len(Y)} / {100*sum(t['gagne'] for t in Y)/len(Y):.0f} % / {sum(t['pnl'] for t in Y)/sum(t['mise'] for t in Y):+.2f}")
-        print(f"  par {lab} :", " ; ".join(out))
-# signaux uniques
-def uniq(X):
-    U = {}
-    for t in X: U.setdefault((t["endTs"], t["side"], round(t["prix"], 2)), t)
-    return list(U.values())
-profil("GAGNANTES D'AUJOURD'HUI, le 09.11", uniq([t for t in T if t["num"] in AUJ and t["j"] == "09"]))
-profil("les mêmes, du 06 au 08.11", uniq([t for t in T if t["num"] in AUJ and t["j"] != "09"]))
-profil("NOS STRATÉGIES (600005, 2171, 2172, 2162, 2111) les jours où on cartonne, 06–08.11", uniq([t for t in T if t["num"] in NOUS and t["j"] != "09"]))
-profil("nos stratégies le 09.11", uniq([t for t in T if t["num"] in NOUS and t["j"] == "09"]))
-print("\nchevauchement 09.11 : trades communs (cycle + côté) entre gagnantes d'aujourd'hui et nos stratégies :",
-      len({(t["endTs"], t["side"]) for t in T if t["num"] in AUJ and t["j"] == "09"} & {(t["endTs"], t["side"]) for t in T if t["num"] in NOUS and t["j"] == "09"}))
+# 09.11 22 h 30 : règle « jour de tendance » — 600005 telle quelle, sauf quand le BTC a beaucoup bougé dans l'heure (|mv| ≥ X) ou est nerveux (vol ≥ V) :
+# alors seulement les trades dans le sens du mouvement de l'heure (ou la 2175 à la place).
+B = sorted([t for t in T if t["num"] == 600005], key=lambda t: t["endTs"]); B75 = [t for t in T if t["num"] == 2175]
+def res(X):
+    X = sorted(X, key=lambda t: t["endTs"]); c = p = cr = 0
+    for t in X: c += t["pnl"]; p = max(p, c); cr = max(cr, p - c)
+    return " | ".join(f"{sum(t['pnl'] for t in X if t['j']==d):+6.0f}" for d in JJ) + f" | {c:+7.0f} | -{cr:5.0f} | {len(X)}"
+print("règle : 06 | 07 | 08 | 09 | total | creux | trades")
+print(f"{'600005 telle quelle':44s}", res(B))
+print(f"{'2175 seule':44s}", res(B75))
+for X in (15, 20, 25, 30, 40):
+    tend = lambda t, X=X: abs(t["F"]["mv"]) >= X
+    print(f"{'|mv| ≥ ' + str(X) + ' : seulement dans le sens':44s}", res([t for t in B if not tend(t) or t["F"]["sens"] == "avec"]))
+    print(f"{'|mv| ≥ ' + str(X) + ' : 2175 à la place':44s}", res([t for t in B if not tend(t)] + [t for t in B75 if tend(t)]))
+for V in (3, 4, 5):
+    nerv = lambda t, V=V: t["F"]["vol"] >= V
+    print(f"{'vol ≥ ' + str(V) + ' : seulement dans le sens':44s}", res([t for t in B if not nerv(t) or t["F"]["sens"] == "avec"]))
+    print(f"{'vol ≥ ' + str(V) + ' : 2175 à la place':44s}", res([t for t in B if not nerv(t)] + [t for t in B75 if nerv(t)]))
