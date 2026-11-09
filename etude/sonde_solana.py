@@ -28,6 +28,23 @@ J = lambda t: dt.datetime.fromtimestamp(t["endTs"] / 1000, PZ).strftime("%d")
 for t in T: t["F"] = F(t); t["j"] = J(t)
 T = [t for t in T if t["F"]]
 print("trades :", len(T), collections.Counter(t["j"] for t in T))
+# 09.11 22 h : filtres candidats appliqués aux stratégies clés, jour par jour (gain $, plafond 200 déjà appliqué)
+FI = {
+  "aucun": lambda f: True,
+  "A pas 04-12 h": lambda f: not (4 <= f["h"] < 12),
+  "B pas contre 1 h si |mv|>=13,8": lambda f: not (f["sens"] == "contre 1 h" and abs(f["mv"]) >= 13.8),
+  "C pas si vol 1 min >= 5": lambda f: f["vol"] < 5,
+  "A + B": lambda f: not (4 <= f["h"] < 12) and not (f["sens"] == "contre 1 h" and abs(f["mv"]) >= 13.8),
+  "A + C": lambda f: not (4 <= f["h"] < 12) and f["vol"] < 5,
+}
+JJ = sorted({t["j"] for t in T if t["j"] != "05"})
+for n in [600005, 2171, 2172, 2162, 2111, 313]:
+    print(f"\n--- {n} : " + " | ".join(JJ) + " | total | creux | trades")
+    for nom, f in FI.items():
+        X = sorted([t for t in T if t["num"] == n and t["j"] in JJ and f(t["F"])], key=lambda t: t["endTs"])
+        c = p_ = cr = 0
+        for t in X: c += t["pnl"]; p_ = max(p_, c); cr = max(cr, p_ - c)
+        print(f"{nom:34s}", " | ".join(f"{sum(t['pnl'] for t in X if t['j']==d):+6.0f}" for d in JJ), f"| {c:+7.0f} | -{cr:5.0f} | {len(X)}")
 print("\n=== par jour et stratégie : gain (trades, gagnés %) ===")
 for n in CLES:
     X = [t for t in T if t["num"] == n]
