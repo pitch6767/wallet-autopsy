@@ -1,119 +1,62 @@
-trades : 109460 du 2026-11-05 21:25:00+01:00 au 2026-11-09 19:55:00+01:00
-lignes : 1515
-lignes différentes (doublons regroupés) : 1198 ; plus gros groupes : [(5, 2010013), (5, 2011301), (6, 1000229), (6, 1010229), (6, 2010001), (6, 2010101), (6, 2011010), (7, 2010012)]
-lignes jugées (≥ 40 trades) : 815
+trades : 2749 Counter({'08': 859, '07': 827, '06': 619, '09': 433, '05': 11})
 
-=== TOP 25 au gain ===
-  600005 (+0 doublons) |  +18520 | creux - 2039 | gain/creux  9.1 | moitiés +10894 /  +7626 | jours nég 0/4 | pire jour  +498 | 187 tr, mise moy 114 | 06:+7490 07:+6027 08:+4505 09:+498
-  600006 (+0 doublons) |  +16408 | creux - 5203 | gain/creux  3.2 | moitiés +12009 /  +4400 | jours nég 2/5 | pire jour  -375 | 301 tr, mise moy 105 | 05:-52 06:+7396 07:+7244 08:+2195 09:-375
-  600008 (+0 doublons) |  +15018 | creux - 4202 | gain/creux  3.6 | moitiés +11955 /  +3063 | jours nég 2/5 | pire jour  -497 | 259 tr, mise moy 103 | 05:-52 06:+7597 07:+6984 08:+986 09:-497
-    2171 (+0 doublons) |  +14582 | creux - 2886 | gain/creux  5.1 | moitiés  +8826 /  +5756 | jours nég 1/4 | pire jour -1185 | 264 tr, mise moy 110 | 06:+7284 07:+3620 08:+4863 09:-1185
-  600004 (+0 doublons) |  +14517 | creux - 1356 | gain/creux 10.7 | moitiés  +9783 /  +4734 | jours nég 1/4 | pire jour -1185 | 160 tr, mise moy 113 | 06:+7427 07:+4604 08:+3671 09:-1185
-  600007 (+0 doublons) |  +14447 | creux - 1609 | gain/creux  9.0 | moitiés  +9476 /  +4971 | jours nég 1/4 | pire jour -1563 | 190 tr, mise moy 109 | 06:+6950 07:+4843 08:+4217 09:-1563
-    2161 (+0 doublons) |  +13842 | creux - 2649 | gain/creux  5.2 | moitiés  +8860 /  +4982 | jours nég 1/4 | pire jour  -972 | 288 tr, mise moy 85 | 06:+6422 07:+4338 08:+4054 09:-972
-    2112 (+0 doublons) |  +13268 | creux - 5578 | gain/creux  2.4 | moitiés  +9418 /  +3850 | jours nég 1/5 | pire jour  -399 | 414 tr, mise moy 110 | 05:+65 06:+7271 07:+4161 08:+2171 09:-399
-    2162 (+0 doublons) |  +13027 | creux - 1337 | gain/creux  9.7 | moitiés  +7377 /  +5649 | jours nég 0/4 | pire jour  +282 | 147 tr, mise moy 86 | 06:+5599 07:+4296 08:+2850 09:+282
-    2111 (+0 doublons) |  +12998 | creux - 1868 | gain/creux  7.0 | moitiés  +7600 /  +5397 | jours nég 0/5 | pire jour    +8 | 253 tr, mise moy 81 | 05:+164 06:+5514 07:+4161 08:+3150 09:+8
-    2172 (+0 doublons) |  +12936 | creux - 1568 | gain/creux  8.2 | moitiés  +7026 /  +5910 | jours nég 0/4 | pire jour    +4 | 134 tr, mise moy 111 | 06:+5432 07:+4268 08:+3231 09:+4
-    2124 (+0 doublons) |  +12434 | creux - 2527 | gain/creux  4.9 | moitiés  +7728 /  +4706 | jours nég 0/5 | pire jour    +7 | 202 tr, mise moy 116 | 05:+38 06:+4916 07:+5675 08:+1798 09:+7
-  600002 (+0 doublons) |  +12398 | creux - 1228 | gain/creux 10.1 | moitiés  +8282 /  +4116 | jours nég 1/4 | pire jour  -988 | 136 tr, mise moy 119 | 06:+6728 07:+3752 08:+2906 09:-988
-    1701 (+0 doublons) |  +12251 | creux - 2527 | gain/creux  4.8 | moitiés  +7615 /  +4635 | jours nég 1/5 | pire jour   -46 | 196 tr, mise moy 114 | 05:+38 06:+4603 07:+5857 08:+1798 09:-46
-    2173 (+0 doublons) |  +12201 | creux - 1239 | gain/creux  9.8 | moitiés  +7120 /  +5082 | jours nég 1/4 | pire jour -1068 | 96 tr, mise moy 116 | 06:+5432 07:+4362 08:+3475 09:-1068
-    2110 (+0 doublons) |  +12169 | creux - 5639 | gain/creux  2.2 | moitiés  +9263 /  +2906 | jours nég 1/5 | pire jour   -57 | 451 tr, mise moy 85 | 05:+60 06:+6277 07:+4826 08:+1064 09:-57
-    2115 (+0 doublons) |  +12161 | creux - 5683 | gain/creux  2.1 | moitiés  +9336 /  +2825 | jours nég 1/5 | pire jour   -97 | 445 tr, mise moy 87 | 05:+60 06:+6195 07:+4981 08:+1023 09:-97
-    2116 (+0 doublons) |  +12125 | creux - 5482 | gain/creux  2.2 | moitiés  +8738 /  +3387 | jours nég 0/5 | pire jour   +60 | 435 tr, mise moy 87 | 05:+60 06:+5399 07:+5179 08:+1330 09:+158
-    2163 (+0 doublons) |  +12113 | creux -  949 | gain/creux 12.8 | moitiés  +7371 /  +4743 | jours nég 1/4 | pire jour  -840 | 108 tr, mise moy 88 | 06:+5599 07:+4289 08:+3065 09:-840
-    2114 (+0 doublons) |  +12079 | creux - 2527 | gain/creux  4.8 | moitiés  +7563 /  +4516 | jours nég 1/5 | pire jour  -183 | 207 tr, mise moy 115 | 05:+38 06:+4815 07:+5612 08:+1798 09:-183
-   12112 (+0 doublons) |  +11987 | creux - 6349 | gain/creux  1.9 | moitiés  +8998 /  +2989 | jours nég 2/5 | pire jour  -666 | 399 tr, mise moy 103 | 05:-104 06:+6023 07:+5149 08:+1586 09:-666
-   12111 (+0 doublons) |  +11985 | creux - 1930 | gain/creux  6.2 | moitiés  +6769 /  +5216 | jours nég 1/5 | pire jour   -26 | 238 tr, mise moy 77 | 05:-26 06:+5593 07:+3504 08:+2895 09:+19
-    1501 (+0 doublons) |  +11849 | creux - 2844 | gain/creux  4.2 | moitiés  +7770 /  +4079 | jours nég 0/5 | pire jour   +37 | 246 tr, mise moy 105 | 05:+38 06:+5021 07:+5584 08:+1169 09:+37
-  600003 (+0 doublons) |  +11831 | creux - 1480 | gain/creux  8.0 | moitiés  +7288 /  +4542 | jours nég 1/4 | pire jour  -799 | 150 tr, mise moy 114 | 06:+6092 07:+3294 08:+3243 09:-799
-   12110 (+0 doublons) |  +11586 | creux - 6508 | gain/creux  1.8 | moitiés  +8981 /  +2605 | jours nég 2/5 | pire jour   -78 | 423 tr, mise moy 85 | 05:-78 06:+5601 07:+5283 08:+819 09:-38
+=== par jour et stratégie : gain (trades, gagnés %) ===
+600005 05: +0 (0, 0%) | 06: +7490 (39, 51%) | 07: +6027 (58, 45%) | 08: +4505 (60, 42%) | 09: -58 (35, 34%)
+2171 05: +0 (0, 0%) | 06: +7284 (62, 47%) | 07: +3620 (93, 32%) | 08: +4863 (82, 40%) | 09: -1941 (33, 27%)
+2172 05: +0 (0, 0%) | 06: +5432 (29, 52%) | 07: +4268 (36, 44%) | 08: +3231 (34, 50%) | 09: -352 (39, 31%)
+2162 05: +0 (0, 0%) | 06: +5599 (37, 51%) | 07: +4296 (39, 46%) | 08: +2850 (34, 50%) | 09: -8 (42, 29%)
+2111 05: +113 (2, 100%) | 06: +5514 (73, 42%) | 07: +4161 (70, 40%) | 08: +3150 (76, 45%) | 09: -682 (38, 26%)
+2112 05: +41 (3, 67%) | 06: +7271 (86, 43%) | 07: +4161 (135, 34%) | 08: +2171 (143, 31%) | 09: -1155 (51, 29%)
+12112 05: -52 (1, 0%) | 06: +6023 (84, 42%) | 07: +5149 (129, 33%) | 08: +1586 (144, 30%) | 09: -1423 (46, 15%)
+600006 05: +0 (0, 0%) | 06: +7396 (60, 47%) | 07: +7244 (86, 42%) | 08: +2195 (111, 28%) | 09: -946 (48, 21%)
+313 05: -15 (2, 50%) | 06: +3430 (51, 51%) | 07: +1114 (61, 43%) | 08: +1994 (59, 51%) | 09: +241 (33, 39%)
+13 05: -15 (2, 50%) | 06: +1464 (51, 51%) | 07: +978 (62, 44%) | 08: +1959 (59, 51%) | 09: -42 (33, 39%)
+1114 05: +38 (1, 100%) | 06: +1544 (47, 49%) | 07: +1270 (58, 45%) | 08: +2251 (57, 56%) | 09: -385 (35, 34%)
 
-=== TOP 25 gain / creux ===
- 3002175 (+0 doublons) |   +6531 | creux -  413 | gain/creux 15.8 | moitiés  +3310 /  +3221 | jours nég 0/4 | pire jour  +439 | 40 tr, mise moy 115 | 06:+3162 07:+439 08:+859 09:+2071
- 3002165 (+0 doublons) |   +6387 | creux -  408 | gain/creux 15.7 | moitiés  +3362 /  +3026 | jours nég 0/4 | pire jour  +351 | 45 tr, mise moy 84 | 06:+3302 07:+351 08:+665 09:+2070
- 1002165 (+0 doublons) |   +6266 | creux -  408 | gain/creux 15.4 | moitiés  +3335 /  +2931 | jours nég 0/4 | pire jour  +324 | 43 tr, mise moy 86 | 06:+3302 07:+324 08:+570 09:+2070
-   11111 (+0 doublons) |   +4280 | creux -  321 | gain/creux 13.3 | moitiés  +3009 /  +1271 | jours nég 0/4 | pire jour  +204 | 72 tr, mise moy 53 | 06:+1965 07:+973 08:+1138 09:+204
-    1111 (+0 doublons) |   +3899 | creux -  298 | gain/creux 13.1 | moitiés  +2594 /  +1305 | jours nég 0/5 | pire jour  +119 | 125 tr, mise moy 48 | 05:+119 06:+1532 07:+832 08:+1287 09:+129
- 3311141 (+0 doublons) |   +1391 | creux -  106 | gain/creux 13.1 | moitiés  +1000 /   +391 | jours nég 0/4 | pire jour   +84 | 49 tr, mise moy 49 | 06:+793 07:+171 08:+343 09:+84
-    2163 (+0 doublons) |  +12113 | creux -  949 | gain/creux 12.8 | moitiés  +7371 /  +4743 | jours nég 1/4 | pire jour  -840 | 108 tr, mise moy 88 | 06:+5599 07:+4289 08:+3065 09:-840
-   11113 (+0 doublons) |   +5072 | creux -  401 | gain/creux 12.6 | moitiés  +3123 /  +1949 | jours nég 0/4 | pire jour  +221 | 60 tr, mise moy 56 | 06:+1820 07:+2315 08:+716 09:+221
-     313 (+0 doublons) |   +7095 | creux -  591 | gain/creux 12.0 | moitiés  +4052 /  +3043 | jours nég 0/5 | pire jour   +65 | 202 tr, mise moy 54 | 05:+65 06:+3430 07:+1114 08:+1994 09:+492
-    1112 (+0 doublons) |   +4983 | creux -  421 | gain/creux 11.8 | moitiés  +2883 /  +2100 | jours nég 1/5 | pire jour   -95 | 192 tr, mise moy 50 | 05:+73 06:+2061 07:+1307 08:+1637 09:-95
-     311 (+0 doublons) |   +5354 | creux -  491 | gain/creux 10.9 | moitiés  +2322 /  +3032 | jours nég 0/5 | pire jour   +65 | 212 tr, mise moy 50 | 05:+65 06:+1669 07:+1040 08:+2033 09:+547
-   11112 (+0 doublons) |   +5285 | creux -  493 | gain/creux 10.7 | moitiés  +3142 /  +2142 | jours nég 0/4 | pire jour   +11 | 148 tr, mise moy 48 | 06:+2157 07:+1922 08:+1195 09:+11
-  600004 (+0 doublons) |  +14517 | creux - 1356 | gain/creux 10.7 | moitiés  +9783 /  +4734 | jours nég 1/4 | pire jour -1185 | 160 tr, mise moy 113 | 06:+7427 07:+4604 08:+3671 09:-1185
-    1113 (+0 doublons) |   +4243 | creux -  407 | gain/creux 10.4 | moitiés  +2633 /  +1610 | jours nég 0/5 | pire jour   +54 | 98 tr, mise moy 52 | 05:+73 06:+1517 07:+1706 08:+893 09:+54
-     113 (+0 doublons) |   +6837 | creux -  662 | gain/creux 10.3 | moitiés  +3770 /  +3066 | jours nég 0/5 | pire jour   +20 | 171 tr, mise moy 56 | 05:+20 06:+3278 07:+1050 08:+1916 09:+572
- 3000113 (+0 doublons) |   +4798 | creux -  467 | gain/creux 10.3 | moitiés  +3826 /   +972 | jours nég 0/4 | pire jour  +157 | 78 tr, mise moy 62 | 06:+3631 07:+157 08:+438 09:+572
- 3000313 (+0 doublons) |   +4787 | creux -  469 | gain/creux 10.2 | moitiés  +3889 /   +897 | jours nég 0/4 | pire jour  +200 | 92 tr, mise moy 60 | 06:+3652 07:+200 08:+443 09:+492
-  600002 (+0 doublons) |  +12398 | creux - 1228 | gain/creux 10.1 | moitiés  +8282 /  +4116 | jours nég 1/4 | pire jour  -988 | 136 tr, mise moy 119 | 06:+6728 07:+3752 08:+2906 09:-988
-    1110 (+0 doublons) |   +3647 | creux -  361 | gain/creux 10.1 | moitiés  +2496 /  +1152 | jours nég 1/5 | pire jour   -82 | 148 tr, mise moy 48 | 05:+119 06:+1514 07:+751 08:+1344 09:-82
-    2173 (+0 doublons) |  +12201 | creux - 1239 | gain/creux  9.8 | moitiés  +7120 /  +5082 | jours nég 1/4 | pire jour -1068 | 96 tr, mise moy 116 | 06:+5432 07:+4362 08:+3475 09:-1068
-    2162 (+0 doublons) |  +13027 | creux - 1337 | gain/creux  9.7 | moitiés  +7377 /  +5649 | jours nég 0/4 | pire jour  +282 | 147 tr, mise moy 86 | 06:+5599 07:+4296 08:+2850 09:+282
-    1114 (+0 doublons) |   +4937 | creux -  512 | gain/creux  9.6 | moitiés  +2329 /  +2607 | jours nég 1/5 | pire jour  -148 | 193 tr, mise moy 50 | 05:+20 06:+1544 07:+1270 08:+2251 09:-148
-      13 (+0 doublons) |   +4675 | creux -  486 | gain/creux  9.6 | moitiés  +1950 /  +2725 | jours nég 0/5 | pire jour   +65 | 203 tr, mise moy 46 | 05:+65 06:+1464 07:+978 08:+1959 09:+209
-     312 (+0 doublons) |   +7080 | creux -  764 | gain/creux  9.3 | moitiés  +4472 /  +2608 | jours nég 0/5 | pire jour   +13 | 239 tr, mise moy 54 | 05:+13 06:+4097 07:+937 08:+1966 09:+68
- 1000113 (+0 doublons) |   +4291 | creux -  467 | gain/creux  9.2 | moitiés  +3607 /   +684 | jours nég 1/4 | pire jour  -129 | 67 tr, mise moy 64 | 06:+3631 07:-129 08:+217 09:+572
+=== BTC par jour : vol 1 min moyenne (pb), |mouvement 1 h| moyen, efficacité 30 min moyenne ===
+05 vol 5.21 |mv| 8.2 eff 0.16
+06 vol 5.64 |mv| 24.7 eff 0.17
+07 vol 1.66 |mv| 10.2 eff 0.20
+08 vol 2.08 |mv| 13.7 eff 0.27
+09 vol 7.54 |mv| 34.3 eff 0.18
 
-=== TOP 25 pire moitié (robustesse) ===
-  600005 (+0 doublons) |  +18520 | creux - 2039 | gain/creux  9.1 | moitiés +10894 /  +7626 | jours nég 0/4 | pire jour  +498 | 187 tr, mise moy 114 | 06:+7490 07:+6027 08:+4505 09:+498
-    2172 (+0 doublons) |  +12936 | creux - 1568 | gain/creux  8.2 | moitiés  +7026 /  +5910 | jours nég 0/4 | pire jour    +4 | 134 tr, mise moy 111 | 06:+5432 07:+4268 08:+3231 09:+4
-    2171 (+0 doublons) |  +14582 | creux - 2886 | gain/creux  5.1 | moitiés  +8826 /  +5756 | jours nég 1/4 | pire jour -1185 | 264 tr, mise moy 110 | 06:+7284 07:+3620 08:+4863 09:-1185
-    2162 (+0 doublons) |  +13027 | creux - 1337 | gain/creux  9.7 | moitiés  +7377 /  +5649 | jours nég 0/4 | pire jour  +282 | 147 tr, mise moy 86 | 06:+5599 07:+4296 08:+2850 09:+282
-    2111 (+0 doublons) |  +12998 | creux - 1868 | gain/creux  7.0 | moitiés  +7600 /  +5397 | jours nég 0/5 | pire jour    +8 | 253 tr, mise moy 81 | 05:+164 06:+5514 07:+4161 08:+3150 09:+8
-   12111 (+0 doublons) |  +11985 | creux - 1930 | gain/creux  6.2 | moitiés  +6769 /  +5216 | jours nég 1/5 | pire jour   -26 | 238 tr, mise moy 77 | 05:-26 06:+5593 07:+3504 08:+2895 09:+19
-    2173 (+0 doublons) |  +12201 | creux - 1239 | gain/creux  9.8 | moitiés  +7120 /  +5082 | jours nég 1/4 | pire jour -1068 | 96 tr, mise moy 116 | 06:+5432 07:+4362 08:+3475 09:-1068
-    2161 (+0 doublons) |  +13842 | creux - 2649 | gain/creux  5.2 | moitiés  +8860 /  +4982 | jours nég 1/4 | pire jour  -972 | 288 tr, mise moy 85 | 06:+6422 07:+4338 08:+4054 09:-972
-  600007 (+0 doublons) |  +14447 | creux - 1609 | gain/creux  9.0 | moitiés  +9476 /  +4971 | jours nég 1/4 | pire jour -1563 | 190 tr, mise moy 109 | 06:+6950 07:+4843 08:+4217 09:-1563
-    2163 (+0 doublons) |  +12113 | creux -  949 | gain/creux 12.8 | moitiés  +7371 /  +4743 | jours nég 1/4 | pire jour  -840 | 108 tr, mise moy 88 | 06:+5599 07:+4289 08:+3065 09:-840
-  600004 (+0 doublons) |  +14517 | creux - 1356 | gain/creux 10.7 | moitiés  +9783 /  +4734 | jours nég 1/4 | pire jour -1185 | 160 tr, mise moy 113 | 06:+7427 07:+4604 08:+3671 09:-1185
-    2124 (+0 doublons) |  +12434 | creux - 2527 | gain/creux  4.9 | moitiés  +7728 /  +4706 | jours nég 0/5 | pire jour    +7 | 202 tr, mise moy 116 | 05:+38 06:+4916 07:+5675 08:+1798 09:+7
-    1701 (+0 doublons) |  +12251 | creux - 2527 | gain/creux  4.8 | moitiés  +7615 /  +4635 | jours nég 1/5 | pire jour   -46 | 196 tr, mise moy 114 | 05:+38 06:+4603 07:+5857 08:+1798 09:-46
-   12113 (+0 doublons) |  +10654 | creux - 1539 | gain/creux  6.9 | moitiés  +6065 /  +4589 | jours nég 1/5 | pire jour   -26 | 154 tr, mise moy 78 | 05:-26 06:+4173 07:+4706 08:+1347 09:+455
-  600003 (+0 doublons) |  +11831 | creux - 1480 | gain/creux  8.0 | moitiés  +7288 /  +4542 | jours nég 1/4 | pire jour  -799 | 150 tr, mise moy 114 | 06:+6092 07:+3294 08:+3243 09:-799
-    2114 (+0 doublons) |  +12079 | creux - 2527 | gain/creux  4.8 | moitiés  +7563 /  +4516 | jours nég 1/5 | pire jour  -183 | 207 tr, mise moy 115 | 05:+38 06:+4815 07:+5612 08:+1798 09:-183
-  600006 (+0 doublons) |  +16408 | creux - 5203 | gain/creux  3.2 | moitiés +12009 /  +4400 | jours nég 2/5 | pire jour  -375 | 301 tr, mise moy 105 | 05:-52 06:+7396 07:+7244 08:+2195 09:-375
-    2113 (+0 doublons) |  +11092 | creux - 1397 | gain/creux  7.9 | moitiés  +6732 /  +4360 | jours nég 0/5 | pire jour   +21 | 170 tr, mise moy 84 | 05:+21 06:+4388 07:+4291 08:+1857 09:+535
-      32 (+0 doublons) |  +10101 | creux - 3647 | gain/creux  2.8 | moitiés  +5977 /  +4124 | jours nég 1/5 | pire jour  -180 | 265 tr, mise moy 158 | 05:+141 06:+4541 07:+4143 08:+1457 09:-180
-  600002 (+0 doublons) |  +12398 | creux - 1228 | gain/creux 10.1 | moitiés  +8282 /  +4116 | jours nég 1/4 | pire jour  -988 | 136 tr, mise moy 119 | 06:+6728 07:+3752 08:+2906 09:-988
-    1501 (+0 doublons) |  +11849 | creux - 2844 | gain/creux  4.2 | moitiés  +7770 /  +4079 | jours nég 0/5 | pire jour   +37 | 246 tr, mise moy 105 | 05:+38 06:+5021 07:+5584 08:+1169 09:+37
-   11601 (+0 doublons) |   +9976 | creux - 1539 | gain/creux  6.5 | moitiés  +6075 /  +3901 | jours nég 2/5 | pire jour  -233 | 146 tr, mise moy 79 | 05:-26 06:+4206 07:+4683 08:+1347 09:-233
-   12123 (+0 doublons) |   +9523 | creux - 1539 | gain/creux  6.2 | moitiés  +5623 /  +3901 | jours nég 2/5 | pire jour  -233 | 148 tr, mise moy 79 | 05:-26 06:+3696 07:+4740 08:+1347 09:-233
-      31 (+0 doublons) |   +8080 | creux - 4218 | gain/creux  1.9 | moitiés  +4179 /  +3900 | jours nég 2/5 | pire jour  -801 | 341 tr, mise moy 156 | 05:-801 06:+4643 07:+3099 08:+1335 09:-197
-   12124 (+0 doublons) |  +10896 | creux - 2564 | gain/creux  4.2 | moitiés  +7027 /  +3869 | jours nég 2/5 | pire jour  -197 | 188 tr, mise moy 103 | 05:-52 06:+3996 07:+6057 08:+1092 09:-197
+=== signaux uniques (portefeuilles 101+105) par prix : jour → trades / gagnés % / gain pour 1 $ ===
+0,10-0,20        | — | 24/29%/+0.74 | 32/31%/+1.00 | 42/12%/+0.02 | 12/8%/-0.45 || avant 09 : +0.52 ; 09 : -0.45
+0,20-0,35        | — | 31/35%/+0.12 | 65/23%/-0.30 | 66/35%/+0.21 | 12/0%/-1.00 || avant 09 : -0.01 ; 09 : -1.00
+0,35-0,50        | 1/0%/-1.00 | 28/68%/+0.78 | 31/52%/+0.26 | 27/44%/-0.10 | 18/33%/-0.38 || avant 09 : +0.29 ; 09 : -0.38
+<0,10            | — | 18/22%/+1.57 | 22/32%/+1.71 | 22/9%/-0.53 | 9/11%/+0.05 || avant 09 : +0.75 ; 09 : +0.05
+>=0,50           | 1/100%/+0.73 | 4/75%/+0.33 | 9/56%/-0.24 | 8/75%/+0.34 | 10/100%/+0.65 || avant 09 : +0.18 ; 09 : +0.65
 
-=== lignes positives dans les 2 moitiés et au plus 1 jour négatif : 528 / 815 — classées par gain/creux ===
- 3002175 (+0 doublons) |   +6531 | creux -  413 | gain/creux 15.8 | moitiés  +3310 /  +3221 | jours nég 0/4 | pire jour  +439 | 40 tr, mise moy 115 | 06:+3162 07:+439 08:+859 09:+2071
- 3002165 (+0 doublons) |   +6387 | creux -  408 | gain/creux 15.7 | moitiés  +3362 /  +3026 | jours nég 0/4 | pire jour  +351 | 45 tr, mise moy 84 | 06:+3302 07:+351 08:+665 09:+2070
- 1002165 (+0 doublons) |   +6266 | creux -  408 | gain/creux 15.4 | moitiés  +3335 /  +2931 | jours nég 0/4 | pire jour  +324 | 43 tr, mise moy 86 | 06:+3302 07:+324 08:+570 09:+2070
-   11111 (+0 doublons) |   +4280 | creux -  321 | gain/creux 13.3 | moitiés  +3009 /  +1271 | jours nég 0/4 | pire jour  +204 | 72 tr, mise moy 53 | 06:+1965 07:+973 08:+1138 09:+204
-    1111 (+0 doublons) |   +3899 | creux -  298 | gain/creux 13.1 | moitiés  +2594 /  +1305 | jours nég 0/5 | pire jour  +119 | 125 tr, mise moy 48 | 05:+119 06:+1532 07:+832 08:+1287 09:+129
- 3311141 (+0 doublons) |   +1391 | creux -  106 | gain/creux 13.1 | moitiés  +1000 /   +391 | jours nég 0/4 | pire jour   +84 | 49 tr, mise moy 49 | 06:+793 07:+171 08:+343 09:+84
-    2163 (+0 doublons) |  +12113 | creux -  949 | gain/creux 12.8 | moitiés  +7371 /  +4743 | jours nég 1/4 | pire jour  -840 | 108 tr, mise moy 88 | 06:+5599 07:+4289 08:+3065 09:-840
-   11113 (+0 doublons) |   +5072 | creux -  401 | gain/creux 12.6 | moitiés  +3123 /  +1949 | jours nég 0/4 | pire jour  +221 | 60 tr, mise moy 56 | 06:+1820 07:+2315 08:+716 09:+221
-     313 (+0 doublons) |   +7095 | creux -  591 | gain/creux 12.0 | moitiés  +4052 /  +3043 | jours nég 0/5 | pire jour   +65 | 202 tr, mise moy 54 | 05:+65 06:+3430 07:+1114 08:+1994 09:+492
-    1112 (+0 doublons) |   +4983 | creux -  421 | gain/creux 11.8 | moitiés  +2883 /  +2100 | jours nég 1/5 | pire jour   -95 | 192 tr, mise moy 50 | 05:+73 06:+2061 07:+1307 08:+1637 09:-95
-     311 (+0 doublons) |   +5354 | creux -  491 | gain/creux 10.9 | moitiés  +2322 /  +3032 | jours nég 0/5 | pire jour   +65 | 212 tr, mise moy 50 | 05:+65 06:+1669 07:+1040 08:+2033 09:+547
-   11112 (+0 doublons) |   +5285 | creux -  493 | gain/creux 10.7 | moitiés  +3142 /  +2142 | jours nég 0/4 | pire jour   +11 | 148 tr, mise moy 48 | 06:+2157 07:+1922 08:+1195 09:+11
-  600004 (+0 doublons) |  +14517 | creux - 1356 | gain/creux 10.7 | moitiés  +9783 /  +4734 | jours nég 1/4 | pire jour -1185 | 160 tr, mise moy 113 | 06:+7427 07:+4604 08:+3671 09:-1185
-    1113 (+0 doublons) |   +4243 | creux -  407 | gain/creux 10.4 | moitiés  +2633 /  +1610 | jours nég 0/5 | pire jour   +54 | 98 tr, mise moy 52 | 05:+73 06:+1517 07:+1706 08:+893 09:+54
-     113 (+0 doublons) |   +6837 | creux -  662 | gain/creux 10.3 | moitiés  +3770 /  +3066 | jours nég 0/5 | pire jour   +20 | 171 tr, mise moy 56 | 05:+20 06:+3278 07:+1050 08:+1916 09:+572
- 3000113 (+0 doublons) |   +4798 | creux -  467 | gain/creux 10.3 | moitiés  +3826 /   +972 | jours nég 0/4 | pire jour  +157 | 78 tr, mise moy 62 | 06:+3631 07:+157 08:+438 09:+572
- 3000313 (+0 doublons) |   +4787 | creux -  469 | gain/creux 10.2 | moitiés  +3889 /   +897 | jours nég 0/4 | pire jour  +200 | 92 tr, mise moy 60 | 06:+3652 07:+200 08:+443 09:+492
-  600002 (+0 doublons) |  +12398 | creux - 1228 | gain/creux 10.1 | moitiés  +8282 /  +4116 | jours nég 1/4 | pire jour  -988 | 136 tr, mise moy 119 | 06:+6728 07:+3752 08:+2906 09:-988
-    1110 (+0 doublons) |   +3647 | creux -  361 | gain/creux 10.1 | moitiés  +2496 /  +1152 | jours nég 1/5 | pire jour   -82 | 148 tr, mise moy 48 | 05:+119 06:+1514 07:+751 08:+1344 09:-82
-    2173 (+0 doublons) |  +12201 | creux - 1239 | gain/creux  9.8 | moitiés  +7120 /  +5082 | jours nég 1/4 | pire jour -1068 | 96 tr, mise moy 116 | 06:+5432 07:+4362 08:+3475 09:-1068
-    2162 (+0 doublons) |  +13027 | creux - 1337 | gain/creux  9.7 | moitiés  +7377 /  +5649 | jours nég 0/4 | pire jour  +282 | 147 tr, mise moy 86 | 06:+5599 07:+4296 08:+2850 09:+282
-    1114 (+0 doublons) |   +4937 | creux -  512 | gain/creux  9.6 | moitiés  +2329 /  +2607 | jours nég 1/5 | pire jour  -148 | 193 tr, mise moy 50 | 05:+20 06:+1544 07:+1270 08:+2251 09:-148
-      13 (+0 doublons) |   +4675 | creux -  486 | gain/creux  9.6 | moitiés  +1950 /  +2725 | jours nég 0/5 | pire jour   +65 | 203 tr, mise moy 46 | 05:+65 06:+1464 07:+978 08:+1959 09:+209
-     312 (+0 doublons) |   +7080 | creux -  764 | gain/creux  9.3 | moitiés  +4472 /  +2608 | jours nég 0/5 | pire jour   +13 | 239 tr, mise moy 54 | 05:+13 06:+4097 07:+937 08:+1966 09:+68
- 1000113 (+0 doublons) |   +4291 | creux -  467 | gain/creux  9.2 | moitiés  +3607 /   +684 | jours nég 1/4 | pire jour  -129 | 67 tr, mise moy 64 | 06:+3631 07:-129 08:+217 09:+572
-      15 (+0 doublons) |   +4468 | creux -  488 | gain/creux  9.2 | moitiés  +1782 /  +2685 | jours nég 0/5 | pire jour   +65 | 201 tr, mise moy 46 | 05:+65 06:+1173 07:+1101 08:+1928 09:+201
-     112 (+0 doublons) |   +6735 | creux -  738 | gain/creux  9.1 | moitiés  +4188 /  +2548 | jours nég 1/5 | pire jour   -33 | 203 tr, mise moy 56 | 05:-33 06:+3905 07:+910 08:+1803 09:+149
-  600005 (+0 doublons) |  +18520 | creux - 2039 | gain/creux  9.1 | moitiés +10894 /  +7626 | jours nég 0/4 | pire jour  +498 | 187 tr, mise moy 114 | 06:+7490 07:+6027 08:+4505 09:+498
-     111 (+0 doublons) |   +4969 | creux -  549 | gain/creux  9.0 | moitiés  +2035 /  +2934 | jours nég 0/5 | pire jour   +20 | 179 tr, mise moy 51 | 05:+20 06:+1508 07:+980 08:+1876 09:+585
-     213 (+0 doublons) |   +4351 | creux -  481 | gain/creux  9.0 | moitiés  +1675 /  +2676 | jours nég 0/5 | pire jour   +20 | 171 tr, mise moy 47 | 05:+20 06:+1316 07:+918 08:+1810 09:+288
+=== signaux uniques (portefeuilles 101+105) par seconde du cycle : jour → trades / gagnés % / gain pour 1 $ ===
+0-60             | 1/0%/-1.00 | 14/57%/+1.49 | 30/53%/-0.16 | 34/44%/+0.30 | 6/33%/-0.63 || avant 09 : +0.27 ; 09 : -0.63
+150-240          | 1/100%/+0.73 | 36/33%/+0.24 | 87/33%/+0.69 | 62/29%/+0.16 | 17/29%/-0.59 || avant 09 : +0.42 ; 09 : -0.59
+240+             | — | 42/31%/+0.74 | 9/22%/-0.27 | 11/18%/+0.30 | 21/5%/-0.57 || avant 09 : +0.58 ; 09 : -0.57
+60-150           | — | 13/85%/+1.36 | 33/18%/-0.17 | 58/22%/-0.37 | 17/59%/+0.28 || avant 09 : -0.16 ; 09 : +0.28
 
-perdantes sur 95 h : 28 / 815
+=== signaux uniques (portefeuilles 101+105) par sens / BTC 1 h : jour → trades / gagnés % / gain pour 1 $ ===
+avec 1 h         | — | 52/42%/+1.05 | 64/38%/+0.60 | 87/23%/-0.18 | 21/43%/+0.46 || avant 09 : +0.38 ; 09 : +0.46
+contre 1 h       | 2/50%/-0.14 | 53/42%/+0.31 | 95/31%/+0.15 | 78/36%/+0.22 | 40/22%/-0.74 || avant 09 : +0.21 ; 09 : -0.74
+
+=== signaux uniques (portefeuilles 101+105) par côté : jour → trades / gagnés % / gain pour 1 $ ===
+DOWN             | 1/100%/+0.73 | 56/46%/+1.17 | 94/36%/+0.58 | 89/37%/+0.42 | 33/30%/-0.41 || avant 09 : +0.66 ; 09 : -0.41
+UP               | 1/0%/-1.00 | 49/37%/+0.09 | 65/29%/-0.02 | 76/20%/-0.48 | 28/29%/-0.30 || avant 09 : -0.18 ; 09 : -0.30
+
+=== signaux uniques (portefeuilles 101+105) par efficacité 30 min : jour → trades / gagnés % / gain pour 1 $ ===
+0,10-0,17        | 1/100%/+0.73 | 19/53%/+0.28 | 25/40%/+0.67 | 24/25%/-0.09 | 6/33%/+1.18 || avant 09 : +0.29 ; 09 : +1.18
+0,17-0,30        | — | 35/46%/+0.93 | 42/40%/+1.36 | 31/32%/+0.46 | 30/23%/-0.70 || avant 09 : +0.95 ; 09 : -0.70
+<0,10            | 1/0%/-1.00 | 39/33%/+0.26 | 61/20%/-0.57 | 41/32%/-0.07 | 16/38%/+0.17 || avant 09 : -0.19 ; 09 : +0.17
+>=0,30           | — | 12/42%/+1.86 | 31/45%/+0.45 | 69/28%/-0.14 | 9/33%/-0.59 || avant 09 : +0.22 ; 09 : -0.59
+
+=== signaux uniques (portefeuilles 101+105) par vol 1 min (pb) : jour → trades / gagnés % / gain pour 1 $ ===
+2-3              | — | 1/0%/-1.00 | 34/18%/-0.56 | 21/48%/+1.22 | — || avant 09 : -0.04 ; 09 : +0.00
+3-5              | — | 59/49%/+1.25 | 4/75%/+2.79 | 5/40%/-0.23 | 10/20%/-0.73 || avant 09 : +1.22 ; 09 : -0.73
+<2               | — | — | 121/36%/+0.55 | 136/24%/-0.16 | — || avant 09 : +0.15 ; 09 : +0.00
+>=5              | 2/50%/-0.14 | 45/33%/-0.12 | — | 3/100%/+3.15 | 51/31%/-0.29 || avant 09 : +0.05 ; 09 : -0.29
+
+=== signaux uniques (portefeuilles 101+105) par heure (Paris) : jour → trades / gagnés % / gain pour 1 $ ===
+00-03 h          | — | 12/17%/-0.76 | 23/52%/+0.70 | 37/30%/-0.19 | 14/36%/+0.11 || avant 09 : -0.03 ; 09 : +0.11
+04-07 h          | — | 11/36%/+0.04 | 28/25%/-0.27 | 31/6%/-0.81 | 7/29%/-0.50 || avant 09 : -0.46 ; 09 : -0.50
+08-11 h          | — | 15/40%/-0.11 | 18/6%/-0.93 | 38/16%/-0.50 | 12/42%/-0.42 || avant 09 : -0.53 ; 09 : -0.42
+12-15 h          | — | 25/48%/+2.28 | 27/26%/-0.01 | 14/36%/+0.71 | 9/22%/-0.07 || avant 09 : +1.06 ; 09 : -0.07
+16-19 h          | — | 15/47%/+1.06 | 31/55%/+1.28 | 30/53%/+1.37 | 10/30%/-0.69 || avant 09 : +1.26 ; 09 : -0.69
+20-23 h          | 2/50%/-0.14 | 27/48%/+0.19 | 32/28%/+0.86 | 15/53%/+0.65 | 9/11%/-0.96 || avant 09 : +0.56 ; 09 : -0.96
