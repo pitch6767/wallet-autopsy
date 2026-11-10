@@ -5,7 +5,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { SOURCES, MOTS_IA, MOTS_DEPOT, TYPES_MODELE, RUBRIQUES, POIDS_RUBRIQUES } from "./sources.js";
 
-const VERSION = "1.1.1";
+const VERSION = "1.1.2";
 const MODELE = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const UA = "Mozilla/5.0 (compatible; RadarIA/1.1; +https://radar-ia.pitch67.workers.dev)";
 const FUSEAU = "Europe/Zurich";
@@ -175,14 +175,10 @@ export class Radar extends DurableObject {
         const der = this.lire("derniere_fab_manuelle", 0);
         if (Date.now() - der < 20 * 60e3) return json({ erreur: "Une édition vient d'être fabriquée, réessaie dans 20 minutes." }, 429);
         this.ecrire("derniere_fab_manuelle", Date.now());
-        if (corps.refaire) {
-          const ref = String(corps.refaire);
-          this.sql.exec(`UPDATE items SET edition=NULL WHERE edition=?`, ref);
-          this.sql.exec(`UPDATE depots SET montre=NULL WHERE montre=?`, ref);
-          this.sql.exec(`DELETE FROM sujets WHERE id LIKE ?`, ref + ":%");
-        }
-        await this.collecter();
-        return json(await this.fabriquer(corps.creneau || null));
+        // la fabrication prend plusieurs minutes : elle tourne en arrière-plan (alarme), la réponse est immédiate
+        this.ecrire("a_fabriquer", { creneau: corps.creneau || null, refaire: corps.refaire || null, demande: Date.now() });
+        await this.ctx.storage.setAlarm(Date.now() + 1000);
+        return json({ ok: true, lance: true, note: "fabrication lancée en arrière-plan, voir /api/etat → derniere_edition" });
       }
       if (p === "/api/editions") return json(this.sql.exec(`SELECT id, cree FROM editions ORDER BY cree DESC LIMIT 60`).toArray());
       if (p === "/api/edition") {
@@ -234,9 +230,29 @@ export class Radar extends DurableObject {
       depots_suivis: this.sql.exec(`SELECT COUNT(*) n FROM depots`).toArray()[0]?.n || 0,
       sources: this.lire("etat_sources", {}), canaux: this.lire("canaux", {}),
       derniere_collecte: this.lire("derniere_collecte", null), derniere_edition: this.lire("derniere_edition", null),
-      derniere_erreur_ia: this.lire("derniere_erreur_ia", null),
+      derniere_erreur_ia: this.lire("derniere_erreur_ia", null), derniere_fabrication: this.lire("derniere_fabrication", null),
       editions: this.sql.exec(`SELECT id, cree FROM editions ORDER BY cree DESC LIMIT 5`).toArray(),
     };
+  }
+
+  // fabrication en arrière-plan
+  async alarm() {
+    const t = this.lire("a_fabriquer", null);
+    if (!t) return;
+    this.ecrire("a_fabriquer", null);
+    try {
+      if (t.refaire) {
+        const ref = String(t.refaire);
+        this.sql.exec(`UPDATE items SET edition=NULL WHERE edition=? OR edition=?`, ref, ref + ":doublon");
+        this.sql.exec(`UPDATE depots SET montre=NULL WHERE montre=?`, ref);
+        this.sql.exec(`DELETE FROM sujets WHERE id LIKE ?`, ref + ":%");
+      }
+      await this.collecter();
+      const r = await this.fabriquer(t.creneau);
+      this.ecrire("derniere_fabrication", { ...r, demande: t.demande, fini: Date.now() });
+    } catch (e) {
+      this.ecrire("derniere_fabrication", { erreur: String(e?.stack || e).slice(0, 600), demande: t.demande, fini: Date.now() });
+    }
   }
 
   // appelé chaque heure par le cron
@@ -246,7 +262,11 @@ export class Radar extends DurableObject {
     const pr = this.prefs();
     let fab = null;
     const creneau = heure === pr.heures[0] ? "matin" : heure === pr.heures[1] ? "soir" : null;
-    if (creneau && !this.sql.exec(`SELECT 1 FROM editions WHERE id=?`, `${jour}-${creneau}`).toArray().length) fab = await this.fabriquer(creneau);
+    if (creneau && !this.sql.exec(`SELECT 1 FROM editions WHERE id=?`, `${jour}-${creneau}`).toArray().length) {
+      this.ecrire("a_fabriquer", { creneau, refaire: null, demande: Date.now() });
+      await this.ctx.storage.setAlarm(Date.now() + 1000);
+      fab = "lancée";
+    }
     // nettoyage : 10 jours d'articles, 7 jours de sujets, 30 jours de dépôts non montrés, 90 éditions
     this.sql.exec(`DELETE FROM items WHERE ajoute < ?`, Date.now() - 10 * J);
     this.sql.exec(`DELETE FROM sujets WHERE ts < ?`, Date.now() - 7 * J);
