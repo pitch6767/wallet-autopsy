@@ -1,0 +1,14 @@
+name: Sonde bot95 reel
+on: { workflow_dispatch: {} }
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - run: |
+          echo "@@@DEBUT"
+          curl -s -m 20 -A "Mozilla/5.0" https://bot95.pitch67.workers.dev/api/reel/etat | python3 -c "
+          import json,sys
+          d=json.load(sys.stdin)
+          print({k:(('present' if d.get(k) else 'absent') if k in ('signataire','portefeuille') else d.get(k)) for k in ['configure','modeReel','arret','mise','signataire','portefeuille']}, 'solde' in d, len(d.get('journal') or []))"
+          echo "@@@FIN"
