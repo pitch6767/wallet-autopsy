@@ -105,7 +105,7 @@ export async function lotSuivant(env, taille = 12) {
   const st = [];
   res.forEach((parRegle, i) => {
     const sym = lot[i];
-    if (!parRegle || parRegle.erreur) { etat.echecs++; return; }
+    if (!parRegle || parRegle.erreur) { etat.echecs++; etat.erreurs = [...(etat.erreurs || []), `${sym} : ${parRegle ? parRegle.erreur : "vide"}`].slice(-15); return; }
     for (const [rid, trades] of Object.entries(parRegle)) {
       for (const per of ["A", "B"]) {
         const t = trades.filter((x) => x.per === per); if (!t.length) continue;
