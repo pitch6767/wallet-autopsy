@@ -1,31 +1,31 @@
 env.DB (day-trader)            D1 Database         
 env.ASSETS                     Assets              
 
-Uploaded day-trader (3.68 sec)
-Deployed day-trader triggers (0.73 sec)
+Uploaded day-trader (5.84 sec)
+Deployed day-trader triggers (1.24 sec)
   https://day-trader.pitch67.workers.dev
   schedule: * * * * *
   schedule: 17 13 * * 1-5
-Current Version ID: 34903912-3217-4b6f-8120-a80c5d3884ed
+Current Version ID: 5497b65f-7ed6-47dc-a171-62536894a295
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 === page
 200
 === sonde
-{"ok":true,"horloge":{"newYork":"2026-11-10 05:47","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 10:47"}}
+{"ok":true,"horloge":{"newYork":"2026-11-10 05:52","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 10:52"}}
 === controles
 --- scan-jour (liste triée)
-{"duree":3,"comptes":{"demandes":5933,"recus":5913,"illiquides":4288,"courts":2,"scannes":1623,"trouves":731,"echecs":20},"top":["NVDA","AAPL","MSFT"]}
+{"duree":3,"comptes":{"demandes":5933,"recus":5933,"illiquides":4305,"courts":2,"scannes":1626,"trouves":732,"echecs":0},"top":["NVDA","AAPL","MSFT"]}
 --- regles
 {"n":48,"news":3}
 --- relance du test (verrou ajouté)
-{"total":1626,"coupure":"2026-09-29"}
+{"total":1629,"coupure":"2026-09-29"}
 --- etat taches
-{"dernier-papier":{"quand":"2026-11-10T10:46:14.019Z","r":{"symboles":1,"lignes":0}},"dernier-test":{"quand":"2026-11-10T10:49:27.002Z","r":{"pos":160,"total":1629}},"dernier-veilleur":{"quand":"2026-11-10T10:50:14.157Z","r":{"alarme":1794307818186}},"dernier-alertes":{"quand":"2026-11-10T10:50:14.527Z","r":0},"dernier-news":{"quand":"2026-11-10T10:50:15.009Z","r":{"suivis":0}}}
+{"dernier-papier":{"quand":"2026-11-10T10:51:14.077Z","r":{"symboles":1,"lignes":0}},"dernier-veilleur":{"quand":"2026-11-10T10:55:13.347Z","r":{"alarme":1794308113501}},"dernier-alertes":{"quand":"2026-11-10T10:55:13.568Z","r":0},"dernier-news":{"quand":"2026-11-10T10:55:13.840Z","r":{"suivis":0}},"dernier-test":{"quand":"2026-11-10T10:55:46.920Z","r":{"pos":360,"total":1629}}}
 --- test
-{"etat":{"pos":160,"total":1629,"coupure":"2026-09-29","seances":60,"fini":false},"regles":48,"top":[{"regle":"mid2-figure","A":-496,"B":82},{"regle":"low2-figure","A":-648,"B":-8},{"regle":"midF-figure","A":-609,"B":-38},{"regle":"low1-figure","A":-575,"B":-58},{"regle":"lowF-figure","A":-684,"B":-75}],"choix":{"top20":{"couples":20,"avecTradesB":20,"tradesB":211,"gainB":-129,"moyPctB":-0.061,"gainA":2382},"top100":{"couples":100,"avecTradesB":100,"tradesB":1183,"gainB":-780,"moyPctB":-0.066,"gainA":7596},"top500":{"couples":500,"avecTradesB":500,"tradesB":5970,"gainB":-3076,"moyPctB":-0.052,"gainA":19094}}}
+{"etat":{"pos":360,"total":1629,"coupure":"2026-09-29","seances":60,"fini":false},"regles":48,"top":[{"regle":"lowF-marche","A":-2460,"B":1386},{"regle":"low1-marche","A":-2115,"B":1374},{"regle":"low2-marche","A":-2389,"B":1321},{"regle":"low1-consensus","A":-2850,"B":679},{"regle":"lowF-consensus","A":-3275,"B":669}],"choix":{"top20":{"couples":20,"avecTradesB":20,"tradesB":124,"gainB":-176,"moyPctB":-0.142,"gainA":2250},"top100":{"couples":100,"avecTradesB":93,"tradesB":940,"gainB":-270,"moyPctB":-0.029,"gainA":9300},"top500":{"couples":500,"avecTradesB":490,"tradesB":6010,"gainB":-3872,"moyPctB":-0.064,"gainA":29901}}}
 --- papier
 {"depuis":null,"jusqua":null,"n":0,"top":[]}
 --- news
-{"veilleur":{"dernierTour":{"quand":"2026-11-10T10:50:28.669Z","lus":40,"nouveaux":0},"alarme":1794307833669},"n":38,"ex":[{"sym":"STI","items":"2.02,9.01","prix0":4.16,"en_seance":0},{"sym":"UPLD","items":"1.01,7.01,9.01","prix0":3.815,"en_seance":0},{"sym":"VDTA","items":"7.01,9.01","prix0":3.38,"en_seance":0}]}
+{"veilleur":{"dernierTour":{"quand":"2026-11-10T10:55:55.151Z","lus":40,"nouveaux":0},"alarme":1794308160151},"n":38,"ex":[{"sym":"STI","items":"2.02,9.01","prix0":4.16,"en_seance":0},{"sym":"UPLD","items":"1.01,7.01,9.01","prix0":3.815,"en_seance":0},{"sym":"VDTA","items":"7.01,9.01","prix0":3.38,"en_seance":0}]}
