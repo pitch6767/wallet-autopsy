@@ -1,25 +1,27 @@
 env.DB (day-trader)            D1 Database         
 env.ASSETS                     Assets              
 
-Uploaded day-trader (3.29 sec)
-Deployed day-trader triggers (0.77 sec)
+Uploaded day-trader (3.27 sec)
+Deployed day-trader triggers (1.16 sec)
   https://day-trader.pitch67.workers.dev
   schedule: * * * * *
   schedule: 17 13 * * 1-5
-Current Version ID: a1be1b1f-d4b1-4c20-8c22-626391544274
+Current Version ID: 6d72b67c-8acf-427d-98a2-84397cb2c793
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 === page
 200
 === sonde
-{"ok":true,"horloge":{"newYork":"2026-11-10 07:41","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 12:41"}}
+{"ok":true,"horloge":{"newYork":"2026-11-10 07:45","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 12:45"}}
 === controles
+--- relance du test
+{"n":100}
 --- regles
 {"n":158,"familles":{"intraday":39,"journalier":105,"résultats":14}}
 --- etat taches
-{"dernier-papier":{"quand":"2026-11-10T12:41:14.347Z","r":{"symboles":0,"lignes":0}},"dernier-test":{"quand":"2026-11-10T12:43:20.608Z","r":{"pos":72,"total":100}}}
+{"dernier-papier":{"quand":"2026-11-10T12:51:13.738Z","r":{"symboles":0,"lignes":0}},"dernier-test":{"quand":"2026-11-10T12:52:30.112Z","r":{"pos":60,"total":100}}}
 --- test
-{"pos":72,"regles":158,"tiennent":["j-breakout_20d-3j:aucun","j-breakout_20d-3j:liquide","j-breakout_20d-3j:marche","j-breakout_20d-3j:sortie","j-breakout_20d-3j:x2","j-breakout_20d-5j:liquide","j-bull_flag-5j:consensus","j-oversold-1j:aucun","j-oversold-1j:sortie","j-oversold-1j:x2"],"ex":[{"regle":"orb-low2:tm","A":11,"B":15},{"regle":"orb-mid1:tm","A":93,"B":264},{"regle":"res-20j:aucun","A":16,"B":12},{"regle":"res-20j:consensus","A":8,"B":3},{"regle":"res-20j:liquide","A":12,"B":6},{"regle":"res-20j:marche","A":13,"B":6},{"regle":"res-20j:sortie","A":16,"B":12},{"regle":"res-20j:tout","A":5,"B":null}]}
+{"pos":60,"regles":158,"tiennent":["j-breakout_20d-1j:aucun","j-breakout_20d-1j:marche","j-breakout_20d-1j:sortie","j-breakout_20d-3j:aucun","j-breakout_20d-3j:liquide","j-breakout_20d-3j:marche","j-breakout_20d-3j:sortie","j-breakout_20d-3j:x2","j-breakout_20d-5j:aucun","j-breakout_20d-5j:liquide"],"ex":[{"regle":"orb-low2:tm","A":9,"B":38},{"regle":"orb-mid1:tm","A":152,"B":430},{"regle":"res-20j:aucun","A":23,"B":23},{"regle":"res-20j:consensus","A":12,"B":6},{"regle":"res-20j:liquide","A":19,"B":12},{"regle":"res-20j:marche","A":19,"B":14},{"regle":"res-20j:sortie","A":23,"B":23},{"regle":"res-20j:tout","A":9,"B":1}]}
 --- erreurs
-{"pos":72,"echecs":41,"erreurs":["BCAX : Cannot read properties of undefined (reading 'o')","DNA : Cannot read properties of undefined (reading 'o')","BRUN : Cannot read properties of undefined (reading 'o')","SHAZ : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","BMBL : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","OPTX : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","WYFI : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","ATEC : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","AVTX : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","TWST : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","BSP : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","ABTC : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","FPS : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","AMLX : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","REAX : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30"]}
+{"pos":60,"echecs":0,"erreurs":null}
