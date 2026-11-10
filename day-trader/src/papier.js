@@ -46,7 +46,9 @@ export async function resume(db, { mise = 1000, depuis = "" } = {}) {
   const lignes = (await db.prepare("SELECT * FROM papier WHERE date >= ? ORDER BY date, regle").bind(depuis || "0000").all()).results;
   const parRegle = {};
   for (const x of lignes) {
-    const r = (parRegle[x.regle] = parRegle[x.regle] || { regle: x.regle, trades: 0, gagnants: 0, ouverts: 0, gain: 0, gainJour: 0, jours: {} });
+    const r = (parRegle[x.regle] = parRegle[x.regle] || { regle: x.regle, trades: 0, gagnants: 0, ouverts: 0, gain: 0, gainJour: 0, jours: {}, parAction: {} });
+    const a = (r.parAction[x.sym] = r.parAction[x.sym] || { sym: x.sym, gain: 0, trades: 0, ouvert: false });
+    a.gain += x.pct * mise; a.trades++; if (x.statut === "ouvert") a.ouvert = true;
     r.trades++; if (x.pct > 0) r.gagnants++; if (x.statut === "ouvert") r.ouverts++;
     r.gain += x.pct * mise; r.jours[x.date] = (r.jours[x.date] || 0) + x.pct * mise;
   }
@@ -55,6 +57,7 @@ export async function resume(db, { mise = 1000, depuis = "" } = {}) {
     let c = 0, pic = 0, pire = 0;
     for (const d of Object.keys(r.jours).sort()) { c += r.jours[d]; pic = Math.max(pic, c); pire = Math.min(pire, c - pic); }
     r.creux = Math.round(pire); r.gain = Math.round(r.gain); r.gainJour = Math.round(r.jours[auj] || 0); r.nbJours = Object.keys(r.jours).length; delete r.jours;
+    r.actions = Object.values(r.parAction).map((a) => ({ ...a, gain: Math.round(a.gain) })).sort((a, b) => b.gain - a.gain); delete r.parAction;
   }
   return { mise, depuis: lignes.length ? lignes[0].date : null, jusqua: auj, regles: Object.values(parRegle).sort((a, b) => b.gain - a.gain) };
 }

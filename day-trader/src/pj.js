@@ -67,11 +67,13 @@ export async function resumePJ(db, mise = 1000) {
   const l = (await db.prepare("SELECT * FROM papier_j ORDER BY date_signal DESC").all()).results;
   const par = {};
   for (const x of l) {
-    const r = (par[x.regle] = par[x.regle] || { regle: x.regle, signaux: 0, fermes: 0, ouverts: 0, gain: 0, contreQqq: 0, gagnants: 0 });
+    const r = (par[x.regle] = par[x.regle] || { regle: x.regle, signaux: 0, fermes: 0, ouverts: 0, gain: 0, contreQqq: 0, gagnants: 0, parAction: {} });
+    const a = (r.parAction[x.sym] = r.parAction[x.sym] || { sym: x.sym, gain: 0, trades: 0, ouvert: false, attente: false });
+    a.trades++; if (x.pct != null) a.gain += x.pct * mise; if (x.statut === "ouvert") a.ouvert = true; if (x.statut === "attente") a.attente = true;
     r.signaux++; if (x.statut === "ouvert") r.ouverts++;
     if (x.pct != null) { r.gain += x.pct * mise; if (x.qqq_pct != null) r.contreQqq += (x.pct - x.qqq_pct) * mise; }
     if (x.statut === "ferme") { r.fermes++; if (x.pct > 0) r.gagnants++; }
   }
-  for (const r of Object.values(par)) { r.gain = Math.round(r.gain); r.contreQqq = Math.round(r.contreQqq); }
+  for (const r of Object.values(par)) { r.gain = Math.round(r.gain); r.contreQqq = Math.round(r.contreQqq); r.actions = Object.values(r.parAction).map((a) => ({ ...a, gain: Math.round(a.gain) })).sort((a, b) => b.gain - a.gain); delete r.parAction; }
   return { figeeLe: g && g.le, regles: g ? g.regles : [], parRegle: Object.values(par).sort((a, b) => b.gain - a.gain), derniers: l.slice(0, 150).map((x) => ({ ...x, gain: x.pct != null ? Math.round(x.pct * mise * 100) / 100 : null })) };
 }
