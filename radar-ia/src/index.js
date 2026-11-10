@@ -5,7 +5,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { SOURCES, MOTS_IA, MOTS_DEPOT, TYPES_MODELE, RUBRIQUES, POIDS_RUBRIQUES } from "./sources.js";
 
-const VERSION = "1.1.0";
+const VERSION = "1.1.1";
 const MODELE = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const UA = "Mozilla/5.0 (compatible; RadarIA/1.1; +https://radar-ia.pitch67.workers.dev)";
 const FUSEAU = "Europe/Zurich";
@@ -377,7 +377,8 @@ export class Radar extends DurableObject {
           const params = tailleModele(m.id);
           const type = TYPES_MODELE[m.pipeline_tag] || (m.pipeline_tag ? m.pipeline_tag : "Autre");
           const extra = { modele: m.id, auteur: m.id.split("/")[0], pipeline: m.pipeline_tag || "", type, likes: m.likes || 0, telechargements: m.downloads || 0, tendance: m.trendingScore || 0, params, gguf: (m.tags || []).includes("gguf") || /gguf/i.test(m.id), cree };
-          nouveaux += await this.ajouter(s, s.type === "hfmodeles" ? "modele" : "libre", { titre: m.id, url: `https://huggingface.co/${m.id}`, texte: `Type : ${type}. Bibliothèque : ${m.library_name || "?"}. Étiquettes : ${(m.tags || []).filter((t) => !/^(region|license|arxiv|base_model|dataset):/.test(t)).slice(0, 15).join(", ")}`, date: cree, extra }, "hf:" + m.id);
+          const libre = s.type === "hflibres" || /abliterat|uncensor|heretic|unfilter|nsfw/i.test(m.id);
+          nouveaux += await this.ajouter(s, libre ? "libre" : "modele", { titre: m.id, url: `https://huggingface.co/${m.id}`, texte: `Type : ${type}. Bibliothèque : ${m.library_name || "?"}. Étiquettes : ${(m.tags || []).filter((t) => !/^(region|license|arxiv|base_model|dataset):/.test(t)).slice(0, 15).join(", ")}`, date: cree, extra }, "hf:" + m.id);
         }
       }
     } else if (s.type === "trending") {
@@ -509,7 +510,7 @@ export class Radar extends DurableObject {
     const retenues = [...une, ...rubriques.flatMap((r) => r.cartes), ...sections.modeles, ...sections.libres, ...sections.videos, ...sections.depots];
 
     // lecture complète des sujets retenus les plus importants → résumé plus riche
-    const aLire = [...une, ...rubriques.flatMap((r) => r.cartes), ...sections.modeles, ...sections.libres].slice(0, TAILLE.lectureComplete);
+    const aLire = [...[...une, ...rubriques.flatMap((r) => r.cartes)].slice(0, TAILLE.lectureComplete), ...sections.modeles, ...sections.libres, ...sections.depots];
     await this.approfondir(aLire);
 
     // marquer comme publiés : seulement ce qui est montré (le reste peut revenir s'il reste frais)
@@ -548,7 +549,7 @@ export class Radar extends DurableObject {
     const liste = infos.map((c, i) => `${i}. ${c.titre} — ${c.titre_original}`).join("\n");
     const anciens = passes.map((t, i) => `P${i}. ${t}`).join("\n");
     const consigne = `Tu es l'éditeur d'une revue de presse IA. Voici les sujets candidats de l'édition, puis les sujets déjà publiés ces 7 derniers jours.
-1) Regroupe les candidats qui parlent EXACTEMENT du même événement (même annonce, même produit, même étude), même s'ils sont dans des langues différentes ou viennent de sources différentes. Une vidéo qui commente une annonce rejoint le groupe de cette annonce.
+1) Regroupe les candidats qui parlent du même sujet : même annonce, même produit, même modèle, même étude — y compris tous les articles et vidéos sur la sortie d'un même modèle (tests, classements, conseils, démonstrations, avis sur ce modèle vont TOUS dans le groupe de cette sortie), même s'ils sont dans des langues différentes ou viennent de sources différentes. Le lecteur ne veut voir qu'une seule carte par sujet.
 2) Liste les candidats qui répètent un sujet déjà publié, SAUF s'ils apportent un fait nouveau important (nouvelle version, chiffres nouveaux, disponibilité réelle).
 Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_publies": [numéros]}. Ne mets dans "groupes" que les groupes d'au moins 2 numéros.`;
     let r;
@@ -577,15 +578,19 @@ Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_pub
   // Lit la page complète (article, page du modèle) et refait un résumé plus riche
   async approfondir(cartes) {
     const consigne = `Tu es le rédacteur de « Radar IA », une veille en français pour un lecteur suisse qui teste l'IA chez lui et crée des apps.
-À partir du texte fourni, écris UNIQUEMENT un objet JSON : {"resume": "...", "pourquoi": "..."}.
+À partir du texte fourni, écris UNIQUEMENT un objet JSON : {"titre": "...", "resume": "...", "pourquoi": "..."}.
+- "titre" : titre informatif en français correct, 7 à 14 mots, qui dit ce que c'est et ce que ça apporte (pour un dépôt ou un modèle : son nom suivi de ce qu'il fait).
 - "resume" : 4 à 5 phrases en français, avec les faits concrets du texte (chiffres, noms, prix, dates, disponibilité, taille du modèle, licence). Rédige avec tes propres mots, ne recopie pas de longues phrases, n'invente rien.
 - "pourquoi" : une phrase sur ce que cela change concrètement pour lui (tester chez soi, matériel nécessaire, créer une app) ; vide si rien.`;
-    await parPaquets(cartes, 4, async (c) => {
+    await parPaquets(cartes, 6, async (c) => {
       let texte = "";
       try {
         if (c.genre === "modele" || c.genre === "libre") {
           const md = await (await chercher(`https://huggingface.co/${c.extra.modele}/raw/main/README.md`, {}, 12000)).text();
           texte = md.replace(/^---[\s\S]*?---/, "").replace(/<[^>]+>/g, " ").replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\s+/g, " ").slice(0, 6000);
+        } else if (c.genre === "depot") {
+          const md = await (await chercher(`https://raw.githubusercontent.com/${c.extra.depot}/HEAD/README.md`, {}, 12000)).text();
+          texte = md.replace(/<[^>]+>/g, " ").replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\s+/g, " ").slice(0, 6000);
         } else if (c.genre === "article" && !/youtube\.com|reddit\.com/.test(c.url)) {
           const html = await (await chercher(c.url, { headers: { accept: "text/html" } }, 12000)).text();
           texte = texteArticle(html);
@@ -596,6 +601,7 @@ Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_pub
         const r = lireJson(await this.ia([{ role: "system", content: consigne }, { role: "user", content: `Titre : ${c.titre_original}\n\nTexte :\n${texte}` }], 700), "{");
         if (r.resume && r.resume.length > 80) { c.resume = r.resume; c.lu = true; }
         if (r.pourquoi) c.pourquoi = r.pourquoi;
+        if (r.titre && r.titre.length > 10 && (c.genre === "depot" || c.genre === "modele" || c.genre === "libre")) c.titre = r.titre;
       } catch (e) { this.ecrire("derniere_erreur_ia", { quand: Date.now(), etape: "lecture", erreur: String(e).slice(0, 300) }); }
     });
   }
@@ -617,7 +623,9 @@ Pour chaque élément reçu, réponds UNIQUEMENT par un tableau JSON, un objet p
 - pour un dépôt GitHub seulement, "essai" : "lecture seule", "installation simple", "environnement isolé conseillé" ou "préparation avancée"
 Aucun texte hors du tableau JSON.`;
     const noms = { article: "article", papier: "papier de recherche", version: "nouvelle version logicielle", video: "vidéo YouTube", depot: "dépôt GitHub", modele: "nouveau modèle sur Hugging Face", libre: "modèle non censuré sur Hugging Face" };
-    for (let i = 0; i < items.length; i += PAQUET) {
+    const debuts = [];
+    for (let i = 0; i < items.length; i += PAQUET) debuts.push(i);
+    await parPaquets(debuts, 3, async (i) => {
       const lot = items.slice(i, i + PAQUET);
       const entree = lot.map((x, k) => {
         const e = x.extra || {};
@@ -641,7 +649,7 @@ Aucun texte hors du tableau JSON.`;
       }
       // si l'IA a échoué, on garde l'élément brut plutôt que de le perdre
       lot.forEach((x, k) => { if (!res[i + k]) res[i + k] = { titre: x.titre, resume: (x.texte || "").slice(0, 280), rubrique: x.genre === "depot" ? "idees" : x.genre === "modele" || x.genre === "libre" ? "modeles" : "recherche", importance: 2, statut: "", brut: true }; });
-    }
+    });
     return res;
   }
 }
