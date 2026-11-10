@@ -10,7 +10,7 @@ export const SCHEMA = [
   "CREATE TABLE IF NOT EXISTS bt_jour (regle TEXT, date TEXT, n INTEGER, spct REAL, PRIMARY KEY (regle, date))",
   "CREATE TABLE IF NOT EXISTS etat (cle TEXT PRIMARY KEY, valeur TEXT)",
   "CREATE TABLE IF NOT EXISTS papier (date TEXT, regle TEXT, sym TEXT, statut TEXT, entree_h TEXT, entree REAL, stop REAL, cible REAL, sortie_h TEXT, sortie REAL, issue TEXT, pct REAL, r REAL, maj TEXT, PRIMARY KEY (date, regle, sym))",
-  "CREATE TABLE IF NOT EXISTS news (id TEXT PRIMARY KEY, cik TEXT, sym TEXT, nom TEXT, quand INTEGER, items TEXT, lien TEXT, en_seance INTEGER, prix0 REAL, debut_suivi INTEGER, m5 REAL, m15 REAL, m60 REAL, max30 REAL, fini INTEGER DEFAULT 0, maj TEXT)",
+  "CREATE TABLE IF NOT EXISTS news (id TEXT PRIMARY KEY, cik TEXT, sym TEXT, nom TEXT, quand INTEGER, items TEXT, lien TEXT, en_seance INTEGER, prix0 REAL, debut_suivi INTEGER, m5 REAL, m15 REAL, m60 REAL, max30 REAL, fini INTEGER DEFAULT 0, maj TEXT, source TEXT DEFAULT 'sec', titre TEXT, vu INTEGER, hl0 REAL, hl5 REAL, hl15 REAL, hl60 REAL, hlouv REAL, kf0 REAL, kf5 REAL, kf15 REAL, kf60 REAL, kfouv REAL)",
   "CREATE INDEX IF NOT EXISTS news_quand ON news (quand)",
 ];
 export async function schema(db) { for (const s of SCHEMA) await db.prepare(s).run(); }

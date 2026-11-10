@@ -7,7 +7,7 @@ import { nouvelles, analyste, congres, verifierAlertes } from "./infos.js";
 import { local, MARCHES, seance, hhmm } from "./temps.js";
 import { schema, demarrer, lotSuivant, classement, lireEtat } from "./test.js";
 import { tourPapier, resume, tradesPapier } from "./papier.js";
-import { suiviNews, statsNews, ITEMS, SEUILS } from "./veille.js";
+import { suiviNews, statsNews, photosJetons, ITEMS, SEUILS } from "./veille.js";
 import { REGLES, BASES, FILTRES } from "./regles.js";
 export { Veilleur } from "./veille.js";
 
@@ -158,6 +158,7 @@ export default {
     });
     // 3. suivi des nouvelles
     await journal("news", () => suiviNews(env));
+    await journal("jetons", () => photosJetons(env));
     // 4. paper toutes les 5 minutes (une minute après la clôture de chaque barre)
     const min = new Date(ev.scheduledTime).getUTCMinutes();
     if (min % 5 === 1) await journal("papier", async () => {
