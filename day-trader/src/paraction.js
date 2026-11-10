@@ -5,17 +5,17 @@
 import { graphique, parLots } from "./donnees.js";
 import { local, marcheDe } from "./temps.js";
 import { barresJour, qqqJour, datesBonsResultats, REGLES_J } from "./labo.js";
-import { accumulerAction, nomRegle } from "./combos.js";
+import { accumulerAction, nomRegle, issue } from "./combos.js";
 import { REGLES } from "./regles.js";
 import { lireEtat, ecrireEtat } from "./test.js";
 
-export const SCHEMA_PA = "CREATE TABLE IF NOT EXISTS par_action (sym TEXT PRIMARY KEY, groupe TEXT, regle TEXT, nom TEXT, tient INTEGER, an INTEGER, ag INTEGER, ga REAL, bn INTEGER, bg INTEGER, gb REAL, xqqq REAL, candidats INTEGER, deuxieme TEXT, maj TEXT)";
+export const SCHEMA_PA = "CREATE TABLE IF NOT EXISTS par_action (sym TEXT PRIMARY KEY, groupe TEXT, regle TEXT, nom TEXT, tient INTEGER, an INTEGER, ag INTEGER, ga REAL, bn INTEGER, bg INTEGER, gb REAL, xqqq REAL, candidats INTEGER, deuxieme TEXT, maj TEXT, garder REAL, edge REAL)";
 const NOMS = Object.fromEntries([...REGLES, ...REGLES_J].map((r) => [r.id, `${r.base.nom} ${r.filtre.id === "aucun" ? "" : r.filtre.nom}`.trim()]));
 const nom = (id) => NOMS[id] || nomRegle(id);
 
 export async function demarrerPA(env) {
   const t = await lireEtat(env.DB, "test"); if (!t || !t.fini) return "test pas fini";
-  await env.DB.prepare(SCHEMA_PA).run(); await env.DB.prepare("DELETE FROM par_action").run();
+  await env.DB.prepare("DROP TABLE IF EXISTS par_action").run(); await env.DB.prepare(SCHEMA_PA).run();
   const e = { liste: t.liste, grosses: t.grosses, volatiles: t.volatiles, coupureJ: t.coupureJ, pos: 0, fini: false, debut: new Date().toISOString() };
   await ecrireEtat(env.DB, "paraction", e); return e;
 }
@@ -41,6 +41,17 @@ export async function lotPA(env, taille = 10) {
     const c = {};
     for (const [k, v] of Object.entries(acc)) { const [regle, per] = k.split("|"); (c[regle] = c[regle] || {})[per] = { n: v[0], g: v[1], s: v[2], x: v[4] }; }
     for (const r of (await db.prepare("SELECT regle, per, n, g, spct FROM bt WHERE sym = ?").bind(sym).all()).results) (c[r.regle] = c[r.regle] || {})[r.per] = { n: r.n, g: r.g, s: r.spct, x: null };
+    // Pitch 10.11 : on retire les stratégies « toujours vraies » pour une action (grosse seule, volatile seule) = garder l'action en permanence
+    for (const k of Object.keys(c)) if (/^\d+j:(grosse|volatile)$/.test(k)) delete c[k];
+    // Référence : acheter cette action un jour AU HASARD et la garder h jours (même stop, même exécution) -> gain moyen par trade
+    const base = {};
+    const moyBase = (h, per) => {
+      const k = h + per; if (base[k] !== undefined) return base[k];
+      let s = 0, n = 0;
+      for (let t = 50; t < J.length - 1; t++) { const p = J[t + 1].d < e.coupureJ ? "A" : "B"; if (p !== per) continue; const r = issue(J, t, h); if (r) { s += r.pct; n++; } }
+      return (base[k] = n ? s / n : null);
+    };
+    const dureeDe = (id) => { const m = /^(\d+)j:/.exec(id) || /-(\d+)j(?::|$)/.exec(id); return m ? +m[1] : null; };
     const liste = Object.entries(c).map(([regle, p]) => ({ regle, A: p.A || { n: 0, g: 0, s: 0, x: null }, B: p.B || { n: 0, g: 0, s: 0, x: null } }))
       .map((r) => ({ ...r, tot: r.A.s + r.B.s, tient: r.A.n >= 3 && r.B.n >= 3 && r.A.s > 0 && r.B.s > 0 }));
     const ok = liste.filter((r) => r.tient).sort((a, b) => b.tot - a.tot);
@@ -49,8 +60,11 @@ export async function lotPA(env, taille = 10) {
     const groupe = grosses.has(sym) ? "25 plus grosses" : "75 plus volatiles";
     if (!m) { st.push(db.prepare("INSERT OR REPLACE INTO par_action (sym, groupe, candidats, maj) VALUES (?,?,?,?)").bind(sym, groupe, liste.length, maj)); return; }
     const xq = m.A.x != null && m.B.x != null ? Math.round((m.A.x + m.B.x) * 1000) : null;
-    st.push(db.prepare("INSERT OR REPLACE INTO par_action VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(sym, groupe, m.regle, nom(m.regle), ok.length ? 1 : 0,
-      m.A.n, m.A.g, Math.round(m.A.s * 1000), m.B.n, m.B.g, Math.round(m.B.s * 1000), xq, liste.length, pool[1] ? `${pool[1].regle} (${Math.round(pool[1].tot * 1000)} $)` : null, maj));
+    const h = dureeDe(m.regle);
+    const edge = h ? Math.round(["A", "B"].reduce((a, per) => { const b = moyBase(h, per); return b == null ? a : a + (m[per].s - b * m[per].n); }, 0) * 1000) : null;
+    const garder = J.length > 52 ? +(100 * (J[J.length - 1].c / J[51].o - 1)).toFixed(1) : null;
+    st.push(db.prepare("INSERT OR REPLACE INTO par_action VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(sym, groupe, m.regle, nom(m.regle), ok.length ? 1 : 0,
+      m.A.n, m.A.g, Math.round(m.A.s * 1000), m.B.n, m.B.g, Math.round(m.B.s * 1000), xq, liste.length, pool[1] ? `${pool[1].regle} (${Math.round(pool[1].tot * 1000)} $)` : null, maj, garder, edge));
   });
   for (let i = 0; i < st.length; i += 100) await db.batch(st.slice(i, i + 100));
   e.pos += lot.length; e.verrou = null; if (e.pos >= e.liste.length) { e.fini = true; e.finLe = new Date().toISOString(); }
