@@ -103,6 +103,8 @@
     }
     if (ph === "danse") return danse(J);
     if (ph === "annee") return annee(J, q);
+    if (ph === "karaoke") return karaoke(J, q);
+    if (ph === "ecoute") { J.innerHTML = '<p class="attente">🎧 Écoutez l\'écran !<br><br>' + (q.chanteur === monId ? "C'est ta voix… transformée ! 😂" : echappe(q.nomChanteur) + " chante… à sa façon ! 😂") + "</p>"; return; }
     if (ph === "archive") { J.innerHTML = '<p class="attente">📺 Archive de la télévision suisse<br><br><b>' + echappe(q.titre) + "</b><br><br>Regardez l'écran !</p>"; return; }
     if (ph === "culture") { J.innerHTML = '<p class="attente">📻 Regardez l\'écran…<br><br>' + echappe(q.texte) + "</p>"; return; }
     if (ph === "souvenir") return souvenir(J, q);
@@ -137,6 +139,52 @@
   // ---------- Pause danse : un simple moment pour danser ----------
   function danse(J) {
     J.innerHTML = '<p class="attente" style="font-size:30px;color:var(--ambre)">💃 Pause danse ! 🕺</p><p class="attente">Tout le monde se lève et danse sur la chanson !</p>';
+  }
+
+  // ---------- Karaoké : le joueur désigné s'enregistre 10 secondes ----------
+  let enreg = null;
+  function karaoke(J, q) {
+    if (q.chanteur !== monId) {
+      J.innerHTML = '<p class="attente">🎤 ' + echappe(q.nomChanteur) + " va chanter « " + echappe(q.titre) + " » !<br><br>Préparez-vous à rire…</p>";
+      return;
+    }
+    J.innerHTML = '<h2>🎤 C\'est à toi !</h2><p class="consigne">Chante le refrain de « ' + echappe(q.titre) + " » (" + echappe(q.artiste) + "). L'écran le repassera avec une surprise…</p>" +
+      '<button class="gros-bouton" id="btn-enr" style="background:linear-gradient(180deg,#FF6B6B,#D7263D);color:#fff;box-shadow:0 6px 0 #8A1020">● Enregistrer (10 secondes)</button>' +
+      '<p class="consigne" id="enr-etat" style="text-align:center"></p><div class="minuteur tel-min"><i></i></div>';
+    const etatEl = $("enr-etat"), btn = $("btn-enr");
+    btn.onclick = async () => {
+      if (enreg) return;
+      let flux;
+      try { flux = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false } }); }
+      catch (e) { etatEl.textContent = "Le micro est refusé. Autorise le micro pour ce site dans ton navigateur, puis réessaie."; return; }
+      const types = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"];
+      const type = types.find((t) => window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || "";
+      const morceaux = [];
+      enreg = new MediaRecorder(flux, type ? { mimeType: type } : undefined);
+      enreg.ondataavailable = (e) => e.data.size && morceaux.push(e.data);
+      enreg.onstop = async () => {
+        flux.getTracks().forEach((t) => t.stop());
+        btn.disabled = true; btn.textContent = "Envoi…";
+        const blob = new Blob(morceaux, { type: enreg.mimeType || type || "audio/webm" });
+        enreg = null;
+        try {
+          const r = await fetch("/api/voix/" + code + "?id=" + monId, { method: "POST", headers: { "content-type": blob.type }, body: blob });
+          btn.textContent = r.ok ? "Envoyé ! Regarde l'écran 😄" : "Trop tard, le temps est écoulé";
+        } catch (e) { btn.textContent = "L'envoi a échoué"; }
+      };
+      enreg.start();
+      vibre(40);
+      let reste = 10;
+      btn.textContent = "■ J'ai fini (" + reste + ")";
+      const t = setInterval(() => {
+        reste--;
+        if (!enreg || enreg.state !== "recording") return clearInterval(t);
+        btn.textContent = "■ J'ai fini (" + reste + ")";
+        if (reste <= 0) { clearInterval(t); enreg.stop(); }
+      }, 1000);
+      btn.onclick = () => { if (enreg && enreg.state === "recording") { clearInterval(t); enreg.stop(); } };
+    };
+    barre();
   }
 
   // ---------- Souvenir ----------

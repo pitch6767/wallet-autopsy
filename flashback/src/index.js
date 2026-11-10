@@ -27,7 +27,7 @@ async function extraitDeezer(ch, env) {
   return null;
 }
 
-const DUREES = { archive: 45000, blind: 16000, revele: 4500, danse: 11000, annee: 13000, ecran: 20000, evenement: 20000, culture: 11000, souvenir: 45000 };
+const DUREES = { karaoke: 40000, ecoute: 22000, archive: 45000, blind: 16000, revele: 4500, danse: 11000, annee: 13000, ecran: 20000, evenement: 20000, culture: 11000, souvenir: 45000 };
 
 export class Salle extends DurableObject {
   constructor(ctx, env) {
@@ -49,6 +49,22 @@ export class Salle extends DurableObject {
   async fetch(req) {
     const url = new URL(req.url);
     this.code = url.searchParams.get("code") || this.code;
+    if (url.pathname.endsWith("/voix")) {
+      if (req.method === "POST") {
+        const id = url.searchParams.get("id");
+        if (this.phase !== "karaoke" || !this.q || this.q.chanteur !== id) return json({ erreur: "Ce n'est pas ton tour" }, 409);
+        const buf = await req.arrayBuffer();
+        if (!buf.byteLength || buf.byteLength > 2_000_000) return json({ erreur: "Enregistrement trop long" }, 413);
+        this.voix = { buf, type: req.headers.get("content-type") || "audio/webm", n: (this.voix ? this.voix.n : 0) + 1 };
+        clearTimeout(this.minuterie);
+        this.q.voix = this.voix.n;
+        this.q.effet = ["canard", "geant", "robot", "stade"][Math.floor(Math.random() * 4)];
+        this.ouvrir("ecoute");
+        return json({ ok: true });
+      }
+      if (!this.voix) return new Response("Pas d'enregistrement", { status: 404 });
+      return new Response(this.voix.buf, { headers: { "content-type": this.voix.type, "cache-control": "no-store" } });
+    }
     if (url.pathname.endsWith("/livre")) {
       const livre = (await this.ctx.storage.get("livre")) || [];
       return json({ code: this.code, livre });
@@ -159,7 +175,7 @@ export class Salle extends DurableObject {
     const motif = ["blind", "ecran", "blind", "evenement", "blind", "souvenir", "blind", "ecran", "blind", "evenement", "blind", "blind", "ecran", "blind", "souvenir", "blind"];
     const prog = [];
     const utilisees = new Set();
-    let danses = 0;
+    let danses = 0, karaokes = 0;
     for (let i = 0; i < L; i++) {
       let type = motif[i % motif.length];
       if (type === "souvenir" && !souv.length) type = "blind";
@@ -190,8 +206,14 @@ export class Salle extends DurableObject {
         const s = souv.pop();
         prog.push({ type: "souvenir", txt: s.txt, q: s.q, y: s.y });
       }
+      // karaoké déformé : un joueur chante le refrain du tube qu'on vient de trouver
+      const precedente = prog[prog.length - 1];
+      if (precedente && precedente.type === "blind" && !precedente.finale && karaokes < Math.max(1, Math.floor(L / 6)) && i >= 2 && (i % 4 === 2)) {
+        karaokes++;
+        prog.push({ type: "karaoke", t: precedente.ch.t, a: precedente.ch.a, preview: null, blind: precedente });
+      }
       // une archive TV si la question en a une (jamais deux fois la même dans la partie)
-      const derniere = prog[prog.length - 1];
+      const derniere = [...prog].reverse().find((x) => x.type !== "karaoke");
       if (derniere) {
         const arch = ARCHIVES.find((a) => !utilisees.has(a.id) && (
           (a.artiste && derniere.type === "blind" && derniere.ch.a === a.artiste) ||
@@ -213,6 +235,19 @@ export class Salle extends DurableObject {
     this.reponses = new Map();
     if (this.q.type === "blind" && this.q.extrait === undefined) {
       this.q.extrait = await extraitDeezer(this.q.ch, this.env);
+    }
+    if (this.q.type === "karaoke") {
+      const actifs = [...this.joueurs.values()].filter((j) => j.connecte);
+      if (!actifs.length) return this.suivante();
+      this.dejaChante = this.dejaChante || new Set();
+      let pool = actifs.filter((j) => !this.dejaChante.has(j.id));
+      if (!pool.length) { this.dejaChante.clear(); pool = actifs; }
+      const c = pool[Math.floor(Math.random() * pool.length)];
+      this.dejaChante.add(c.id);
+      this.q.chanteur = c.id;
+      this.q.nomChanteur = c.nom;
+      this.q.voix = 0;
+      this.q.extrait = this.q.blind.extrait;
     }
     this.ouvrir(this.q.type === "annee" ? "annee" : this.q.type);
   }
@@ -294,6 +329,11 @@ export class Salle extends DurableObject {
       if (q.options) question.options = q.options;
       if (q.type === "souvenir") { question.txt = q.txt; question.q = q.q; }
       if (q.type === "archive") { question.video = q.video; question.titre = q.titre; }
+      if (q.type === "karaoke") {
+        question.titre = q.t; question.artiste = q.a; question.chanteur = q.chanteur; question.nomChanteur = q.nomChanteur;
+        question.voix = q.voix || 0; question.effet = q.effet || null;
+        if (pourEcran && q.extrait) question.preview = q.extrait.preview;
+      }
       if (q.type === "blind") {
         question.extrait = !!q.extrait;
         if (pourEcran && q.extrait) { question.preview = q.extrait.preview; }
@@ -329,12 +369,12 @@ export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (url.pathname === "/api/salle" && req.method === "POST") return json({ code: nouveauCode() });
-    const m = url.pathname.match(/^\/(ws|api\/livre)\/([A-Z]{4})$/);
+    const m = url.pathname.match(/^\/(ws|api\/livre|api\/voix)\/([A-Z]{4})$/);
     if (m) {
       const code = m[2];
       const stub = env.SALLE.get(env.SALLE.idFromName(code));
       const u = new URL(req.url);
-      u.pathname = m[1] === "ws" ? "/ws" : "/livre";
+      u.pathname = m[1] === "ws" ? "/ws" : m[1] === "api/voix" ? "/voix" : "/livre";
       u.searchParams.set("code", code);
       return stub.fetch(new Request(u, req));
     }

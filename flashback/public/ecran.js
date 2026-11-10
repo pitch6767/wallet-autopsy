@@ -136,6 +136,16 @@
       sc.innerHTML = '<div class="question">' + echappe(q.texte) + "</div>" + opts(q, true) + (q.type === "ecran" ? '<div class="sous-titre">Première diffusion : ' + q.y + "</div>" : "");
       cad.regle(q.y);
       tinte(true);
+    } else if (ph === "karaoke") {
+      sc.innerHTML = '<div class="danse-ecran"><div class="titre">🎤 Karaoké !</div></div><div class="question">' + echappe(q.nomChanteur) + " va nous chanter « " + echappe(q.titre) + " »</div>" +
+        '<div class="sous-titre">' + echappe(q.artiste) + " · Il ou elle s'enregistre sur son téléphone…</div><div class=\"minuteur\"><i></i></div>";
+      parle(q.nomChanteur + " va nous chanter " + q.titre + " !");
+      if (q.preview) { setTimeout(() => { jouer(q.preview); audio.volume = 0.3; }, 2500); }
+    } else if (ph === "ecoute") {
+      couper();
+      const EFF = { canard: "Voix de canard 🦆", geant: "Voix de géant 👹", robot: "Voix de robot 🤖", stade: "En concert au stade 🏟️" };
+      sc.innerHTML = '<div class="danse-ecran"><div class="titre">' + EFF[q.effet] + '</div></div><div class="question">' + echappe(q.nomChanteur) + " chante « " + echappe(q.titre) + " »</div><div class=\"egaliseur\"><i></i><i></i><i></i><i></i><i></i></div>";
+      ecouter(q.voix, q.effet);
     } else if (ph === "archive") {
       couper(true);
       speechSynthesis.cancel();
@@ -216,6 +226,50 @@
         onStateChange: (e) => { if (e.data === 0) conn.envoie({ type: "suivant" }); },
       },
     });
+  }
+
+  // ---------- Karaoké déformé : on repasse l'enregistrement avec un effet comique ----------
+  async function ecouter(n, effet) {
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+      if (AC.state === "suspended") await AC.resume();
+      const r = await fetch("/api/voix/" + code + "?n=" + n, { cache: "no-store" });
+      const buf = await AC.decodeAudioData(await r.arrayBuffer());
+      const src = AC.createBufferSource();
+      src.buffer = buf;
+      let sortie = AC.createGain();
+      sortie.gain.value = 1.4;
+      sortie.connect(AC.destination);
+      let entree = sortie;
+      if (effet === "canard") src.playbackRate.value = 1.7;
+      if (effet === "geant") src.playbackRate.value = 0.68;
+      if (effet === "robot") {
+        const mod = AC.createGain(); mod.gain.value = 0;
+        const osc = AC.createOscillator(); osc.type = "square"; osc.frequency.value = 55;
+        osc.connect(mod.gain); osc.start(); setTimeout(() => osc.stop(), 30000);
+        mod.connect(sortie); entree = mod;
+      }
+      if (effet === "stade") {
+        const conv = AC.createConvolver(), lg = AC.sampleRate * 3, ir = AC.createBuffer(2, lg, AC.sampleRate);
+        for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < lg; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / lg, 2.5); }
+        conv.buffer = ir;
+        const sec = AC.createGain(); sec.gain.value = 0.7;
+        src.connect(conv); conv.connect(sec); sec.connect(sortie);
+        // applaudissements de foule (bruit filtré) à la fin
+        setTimeout(() => {
+          const nb = AC.createBuffer(1, AC.sampleRate * 3, AC.sampleRate), d = nb.getChannelData(0);
+          for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (Math.random() < 0.02 ? 1 : 0.25) * (1 - i / d.length);
+          const b = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+          b.buffer = nb; f.type = "bandpass"; f.frequency.value = 1800; g.gain.value = 0.6;
+          b.connect(f).connect(g).connect(AC.destination); b.start();
+        }, (buf.duration + 0.3) * 1000);
+      }
+      src.connect(entree);
+      src.start();
+      src.onended = () => setTimeout(() => conn.envoie({ type: "suivant" }), effet === "stade" ? 3500 : 1500);
+    } catch (e) {
+      $("scene").insertAdjacentHTML("beforeend", '<div class="sous-titre">L\'enregistrement n\'a pas pu être lu.</div>');
+    }
   }
 
   // petite cloche de révélation
