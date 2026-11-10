@@ -65,7 +65,7 @@ export async function scanJour(symboles, maintenantMs, { prixMin = 5, volumeMin 
     const vol = s.meta.regularMarketVolume;
     const btc = estBtc(sym);
     if (!btc && (prix == null || prix < prixMin || vol == null || vol < volumeMin)) { comptes.illiquides++; continue; }
-    liquides.push(sym);
+    liquides.push([sym, (prix || 0) * (vol || 0)]);
     if (bars.length < 30) { comptes.courts++; continue; }
     comptes.scannes++;
     const c = bars.map((b) => b[1]);
@@ -74,7 +74,8 @@ export async function scanJour(symboles, maintenantMs, { prixMin = 5, volumeMin 
   }
   hits.sort((a, b) => (b.prix * (b.volume || 0)) - (a.prix * (a.volume || 0)) || a.symbol.localeCompare(b.symbol));
   comptes.trouves = hits.length; comptes.echecs = Object.keys(echecs).length;
-  return { hits, comptes, liquides };
+  liquides.sort((a, b) => b[1] - a[1]);
+  return { hits, comptes, liquides: liquides.map((x) => x[0]) };
 }
 
 // ------------------------------------------------------------- cassure du range d'ouverture (ORB)

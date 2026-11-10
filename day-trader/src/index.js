@@ -5,6 +5,16 @@ import { scanJour, scanOrb } from "./scanner.js";
 import { parcours, REGLAGES_DEFAUT } from "./trade.js";
 import { nouvelles, analyste, congres, verifierAlertes } from "./infos.js";
 import { local, MARCHES, seance, hhmm } from "./temps.js";
+import { schema, demarrer, lotSuivant, classement, lireEtat } from "./test.js";
+import { tourPapier, resume, tradesPapier } from "./papier.js";
+import { suiviNews, statsNews, ITEMS, SEUILS } from "./veille.js";
+import { REGLES, BASES, FILTRES } from "./regles.js";
+export { Veilleur } from "./veille.js";
+
+const PAPIER_TAILLE = 150; // actions les plus échangées suivies en paper (+ BTC)
+let SCHEMA_OK = false;
+async function base(env) { if (!SCHEMA_OK) { await schema(env.DB); SCHEMA_OK = true; } }
+function veilleur(env) { return env.VEILLEUR.get(env.VEILLEUR.idFromName("8k")); }
 
 export class Coffre {
   constructor(state) { this.s = state.storage; }
@@ -68,7 +78,8 @@ export default {
       const corps = req.method === "POST" ? await req.json().catch(() => ({})) : {};
       if (p === "/api/etat") {
         const [r, sj, orb, al] = await Promise.all([reglages(c), c.get("scanJour"), c.get("orb"), c.get("alertes")]);
-        return json({ horloge: horloge(), reglages: r, scanJour: sj && { le: sj.le, trouves: sj.hits.length }, orb: orb && { le: orb.le, trouves: orb.hits.length }, alertes: al || [] });
+        await base(env); const taches = (await env.DB.prepare("SELECT cle, valeur FROM etat WHERE cle LIKE 'dernier-%' OR cle LIKE 'erreur-%'").all()).results;
+        return json({ horloge: horloge(), reglages: r, scanJour: sj && { le: sj.le, trouves: sj.hits.length }, orb: orb && { le: orb.le, trouves: orb.hits.length }, alertes: al || [], taches: Object.fromEntries(taches.map((t) => [t.cle, JSON.parse(t.valeur)])) });
       }
       if (p === "/api/reglages" && req.method === "POST") {
         const r = { ...(await reglages(c)) };
@@ -101,6 +112,13 @@ export default {
         if (req.method === "DELETE") { const le = u.searchParams.get("le"); j = j.filter((x) => x.le !== le); await c.put("journal", j); }
         return json(j);
       }
+      if (p.startsWith("/api/test") || p.startsWith("/api/papier") || p.startsWith("/api/news") || p === "/api/regles") await base(env);
+      if (p === "/api/regles") return json({ bases: BASES, filtres: FILTRES, regles: REGLES.map((r) => ({ id: r.id, base: r.base.nom, filtre: r.filtre.nom, camp: r.filtre.camp })), news: SEUILS.map((x) => ({ id: "news-" + x, nom: `8-K puis hausse de ${x} % dans les 30 min, stop sous le prix de la nouvelle, cible 2R` })) });
+      if (p === "/api/test/demarrer" && req.method === "POST") { const l = (await c.get("liquides")) || []; if (!l.length) return json({ erreur: "Lance d'abord le scan du jour (il donne la liste des actions liquides)." }, 400); return json(await demarrer(env, [...l, "BTC"])); }
+      if (p === "/api/test") return json(await classement(env.DB, +(u.searchParams.get("mise") || 1000)));
+      if (p === "/api/papier") return json(await resume(env.DB, { mise: +(u.searchParams.get("mise") || 1000), depuis: u.searchParams.get("depuis") || "" }));
+      if (p === "/api/papier/trades") return json(await tradesPapier(env.DB, { regle: u.searchParams.get("regle") || "", date: u.searchParams.get("date") || "" }, +(u.searchParams.get("mise") || 1000)));
+      if (p === "/api/news") { const st = await statsNews(env.DB); const ve = await (await veilleur(env).fetch("https://v/etat")).json(); return json({ ...st, veilleur: ve, items: ITEMS }); }
       if (p === "/api/sonde") return json({ ok: true, horloge: horloge() });
       return json({ erreur: "inconnu" }, 404);
     } catch (e) {
@@ -108,12 +126,34 @@ export default {
     }
   },
   async scheduled(ev, env, ctx) {
+    ENV = env;
     const c = coffre(env);
     if (ev.cron === "17 13 * * 1-5") { ctx.waitUntil(lancerScanJour(env).catch(() => {})); return; }
-    const al = (await c.get("alertes")) || [];
-    if (!al.length) return;
-    const son = await verifierAlertes(al);
-    if (son.length) { await c.put("alertes", al); const h = (await c.get("sonneries")) || []; await c.put("sonneries", [...son, ...h].slice(0, 200)); }
-    else await c.put("alertes", al);
+    await base(env);
+    const journal = async (cle, f) => { try { const r = await f(); await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("dernier-" + cle, JSON.stringify({ quand: new Date().toISOString(), r })).run(); } catch (e) { await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("erreur-" + cle, JSON.stringify({ quand: new Date().toISOString(), e: String(e.message || e) })).run(); } };
+    // 1. veilleur des nouvelles toujours armé
+    await journal("veilleur", async () => (await veilleur(env).fetch("https://v/demarrer")).json());
+    // 2. alertes de prix
+    await journal("alertes", async () => {
+      const al = (await c.get("alertes")) || []; if (!al.length) return 0;
+      const son = await verifierAlertes(al); await c.put("alertes", al);
+      if (son.length) { const h = (await c.get("sonneries")) || []; await c.put("sonneries", [...son, ...h].slice(0, 200)); }
+      return son.length;
+    });
+    // 3. suivi des nouvelles
+    await journal("news", () => suiviNews(env));
+    // 4. paper toutes les 5 minutes (une minute après la clôture de chaque barre)
+    const min = new Date(ev.scheduledTime).getUTCMinutes();
+    if (min % 5 === 1) await journal("papier", async () => {
+      const liq = (await c.get("liquides")) || []; const sj = (await c.get("scanJour")) || { hits: [] };
+      return tourPapier(env, liq.slice(0, PAPIER_TAILLE), new Set(sj.hits.map((h) => h.symbol)), ev.scheduledTime);
+    });
+    // 5. banc d'essai : démarre tout seul la première fois, puis un lot de 40 actions par minute
+    else await journal("test", async () => {
+      const e = await lireEtat(env.DB, "test");
+      if (!e) { const l = (await c.get("liquides")) || []; if (!l.length) return "pas de liste"; const d = await demarrer(env, [...l, "BTC"]); return { demarre: d.liste.length }; }
+      if (e.fini) return "fini";
+      const r = await lotSuivant(env, 40); return { pos: r.pos, total: r.liste.length };
+    });
   },
 };

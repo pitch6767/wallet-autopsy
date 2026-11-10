@@ -1,13 +1,10 @@
 #!/bin/bash
 # Contrôles après déploiement (résultats raccourcis)
 U=$1
-c() { echo "--- $1"; shift; curl -sS -m 300 "$@" | head -c 1500; echo; }
-c etat "$U/api/etat"
-c trade-TSLA -X POST -H "content-type: application/json" -d '{"symbol":"TSLA","cible":"1R"}' "$U/api/trade"
-c trade-BTC -X POST -H "content-type: application/json" -d '{"symbol":"BTC"}' "$U/api/trade"
-c nouvelles "$U/api/nouvelles?symbols=TSLA,BTC&heures=24"
-c congres "$U/api/congres?membre=pelosi"
-echo "--- analyste"; curl -sS -m 120 "$U/api/analyste?symbol=AAPL" | jq -c "{nom, erreur, l: [.lignes[0:2][]? | {fin, revenu, bpa, revenuSurUnAn}]}"
-echo "--- 8-K"; curl -sS -m 120 "$U/api/nouvelles?symbols=AAPL&heures=720" | jq -c "[.[] | {depots, erreurs}]"
-echo "--- scan-jour (comptes)"; curl -sS -m 300 -X POST "$U/api/scan-jour" | jq -c '{duree, comptes, nb: (.hits|length), btc: [.hits[]|select(.symbol=="BTC")]}'
-c orb -X POST -H "content-type: application/json" -d '{}' "$U/api/orb"
+echo "--- scan-jour (liste triée)"; curl -sS -m 300 -X POST "$U/api/scan-jour" | jq -c '{duree, comptes, top: [.hits[0:3][].symbol]}'
+echo "--- regles"; curl -sS -m 60 "$U/api/regles" | jq -c '{n: (.regles|length), news: (.news|length)}'
+sleep 100
+echo "--- etat taches"; curl -sS -m 60 "$U/api/etat" | jq -c '.taches'
+echo "--- test"; curl -sS -m 120 "$U/api/test" | jq -c '{etat: (.etat|{pos, total: (.liste|length), coupure, seances, fini}), regles: (.regles|length), top: [.regles|sort_by(-(.B.gain // -1e9))|.[0:5][]|{regle, A: .A.gain, B: .B.gain}], choix: .choixSurA}'
+echo "--- papier"; curl -sS -m 60 "$U/api/papier" | jq -c '{depuis, jusqua, n: (.regles|length), top: [.regles[0:5][]|{regle, trades, gain}]}'
+echo "--- news"; curl -sS -m 60 "$U/api/news" | jq -c '{veilleur, n: (.dernieres|length), ex: [.dernieres[0:3][]|{sym, items, prix0, en_seance}]}'
