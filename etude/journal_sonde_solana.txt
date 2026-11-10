@@ -1,36 +1,3 @@
-BOT 15 trades, gain 2021 | BANC 23 trades, gain 5194
-/home/runner/work/wallet-autopsy/wallet-autopsy/etude/sonde_solana.py:10: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
-  cyc = sorted({t["fin"][:19] for t in P} | {__import__("datetime").datetime.utcfromtimestamp(t["endTs"] / 1000).isoformat()[:19] for t in B})
-/home/runner/work/wallet-autopsy/wallet-autopsy/etude/sonde_solana.py:12: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
-  bp = [t for t in P if t["fin"][:19] == c]; bb = [t for t in B if __import__("datetime").datetime.utcfromtimestamp(t["endTs"] / 1000).isoformat()[:19] == c]
-cycle 23:10 | bot     +0 :  | banc   -110 : UP 0.350 110$ 23:05:05  <== ÉCART
-cycle 23:25 | bot     +0 :  | banc   +551 : UP 0.253 200$ 23:23:56  <== ÉCART
-cycle 04:15 | bot    -53 : DOWN 0.130 53$ 04:14:20 | banc  +2026 : UP 0.084 200$ 04:13:36  <== ÉCART
-cycle 04:45 | bot   +673 : UP 0.128 106$ 04:43:31 | banc   +279 : UP 0.260 105$ 04:43:30  <== ÉCART
-cycle 04:50 | bot     +0 :  | banc   +109 : DOWN 0.470 104$ 04:45:37  <== ÉCART
-cycle 05:45 | bot   -199 : DOWN 0.056 199$ 05:44:04 | banc   -200 : DOWN 0.061 200$ 05:44:03
-cycle 06:50 | bot   -195 : UP 0.370 91$ 06:48:38, UP 0.370 104$ 06:48:38 | banc   -200 : UP 0.322 105$ 06:48:37, UP 0.364 95$ 06:48:37
-cycle 06:55 | bot   -199 : UP 0.071 199$ 06:54:10 | banc   -200 : UP 0.072 200$ 06:54:10
-cycle 07:40 | bot  +1259 : DOWN 0.128 198$ 07:37:32 | banc  +1256 : DOWN 0.130 200$ 07:37:31
-cycle 08:05 | bot  +1018 : UP 0.154 198$ 08:04:14 | banc  +1032 : UP 0.153 200$ 08:04:14
-cycle 08:30 | bot   -198 : UP 0.104 198$ 08:28:34 | banc   -200 : UP 0.112 200$ 08:28:33
-cycle 10:25 | bot     +0 :  | banc    +17 : DOWN 0.428 13$ 10:22:05
-cycle 10:30 | bot   +193 : UP 0.335 105$ 10:27:09 | banc   +201 : UP 0.328 105$ 10:27:08
-cycle 10:40 | bot   -199 : DOWN 0.086 199$ 10:39:18 | banc   -200 : DOWN 0.086 200$ 10:39:18
-cycle 10:50 | bot   +279 : UP 0.260 105$ 10:48:12 | banc   +208 : UP 0.320 105$ 10:48:11  <== ÉCART
-cycle 10:55 | bot     +0 :  | banc  +1036 : DOWN 0.153 200$ 10:53:49  <== ÉCART
-cycle 11:00 | bot    -53 : UP 0.050 53$ 10:59:36 | banc    -53 : UP 0.050 53$ 10:59:36
-cycle 11:05 | bot   -106 : DOWN 0.150 106$ 11:04:21 | banc   -106 : DOWN 0.150 106$ 11:04:21
-cycle 12:00 | bot   -199 : UP 0.075 199$ 11:59:20 | banc   -200 : UP 0.077 200$ 11:59:20
-cycle 12:10 | bot     +0 :  | banc    -11 : UP 0.306 8$ 12:07:34, UP 0.305 3$ 12:07:34
-cycle 12:40 | bot     +0 :  | banc    -40 : UP 0.287 40$ 12:39:09  <== ÉCART
+BOT 0 trades, gain 0 | BANC 0 trades, gain 0
 
 DÉCISIONS refusées :
-  12:07:34 101 UP 0.26 k 2 | plafond de 200 $ par cycle (frais compris) atteint pour le n° 600005
-  12:07:44 105 UP 0.26 k 2 | non rempli (rien au prix maximum)
-  12:18:54 101 UP 0.26 k 0 | n° 600005 : règle non remplie (BTC pas assez bougé, efficacité inconnue ou contexte absent)
-  12:39:04 101 UP 0.1 k 2 | plafond de 200 $ par cycle (frais compris) atteint pour le n° 600005
-  12:39:09 101 UP 0.26 k 2 | plafond de 200 $ par cycle (frais compris) atteint pour le n° 600005
-  12:39:14 105 UP 0.1 k 2 | non rempli (rien au prix maximum)
-  12:44:15 105 UP 0.2 k 0 | n° 600005 : règle non remplie (BTC pas assez bougé, efficacité inconnue ou contexte absent)
-  12:52:12 101 DOWN 0.18 k 0 | n° 600005 : règle non remplie (BTC pas assez bougé, efficacité inconnue ou contexte absent)
