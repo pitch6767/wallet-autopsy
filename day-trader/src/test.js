@@ -23,7 +23,8 @@ export function seancesCompletes(s, sym) {
   const m = marcheDe(sym); const nb = (m.fermeture - m.ouverture) / 5;
   const j = {};
   for (const b of barres(s, sym, Date.now())) (j[b.date] = j[b.date] || [])[b.slot] = b;
-  return Object.keys(j).sort().filter((d) => j[d].length === nb && j[d].every(Boolean)).map((d) => [d, j[d]]);
+  // attention : every() saute les trous d'un tableau, donc on vérifie chaque créneau un par un
+  return Object.keys(j).sort().filter((d) => j[d].length === nb && Array.from({ length: nb }, (_, i) => j[d][i]).every(Boolean)).map((d) => [d, j[d]]);
 }
 
 function creux(pcts) { let c = 0, pic = 0, pire = 0; for (const p of pcts) { c += p; pic = Math.max(pic, c); pire = Math.min(pire, c - pic); } return pire; }
