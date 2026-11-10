@@ -33,7 +33,7 @@ export async function demarrer(env, symboles) {
   // coupure A/B : milieu des séances de QQQ
   const q = seancesCompletes(await graphique("QQQ", "60d", "5m"), "QQQ").map((x) => x[0]);
   const coupure = q[Math.floor(q.length / 2)];
-  const etat = { liste: symboles, pos: 0, debut: new Date().toISOString(), coupure, premiere: q[0], derniere: q[q.length - 1], seances: q.length, fini: false, echecs: 0 };
+  const etat = { gen: crypto.randomUUID(), liste: symboles, pos: 0, debut: new Date().toISOString(), coupure, premiere: q[0], derniere: q[q.length - 1], seances: q.length, fini: false, echecs: 0 };
   await ecrireEtat(env.DB, "test", etat);
   return etat;
 }
@@ -79,6 +79,8 @@ export async function lotSuivant(env, taille = 40) {
       for (const [d, [n, s]] of Object.entries(parJour)) st.push(env.DB.prepare("INSERT INTO bt_jour VALUES (?,?,?,?) ON CONFLICT (regle, date) DO UPDATE SET n = n + excluded.n, spct = spct + excluded.spct").bind(rid, d, n, s));
     }
   });
+  const cur = await lireEtat(env.DB, "test");
+  if (!cur || cur.gen !== etat.gen) return cur; // le test a été relancé pendant ce lot : on jette ce lot
   for (let i = 0; i < st.length; i += 400) await env.DB.batch(st.slice(i, i + 400));
   etat.pos += lot.length; etat.verrou = null;
   if (etat.pos >= etat.liste.length) { etat.fini = true; etat.finLe = new Date().toISOString(); }
