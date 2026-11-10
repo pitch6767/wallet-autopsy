@@ -41,7 +41,9 @@ reste.sort(() => alea() - 0.5);
 const jour = reste.slice(0, NB_JOUR);
 
 const sortie = path.join(__dirname, "..", "public");
-const net = (x) => ({ z: x.z, s: x.s, d: x.d });
+// Palier d'aide : 1 (tiers facile), 2 (milieu), 3 (tiers difficile)
+const q1 = toutes[Math.floor(toutes.length / 3)].d, q2 = toutes[Math.floor((2 * toutes.length) / 3)].d;
+const net = (x) => ({ z: x.z, s: x.s, d: x.d, a: x.d <= q1 ? 1 : x.d <= q2 ? 2 : 3 });
 fs.writeFileSync(path.join(sortie, "niveaux.json"), JSON.stringify(niveaux.map(net)));
 fs.writeFileSync(path.join(sortie, "jour.json"), JSON.stringify(jour.map(net)));
 console.log("grilles valides", toutes.length, "niveaux", niveaux.length, "jour", jour.length);

@@ -1,6 +1,6 @@
 // Sublime — jouable hors ligne (le jeu se charge depuis le cache, la sauvegarde attend le réseau)
-const VERSION = "sublime-v5";
-const FICHIERS = ["/", "/style.css?v=4", "/app.js?v=5", "/niveaux.json?v=3", "/jour.json?v=1", "/manifest.webmanifest", "/icon-192.png", "/icon-180.png"];
+const VERSION = "sublime-v6";
+const FICHIERS = ["/", "/style.css?v=5", "/app.js?v=6", "/niveaux.json?v=4", "/jour.json?v=2", "/manifest.webmanifest", "/icon-192.png", "/icon-180.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FICHIERS)).then(() => self.skipWaiting()));

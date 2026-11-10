@@ -1,7 +1,7 @@
 // Sublime — le jeu
 (function () {
   const $ = (id) => document.getElementById(id);
-  const NV = 2; // version des grilles (les parties en cours d'avant sont remises à zéro)
+  const NV = 3; // version des grilles (les parties en cours d'avant sont remises à zéro)
   // Couleurs franches, aucune case pâle
   const COULEURS = ["#E5484D", "#F5A524", "#12A594", "#E93D82", "#3E63DD", "#8E4EC6", "#46A758", "#F76B15", "#0EA5E9", "#9A5B32"];
   const POISSONS_MAX = 3;
@@ -222,7 +222,7 @@
     const z = new Array(n * n), sol = new Array(n);
     for (let l = 0; l < n; l++) for (let c = 0; c < n; c++) { const [a, b] = tr(l, c); z[a * n + b] = z0[l * n + c]; }
     for (let l = 0; l < n; l++) { const [a, b] = tr(l, s0[l]); sol[a] = b; }
-    return { n, z, sol, d: base.d || 0 };
+    return { n, z, sol, d: base.d || 0, a: base.a || 1 };
   }
   // Niveaux classés du plus facile au plus difficile ; au-delà, les plus durs reviennent retournés
   function grilleDuNiveau(niveau) {
@@ -242,7 +242,7 @@
   let mode = "niveau";
 
   // Aides offertes selon la difficulté de la grille : facile = rien, puis 1 astuce + 1 chat, 2 + 2, 3 + 3
-  function aidesPour(d) { return d < 50 ? 0 : d < 100 ? 1 : d < 160 ? 2 : 3; }
+  function aidesPour(a) { return Math.max(1, Math.min(3, a || 1)); }
   const dispo = (k) => ((P && P.aides && P.aides[k]) || 0) + (profil[k] || 0);
   function utiliser(k) { if (P.aides && P.aides[k] > 0) P.aides[k]--; else profil[k]--; }
 
@@ -284,9 +284,9 @@
     historique.length = 0;
     let annonce = "";
     if (!P.aides) {
-      const a = aidesPour(G.d);
+      const a = aidesPour(G.a);
       P.aides = { astuces: a, chats: a };
-      if (a) annonce = "Grille plus corsée : " + a + " astuce" + (a > 1 ? "s" : "") + " et " + a + " chat" + (a > 1 ? "s" : "") + " offerts pour celle-ci.";
+      if (a > 1) annonce = "Grille plus corsée : " + a + " astuce" + (a > 1 ? "s" : "") + " et " + a + " chat" + (a > 1 ? "s" : "") + " offerts pour celle-ci.";
     }
     $("titre-niveau").textContent = mode === "jour" ? "Défi du jour" : "Niveau " + P.niveau;
     $("sous-titre").textContent = mode === "jour" ? dateLisible(P.date) : etiquette(P.niveau);
@@ -483,43 +483,95 @@
     sauverMaintenant();
   });
 
+  // ---------- Astuce : le prochain coup logique, expliqué ----------
+  const NOMS = ["rouge", "jaune", "turquoise", "rose", "bleue", "violette", "verte", "orange", "bleu ciel", "marron"];
+  function prochainCoup() {
+    const n = G.n, N = n * n;
+    const lig = (i) => Math.floor(i / n), col = (i) => i % n;
+    const tue = (i) => {
+      const r = [];
+      for (let j = 0; j < N; j++) {
+        if (j === i) continue;
+        if (lig(j) === lig(i) || col(j) === col(i) || G.z[j] === G.z[i] || (Math.abs(lig(j) - lig(i)) <= 1 && Math.abs(col(j) - col(i)) <= 1)) r.push(j);
+      }
+      return r;
+    };
+    const estChat = (i) => P.chats.includes(i);
+    // 1. une croix posée sur la cachette d'un chat
+    for (const k in P.croix) {
+      const i = +k;
+      if (G.sol[lig(i)] === col(i)) return { vise: [i], source: [], efface: [i], txt: "Attention, cette croix est une erreur : un chat se cache justement ici !" };
+    }
+    // 2. croix oubliées autour d'un chat déjà trouvé
+    let mieux = null;
+    for (const c of P.chats) {
+      const manque = tue(c).filter((j) => !P.croix[j] && !estChat(j));
+      if (manque.length && (!mieux || manque.length > mieux.croix.length)) mieux = { croix: manque, source: [c] };
+    }
+    if (mieux) return { ...mieux, txt: "Ce chat bloque sa ligne, sa colonne, sa couleur et les cases qui le touchent : toutes ces cases sont vides." };
+    // 3. raisonnement sur les cases encore libres
+    const libre = (i) => !P.croix[i] && !estChat(i);
+    const unites = [];
+    for (let l = 0; l < n; l++) unites.push({ nom: "la ligne " + (l + 1), cases: [...Array(n).keys()].map((c) => l * n + c), f: "l", k: l });
+    for (let c = 0; c < n; c++) unites.push({ nom: "la colonne " + (c + 1), cases: [...Array(n).keys()].map((l) => l * n + c), f: "c", k: c });
+    for (let k = 0; k < n; k++) unites.push({ nom: "la zone " + NOMS[k], cases: [...Array(N).keys()].filter((i) => G.z[i] === k), f: "z", k });
+    const ouvertes = unites.filter((u) => !u.cases.some(estChat)).map((u) => ({ ...u, libres: u.cases.filter(libre) }));
+    ouvertes.sort((a, b) => a.libres.length - b.libres.length);
+    // a. une seule case possible
+    for (const u of ouvertes) if (u.libres.length === 1) return { vise: u.libres, source: u.cases, txt: "Dans " + u.nom + ", il ne reste qu'une case libre : le chat se cache là ! Touche-la deux fois." };
+    // b. cases barrées par toutes les cachettes possibles d'une couleur, ligne ou colonne
+    for (const u of ouvertes) {
+      let inter = null;
+      for (const i of u.libres) { const t = new Set(tue(i)); inter = inter ? inter.filter((j) => t.has(j)) : [...t]; }
+      const croix = (inter || []).filter(libre);
+      if (croix.length) return { croix, source: u.libres, txt: "Où que se cache le chat de " + u.nom + " (cases entourées), il bloque ces cases : elles sont forcément vides." };
+    }
+    // c. groupes : N zones enfermées dans N lignes (ou colonnes)
+    const zones = ouvertes.filter((u) => u.f === "z");
+    for (const f of ["l", "c"]) {
+      const pos = (i) => (f === "l" ? lig(i) : col(i));
+      const mot = f === "l" ? "lignes" : "colonnes";
+      for (let m = 2; m <= 4; m++) {
+        const essai = (debut, choix) => {
+          if (choix.length === m) {
+            const ens = new Set(); choix.forEach((u) => u.libres.forEach((i) => ens.add(pos(i))));
+            if (ens.size !== m) return null;
+            const dans = new Set(choix.map((u) => u.k));
+            const croix = [...Array(N).keys()].filter((i) => ens.has(pos(i)) && libre(i) && !dans.has(G.z[i]));
+            return croix.length ? { croix, source: choix.flatMap((u) => u.libres), txt: "Ces " + m + " zones (" + choix.map((u) => NOMS[u.k]).join(", ") + ") tiennent dans " + m + " " + mot + " : leurs chats remplissent ces " + mot + ", le reste y est vide." } : null;
+          }
+          for (let x = debut; x < zones.length; x++) { const r = essai(x + 1, [...choix, zones[x]]); if (r) return r; }
+          return null;
+        };
+        const r = essai(0, []);
+        if (r) return r;
+      }
+    }
+    // d. coup difficile : on montre la cachette
+    const u = ouvertes[0];
+    const cible = u.cases.find((i) => G.sol[lig(i)] === col(i));
+    return { vise: [cible], source: u.cases, txt: "Coup difficile : le chat de " + u.nom + " se cache ici. Touche-la deux fois." };
+  }
+
+  function nettoieAstuce() { document.querySelectorAll(".case.source, .case.vise").forEach((d) => d.classList.remove("source", "vise")); }
   $("btn-astuce").addEventListener("click", () => {
     if (!P || fini()) return;
     if (!dispo("astuces")) return info("Pas d'astuce. Réussis un niveau sans recommencer pour en gagner une.");
-    const n = G.n;
-    const oubliees = new Set();
-    for (const i of P.chats) {
-      const l = Math.floor(i / n), c = i % n, k = G.z[i];
-      for (let j = 0; j < n * n; j++) {
-        const lj = Math.floor(j / n), cj = j % n;
-        if (j === i) continue;
-        if (lj === l || cj === c || G.z[j] === k || (Math.abs(lj - l) <= 1 && Math.abs(cj - c) <= 1)) oubliees.add(j);
-      }
-    }
-    const cand = [...oubliees].filter((j) => !P.croix[j] && !P.chats.includes(j));
-    let marquees = [];
-    if (cand.length) {
-      marquees = [cand[Math.floor(Math.random() * cand.length)]];
-      info("Tu as oublié une croix ici.");
-    } else {
-      let meilleur = -1, liste = [];
-      for (let k = 0; k < n; k++) {
-        if (P.chats.some((i) => G.z[i] === k)) continue;
-        const ouvertes = [];
-        for (let j = 0; j < n * n; j++) {
-          const lj = Math.floor(j / n);
-          if (G.z[j] === k && G.sol[lj] !== j % n && !P.croix[j]) ouvertes.push(j);
-        }
-        if (ouvertes.length > meilleur) { meilleur = ouvertes.length; liste = ouvertes; }
-      }
-      if (meilleur <= 0) return info("Rien à révéler : tout est déjà juste.");
-      liste.sort(() => Math.random() - 0.5);
-      marquees = liste.length >= 2 ? liste.slice(0, liste.length - 1) : liste;
-      info(marquees.length + (marquees.length > 1 ? " croix posées" : " croix posée") + " dans une couleur.");
-    }
+    const c = prochainCoup();
+    if (!c) return info("Rien à révéler : tout est déjà juste.");
     utiliser("astuces");
     joue("bonus");
-    for (const j of marquees) { P.croix[j] = "aide"; majCase(j, true); historique.push({ type: "croix", i: j, avant: 0 }); }
+    nettoieAstuce();
+    const cases = $("plateau").children;
+    for (const i of c.efface || []) { const av = P.croix[i]; delete P.croix[i]; majCase(i, true); historique.push({ type: "croix", i, avant: av }); }
+    for (const j of c.croix || []) {
+      P.croix[j] = 1; majCase(j, true); historique.push({ type: "croix", i: j, avant: 0 });
+      const x = $("plateau").children[j].firstChild; if (x) x.classList.add("aide");
+    }
+    for (const i of c.source || []) cases[i].classList.add("source");
+    for (const i of c.vise || []) cases[i].classList.add("vise");
+    setTimeout(nettoieAstuce, 9000);
+    info(c.txt, 10000);
     majBonus();
     sauverMaintenant();
   });
@@ -780,8 +832,8 @@
 
   // ---------- Démarrage ----------
   const pret = Promise.all([
-    fetch("/niveaux.json?v=3").then((r) => r.json()).then((d) => (NIVEAUX = d)),
-    fetch("/jour.json?v=1").then((r) => r.json()).then((d) => (JOUR = d)),
+    fetch("/niveaux.json?v=4").then((r) => r.json()).then((d) => (NIVEAUX = d)),
+    fetch("/jour.json?v=2").then((r) => r.json()).then((d) => (JOUR = d)),
   ]);
   if (jeton) {
     pret.then(() => api("/api/profil")).then((d) => demarrer(d.profil)).catch(() => { jeton = null; montrer("ecran-connexion"); });

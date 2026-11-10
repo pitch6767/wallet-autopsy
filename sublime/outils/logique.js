@@ -52,8 +52,8 @@
             const s = new Set(tue[i]);
             inter = inter ? inter.filter((j) => s.has(j)) : [...s];
           }
-          for (const j of inter || []) if (cd[j]) { cd[j] = 0; bouge = true; if (compte) compte[2]++; }
-          if (bouge) break;
+          for (const j of inter || []) if (cd[j]) { cd[j] = 0; bouge = true; }
+          if (bouge) { if (compte) compte[2]++; break; }
         }
       }
       return true;
@@ -80,8 +80,9 @@
           for (const b of u) for (const i of B[b]) {
             if (!cd[i]) continue;
             const a = A === zon ? z[i] : A === lignes ? (i / n) | 0 : i % n;
-            if (!dedans.has(a)) { cd[i] = 0; fait = true; compte[3]++; }
+            if (!dedans.has(a)) { cd[i] = 0; fait = true; }
           }
+          if (fait) compte[3]++;
           return fait;
         };
         for (let x = 0; x < m; x++) for (let y = x + 1; y < m; y++) {
@@ -114,7 +115,7 @@
     }
     if (chat.reduce((a, b) => a + b, 0) !== n) return null;
     if (compte[2]) niveauMax = Math.max(niveauMax, 2);
-    const score = compte[1] * 1 + compte[2] * 2 + compte[3] * 6 + compte[4] * 15;
+    const score = compte[1] * 1 + compte[2] * 5 + compte[3] * 15 + compte[4] * 30;
     const sol = new Array(n);
     for (let i = 0; i < N; i++) if (chat[i]) sol[(i / n) | 0] = i % n;
     return { score, niveauMax, compte, sol };
