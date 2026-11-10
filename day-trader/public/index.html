@@ -49,7 +49,7 @@ svg{width:100%;height:auto;display:block}
 </head>
 <body>
 <header>
-  <h1>Day Trader <span class="doux">· actions US + BTC</span></h1>
+  <h1>Day Trader <span class="doux">· actions US</span></h1>
   <div id="horloge">…</div>
   <nav id="onglets">
     <button data-o="papier" class="actif">Paper auto</button>
@@ -79,8 +79,8 @@ svg{width:100%;height:auto;display:block}
 
 <section id="classement">
   <div class="carte">
-    <h2>Leurs règles contre les nôtres (60 jours)</h2>
-    <div class="doux">Chaque règle rejouée sur toutes les actions liquides + BTC, avec la même exécution réaliste que le paper. Méthode Bot95 : <b>période A</b> (1re moitié) pour choisir, <b>période B</b> (2e moitié, jamais vue au moment du choix) pour vérifier. Une règle « tient » seulement si elle gagne sur A <b>et</b> sur B. 1 000 $ par trade.</div>
+    <h2>Leurs idées et les nôtres, seules puis liées</h2>
+    <div class="doux">Intraday : 60 jours de barres 5 min. Journalier et résultats : 1 an. Sur les 25 plus grosses + les 75 plus volatiles. Chaque règle avec la même exécution réaliste que le paper. Méthode Bot95 : <b>période A</b> (1re moitié) pour choisir, <b>période B</b> (2e moitié, jamais vue au moment du choix) pour vérifier. Une règle « tient » seulement si elle gagne sur A <b>et</b> sur B. 1 000 $ par trade.</div>
     <div id="clEtat" class="doux" style="margin-top:6px"></div>
     <button class="second" id="clMaj">Actualiser</button> <button class="second" id="clRelance">Relancer le test complet</button>
   </div>
@@ -221,7 +221,7 @@ function occupe(btn, oui, txt) { btn.disabled = oui; if (oui) { btn.dataset.t = 
 
 document.querySelectorAll("#onglets button").forEach((b) => b.onclick = () => montrer(b.dataset.o));
 let NOMS = {};
-async function noms() { if (Object.keys(NOMS).length) return; try { const r = await api("/api/regles"); for (const x of r.regles) NOMS[x.id] = { nom: `${x.filtre} · ${x.base}`, camp: x.camp }; for (const x of r.news) NOMS[x.id] = { nom: x.nom, camp: "news" }; } catch (e) {} }
+async function noms() { if (Object.keys(NOMS).length) return; try { const r = await api("/api/regles"); for (const x of r.regles) NOMS[x.id] = { nom: `${x.base} ${x.filtre === "règle seule" ? "(seule)" : x.filtre}`, camp: x.camp, famille: x.famille }; for (const x of r.news) NOMS[x.id] = { nom: x.nom, camp: "news" }; } catch (e) {} }
 const campTag = (id) => { const c = (NOMS[id] || {}).camp; return c === "leur" ? '<span class="pastille">leur</span>' : c === "news" ? '<span class="pastille" style="background:#3b2e0a">news</span>' : '<span class="pastille" style="background:#0f2a4a">nous</span>'; };
 const usd = (x) => x == null ? "—" : (x >= 0 ? "+" : "−") + Math.abs(Math.round(x)).toLocaleString("fr-CH") + " $";
 const cls = (x) => x > 0 ? "ok" : x < 0 ? "ko" : "";
@@ -249,8 +249,10 @@ async function chargerClassement() {
   await noms(); const out = $("#clRes");
   try {
     const r = await api("/api/test"); const e = r.etat;
-    $("#clEtat").innerHTML = !e ? "Le test démarre tout seul dans la minute." : e.fini ? `Test fini le ${new Date(e.finLe).toLocaleString("fr-CH")} · ${e.liste.length} symboles · ${e.seances} séances du ${e.premiere} au ${e.derniere} · A = avant le ${e.coupure}, B = depuis le ${e.coupure}` : `Test en cours : ${e.pos} / ${e.liste.length} symboles (≈ 40 par minute). Les chiffres se remplissent au fur et à mesure.`;
-    const rg = r.regles.slice().sort((a, b) => ((b.B || {}).gain ?? -1e9) - ((a.B || {}).gain ?? -1e9));
+    $("#clEtat").innerHTML = (!e ? "Le test démarre tout seul dans la minute." : (e.fini ? `Test fini le ${new Date(e.finLe).toLocaleString("fr-CH")}` : `Test en cours : ${e.pos} / ${e.liste.length} actions (≈ 12 par minute), les chiffres se remplissent au fur et à mesure`) + `<br>Intraday : ${e.seances} séances du ${e.premiere} au ${e.derniere}, B depuis le ${e.coupure}.` + (e.coupureJ ? ` Journalier : du ${e.premiereJ} au ${e.derniereJ}, B depuis le ${e.coupureJ}.` : "") + (e.grosses ? `<details><summary>Les ${e.liste.length} actions</summary><b>25 plus grosses :</b> ${e.grosses.join(", ")}<br><b>75 plus volatiles :</b> ${e.volatiles.map((x) => `${x} (${e.volatilite[x]} %/j)`).join(", ")}</details>` : ""));
+    const rg = r.regles.slice().sort((a, b) => (b.tient - a.tient) || (((b.B || {}).gain ?? -1e9) - ((a.B || {}).gain ?? -1e9)));
+    const fam = (f) => rg.filter((x) => ((NOMS[x.regle] || {}).famille || "intraday") === f);
+    const tiennent = rg.filter((x) => x.tient);
     const lig = (x) => `<tr><td>${campTag(x.regle)} ${esc(x.regle)}${x.tient ? ' <span class="ok">✓ tient</span>' : ""}<br><span class="doux">${esc((NOMS[x.regle] || {}).nom || "")}</span></td>
       <td class="num">${x.A ? `${x.A.trades} tr.<br>${x.A.gagnants} %<br><span class="${cls(x.A.gain)}">${usd(x.A.gain)}</span>` : "—"}</td>
       <td class="num">${x.B ? `${x.B.trades} tr.<br>${x.B.gagnants} %<br><b class="${cls(x.B.gain)}">${usd(x.B.gain)}</b>` : "—"}</td>
@@ -261,7 +263,9 @@ async function chargerClassement() {
       <span>100 meilleurs</span><b>A ${usd(c.top100.gainA)} → B <span class="${cls(c.top100.gainB)}">${usd(c.top100.gainB)}</span> (${c.top100.tradesB} trades)</b>
       <span>500 meilleurs</span><b>A ${usd(c.top500.gainA)} → B <span class="${cls(c.top500.gainB)}">${usd(c.top500.gainB)}</span> (${c.top500.tradesB} trades)</b></div>
       <div class="doux" style="margin-top:6px">Si B est beaucoup plus bas que A, le « meilleur » d'hier était surtout de la chance : c'est le piège à éviter.</div></div>
-      <div class="carte"><h2>Par règle (triées par résultat sur B)</h2><div style="overflow-x:auto"><table><tr><th>Règle</th><th class="num">A</th><th class="num">B</th><th class="num">Creux</th></tr>${rg.map(lig).join("")}</table></div><div class="doux">Creux = pire baisse du total en prenant tous les signaux de la règle (toutes actions, 1 000 $ chacun).</div></div>
+      <div class="carte"><h2>Liées : celles qui gagnent sur A ET sur B (${tiennent.length})</h2>${tiennent.length ? `<table><tr><th>Règle</th><th class="num">A</th><th class="num">B</th><th class="num">Creux</th></tr>${tiennent.map(lig).join("")}</table><div class="doux">Ensemble (sans retirer les doublons) : A ${usd(tiennent.reduce((a, x) => a + x.A.gain, 0))} · B ${usd(tiennent.reduce((a, x) => a + x.B.gain, 0))}. Elles passent en paper sur des jours nouveaux avant toute conclusion.</div>` : '<div class="doux">Aucune pour l\'instant.</div>'}</div>
+      ${[["intraday", "Intraday (5 min, 60 jours)"], ["journalier", "Journalier : figures du scanner (1 an)"], ["résultats", "Après de bons résultats SEC (1 an)"]].map(([f, t]) => `<div class="carte"><h2>${t}</h2><div style="overflow-x:auto"><table><tr><th>Règle</th><th class="num">A</th><th class="num">B</th><th class="num">Creux</th></tr>${fam(f).map(lig).join("") || '<tr><td colspan="4" class="doux">Pas encore de résultat.</td></tr>'}</table></div></div>`).join("")}
+      <div class="doux">Creux = pire baisse du total en prenant tous les signaux de la règle (toutes actions, 1 000 $ chacun). ✓ tient = gagne sur A et sur B.</div>
       <div class="carte"><h2>Couples qui gagnent sur A ET sur B</h2><div style="overflow-x:auto"><table><tr><th>Action</th><th>Règle</th><th class="num">A</th><th class="num">B</th></tr>${r.gagnentDeuxFois.map((x) => `<tr><td><span class="lien" data-s="${esc(x.sym)}">${esc(x.sym)}</span></td><td>${campTag(x.regle)} ${esc(x.regle)}</td><td class="num">${x.an} tr. ${usd(x.gainA)}</td><td class="num">${x.bn} tr. <b>${usd(x.gainB)}</b></td></tr>`).join("") || '<tr><td colspan="4" class="doux">Pas encore.</td></tr>'}</table></div><div class="doux">Même filtrés deux fois, ces couples restent à confirmer en paper sur des jours nouveaux.</div></div>`;
   } catch (e) { erreur(out, e); }
 }

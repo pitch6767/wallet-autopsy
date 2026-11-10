@@ -2,24 +2,29 @@
 // Même fonction de simulation que le banc d'essai : le paper ne peut pas diverger du test.
 import { graphique, barres, parLots } from "./donnees.js";
 import { local, seance, marcheDe, estBtc, hhmm, MARCHES, NYSE_FERMETURE_13H } from "./temps.js";
-import { REGLES, simulerSeance } from "./regles.js";
+import { REGLES, simulerSeance, construirePool } from "./regles.js";
+import { seancesCompletes } from "./test.js";
 
-export async function tourPapier(env, univers, figuresVeille, maintenantMs = Date.now()) {
+export async function tourPapier(env, univers, figuresVeille, maintenantMs = Date.now(), grosses = new Set()) {
   const lA = local(maintenantMs, MARCHES.actions); const seA = seance(lA.date, MARCHES.actions);
   const actionsActives = seA && lA.min >= seA[0] + 20 && lA.min <= seA[1] + 15;
-  const syms = [...(actionsActives ? univers : []), "BTC"];
+  const syms = actionsActives ? univers.filter((x) => x !== "BTC") : []; // BTC retiré (Pitch 10.11 : un autre bot s'en occupe)
+  if (!syms.length) return { symboles: 0, lignes: 0 };
   const qqq = actionsActives ? jourIndexe(await graphique("QQQ", "1d", "5m"), "QQQ", lA.date) : null;
   const st = []; const maj = new Date(maintenantMs).toISOString();
   const taches = syms.map((x) => [x, local(maintenantMs, marcheDe(x)).date]);
-  const lB = local(maintenantMs, MARCHES.btc);
-  if (lB.min < 15) taches.push(["BTC", new Date(maintenantMs - 864e5).toISOString().slice(0, 10)]); // finir la journée UTC d'hier
   await parLots(taches, 8, async ([sym, date]) => {
     const m = marcheDe(sym); const l = { date };
-    const D = jourIndexe(await graphique(sym, date === local(maintenantMs, m).date ? "1d" : "5d", "5m"), sym, l.date);
+    const s60 = await graphique(sym, "60d", "5m");
+    const D = jourIndexe(s60, sym, l.date);
     if (!D.length) return;
+    const avant = seancesCompletes(s60, sym).filter(([d]) => d < l.date);
+    const pool = avant.length >= 20 ? construirePool(avant.slice(-40).map((x) => x[1])) : null;
+    const veille = avant.length ? avant[avant.length - 1][1] : null;
+    const hautVeille = veille ? Math.max(...veille.map((b) => b.h)) : null;
     const se = seance(l.date, m);
     const fin = estBtc(sym) ? 287 : (se[1] - 5 - se[0]) / 5 - 1; // sortie à 15 h 55 (12 h 55 les jours courts)
-    const t = simulerSeance(sym, D, { qqq, figureVeille: figuresVeille.has(sym), nRange: 3, finIndex: fin, dernierePossible: estBtc(sym) ? fin - 1 : (NYSE_FERMETURE_13H[l.date] ? 35 : 72) });
+    const t = simulerSeance(sym, D, { qqq, figureVeille: figuresVeille.has(sym), hautVeille, liquide: grosses.has(sym), pool, nRange: 3, finIndex: fin, dernierePossible: estBtc(sym) ? fin - 1 : (NYSE_FERMETURE_13H[l.date] ? 35 : 72) });
     for (const [rid, tr] of Object.entries(t)) {
       if (!tr || tr.statut === "annule") continue;
       const hE = hhmm(se[0] + 5 * (tr.k + 1)); const hS = tr.statut === "ferme" ? hhmm(se[0] + 5 * tr.j + (tr.issue === "fin de séance" ? 5 : 0)) : null;

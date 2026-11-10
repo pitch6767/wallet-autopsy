@@ -9,6 +9,7 @@ import { schema, demarrer, lotSuivant, classement, lireEtat } from "./test.js";
 import { tourPapier, resume, tradesPapier } from "./papier.js";
 import { suiviNews, statsNews, photosJetons, ITEMS, SEUILS } from "./veille.js";
 import { REGLES, BASES, FILTRES } from "./regles.js";
+import { REGLES_J, BASES_J, FILTRES_J } from "./labo.js";
 export { Veilleur } from "./veille.js";
 
 const PAPIER_TAILLE = 150; // actions les plus échangées suivies en paper (+ BTC)
@@ -44,7 +45,7 @@ async function lancerScanJour(env) {
   let u = await c.get("univers");
   if (!u || Date.now() - u.le > 7 * 864e5) { const liste = await univers(); u = { le: Date.now(), symboles: liste.map((x) => x[0]) }; await c.put("univers", u); }
   const debut = Date.now();
-  const r = await scanJour([...u.symboles, "BTC"], Date.now());
+  const r = await scanJour(u.symboles, Date.now());
   const doc = { le: new Date().toISOString(), duree: Math.round((Date.now() - debut) / 1000), hits: r.hits, comptes: r.comptes };
   await c.put("scanJour", doc); await c.put("liquides", r.liquides);
   return doc;
@@ -53,7 +54,7 @@ async function lancerOrb(env, q = {}) {
   const c = coffre(env);
   let u = await c.get("univers");
   if (!u) { const liste = await univers(); u = { le: Date.now(), symboles: liste.map((x) => x[0]) }; await c.put("univers", u); }
-  const syms = q.symbols ? q.symbols : [...u.symboles, "BTC"];
+  const syms = q.symbols ? q.symbols : u.symboles;
   const debut = Date.now();
   const r = await scanOrb(syms, Date.now(), { minutesRange: +(q.minutesRange || 15) });
   const doc = { le: new Date().toISOString(), duree: Math.round((Date.now() - debut) / 1000), ...r };
@@ -113,8 +114,8 @@ export default {
         return json(j);
       }
       if (p.startsWith("/api/test") || p.startsWith("/api/papier") || p.startsWith("/api/news") || p === "/api/regles") await base(env);
-      if (p === "/api/regles") return json({ bases: BASES, filtres: FILTRES, regles: REGLES.map((r) => ({ id: r.id, base: r.base.nom, filtre: r.filtre.nom, camp: r.filtre.camp })), news: SEUILS.map((x) => ({ id: "news-" + x, nom: `8-K puis hausse de ${x} % dans les 30 min, stop sous le prix de la nouvelle, cible 2R` })) });
-      if (p === "/api/test/demarrer" && req.method === "POST") { const l = (await c.get("liquides")) || []; if (!l.length) return json({ erreur: "Lance d'abord le scan du jour (il donne la liste des actions liquides)." }, 400); return json(await demarrer(env, [...l, "BTC"])); }
+      if (p === "/api/regles") return json({ bases: BASES, filtres: FILTRES, regles: [...REGLES, ...REGLES_J].map((r) => ({ id: r.id, base: r.base.nom, filtre: r.filtre.nom, camp: r.filtre.camp, famille: r.famille })), news: SEUILS.map((x) => ({ id: "news-" + x, nom: `8-K puis hausse de ${x} % dans les 30 min, stop sous le prix de la nouvelle, cible 2R` })) });
+      if (p === "/api/test/demarrer" && req.method === "POST") { const l = (await c.get("liquides")) || []; if (!l.length) return json({ erreur: "Lance d'abord le scan du jour (il donne la liste des actions liquides)." }, 400); return json(await demarrer(env, l)); }
       if (p === "/api/test") return json(await classement(env.DB, +(u.searchParams.get("mise") || 1000)));
       if (p === "/api/papier") return json(await resume(env.DB, { mise: +(u.searchParams.get("mise") || 1000), depuis: u.searchParams.get("depuis") || "" }));
       if (p === "/api/papier/trades") return json(await tradesPapier(env.DB, { regle: u.searchParams.get("regle") || "", date: u.searchParams.get("date") || "" }, +(u.searchParams.get("mise") || 1000)));
@@ -162,15 +163,16 @@ export default {
     // 4. paper toutes les 5 minutes (une minute après la clôture de chaque barre)
     const min = new Date(ev.scheduledTime).getUTCMinutes();
     if (min % 5 === 1) await journal("papier", async () => {
-      const liq = (await c.get("liquides")) || []; const sj = (await c.get("scanJour")) || { hits: [] };
-      return tourPapier(env, liq.slice(0, PAPIER_TAILLE), new Set(sj.hits.map((h) => h.symbol)), ev.scheduledTime);
+      const e = await lireEtat(env.DB, "test"); const sj = (await c.get("scanJour")) || { hits: [] };
+      const univ = e && e.liste ? e.liste : ((await c.get("liquides")) || []).slice(0, PAPIER_TAILLE);
+      return tourPapier(env, univ, new Set(sj.hits.map((h) => h.symbol)), ev.scheduledTime, new Set((e && e.grosses) || []));
     });
     // 5. banc d'essai : démarre tout seul la première fois, puis un lot de 40 actions par minute
     else await journal("test", async () => {
       const e = await lireEtat(env.DB, "test");
-      if (!e) { const l = (await c.get("liquides")) || []; if (!l.length) return "pas de liste"; const d = await demarrer(env, [...l, "BTC"]); return { demarre: d.liste.length }; }
+      if (!e) { const l = (await c.get("liquides")) || []; if (!l.length) return "pas de liste"; const d = await demarrer(env, l); return { demarre: d.liste.length }; }
       if (e.fini) return "fini";
-      const r = await lotSuivant(env, 40); return { pos: r.pos, total: r.liste.length };
+      const r = await lotSuivant(env, 12); return { pos: r.pos, total: r.liste.length };
     });
   },
 };

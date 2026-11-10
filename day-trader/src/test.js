@@ -2,7 +2,8 @@
 // Méthode Bot95 : on choisit sur la période A, on vérifie sur la période B (jamais vue au moment du choix).
 import { graphique, sparkTout, barres, parLots } from "./donnees.js";
 import { marcheDe, estBtc, local } from "./temps.js";
-import { REGLES, simulerSeance, figureALaCloture } from "./regles.js";
+import { REGLES, simulerSeance, figureALaCloture, construirePool } from "./regles.js";
+import { REGLES_J, strategiesJour, barresJour, qqqJour, datesBonsResultats } from "./labo.js";
 import { cloturesJour } from "./scanner.js";
 
 export const SCHEMA = [
@@ -27,19 +28,43 @@ export function seancesCompletes(s, sym) {
 
 function creux(pcts) { let c = 0, pic = 0, pire = 0; for (const p of pcts) { c += p; pic = Math.max(pic, c); pire = Math.min(pire, c - pic); } return pire; }
 
-export async function demarrer(env, symboles) {
+export const NB_GROSSES = 25, NB_VOLATILES = 75;
+// Univers choisi par Pitch (10.11) : les 25 plus grosses + les plus volatiles (pas les 1 600)
+export async function choisirUnivers(liquides) {
+  const l = liquides.filter((x) => x !== "BTC");
+  const grosses = l.slice(0, NB_GROSSES);
+  const reste = l.slice(NB_GROSSES);
+  const { data } = await sparkTout(reste, "3mo", "1d");
+  const vol = [];
+  for (const sym of reste) {
+    const c = (data[sym]?.c || []).filter((x) => x != null); if (c.length < 40) continue;
+    const r = []; for (let i = 1; i < c.length; i++) r.push(Math.log(c[i] / c[i - 1]));
+    const m = r.reduce((a, x) => a + x, 0) / r.length; const sd = Math.sqrt(r.reduce((a, x) => a + (x - m) ** 2, 0) / r.length);
+    vol.push([sym, sd]);
+  }
+  vol.sort((a, b) => b[1] - a[1]);
+  const volatiles = vol.slice(0, NB_VOLATILES).map((x) => x[0]);
+  return { grosses, volatiles, volatilite: Object.fromEntries(vol.slice(0, NB_VOLATILES).map(([s, v]) => [s, +(100 * v).toFixed(2)])) };
+}
+
+export async function demarrer(env, liquides) {
   await schema(env.DB);
   await env.DB.batch([env.DB.prepare("DELETE FROM bt"), env.DB.prepare("DELETE FROM bt_jour")]);
+  const u = await choisirUnivers(liquides);
+  const symboles = [...u.grosses, ...u.volatiles];
+  const qJ = barresJour(await graphique("QQQ", "1y", "1d"), local(Date.now(), marcheDe("QQQ")).date).map((x) => x.d);
   // coupure A/B : milieu des séances de QQQ
   const q = seancesCompletes(await graphique("QQQ", "60d", "5m"), "QQQ").map((x) => x[0]);
   const coupure = q[Math.floor(q.length / 2)];
-  const etat = { gen: crypto.randomUUID(), liste: symboles, pos: 0, debut: new Date().toISOString(), coupure, premiere: q[0], derniere: q[q.length - 1], seances: q.length, fini: false, echecs: 0 };
+  const coupureJ = qJ[Math.floor(qJ.length / 2)];
+  const etat = { gen: crypto.randomUUID(), liste: symboles, grosses: u.grosses, volatiles: u.volatiles, volatilite: u.volatilite, pos: 0, debut: new Date().toISOString(), coupure, premiere: q[0], derniere: q[q.length - 1], seances: q.length,
+    coupureJ, premiereJ: qJ[31], derniereJ: qJ[qJ.length - 1], joursJ: qJ.length, fini: false, echecs: 0 };
   await ecrireEtat(env.DB, "test", etat);
   return etat;
 }
 
 // Traite le lot suivant (appelé chaque minute par la tâche planifiée)
-export async function lotSuivant(env, taille = 40) {
+export async function lotSuivant(env, taille = 12) {
   const etat = await lireEtat(env.DB, "test");
   if (!etat || etat.fini) return etat;
   if (etat.verrou && Date.now() - etat.verrou < 240e3) return { ...etat, occupe: true }; // un lot déjà en cours : pas de double comptage
@@ -48,21 +73,33 @@ export async function lotSuivant(env, taille = 40) {
   if (!lot.length) { etat.fini = true; etat.finLe = new Date().toISOString(); await ecrireEtat(env.DB, "test", etat); return etat; }
   const qqqS = seancesCompletes(await graphique("QQQ", "60d", "5m"), "QQQ");
   const qqq = Object.fromEntries(qqqS);
-  const { data: jour } = await sparkTout(lot, "1y", "1d");
-  const res = await parLots(lot, 8, async (sym) => {
+  const aujNY = local(Date.now(), marcheDe("QQQ")).date;
+  const qqqJ = qqqJour(barresJour(await graphique("QQQ", "1y", "1d"), aujNY));
+  const grosses = new Set(etat.grosses || []);
+  const uaL = await env.DB.prepare("SELECT valeur FROM config WHERE cle = 'contact_sec'").first(); const ua = uaL ? uaL.valeur : "";
+  let ciks = {};
+  if (ua) { try { const j = await (await fetch("https://www.sec.gov/files/company_tickers.json", { headers: { "User-Agent": ua } })).json(); for (const v of Object.values(j)) ciks[String(v.ticker).toUpperCase()] = String(v.cik_str).padStart(10, "0"); } catch (e) {} }
+  const res = await parLots(lot, 4, async (sym) => {
+    const liquide = grosses.has(sym);
+    const J = barresJour(await graphique(sym, "1y", "1d"), aujNY);
+    const cl = J.map((x) => [x.d, x.c]);
+    const hautDe = Object.fromEntries(J.map((x, i) => [x.d, i]));
+    const trades = [];
+    // 1) intraday sur 60 jours
     const ses = seancesCompletes(await graphique(sym, "60d", "5m"), sym);
-    const cl = jour[sym] ? cloturesJour(jour[sym], sym, Date.now()) : [];
-    const m = marcheDe(sym); const nRange = 3; const btc = estBtc(sym);
-    const fin = btc ? 287 : 76; // sortie forcée : 15 h 55 New York (barre de 15 h 50) / fin de journée UTC
-    const parRegle = {};
-    for (const [d, D] of ses) {
-      const prec = cl.filter((x) => x[0] < d).map((x) => x[1]);
-      const t = simulerSeance(sym, D, { qqq: qqq[d] || null, figureVeille: figureALaCloture(prec), nRange, finIndex: fin });
-      for (const [rid, tr] of Object.entries(t)) {
-        if (!tr || tr.statut === "annule") continue;
-        (parRegle[rid] = parRegle[rid] || []).push({ d, per: d < etat.coupure ? "A" : "B", pct: tr.pct, R: tr.R });
-      }
+    for (let i = 0; i < ses.length; i++) {
+      const [d, D] = ses[i];
+      const prec = cl.filter((x) => x[0] < d);
+      const veille = prec.length ? J[hautDe[prec[prec.length - 1][0]]] : null;
+      const pool = i >= 20 ? construirePool(ses.slice(Math.max(0, i - 40), i).map((x) => x[1])) : null;
+      const t = simulerSeance(sym, D, { qqq: qqq[d] || null, figureVeille: figureALaCloture(prec.map((x) => x[1])), hautVeille: veille ? veille.h : null, liquide, pool, finIndex: 76 });
+      for (const [rid, tr] of Object.entries(t)) if (tr && tr.statut === "ferme") trades.push({ rid, d, per: d < etat.coupure ? "A" : "B", pct: tr.pct, R: tr.R, w: tr.w || 1 });
     }
+    // 2) journalier sur 1 an (+ résultats SEC)
+    let resultats = new Set();
+    if (ua && ciks[sym]) { try { const dates = [...(await datesBonsResultats(ciks[sym], ua))].sort(); for (const dd of dates) { const x = J.find((b) => b.d >= dd); if (x) resultats.add(x.d); } } catch (e) {} }
+    for (const tr of strategiesJour(J, { qqq: qqqJ, liquide, resultats })) trades.push({ ...tr, per: tr.d < etat.coupureJ ? "A" : "B" });
+    const parRegle = {}; for (const x of trades) (parRegle[x.rid] = parRegle[x.rid] || []).push(x);
     return parRegle;
   });
   const st = [];
@@ -72,10 +109,10 @@ export async function lotSuivant(env, taille = 40) {
     for (const [rid, trades] of Object.entries(parRegle)) {
       for (const per of ["A", "B"]) {
         const t = trades.filter((x) => x.per === per); if (!t.length) continue;
-        st.push(env.DB.prepare("INSERT OR REPLACE INTO bt VALUES (?,?,?,?,?,?,?,?)").bind(rid, sym, per, t.length, t.filter((x) => x.pct > 0).length, t.reduce((a, x) => a + x.pct, 0), t.reduce((a, x) => a + x.R, 0), creux(t.map((x) => x.pct))));
+        st.push(env.DB.prepare("INSERT OR REPLACE INTO bt VALUES (?,?,?,?,?,?,?,?)").bind(rid, sym, per, t.length, t.filter((x) => x.pct > 0).length, t.reduce((a, x) => a + x.pct * (x.w || 1), 0), t.reduce((a, x) => a + x.R, 0), creux(t.map((x) => x.pct * (x.w || 1)))));
       }
       const parJour = {};
-      for (const x of trades) { const pj = (parJour[x.d] = parJour[x.d] || [0, 0]); pj[0]++; pj[1] += x.pct; }
+      for (const x of trades) { const pj = (parJour[x.d] = parJour[x.d] || [0, 0]); pj[0]++; pj[1] += x.pct * (x.w || 1); }
       for (const [d, [n, s]] of Object.entries(parJour)) st.push(env.DB.prepare("INSERT INTO bt_jour VALUES (?,?,?,?) ON CONFLICT (regle, date) DO UPDATE SET n = n + excluded.n, spct = spct + excluded.spct").bind(rid, d, n, s));
     }
   });
