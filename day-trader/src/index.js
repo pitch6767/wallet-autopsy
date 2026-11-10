@@ -29,8 +29,8 @@ async function fichierExcel(env) {
   const tiennent = cb.toutes.filter((r) => r.tient);
   const pa = await lirePA(db);
   const feuilles = [
-    ["Par action", [["Action", "Groupe", "Meilleure stratégie (code)", "Description", "Gagne sur A et B", "Total $", "A trades", "A gagnants", "A gain $", "B trades", "B gagnants", "B gain $", "vs QQQ $", "vs achat au hasard $", "Garder l'action sur l'année %", "Stratégies comparées", "2e meilleure"],
-      ...pa.lignes.map((x) => [x.sym, x.groupe, x.regle || "", x.nom || "", x.tient ? "OUI" : "non", (x.ga || 0) + (x.gb || 0), x.an, x.ag, x.ga, x.bn, x.bg, x.gb, x.xqqq ?? "", x.edge ?? "", x.garder ?? "", x.candidats, x.deuxieme || ""])]],
+    ["Par action", [["Action", "Groupe", "Meilleure stratégie (code)", "Description", "Gagne sur A et B", "Total $", "A trades", "A gagnants", "A gain $", "B trades", "B gagnants", "B gain $", "vs QQQ $", "vs achat au hasard $", "Garder l'action sur l'année %", "Capital égal : stratégie $", "Capital égal : trades", "Capital égal : garder l'action $", "Capital égal : garder le QQQ $", "Stratégies comparées", "2e meilleure"],
+      ...pa.lignes.map((x) => [x.sym, x.groupe, x.regle || "", x.nom || "", x.tient ? "OUI" : "non", (x.ga || 0) + (x.gb || 0), x.an, x.ag, x.ga, x.bn, x.bg, x.gb, x.xqqq ?? "", x.edge ?? "", x.garder ?? "", x.cap_strat ?? "", x.cap_trades ?? "", x.cap_garder ?? "", x.cap_qqq ?? "", x.candidats, x.deuxieme || ""])]],
     ["Meilleures stratégies", [enteteC, ...tiennent.map(ligneC)]],
     ["Toutes combinaisons", [enteteC, ...cb.toutes.map(ligneC)]],
     ["Leurs règles + nos filtres", [["Code", "Famille", "Camp du filtre", "Description", "A trades", "A % gagnants", "A gain $", "B trades", "B % gagnants", "B gain $", "Creux $", "Tient"],

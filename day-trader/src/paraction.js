@@ -5,11 +5,13 @@
 import { graphique, parLots } from "./donnees.js";
 import { local, marcheDe } from "./temps.js";
 import { barresJour, qqqJour, datesBonsResultats, REGLES_J } from "./labo.js";
-import { accumulerAction, nomRegle, issue } from "./combos.js";
+import { accumulerAction, nomRegle, issue, conditionsDuJour, CONDITIONS } from "./combos.js";
+import { strategiesJour } from "./labo.js";
+const BIT = Object.fromEntries(CONDITIONS.map((k, i) => [k.id, 1 << i]));
 import { REGLES } from "./regles.js";
 import { lireEtat, ecrireEtat } from "./test.js";
 
-export const SCHEMA_PA = "CREATE TABLE IF NOT EXISTS par_action (sym TEXT PRIMARY KEY, groupe TEXT, regle TEXT, nom TEXT, tient INTEGER, an INTEGER, ag INTEGER, ga REAL, bn INTEGER, bg INTEGER, gb REAL, xqqq REAL, candidats INTEGER, deuxieme TEXT, maj TEXT, garder REAL, edge REAL)";
+export const SCHEMA_PA = "CREATE TABLE IF NOT EXISTS par_action (sym TEXT PRIMARY KEY, groupe TEXT, regle TEXT, nom TEXT, tient INTEGER, an INTEGER, ag INTEGER, ga REAL, bn INTEGER, bg INTEGER, gb REAL, xqqq REAL, candidats INTEGER, deuxieme TEXT, maj TEXT, garder REAL, edge REAL, cap_strat REAL, cap_trades INTEGER, cap_garder REAL, cap_qqq REAL, cap_du TEXT, cap_au TEXT)";
 const NOMS = Object.fromEntries([...REGLES, ...REGLES_J].map((r) => [r.id, `${r.base.nom} ${r.filtre.id === "aucun" ? "" : r.filtre.nom}`.trim()]));
 const nom = (id) => NOMS[id] || nomRegle(id);
 
@@ -63,8 +65,28 @@ export async function lotPA(env, taille = 10) {
     const h = dureeDe(m.regle);
     const edge = h ? Math.round(["A", "B"].reduce((a, per) => { const b = moyBase(h, per); return b == null ? a : a + (m[per].s - b * m[per].n); }, 0) * 1000) : null;
     const garder = J.length > 52 ? +(100 * (J[J.length - 1].c / J[51].o - 1)).toFixed(1) : null;
-    st.push(db.prepare("INSERT OR REPLACE INTO par_action VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(sym, groupe, m.regle, nom(m.regle), ok.length ? 1 : 0,
-      m.A.n, m.A.g, Math.round(m.A.s * 1000), m.B.n, m.B.g, Math.round(m.B.s * 1000), xq, liste.length, pool[1] ? `${pool[1].regle} (${Math.round(pool[1].tot * 1000)} $)` : null, maj, garder, edge));
+    // Capital égal (Pitch 10.11) : 1 000 $ au total, une seule position à la fois (signal ignoré si déjà investi),
+    // comparé à 1 000 $ placés dans l'action et à 1 000 $ placés dans le QQQ, sur la même période.
+    let capStrat = null, capN = null;
+    const ctx = { qqq: qqqJ, grosse: grosses.has(sym), volatile: volatiles.has(sym), resultats };
+    if (/^\d+j:/.test(m.regle)) {
+      const [hh, cs] = m.regle.split("j:"); const mk = cs.split("+").reduce((a, x) => a | BIT[x], 0);
+      let libre = -1, sm = 0, n = 0;
+      for (let t = 50; t < J.length - 1; t++) {
+        if (t <= libre) continue; const mm = conditionsDuJour(J, t, ctx); if (!mm || (mm & mk) !== mk) continue;
+        const r = issue(J, t, +hh); if (!r) continue; sm += r.pct; n++; libre = r.fin;
+      }
+      capStrat = Math.round(sm * 1000); capN = n;
+    } else if (/^(j-|res-)/.test(m.regle)) {
+      const tr = strategiesJour(J, { qqq: qqqJ, liquide: grosses.has(sym), resultats }).filter((x) => x.rid === m.regle);
+      capStrat = Math.round(tr.reduce((a, x) => a + x.pct, 0) * 1000); capN = tr.length;
+    }
+    const du = J[51] ? J[51].d : null, au = J[J.length - 1].d;
+    const qi = qqqBarres.findIndex((x) => x.d >= du), qf = qqqBarres.length - 1;
+    const capQqq = qi >= 0 ? Math.round(1000 * (qqqBarres[qf].c / qqqBarres[qi].o - 1)) : null;
+    const capGarder = garder != null ? Math.round(garder * 10) : null;
+    st.push(db.prepare("INSERT OR REPLACE INTO par_action VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(sym, groupe, m.regle, nom(m.regle), ok.length ? 1 : 0,
+      m.A.n, m.A.g, Math.round(m.A.s * 1000), m.B.n, m.B.g, Math.round(m.B.s * 1000), xq, liste.length, pool[1] ? `${pool[1].regle} (${Math.round(pool[1].tot * 1000)} $)` : null, maj, garder, edge, capStrat, capN, capGarder, capQqq, du, au));
   });
   for (let i = 0; i < st.length; i += 100) await db.batch(st.slice(i, i + 100));
   e.pos += lot.length; e.verrou = null; if (e.pos >= e.liste.length) { e.fini = true; e.finLe = new Date().toISOString(); }
