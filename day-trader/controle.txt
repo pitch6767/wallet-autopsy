@@ -1,30 +1,19 @@
 env.ASSETS                     Assets              
 
-Uploaded day-trader (3.01 sec)
-Deployed day-trader triggers (0.77 sec)
+Uploaded day-trader (4.27 sec)
+Deployed day-trader triggers (0.64 sec)
   https://day-trader.pitch67.workers.dev
   schedule: * * * * *
   schedule: 17 13 * * 1-5
   schedule: 25 21 * * 1-5
-Current Version ID: 86c07cf2-7d78-4d6b-b604-22462988726e
+Current Version ID: 771b3342-2afd-4ba5-8ff5-aa13024085ba
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 === page
 200
 === sonde
-{"ok":true,"horloge":{"newYork":"2026-11-10 17:23","bourse":"fermée","seance":"09:30–16:00","utc":"2026-11-10 22:23"}}
+{"ok":true,"horloge":{"newYork":"2026-11-10 17:32","bourse":"fermée","seance":"09:30–16:00","utc":"2026-11-10 22:32"}}
 === controles
---- reponse brute
-HTTP/2 200 
-date: Tue, 10 Nov 2026 22:23:25 GMT
-content-type: application/json
-content-length: 121
-cache-control: no-store
-report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=sgdUEUXS9cO64IX%2FP3vH4H48zb%2F6sAcbICH%2FwLozrYn89jr8dMO3%2BZfPDSfkOCb9m7tuiP1%2BUVnTZcfV%2FNTj9yECUhouwitPhSw37vE5trDciXeep6rP2d%2F4LZ6KuI%2BLt3q2hZPQkZNTTqk9V%2Bda4hE%3D"}]}
-nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
-server: cloudflare
-cf-ray: a58876285e25b08e-ATL
-alt-svc: h3=":443"; ma=86400
-
-{"ok":true,"horloge":{"newYork":"2026-11-10 17:23","bourse":"fermée","seance":"09:30–16:00","utc":"2026-11-10 22:23"}}
+--- ok
+{"ok":true,"horloge":{"newYork":"2026-11-10 17:32","bourse":"fermée","seance":"09:30–16:00","utc":"2026-11-10 22:32"}}
