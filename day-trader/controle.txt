@@ -1,27 +1,26 @@
-env.DB (day-trader)            D1 Database         
 env.ASSETS                     Assets              
 
-Uploaded day-trader (3.27 sec)
-Deployed day-trader triggers (1.16 sec)
+Uploaded day-trader (4.41 sec)
+Deployed day-trader triggers (1.05 sec)
   https://day-trader.pitch67.workers.dev
   schedule: * * * * *
   schedule: 17 13 * * 1-5
-Current Version ID: 6d72b67c-8acf-427d-98a2-84397cb2c793
+  schedule: 25 21 * * 1-5
+Current Version ID: 0761265c-73f3-45aa-95fe-31762d70b8f4
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 === page
 200
 === sonde
-{"ok":true,"horloge":{"newYork":"2026-11-10 07:45","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 12:45"}}
+{"ok":true,"horloge":{"newYork":"2026-11-10 08:24","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 13:24"}}
 === controles
 --- relance du test
 {"n":100}
---- regles
-{"n":158,"familles":{"intraday":39,"journalier":105,"résultats":14}}
---- etat taches
-{"dernier-papier":{"quand":"2026-11-10T12:51:13.738Z","r":{"symboles":0,"lignes":0}},"dernier-test":{"quand":"2026-11-10T12:52:30.112Z","r":{"pos":60,"total":100}}}
 --- test
-{"pos":60,"regles":158,"tiennent":["j-breakout_20d-1j:aucun","j-breakout_20d-1j:marche","j-breakout_20d-1j:sortie","j-breakout_20d-3j:aucun","j-breakout_20d-3j:liquide","j-breakout_20d-3j:marche","j-breakout_20d-3j:sortie","j-breakout_20d-3j:x2","j-breakout_20d-5j:aucun","j-breakout_20d-5j:liquide"],"ex":[{"regle":"orb-low2:tm","A":9,"B":38},{"regle":"orb-mid1:tm","A":152,"B":430},{"regle":"res-20j:aucun","A":23,"B":23},{"regle":"res-20j:consensus","A":12,"B":6},{"regle":"res-20j:liquide","A":19,"B":12},{"regle":"res-20j:marche","A":19,"B":14},{"regle":"res-20j:sortie","A":23,"B":23},{"regle":"res-20j:tout","A":9,"B":1}]}
---- erreurs
-{"pos":60,"echecs":0,"erreurs":null}
+{"pos":84,"fini":false,"echecs":0,"erreurs":null}
+--- combos
+{"nbRegles":1953,"totalRegles":1628,"avecAssezDeTrades":806,"tiennent":15,"top":[{"regle":"5j:contre+chute5","A":27410,"B":42396,"tB":4.73,"nB":1869},{"regle":"5j:contre+volatile+chute5","A":23100,"B":35326,"tB":3.9,"nB":1395},{"regle":"3j:contre+chute5","A":18394,"B":33663,"tB":4.64,"nB":1965},{"regle":"5j:contre","A":52809,"B":31274,"tB":2.49,"nB":4572},{"regle":"5j:contre+volatile","A":42636,"B":29009,"tB":2.32,"nB":3177},{"regle":"3j:contre+volatile+chute5","A":15881,"B":28543,"tB":3.96,"nB":1462},{"regle":"5j:contre+tendance","A":17561,"B":15653,"tB":2.03,"nB":1845},{"regle":"5j:contre+tendance+chute5","A":9192,"B":13697,"tB":2.14,"nB":421}]}
+--- excel
+200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet 595856
+['[Content_Types].xml', '_rels/.rels', 'xl/workbook.xml', 'xl/_rels/workbook.xml.rels', 'xl/styles.xml', 'xl/worksheets/sheet1.xml', 'xl/worksheets/sheet2.xml', 'xl/worksheets/sheet3.xml', 'xl/worksheets/sheet4.xml', 'xl/worksheets/sheet5.xml', 'xl/worksheets/sheet6.xml']
