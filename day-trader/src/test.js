@@ -42,6 +42,8 @@ export async function demarrer(env, symboles) {
 export async function lotSuivant(env, taille = 40) {
   const etat = await lireEtat(env.DB, "test");
   if (!etat || etat.fini) return etat;
+  if (etat.verrou && Date.now() - etat.verrou < 240e3) return { ...etat, occupe: true }; // un lot déjà en cours : pas de double comptage
+  etat.verrou = Date.now(); await ecrireEtat(env.DB, "test", etat);
   const lot = etat.liste.slice(etat.pos, etat.pos + taille);
   if (!lot.length) { etat.fini = true; etat.finLe = new Date().toISOString(); await ecrireEtat(env.DB, "test", etat); return etat; }
   const qqqS = seancesCompletes(await graphique("QQQ", "60d", "5m"), "QQQ");
@@ -78,7 +80,7 @@ export async function lotSuivant(env, taille = 40) {
     }
   });
   for (let i = 0; i < st.length; i += 400) await env.DB.batch(st.slice(i, i + 400));
-  etat.pos += lot.length;
+  etat.pos += lot.length; etat.verrou = null;
   if (etat.pos >= etat.liste.length) { etat.fini = true; etat.finLe = new Date().toISOString(); }
   await ecrireEtat(env.DB, "test", etat);
   return etat;
