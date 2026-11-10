@@ -155,7 +155,7 @@ export default {
         return json(j);
       }
       if (p.startsWith("/api/test") || p.startsWith("/api/combos") || p.startsWith("/api/papier") || p.startsWith("/api/news") || p === "/api/regles") await base(env);
-      if (p === "/api/regles") return json({ bases: BASES, filtres: FILTRES, regles: [...REGLES, ...REGLES_J].map((r) => ({ id: r.id, base: r.base.nom, filtre: r.filtre.nom, camp: r.filtre.camp, famille: r.famille })), news: SEUILS.map((x) => ({ id: "news-" + x, nom: `8-K puis hausse de ${x} % dans les 30 min, stop sous le prix de la nouvelle, cible 2R` })) });
+      if (p === "/api/regles") return json({ bases: BASES, filtres: FILTRES, regles: [...REGLES, ...REGLES_J].map((r) => ({ id: r.id, base: r.base.nom, filtre: r.filtre.nom, camp: r.filtre.camp, famille: r.famille })), news: [...SEUILS.map((x) => ({ id: "news-" + x, nom: `Toutes les news : hausse de ${x} % dans les 30 min, stop sous le prix de la nouvelle, cible 2R` })), { id: "news-choisies", nom: "News choisies (types qui font monter) : hausse de 1 % dans les 30 min, stop sous le prix de la nouvelle, cible 2R" }] });
       if (p === "/api/test/demarrer" && req.method === "POST") { const l = (await c.get("liquides")) || []; if (!l.length) return json({ erreur: "Lance d'abord le scan du jour (il donne la liste des actions liquides)." }, 400); return json(await demarrer(env, l)); }
       if (p === "/api/par-action") return json(await lirePA(env.DB));
       if (p === "/api/combos") return json({ ...(await classementCap(env.DB)), conditions: CONDITIONS, nbRegles: NB_REGLES, etat: await lireEtat(env.DB, "paraction") });

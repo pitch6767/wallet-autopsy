@@ -15,6 +15,30 @@ export const ITEMS = {
 };
 export const SEUILS = [0.5, 1]; // Pitch 10.11 : pas plus de 1 %, après c'est trop tard // % de hausse depuis le prix de la nouvelle qui « lance la tendance »
 
+// Pitch 11.11 : toutes les news ne font pas bouger -> on classe chaque news par type et on mesure, type par type.
+// Règle « news choisies » : achat (hausse de 1 % dans les 30 min) seulement si, sur les news PASSÉES du même type
+// (au moins 10, actions à 1 $ ou plus), la hausse max moyenne en 30 min est d'au moins 2 % et le mouvement moyen à 60 min est positif.
+export const CHOIX = { min: 10, max30: 2, m60: 0 };
+export function categorie(n) {
+  if (n.source === "prnewswire") {
+    const t = n.titre || "";
+    const c = /\bFDA\b|approv|clearance|phase [123]|clinical|trial/i.test(t) ? "santé / FDA" : /acqui|merger|to be acquired|buyout|takeover/i.test(t) ? "rachat / fusion"
+      : /results|earnings|quarter|\bQ[1-4]\b|revenue/i.test(t) ? "résultats" : /offering|private placement|pricing of/i.test(t) ? "émission d'actions"
+      : /dividend|buyback|repurchase/i.test(t) ? "dividende / rachat d'actions" : /contract|award|partnership|agreement|order|collaborat/i.test(t) ? "contrat / partenariat" : "autre communiqué";
+    return "PR Newswire · " + c;
+  }
+  const it = (n.items || "").split(",");
+  for (const k of ["1.03", "2.02", "2.01", "1.01", "3.02", "5.02", "2.05", "4.02", "7.01", "8.01"]) if (it.includes(k)) return `8-K · ${ITEMS[k]}`;
+  return "8-K · " + (it.filter((x) => x && x !== "9.01").map((x) => ITEMS[x] || x).join(" + ") || "autre");
+}
+function statsCategories(hist, avant) {
+  const m = {};
+  for (const h of hist) { if (avant != null && h.quand >= avant) continue; const c = categorie(h); const x = (m[c] = m[c] || { categorie: c, nb: 0, s30: 0, s60: 0, n60: 0, fort2: 0 }); x.nb++; x.s30 += h.max30; if (h.max30 >= 2) x.fort2++; if (h.m60 != null) { x.s60 += h.m60; x.n60++; } }
+  for (const x of Object.values(m)) { x.max30 = +(x.s30 / x.nb).toFixed(2); x.m60 = x.n60 ? +(x.s60 / x.n60).toFixed(2) : null; x.choisie = x.nb >= CHOIX.min && x.max30 >= CHOIX.max30 && x.m60 != null && x.m60 > CHOIX.m60; }
+  return m;
+}
+const HIST = "SELECT source, titre, items, quand, max30, m60 FROM news WHERE fini = 1 AND max30 IS NOT NULL AND prix0 >= 1";
+
 const FLUX = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=8-K&company=&dateb=&owner=include&start=0&count=40&output=atom";
 const dec = (s) => String(s || "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 
@@ -156,6 +180,7 @@ export async function suiviNews(env, maintenantMs = Date.now()) {
   const db = env.DB;
   const ouverts = (await db.prepare("SELECT * FROM news WHERE fini = 0 AND prix0 IS NOT NULL AND debut_suivi <= ? AND debut_suivi >= ? ORDER BY quand LIMIT 40").bind(maintenantMs - 60e3, maintenantMs - 3 * 864e5).all()).results;
   const st = []; let traites = 0;
+  const hist = ouverts.length ? (await db.prepare(HIST).all()).results : [];
   for (const n of ouverts) {
     let s; try { s = await graphique(n.sym, "5d", "1m"); } catch (e) { continue; }
     traites++;
@@ -169,7 +194,9 @@ export async function suiviNews(env, maintenantMs = Date.now()) {
     // trades papier : seuil franchi dans les 30 min -> achat à l'ouverture de la minute suivante
     const date = local(n.debut_suivi, MARCHES.actions).date; const se = seance(date, MARCHES.actions);
     const finMs = versUtc(date, se ? se[1] - 5 : 955, MARCHES.actions); // sortie au plus tard 15 h 55
-    for (const seuil of SEUILS) {
+    const cat = categorie(n); const sc = statsCategories(hist, n.quand)[cat];
+    const regles = SEUILS.map((x) => [x, `news-${x}`]); if (sc && sc.choisie) regles.push([1, "news-choisies"]);
+    for (const [seuil, rid] of regles) {
       if (n.prix0 < 1) continue; // Pitch 11.11 : pas d'achat sur les actions à moins de 1 $
       const i = pts.findIndex((x) => x.ms < n.debut_suivi + 30 * 60e3 && x.c >= n.prix0 * (1 + seuil / 100));
       if (i < 0 || !pts[i + 1]) continue;
@@ -189,7 +216,7 @@ export async function suiviNews(env, maintenantMs = Date.now()) {
       let statut = "ferme";
       if (sortie == null) { const der = pts[Math.min(j, pts.length) - 1]; sortie = der.c; if (maintenantMs < finMs + 5 * 60e3) { statut = "ouvert"; issue = "en cours"; } else issue = "fin de séance"; }
       const hm = (ms) => hhmm(local(ms, MARCHES.actions).min);
-      st.push(db.prepare("INSERT OR REPLACE INTO papier VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(date, `news-${seuil}`, n.sym, statut, hm(pts[i + 1].ms), entree, stop, cible, statut === "ferme" ? hm(pts[Math.min(j, pts.length - 1)].ms) : null, sortie, issue + (n.source === "prnewswire" ? " · communiqué PR Newswire" : " · 8-K " + (n.items || "")), (sortie - entree) / entree, (sortie - entree) / (entree - stop), new Date(maintenantMs).toISOString()));
+      st.push(db.prepare("INSERT OR REPLACE INTO papier VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(date, rid, n.sym, statut, hm(pts[i + 1].ms), entree, stop, cible, statut === "ferme" ? hm(pts[Math.min(j, pts.length - 1)].ms) : null, sortie, issue + " · " + cat, (sortie - entree) / entree, (sortie - entree) / (entree - stop), new Date(maintenantMs).toISOString()));
     }
     const fini = maintenantMs > Math.max(n.debut_suivi + 65 * 60e3, finMs + 5 * 60e3) ? 1 : 0;
     st.push(db.prepare("UPDATE news SET m5 = ?, m15 = ?, m60 = ?, max30 = ?, fini = ?, maj = ? WHERE id = ?").bind(a(5), a(15), m60, max30, fini, new Date(maintenantMs).toISOString(), n.id));
@@ -214,6 +241,7 @@ export async function statsNews(db) {
   }
   const course = { paires: paires.length, prnPremier: paires.filter((p) => p.premier === "PR Newswire").length, secPremier: paires.filter((p) => p.premier === "SEC 8-K").length,
     avanceMediane: paires.length ? paires.map((p) => p.avanceSec).sort((a, b) => a - b)[Math.floor(paires.length / 2)] : null, exemples: paires.slice(0, 20) };
+  const parCategorie = Object.values(statsCategories((await db.prepare(HIST).all()).results)).map(({ s30, s60, n60, ...x }) => x).sort((a, b) => b.max30 - a.max30);
   const parSource = {}; for (const n of l) parSource[n.source || "sec"] = (parSource[n.source || "sec"] || 0) + 1;
-  return { course, parSource, dernieres: l.slice(0, 80).map((n) => ({ ...n, itemsNoms: (n.items || "").split(",").filter(Boolean).map((i) => `${i} ${ITEMS[i] || ""}`.trim()) })), parItem: Object.values(parItem).map((p) => ({ ...p, moyAbs15: p.avec15 ? +(p.somme15 / p.avec15).toFixed(2) : null })).sort((a, b) => b.nb - a.nb) };
+  return { course, parCategorie, choix: CHOIX, parSource, dernieres: l.slice(0, 80).map((n) => ({ ...n, itemsNoms: (n.items || "").split(",").filter(Boolean).map((i) => `${i} ${ITEMS[i] || ""}`.trim()) })), parItem: Object.values(parItem).map((p) => ({ ...p, moyAbs15: p.avec15 ? +(p.somme15 / p.avec15).toFixed(2) : null })).sort((a, b) => b.nb - a.nb) };
 }
