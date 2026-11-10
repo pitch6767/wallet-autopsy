@@ -4,7 +4,8 @@
 import { graphique, parLots } from "./donnees.js";
 import { local, seance, MARCHES } from "./temps.js";
 import { barresJour, qqqJour, datesBonsResultats } from "./labo.js";
-import { conditionsDuJour, CONDITIONS, classementCombos } from "./combos.js";
+import { conditionsDuJour, CONDITIONS } from "./combos.js";
+import { classementCap } from "./paraction.js";
 import { GLISSEMENT } from "./regles.js";
 import { lireEtat, ecrireEtat } from "./test.js";
 
@@ -27,8 +28,10 @@ function suivre(J, t0, h) {
 export async function tourPapierJour(env, maintenantMs = Date.now()) {
   const db = env.DB;
   const etat = await lireEtat(db, "test"); if (!etat || !etat.fini) return "test pas fini";
+  const pa = await lireEtat(db, "paraction"); if (!pa || !pa.fini || pa.mesure !== "capital égal") return "classement à capital égal pas fini";
   let g = await lireEtat(db, "gagnants_papier");
-  if (!g) { const c = await classementCombos(db); g = { le: new Date().toISOString(), regles: c.top.map((r) => r.regle) }; await ecrireEtat(db, "gagnants_papier", g); }
+  // figée une fois, depuis le classement À CAPITAL ÉGAL (combinaisons qui gagnent sur A et B et battent le QQQ avec le même capital)
+  if (!g) { const c = await classementCap(db); g = { le: new Date().toISOString(), mesure: "capital égal", regles: c.top.map((r) => r.regle).filter((id) => /^\d+j:/.test(id)) }; await ecrireEtat(db, "gagnants_papier", g); }
   if (!g.regles.length) return "aucune combinaison ne tient";
   const l = local(maintenantMs, MARCHES.actions); const se = seance(l.date, MARCHES.actions);
   const coupe = se && l.min >= se[1] + 5 ? "9999" : l.date; // après la clôture, la journée du jour compte
@@ -47,7 +50,9 @@ export async function tourPapierJour(env, maintenantMs = Date.now()) {
     // 1) nouveaux signaux à la dernière clôture
     const t = J.length - 1;
     const m = conditionsDuJour(J, t, { qqq: qqqJ, grosse: grosses.has(sym), volatile: volatiles.has(sym), resultats });
-    if (m) for (const id of g.regles) { const mk = masqueRegle(id); if ((m & mk) === mk) { nouveaux++; st.push(db.prepare("INSERT OR IGNORE INTO papier_j (date_signal, regle, sym, h, statut, maj) VALUES (?,?,?,?,?,?)").bind(J[t].d, id, sym, +id.split("j:")[0], "attente", maj)); } }
+    // capital égal : pas de nouveau trade pour une combinaison + action tant que le précédent n'est pas fermé
+    const occupe = new Set(ouverts.filter((x) => x.sym === sym).map((x) => x.regle));
+    if (m) for (const id of g.regles) { const mk = masqueRegle(id); if (!occupe.has(id) && (m & mk) === mk) { nouveaux++; st.push(db.prepare("INSERT OR IGNORE INTO papier_j (date_signal, regle, sym, h, statut, maj) VALUES (?,?,?,?,?,?)").bind(J[t].d, id, sym, +id.split("j:")[0], "attente", maj)); } }
     // 2) suivi des trades en cours
     for (const o of ouverts.filter((x) => x.sym === sym)) {
       const t0 = idx[o.date_signal]; if (t0 == null) continue;

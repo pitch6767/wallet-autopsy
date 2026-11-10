@@ -260,12 +260,13 @@ async function tradesDe(regle) {
 async function chargerPA() {
   const out = $("#paRes");
   try {
-    const r = await api("/api/par-action"); const e = r.etat || {}; const p = r.periodes || {};
-    $("#paEtat").innerHTML = (!r.etat ? "Calcul en préparation…" : e.fini ? `Calculé le ${new Date(e.finLe).toLocaleString("fr-CH")}.` : `Calcul en cours : ${e.pos} / ${e.total} actions (≈ 10 par minute).`) + (p.coupureJ ? ` A = du ${p.premiereJ} au ${p.coupureJ}, B = du ${p.coupureJ} au ${p.derniereJ}.` : "");
-    out.innerHTML = r.lignes.length ? `<div class="carte" style="padding:8px"><table><tr><th>Action</th><th>Meilleure stratégie</th><th class="num">Total</th></tr>${r.lignes.map((x) => `<tr><td><span class="lien" data-s="${esc(x.sym)}"><b>${esc(x.sym)}</b></span><br><span class="doux">${x.groupe === "25 plus grosses" ? "grosse" : "volatile"}</span></td>
-      <td>${x.regle ? `${esc(x.nom)}${x.tient ? ' <span class="ok">✓ A et B</span>' : ' <span class="ko">ne tient pas</span>'}<br><span class="doux">A : ${x.an} tr. ${usd(x.ga)} · B : ${x.bn} tr. ${usd(x.gb)}${x.xqqq != null ? ` · vs QQQ ${usd(x.xqqq)}` : ""}</span><br><span class="doux">vs acheter au hasard : <b class="${cls(x.edge)}">${x.edge != null ? usd(x.edge) : "—"}</b> · garder l'action toute l'année : <b class="${cls(x.garder)}">${x.garder != null ? (x.garder >= 0 ? "+" : "") + x.garder + " %" : "—"}</b></span>${x.cap_strat != null ? `<br><span class="doux">Capital égal, 1 000 $ du ${x.cap_du} au ${x.cap_au} : stratégie <b class="${cls(x.cap_strat)}">${usd(x.cap_strat)}</b> (${x.cap_trades} tr.) · garder l'action <b class="${cls(x.cap_garder)}">${usd(x.cap_garder)}</b> · garder le QQQ <b class="${cls(x.cap_qqq)}">${usd(x.cap_qqq)}</b>${x.cap_strat > Math.max(x.cap_garder ?? -1e9, x.cap_qqq ?? -1e9) ? ' <span class="ok">→ stratégie meilleure</span>' : ' <span class="ko">→ garder était mieux</span>'}</span>` : ""}` : '<span class="doux">pas assez de trades</span>'}</td>
-      <td class="num"><b class="${cls((x.ga || 0) + (x.gb || 0))}">${usd((x.ga || 0) + (x.gb || 0))}</b></td></tr>`).join("")}</table>
-      <div class="avert">Attention : sur une seule action, on compare ≈ 2 100 stratégies sur peu de trades. La meilleure l'est souvent en partie par chance, même quand elle gagne sur A et B. C'est une simulation du passé, pas un résultat réel : à confirmer en paper avant tout argent.</div></div>` : "";
+    const r = await api("/api/par-action"); const e = r.etat || {};
+    $("#paEtat").innerHTML = !r.etat ? "Calcul en préparation…" : e.fini ? `Calculé le ${new Date(e.finLe).toLocaleString("fr-CH")}.` : `Calcul en cours : ${e.pos} / ${e.total} actions (≈ 10 par minute).`;
+    const L = r.lignes; const d = L.find((x) => x.du) || {};
+    out.innerHTML = L.length ? `<div class="carte" style="padding:8px"><div class="doux">1 000 $ partout, du ${d.du} au ${d.au}. Stratégie = une seule position à la fois.</div><table><tr><th>Action</th><th class="num">Stratégie</th><th class="num">Garder l'action</th><th class="num">Garder QQQ</th><th>Verdict</th></tr>${L.map((x) => `<tr><td><span class="lien" data-s="${esc(x.sym)}"><b>${esc(x.sym)}</b></span><br><span class="doux">${esc(x.nom || "—")}</span></td>
+      <td class="num"><b class="${cls(x.strat)}">${x.strat != null ? usd(x.strat) : "—"}</b>${x.tient ? "" : '<br><span class="ko">ne tient pas</span>'}</td><td class="num ${cls(x.garder)}">${usd(x.garder)}</td><td class="num ${cls(x.qqq)}">${usd(x.qqq)}</td>
+      <td>${x.mieux == null ? "—" : x.mieux > 0 && x.tient ? '<span class="ok">stratégie</span>' : '<span class="ko">garder</span>'}</td></tr>`).join("")}</table>
+      <div class="avert">Simulation du passé. La meilleure stratégie d'une action l'est souvent en partie par chance : à confirmer en paper. Détails (A/B, nombre de trades) dans le fichier Excel.</div></div>` : "";
   } catch (x) { erreur(out, x); }
 }
 $("#papMaj").onclick = () => { chargerPapier(); chargerPJ(); };
@@ -306,16 +307,13 @@ $("#clMaj").onclick = chargerClassement;
 async function chargerCombos() {
   const out = $("#cbRes");
   try {
-    const r = await api("/api/combos");
-    const lig = (x) => `<tr><td><b>${esc(x.regle)}</b><br><span class="doux">${esc(x.nom)}</span></td>
-      <td class="num">${x.A.trades} tr.<br>${x.A.gagnants} %<br>${usd(x.A.gain)}<br><span class="doux">vs QQQ ${usd(x.A.contreQqq)}</span></td>
-      <td class="num">${x.B.trades} tr.<br>${x.B.gagnants} %<br><b class="${cls(x.B.gain)}">${usd(x.B.gain)}</b><br><span class="doux">vs QQQ <b class="${cls(x.B.contreQqq)}">${usd(x.B.contreQqq)}</b> · t ${x.B.t}</span></td></tr>`;
-    out.innerHTML = `<div class="carte"><h2>Combinaisons libres (1 à 3 conditions)</h2>
-      <div class="doux">${r.nbRegles} règles : chaque mélange de 1, 2 ou 3 des ${r.conditions.length} conditions (leurs ${r.conditions.filter((c) => c.camp === "leur").length}, nôtres et autres ${r.conditions.filter((c) => c.camp !== "leur").length}) × garder 1, 3 ou 5 jours. Achat à l'ouverture du lendemain, stop 2 × ATR. Chaque trade est comparé au QQQ sur la même fenêtre.<br>
-      <b>« Tient »</b> = au moins 30 trades sur A et sur B, gagne sur les deux, <b>bat le QQQ</b> sur les deux, et t ≥ 2 sur B (gain moyen nettement au-dessus de zéro).</div>
-      <div class="kv" style="margin-top:8px"><span>Règles testées</span><b>${r.totalRegles}</b><span>Avec assez de trades</span><b>${r.avecAssezDeTrades}</b><span>Tiennent</span><b class="ok">${r.tiennent}</b></div>
-      <div class="avert">Avec autant de combinaisons, certaines passent par pur hasard. Seul le paper sur des jours nouveaux départage : les combinaisons qui tiennent passent en paper journalier automatiquement.</div>
-      <div style="overflow-x:auto"><table><tr><th>Combinaison</th><th class="num">A</th><th class="num">B</th></tr>${r.top.slice(0, 60).map(lig).join("") || '<tr><td colspan="3" class="doux">Aucune pour l\'instant (le test tourne).</td></tr>'}</table></div></div>`;
+    const r = await api("/api/combos"); const b = r.bench;
+    const lig = (x) => `<tr><td><b>${esc(x.nom)}</b>${x.tient ? ' <span class="ok">✓</span>' : ""}</td><td class="num">${usd(x.A.gain)}</td><td class="num"><b class="${cls(x.B.gain)}">${usd(x.B.gain)}</b></td></tr>`;
+    out.innerHTML = `<div class="carte"><h2>Classement à capital égal</h2>
+      <div class="doux">1 000 $ par action (${b.actions} actions = ${b.capital.toLocaleString("fr-CH")} $), une seule position à la fois par action. ✓ = gagne plus que garder le QQQ sur A et sur B.</div>
+      <div class="kv" style="margin-top:8px"><span>Garder les actions</span><b>A ${usd(b.garderA)} · B ${usd(b.garderB)}</b><span>Garder le QQQ</span><b>A ${usd(b.qqqA)} · B ${usd(b.qqqB)}</b><span>Stratégies qui battent le QQQ</span><b class="ok">${r.tiennent} / ${r.total}</b><span>…et aussi garder les actions</span><b>${r.battentAussiGarder}</b></div>
+      <div style="overflow-x:auto"><table><tr><th>Stratégie</th><th class="num">A</th><th class="num">B</th></tr>${r.regles.slice(0, 40).map(lig).join("") || '<tr><td colspan="3" class="doux">Calcul en cours.</td></tr>'}</table></div>
+      <div class="avert">Avec ~2 000 stratégies testées, certaines passent par hasard. Simulation du passé.</div></div>`;
   } catch (e) { erreur(out, e); }
 }
 $("#clRelance").onclick = async (ev) => { if (!confirm("Effacer les résultats du test et tout relancer ?")) return; try { await api("/api/test/demarrer", { method: "POST" }); chargerClassement(); } catch (e) { erreur($("#clRes"), e); } };

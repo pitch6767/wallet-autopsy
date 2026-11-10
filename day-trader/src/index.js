@@ -14,25 +14,25 @@ export { Veilleur } from "./veille.js";
 import { classementCombos, CONDITIONS, NB_REGLES } from "./combos.js";
 import { tourPapierJour, resumePJ } from "./pj.js";
 import { classeurXlsx } from "./xlsx.js";
-import { demarrerPA, lotPA, lirePA } from "./paraction.js";
+import { demarrerPA, lotPA, lirePA, classementCap } from "./paraction.js";
 import { nomRegle } from "./combos.js";
 
 async function fichierExcel(env) {
   await base(env);
   const db = env.DB; const e = await lireEtat(db, "test");
-  const cb = await classementCombos(db, 1000, true);
   const cl = await classement(db, 1000);
   const rg = await (async () => { const n = {}; for (const r of [...REGLES, ...REGLES_J]) n[r.id] = { nom: `${r.base.nom} ${r.filtre.nom}`, camp: r.filtre.camp, famille: r.famille }; return n; })();
   const pj = await resumePJ(db); const pi = await resume(db);
-  const ligneC = (r, i) => [i + 1, r.regle, r.nom, +r.regle.split("j:")[0], r.regle.split(":")[1].split("+").length, r.A.trades, r.A.gagnants, r.A.gain, r.A.contreQqq, r.A.t, r.B.trades, r.B.gagnants, r.B.gain, r.B.contreQqq, r.B.t, r.tient ? "OUI" : "non"];
-  const enteteC = ["Rang", "Code", "Description", "Jours gardés", "Nb conditions", "A trades", "A % gagnants", "A gain $", "A vs QQQ $", "A t", "B trades", "B % gagnants", "B gain $", "B vs QQQ $", "B t", "Tient"];
-  const tiennent = cb.toutes.filter((r) => r.tient);
+  const cc = await classementCap(db, true);
+  const ligneC = (r, i) => [i + 1, r.regle, r.nom, r.A.trades, r.A.gagnants, r.A.gain, r.B.trades, r.B.gagnants, r.B.gain, r.A.gain + r.B.gain, r.batQqq ? "OUI" : "non", r.batGarder ? "OUI" : "non", r.tient ? "OUI" : "non"];
+  const enteteC = ["Rang", "Code", "Description", "A trades", "A % gagnants", "A gain $", "B trades", "B % gagnants", "B gain $", "Total $", "Bat le QQQ (A et B)", "Bat garder les actions (A et B)", "Tient"];
+  const bc = cc.bench;
   const pa = await lirePA(db);
   const feuilles = [
-    ["Par action", [["Action", "Groupe", "Meilleure stratégie (code)", "Description", "Gagne sur A et B", "Total $", "A trades", "A gagnants", "A gain $", "B trades", "B gagnants", "B gain $", "vs QQQ $", "vs achat au hasard $", "Garder l'action sur l'année %", "Capital égal : stratégie $", "Capital égal : trades", "Capital égal : garder l'action $", "Capital égal : garder le QQQ $", "Stratégies comparées", "2e meilleure"],
-      ...pa.lignes.map((x) => [x.sym, x.groupe, x.regle || "", x.nom || "", x.tient ? "OUI" : "non", (x.ga || 0) + (x.gb || 0), x.an, x.ag, x.ga, x.bn, x.bg, x.gb, x.xqqq ?? "", x.edge ?? "", x.garder ?? "", x.cap_strat ?? "", x.cap_trades ?? "", x.cap_garder ?? "", x.cap_qqq ?? "", x.candidats, x.deuxieme || ""])]],
-    ["Meilleures stratégies", [enteteC, ...tiennent.map(ligneC)]],
-    ["Toutes combinaisons", [enteteC, ...cb.toutes.map(ligneC)]],
+    ["Par action", [["Action", "Groupe", "Meilleure stratégie (code)", "Description", "Gagne sur A et B", "Stratégie $", "Garder l'action $", "Garder le QQQ $", "Verdict", "A trades", "A gain $", "B trades", "B gain $", "Garder l'action A $", "Garder l'action B $", "QQQ A $", "QQQ B $", "Du", "Coupure A/B", "Au", "Stratégies comparées"],
+      ...pa.lignes.map((x) => [x.sym, x.groupe, x.regle || "", x.nom || "", x.tient ? "OUI" : "non", x.strat ?? "", x.garder ?? "", x.qqq ?? "", x.mieux == null ? "" : x.mieux > 0 ? "stratégie meilleure" : "garder était mieux", x.an, x.ga ?? "", x.bn, x.gb ?? "", x.garder_a ?? "", x.garder_b ?? "", x.qqq_a ?? "", x.qqq_b ?? "", x.du || "", x.coupure || "", x.au || "", x.candidats])]],
+    ["Meilleures stratégies", [[`Capital égal : 1 000 $ par action (${bc.actions} actions = ${bc.capital} $), une position à la fois. Référence : garder les actions A ${bc.garderA} $ / B ${bc.garderB} $ ; garder le QQQ A ${bc.qqqA} $ / B ${bc.qqqB} $.`], enteteC, ...cc.regles.filter((r) => r.tient).map(ligneC)]],
+    ["Toutes combinaisons", [enteteC, ...cc.regles.map(ligneC)]],
     ["Leurs règles + nos filtres", [["Code", "Famille", "Camp du filtre", "Description", "A trades", "A % gagnants", "A gain $", "B trades", "B % gagnants", "B gain $", "Creux $", "Tient"],
       ...cl.regles.sort((a, b) => (b.tient - a.tient) || (((b.B || {}).gain ?? -1e9) - ((a.B || {}).gain ?? -1e9))).map((x) => [x.regle, (rg[x.regle] || {}).famille || "", (rg[x.regle] || {}).camp || "", (rg[x.regle] || {}).nom || "", x.A?.trades ?? "", x.A?.gagnants ?? "", x.A?.gain ?? "", x.B?.trades ?? "", x.B?.gagnants ?? "", x.B?.gain ?? "", x.creuxTotal, x.tient ? "OUI" : "non"])]],
     ["Paper journalier", [["Combinaison", "Description", "Signaux", "Fermés", "Ouverts", "Gagnants", "Gain $", "vs QQQ $"], ...pj.parRegle.map((x) => [x.regle, nomRegle(x.regle), x.signaux, x.fermes, x.ouverts, x.gagnants, x.gain, x.contreQqq])]],
@@ -42,10 +42,10 @@ async function fichierExcel(env) {
       ["Actions testées", e ? `${e.liste.length} : 25 plus grosses (${(e.grosses || []).join(", ")}) + 75 plus volatiles` : ""],
       ["Périodes (journalier)", e ? `A = du ${e.premiereJ} au ${e.coupureJ} ; B = du ${e.coupureJ} au ${e.derniereJ}` : ""],
       ["Périodes (intraday)", e ? `A = du ${e.premiere} au ${e.coupure} ; B = du ${e.coupure} au ${e.derniere}` : ""],
-      ["Mise", "1 000 $ par trade (2 000 $ pour les versions mise ×2). Achat à l'ouverture du lendemain + 0,05 % de glissement, stop 2 × ATR, sortie à la clôture du dernier jour."],
-      ["vs QQQ $", "Gain du trade moins ce qu'aurait rapporté le QQQ (Nasdaq) sur exactement la même fenêtre. Positif = la stratégie a battu le simple fait de garder le Nasdaq."],
-      ["t", "Gain moyen divisé par son incertitude. 2 ou plus = gain nettement au-dessus de zéro, peu probable par hasard sur cette période."],
-      ["Tient", "Au moins 30 trades sur A et B, gagne sur A et B, bat le QQQ sur A et B, t ≥ 2 sur B."],
+      ["Capital égal", "Par action et par stratégie : 1 000 $, une seule position à la fois (un signal est ignoré tant qu'on est investi). Comparé à 1 000 $ achetés et gardés dans l'action, et 1 000 $ gardés dans le QQQ, même période. Achat à l'ouverture du lendemain + 0,05 % de glissement, stop 2 × ATR."],
+      ["Tient (Par action)", "Au moins 3 trades sur A et sur B, gagne sur A et sur B."],
+      ["Tient (Meilleures stratégies)", "Au moins 30 trades sur A et B, gagne sur A et B, et gagne plus que garder le QQQ avec le même capital sur A et sur B."],
+      ["Feuille Leurs règles", "Ancienne mesure (1 000 $ par trade, positions qui se chevauchent) : sert seulement à comparer leurs idées entre elles, pas à les comparer au QQQ."],
       ["Attention", "Avec près de 2 000 combinaisons testées, certaines passent par hasard. Ce sont des simulations sur le passé, pas des exécutions réelles : seul le paper sur des jours nouveaux départage."]]],
   ];
   const nom = `meilleures-strategies-${new Date().toISOString().slice(0, 10)}.xlsx`;
@@ -158,7 +158,7 @@ export default {
       if (p === "/api/regles") return json({ bases: BASES, filtres: FILTRES, regles: [...REGLES, ...REGLES_J].map((r) => ({ id: r.id, base: r.base.nom, filtre: r.filtre.nom, camp: r.filtre.camp, famille: r.famille })), news: SEUILS.map((x) => ({ id: "news-" + x, nom: `8-K puis hausse de ${x} % dans les 30 min, stop sous le prix de la nouvelle, cible 2R` })) });
       if (p === "/api/test/demarrer" && req.method === "POST") { const l = (await c.get("liquides")) || []; if (!l.length) return json({ erreur: "Lance d'abord le scan du jour (il donne la liste des actions liquides)." }, 400); return json(await demarrer(env, l)); }
       if (p === "/api/par-action") return json(await lirePA(env.DB));
-      if (p === "/api/combos") return json({ ...(await classementCombos(env.DB, +(u.searchParams.get("mise") || 1000))), conditions: CONDITIONS, nbRegles: NB_REGLES, etat: await lireEtat(env.DB, "test") });
+      if (p === "/api/combos") return json({ ...(await classementCap(env.DB)), conditions: CONDITIONS, nbRegles: NB_REGLES, etat: await lireEtat(env.DB, "paraction") });
       if (p === "/api/papier-j") return json(await resumePJ(env.DB, +(u.searchParams.get("mise") || 1000)));
       if (p === "/api/papier-j/tour" && req.method === "POST") return json(await tourPapierJour(env));
       if (p === "/api/test") return json(await classement(env.DB, +(u.searchParams.get("mise") || 1000)));
