@@ -5,7 +5,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { SOURCES, MOTS_IA, MOTS_DEPOT, TYPES_MODELE, RUBRIQUES, POIDS_RUBRIQUES } from "./sources.js";
 
-const VERSION = "1.1.2";
+const VERSION = "1.1.3";
 const MODELE = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const UA = "Mozilla/5.0 (compatible; RadarIA/1.1; +https://radar-ia.pitch67.workers.dev)";
 const FUSEAU = "Europe/Zurich";
@@ -119,7 +119,7 @@ function lireJson(txt, ouvrant = "[") {
   const fermant = ouvrant === "[" ? "]" : "}";
   const a = txt.indexOf(ouvrant), b = txt.lastIndexOf(fermant);
   if (a < 0 || b < a) throw new Error("pas de JSON");
-  return JSON.parse(txt.slice(a, b + 1));
+  return JSON.parse(txt.slice(a, b + 1).replace(/[\u0000-\u001f]+/g, " "));
 }
 
 // ---------- Worker ----------
@@ -448,6 +448,8 @@ export class Radar extends DurableObject {
     const creneau = creneauForce || (heure < 13 ? "matin" : "soir");
     const id = `${jour}-${creneau}`;
     const depuis = Date.now() - 36 * H;
+    // les modèles non censurés arrivés par la liste « tendance » vont dans leur rubrique
+    for (const m of ["%abliterat%", "%uncensor%", "%heretic%", "%unfilter%", "%nsfw%"]) this.sql.exec(`UPDATE items SET genre='libre' WHERE genre='modele' AND lower(titre) LIKE ?`, m);
     const src = Object.fromEntries(SOURCES.map((s) => [s.id, s]));
     const prendre = (genres, apres = depuis) => this.sql.exec(
       `SELECT * FROM items WHERE edition IS NULL AND date >= ? AND genre IN (${genres.map(() => "?").join(",")}) ORDER BY date DESC LIMIT 600`, apres, ...genres)
