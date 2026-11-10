@@ -14,6 +14,7 @@ export { Veilleur } from "./veille.js";
 import { classementCombos, CONDITIONS, NB_REGLES } from "./combos.js";
 import { tourPapierJour, resumePJ } from "./pj.js";
 import { classeurXlsx } from "./xlsx.js";
+import { demarrerPA, lotPA, lirePA } from "./paraction.js";
 import { nomRegle } from "./combos.js";
 
 async function fichierExcel(env) {
@@ -26,7 +27,10 @@ async function fichierExcel(env) {
   const ligneC = (r, i) => [i + 1, r.regle, r.nom, +r.regle.split("j:")[0], r.regle.split(":")[1].split("+").length, r.A.trades, r.A.gagnants, r.A.gain, r.A.contreQqq, r.A.t, r.B.trades, r.B.gagnants, r.B.gain, r.B.contreQqq, r.B.t, r.tient ? "OUI" : "non"];
   const enteteC = ["Rang", "Code", "Description", "Jours gardés", "Nb conditions", "A trades", "A % gagnants", "A gain $", "A vs QQQ $", "A t", "B trades", "B % gagnants", "B gain $", "B vs QQQ $", "B t", "Tient"];
   const tiennent = cb.toutes.filter((r) => r.tient);
+  const pa = await lirePA(db);
   const feuilles = [
+    ["Par action", [["Action", "Groupe", "Meilleure stratégie (code)", "Description", "Gagne sur A et B", "Total $", "A trades", "A gagnants", "A gain $", "B trades", "B gagnants", "B gain $", "vs QQQ $", "Stratégies comparées", "2e meilleure"],
+      ...pa.lignes.map((x) => [x.sym, x.groupe, x.regle || "", x.nom || "", x.tient ? "OUI" : "non", (x.ga || 0) + (x.gb || 0), x.an, x.ag, x.ga, x.bn, x.bg, x.gb, x.xqqq ?? "", x.candidats, x.deuxieme || ""])]],
     ["Meilleures stratégies", [enteteC, ...tiennent.map(ligneC)]],
     ["Toutes combinaisons", [enteteC, ...cb.toutes.map(ligneC)]],
     ["Leurs règles + nos filtres", [["Code", "Famille", "Camp du filtre", "Description", "A trades", "A % gagnants", "A gain $", "B trades", "B % gagnants", "B gain $", "Creux $", "Tient"],
@@ -153,6 +157,7 @@ export default {
       if (p.startsWith("/api/test") || p.startsWith("/api/combos") || p.startsWith("/api/papier") || p.startsWith("/api/news") || p === "/api/regles") await base(env);
       if (p === "/api/regles") return json({ bases: BASES, filtres: FILTRES, regles: [...REGLES, ...REGLES_J].map((r) => ({ id: r.id, base: r.base.nom, filtre: r.filtre.nom, camp: r.filtre.camp, famille: r.famille })), news: SEUILS.map((x) => ({ id: "news-" + x, nom: `8-K puis hausse de ${x} % dans les 30 min, stop sous le prix de la nouvelle, cible 2R` })) });
       if (p === "/api/test/demarrer" && req.method === "POST") { const l = (await c.get("liquides")) || []; if (!l.length) return json({ erreur: "Lance d'abord le scan du jour (il donne la liste des actions liquides)." }, 400); return json(await demarrer(env, l)); }
+      if (p === "/api/par-action") return json(await lirePA(env.DB));
       if (p === "/api/combos") return json({ ...(await classementCombos(env.DB, +(u.searchParams.get("mise") || 1000))), conditions: CONDITIONS, nbRegles: NB_REGLES, etat: await lireEtat(env.DB, "test") });
       if (p === "/api/papier-j") return json(await resumePJ(env.DB, +(u.searchParams.get("mise") || 1000)));
       if (p === "/api/papier-j/tour" && req.method === "POST") return json(await tourPapierJour(env));
@@ -212,7 +217,7 @@ export default {
     else await journal("test", async () => {
       const e = await lireEtat(env.DB, "test");
       if (!e) { const l = (await c.get("liquides")) || []; if (!l.length) return "pas de liste"; const d = await demarrer(env, l); return { demarre: d.liste.length }; }
-      if (e.fini) return "fini";
+      if (e.fini) { const pa = await lireEtat(env.DB, "paraction"); if (!pa) return demarrerPA(env).then((x) => ({ paraction: "démarré" })); if (!pa.fini) return lotPA(env, 10); return "fini"; }
       const r = await lotSuivant(env, 12); return { pos: r.pos, total: r.liste.length };
     });
   },

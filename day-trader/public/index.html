@@ -52,7 +52,8 @@ svg{width:100%;height:auto;display:block}
   <h1>Day Trader <span class="doux">· actions US</span></h1>
   <div id="horloge">…</div>
   <nav id="onglets">
-    <button data-o="papier" class="actif">Paper auto</button>
+    <button data-o="paraction" class="actif">Par action</button>
+    <button data-o="papier">Paper auto</button>
     <button data-o="classement">Classement</button>
     <button data-o="direct">News direct</button>
     <button data-o="scanner">Scanner</button>
@@ -66,7 +67,17 @@ svg{width:100%;height:auto;display:block}
 </header>
 <main>
 
-<section id="papier" class="actif">
+<section id="paraction" class="actif">
+  <div class="carte">
+    <h2>Meilleure stratégie par action</h2>
+    <div class="doux">Une ligne par action. Pour chacune, toutes les stratégies testées (≈ 2 100 : les combinaisons + leurs règles + nos filtres) sont comparées <b>sur cette action seule</b>. Meilleure = le plus gros gain sur l'année parmi celles qui gagnent sur A <b>et</b> sur B (au moins 3 trades sur chaque période). 1 000 $ par trade.</div>
+    <div id="paEtat" class="doux" style="margin-top:6px"></div>
+    <a class="second" style="display:inline-block;text-decoration:none" href="/excel">⬇ Fichier Excel</a>
+  </div>
+  <div id="paRes"></div>
+</section>
+
+<section id="papier">
   <div class="carte">
     <h2>Paper automatique</h2>
     <div class="doux">Toutes les 5 min, les 48 règles (les leurs + nos filtres Bot95) tournent toutes seules sur les 150 actions les plus échangées + le BTC, et les 2 règles « news » sur chaque 8-K. Argent fictif : 1 000 $ par trade. Exécution réaliste : achat à l'ouverture de la barre suivante + 0,05 % de glissement, stop exécuté plus bas en cas de gap, frais 0,1 % par côté sur le BTC. <b>Ce sont des trades papier, pas des exécutions réelles.</b></div>
@@ -246,6 +257,17 @@ async function tradesDe(regle) {
     out.scrollIntoView({ behavior: "smooth" });
   } catch (e) { erreur(out, e); }
 }
+async function chargerPA() {
+  const out = $("#paRes");
+  try {
+    const r = await api("/api/par-action"); const e = r.etat || {}; const p = r.periodes || {};
+    $("#paEtat").innerHTML = (!r.etat ? "Calcul en préparation…" : e.fini ? `Calculé le ${new Date(e.finLe).toLocaleString("fr-CH")}.` : `Calcul en cours : ${e.pos} / ${e.total} actions (≈ 10 par minute).`) + (p.coupureJ ? ` A = du ${p.premiereJ} au ${p.coupureJ}, B = du ${p.coupureJ} au ${p.derniereJ}.` : "");
+    out.innerHTML = r.lignes.length ? `<div class="carte" style="padding:8px"><table><tr><th>Action</th><th>Meilleure stratégie</th><th class="num">Total</th></tr>${r.lignes.map((x) => `<tr><td><span class="lien" data-s="${esc(x.sym)}"><b>${esc(x.sym)}</b></span><br><span class="doux">${x.groupe === "25 plus grosses" ? "grosse" : "volatile"}</span></td>
+      <td>${x.regle ? `${esc(x.nom)}${x.tient ? ' <span class="ok">✓ A et B</span>' : ' <span class="ko">ne tient pas</span>'}<br><span class="doux">A : ${x.an} tr. ${usd(x.ga)} · B : ${x.bn} tr. ${usd(x.gb)}${x.xqqq != null ? ` · vs QQQ ${usd(x.xqqq)}` : ""}</span>` : '<span class="doux">pas assez de trades</span>'}</td>
+      <td class="num"><b class="${cls((x.ga || 0) + (x.gb || 0))}">${usd((x.ga || 0) + (x.gb || 0))}</b></td></tr>`).join("")}</table>
+      <div class="avert">Attention : sur une seule action, on compare ≈ 2 100 stratégies sur peu de trades. La meilleure l'est souvent en partie par chance, même quand elle gagne sur A et B. C'est une simulation du passé, pas un résultat réel : à confirmer en paper avant tout argent.</div></div>` : "";
+  } catch (x) { erreur(out, x); }
+}
 $("#papMaj").onclick = () => { chargerPapier(); chargerPJ(); };
 async function chargerPJ() {
   const out = $("#pjRes");
@@ -319,6 +341,7 @@ function montrer(o) {
   document.querySelectorAll("#onglets button").forEach((x) => x.classList.toggle("actif", x.dataset.o === o));
   document.querySelectorAll("section").forEach((s) => s.classList.toggle("actif", s.id === o));
   if (o === "alertes") chargerAlertes();
+  if (o === "paraction") chargerPA();
   if (o === "papier") { chargerPapier(); chargerPJ(); }
   if (o === "classement") { chargerCombos(); chargerClassement(); }
   if (o === "direct") chargerDirect();
@@ -514,7 +537,7 @@ $("#regGo").onclick = async () => {
 
 (async () => {
   await etat();
-  chargerPapier(); chargerPJ();
+  chargerPA(); chargerPapier(); chargerPJ();
   try { SJ = await api("/api/scan-jour"); afficherSJ(); } catch (e) { erreur($("#sjListe"), e); }
   try { ORB = await api("/api/orb"); afficherOrb(); } catch (e) {}
   setInterval(etat, 60000);
