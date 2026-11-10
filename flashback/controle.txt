@@ -1,15 +1,15 @@
 
-Total Upload: 35.89 KiB / gzip: 12.34 KiB
+Total Upload: 35.06 KiB / gzip: 12.18 KiB
 Worker Startup Time: 2 ms
 Your Worker has access to the following bindings:
 Binding                 Resource            
 env.SALLE (Salle)       Durable Object      
 env.ASSETS              Assets              
 
-Uploaded flashback (2.95 sec)
-Deployed flashback triggers (0.59 sec)
+Uploaded flashback (4.04 sec)
+Deployed flashback triggers (0.45 sec)
   https://flashback.pitch67.workers.dev
-Current Version ID: 66fa4257-6fcb-4512-bfa6-bd2697080cd9
+Current Version ID: dd212bdd-a0b9-4417-8d8a-d3eacc6f5940
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
@@ -18,10 +18,10 @@ code sortie: 0
 === joueur
 200
 === salle
-{"code":"FPFD"}
+{"code":"DRJX"}
 === deezer 0
-{"chanson":{"t":"Retiens la nuit","a":"Johnny Hallyday","y":1961},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/7/5/1/0/751d5d4673aa90e2ae602d312a26e081.mp3?hdnea=exp=1794343512~acl=/api/1/1/7/5/1/0/751d5d4673aa90e2ae602d312a26e081.mp3*~data=user_id=0,application_id=42~hmac=76d9534457d8f91fb80e5635bdf74dfd11e57f927d86a03d1b35e86179ed5847","pochette":"https://cdn-images.dzcdn.net/images/cover/ff631833c84c5b36027c427552601e0f/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/2461958"}}
+{"chanson":{"t":"Retiens la nuit","a":"Johnny Hallyday","y":1961},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/7/5/1/0/751d5d4673aa90e2ae602d312a26e081.mp3?hdnea=exp=1794343980~acl=/api/1/1/7/5/1/0/751d5d4673aa90e2ae602d312a26e081.mp3*~data=user_id=0,application_id=42~hmac=88ba60bd71adfca5f6dfd7bfff6420ce87c3176f8592993047a1ae21b3935c0e","pochette":"https://cdn-images.dzcdn.net/images/cover/ff631833c84c5b36027c427552601e0f/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/2461958"}}
 === deezer 40
-{"chanson":{"t":"Another One Bites the Dust","a":"Queen","y":1980,"danse":1},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/7/0/d/0/70dfc1ad79bdd6e1d69d16e1a37c06eb.mp3?hdnea=exp=1794343512~acl=/api/1/1/7/0/d/0/70dfc1ad79bdd6e1d69d16e1a37c06eb.mp3*~data=user_id=0,application_id=42~hmac=5adab7dd77f3e2378be916fad43a803dae1dad45dcc4288810ab3f51ff76959c","pochette":"https://cdn-images.dzcdn.net/images/cover/156c197582a4d4b40e17d72b79d3df62/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/4092324041"}}
+{"chanson":{"t":"Another One Bites the Dust","a":"Queen","y":1980,"danse":1},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/7/0/d/0/70dfc1ad79bdd6e1d69d16e1a37c06eb.mp3?hdnea=exp=1794343981~acl=/api/1/1/7/0/d/0/70dfc1ad79bdd6e1d69d16e1a37c06eb.mp3*~data=user_id=0,application_id=42~hmac=5c1315b0fc16d8d5b32aeaf4aae4e704bbbb70fc9140a6959a3f1a0a55432137","pochette":"https://cdn-images.dzcdn.net/images/cover/156c197582a4d4b40e17d72b79d3df62/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/4092324041"}}
 === deezer 80
-{"chanson":{"t":"Rehab","a":"Amy Winehouse","y":2006},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/2/1/d/0/21dd455c62dd8ecfbb94a879455fce82.mp3?hdnea=exp=1794343513~acl=/api/1/1/2/1/d/0/21dd455c62dd8ecfbb94a879455fce82.mp3*~data=user_id=0,application_id=42~hmac=415059a0876743e7314f695b407c06dc574ae4b4f92b9cc2c8c34c2280b3a3b5","pochette":"https://cdn-images.dzcdn.net/images/cover/5772b495f0dcdf660d0fc88c4c38a3fa/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/2176852"}}
+{"chanson":{"t":"Rehab","a":"Amy Winehouse","y":2006},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/2/1/d/0/21dd455c62dd8ecfbb94a879455fce82.mp3?hdnea=exp=1794343981~acl=/api/1/1/2/1/d/0/21dd455c62dd8ecfbb94a879455fce82.mp3*~data=user_id=0,application_id=42~hmac=ce7a5b5bff05f42d2c50de2bb25b7a9f6cd6bb6c387d8b33c9b944f9d205da47","pochette":"https://cdn-images.dzcdn.net/images/cover/5772b495f0dcdf660d0fc88c4c38a3fa/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/2176852"}}
