@@ -70,7 +70,7 @@ export async function spark(symboles, plage, intervalle) {
 // Exécute des tâches avec au plus `n` en parallèle
 export async function parLots(items, n, f) {
   const res = new Array(items.length); let k = 0;
-  async function ouvrier() { while (k < items.length) { const i = k++; try { res[i] = await f(items[i], i); } catch (e) { res[i] = { erreur: String(e.message || e) }; } } }
+  async function ouvrier() { while (k < items.length) { const i = k++; try { res[i] = await f(items[i], i); } catch (e) { res[i] = { erreur: String(e.message || e) + " @ " + String(e.stack || "").split("\n").slice(1, 3).join(" | ") }; } } }
   await Promise.all(Array.from({ length: Math.min(n, items.length) }, ouvrier));
   return res;
 }
