@@ -283,10 +283,11 @@
     G = mode === "jour" ? grilleDuJour(P.date) : grilleDuNiveau(P.niveau);
     historique.length = 0;
     let annonce = "";
+    if (P.aides && !P.aides.trois) { P.aides.astuces = Math.max(P.aides.astuces, 3); P.aides.trois = 1; }
     if (!P.aides) {
       const a = aidesPour(G.a);
-      P.aides = { astuces: a, chats: a };
-      if (a > 1) annonce = "Grille plus corsée : " + a + " astuce" + (a > 1 ? "s" : "") + " et " + a + " chat" + (a > 1 ? "s" : "") + " offerts pour celle-ci.";
+      P.aides = { astuces: 3, chats: a, trois: 1 };
+      annonce = "3 astuces et " + a + " chat" + (a > 1 ? "s" : "") + " offerts pour cette grille.";
     }
     $("titre-niveau").textContent = mode === "jour" ? "Défi du jour" : "Niveau " + P.niveau;
     $("sous-titre").textContent = mode === "jour" ? dateLisible(P.date) : etiquette(P.niveau);
