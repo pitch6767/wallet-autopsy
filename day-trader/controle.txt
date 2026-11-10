@@ -1,33 +1,35 @@
-env.COFFRE (Coffre)      Durable Object      
-env.ASSETS               Assets              
+env.DB (day-trader)          D1 Database         
+env.ASSETS                   Assets              
 
-Uploaded day-trader (2.46 sec)
-Deployed day-trader triggers (0.63 sec)
+Uploaded day-trader (3.94 sec)
+Deployed day-trader triggers (1.07 sec)
   https://day-trader.pitch67.workers.dev
   schedule: * * * * *
   schedule: 17 13 * * 1-5
-Current Version ID: 53b82559-731c-46f2-a970-16e37fc10943
+Current Version ID: db828798-3a2e-4f02-8d24-5e836674e431
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 === page
 200
 === sonde
-{"ok":true,"horloge":{"newYork":"2026-11-10 03:26","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 08:26"}}
+{"ok":true,"horloge":{"newYork":"2026-11-10 03:32","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 08:32"}}
 === controles
 --- etat
-{"horloge":{"newYork":"2026-11-10 03:26","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 08:26"},"reglages":{"budget":5000,"cash_buffer_pct":10,"max_position_pct":75,"max_order_usd":4000,"min_order_usd":5,"max_loss_per_trade_usd":50,"max_daily_loss_usd":150,"max_trades_per_day":3,"min_reward_risk":1,"no_entries_before":"09:45","no_entries_after":"15:30","flat_by":"15:55","blocked":[],"btc_decimales":4},"scanJour":{"le":"2026-11-10T08:24:53.200Z","trouves":732},"orb":{"le":"2026-11-10T08:24:54.678Z","trouves":0},"alertes":[]}
+{"horloge":{"newYork":"2026-11-10 03:32","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 08:32"},"reglages":{"budget":5000,"cash_buffer_pct":10,"max_position_pct":75,"max_order_usd":4000,"min_order_usd":5,"max_loss_per_trade_usd":50,"max_daily_loss_usd":150,"max_trades_per_day":3,"min_reward_risk":1,"no_entries_before":"09:45","no_entries_after":"15:30","flat_by":"15:55","blocked":[],"btc_decimales":4,"sec_user_agent":"Peter Zamori pitch67@gmail.com"},"scanJour":{"le":"2026-11-10T08:26:44.968Z","trouves":732},"orb":{"le":"2026-11-10T08:26:46.112Z","trouves":0},"alertes":[]}
 --- trade-TSLA
 {"symbol":"TSLA","jour":"2026-11-09","nom":"Tesla, Inc.","dernierPrix":378.05,"devise":"USD","entree":{"symbol":"TSLA","setup":"orb","jour":"2026-11-09","statut":"declenche","raison":"La barre de 09:50 a clôturé au-dessus du haut du range.","range":{"haut":376.29,"bas":360.02,"minutes":15,"complet":true},"niveau":376.29,"declenchement":{"heure":"09:55","barre":"09:50","indice":4,"prix":377.14,"pctAuDessus":0.23},"derniere":{"barre":"15:55","cloture":377.92,"ecartPct":0.43},"tz":"New York","barresFermees":78},"plan":{"symbol":"TSLA","jour":"2026-11-09","setup":"orb","cote":"achat","entree":377.14,"stop":368.15,"cible":386.13,"risqueParPart":8.99,"rCible":1,"regleStop":"or_mid","range":{"haut":376.29,"bas":360.02,"minutes":15,"complet":true},"indice":4,"heure":"09:55","flatBy":"15:55","avertissements":[]},"tm":{"plan":{"symbol":"TSLA","jour":"2026-11-09","setup":"orb","cote":"achat","entree":377.14,"stop":368.15,"cible":386.13,"risqueParPart":8.99,"rCible":1,"regleStop":"or_mid","range":{"haut":376.29,"bas":360.02,"minutes":15,"complet":true},"indice":4,"heure":"09:55","flatBy":"15:55","avertissements":[]},"mc":{"replays":10000,"graine":19,"fenetre":2,"barresRestantes":73,"pCible":0.1907,"pStop":0.1222,"pNi":0.6871,"pVert":0.5221,"medianeCloture":377.41,"p5":367.14,"p95":387.98,"rMoyen":0.056,"rCible":1,"bandes":[[377.14,377.14,377.14,377.14,377.14],[374.79,376.48,377.36,378.09,379.84],[374.15,376.18,377.44,378.78,380.81],[373.72,376.07,377.58,379.19,381.51],[373.37,376.03,37
 --- trade-BTC
-{"symbol":"BTC","jour":"2026-11-10","nom":"Bitcoin USD","dernierPrix":74644.9,"devise":"USD","entree":{"symbol":"BTC","setup":"orb","jour":"2026-11-10","statut":"attente","raison":"Dernière clôture 74635.05 (barre de 08:20), 705.18 sous le haut du range 75340.23.","range":{"haut":75340.23,"bas":75197.01,"minutes":15,"complet":true},"niveau":75340.23,"declenchement":null,"derniere":{"barre":"08:20","cloture":74635.05,"ecartPct":-0.94},"tz":"UTC","barresFermees":101}}
+{"symbol":"BTC","jour":"2026-11-10","nom":"Bitcoin USD","dernierPrix":74431.98,"devise":"USD","entree":{"symbol":"BTC","setup":"orb","jour":"2026-11-10","statut":"attente","raison":"Dernière clôture 74565.54 (barre de 08:25), 774.69 sous le haut du range 75340.23.","range":{"haut":75340.23,"bas":75197.01,"minutes":15,"complet":true},"niveau":75340.23,"declenchement":null,"derniere":{"barre":"08:25","cloture":74565.54,"ecartPct":-1.03},"tz":"UTC","barresFermees":102}}
 --- nouvelles
 [{"symbol":"TSLA","titres":[{"titre":"SPCX Stock Climbs Overnight: Tesla Influencer Presses Texas Governor-Elect — Analyst Sees 10,000 AI Racks In Space By 2028","lien":"https://stocktwits.com/news-articles/markets/equity/spcx-stock-tesla-influencer-texas-governor-elect-analyst-10000-ai-racks-space-2028/cNGua33R97o?.tsrc=rss","date":1794298567000,"source":"Yahoo Finance","heureNY":"2026-11-10 03:16","tags":[]},{"titre":"EVgo: 3 Key Takeaways for Long-Term Investors","lien":"https://www.fool.com/earnings/takeaways/2026/11/10/evgo-3-key-takeaways-for-long-term-investors/?.tsrc=rss","date":1794290168000,"source":"Yahoo Finance","heureNY":"2026-11-10 00:56","tags":[]},{"titre":"Elon Musk sends strong signal to Tesla stock investors","lien":"https://www.thestreet.com/investing/stocks/elon-musk-strong-signal-tesla-stock-investors-cybertruck-cybercab?.tsrc=rss","date":1794281580000,"source":"Yahoo Finance","heureNY":"2026-11-09 22:33","tags":[]},{"titre":"Dow Jones Soars 1,132 Points As Amazon, Tesla Rally, But Nvidia Dives; CPI Inflation Report Next","lien":"https://finance.yahoo.com/m/db2f6d95-b7a5-3274-8193-c767d2b681c1/dow-jones-soars-1%2C132-points.html?.tsrc=rss","date":1794277908000,"source":"Yahoo Finance","heureNY":"2026-11-09 21:31","tags":[]},{"titre":"How much of Elon Musk’s wealth is in Tesla & SpaceX stock?","lien":"https://www.thestreet.com/personalities/how-much-of-elon-musks-wealth-is-in-tesla-and-spacex-stock?.tsrc=rss","date":1794269137000,"source":"Yahoo Fina
 --- congres
 {"annee":2026,"nombre":5,"rapports":[{"membre":"Hon. Nancy Pelosi","circonscription":"CA11","depose":"2026-11-06","docId":"20035780","pdf":"https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/2026/20035780.pdf"},{"membre":"Hon. Nancy Pelosi","circonscription":"CA11","depose":"2026-10-02","docId":"20035553","pdf":"https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/2026/20035553.pdf"},{"membre":"Hon. Nancy Pelosi","circonscription":"CA11","depose":"2026-08-21","docId":"20035143","pdf":"https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/2026/20035143.pdf"},{"membre":"Hon. Nancy Pelosi","circonscription":"CA11","depose":"2026-06-23","docId":"20034836","pdf":"https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/2026/20034836.pdf"},{"membre":"Hon. Nancy Pelosi","circonscription":"CA11","depose":"2026-01-23","docId":"20033725","pdf":"https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/2026/20033725.pdf"}],"note":"Déclarations publiques (STOCK Act), déposées jusqu'à 45 jours après le trade ; montants en fourchettes. Ce n'est pas une information privilégiée. Chambre seulement (le Sénat exige une acceptation manuelle)."}
 --- analyste
-{"erreur":"La SEC exige un nom et un e-mail de contact : remplis le réglage « Contact SEC »."}
+{"nom":"Apple Inc.","erreur":null,"l":[{"fin":"2026-09-26","revenu":114477000000,"bpa":2.11,"revenuSurUnAn":11.7},{"fin":"2026-06-27","revenu":109417000000,"bpa":2.02,"revenuSurUnAn":16.4}]}
+--- 8-K
+[{"depots":[{"date":"2026-11-09","items":"8.01,9.01","lien":"https://www.sec.gov/Archives/edgar/data/320193/000114036126042798/ef20085077_8k.htm"},{"date":"2026-11-02","items":"2.02,9.01","lien":"https://www.sec.gov/Archives/edgar/data/320193/000032019326000024/aapl-20261102.htm"}],"erreurs":[]}]
 --- scan-jour (comptes)
 {"duree":3,"comptes":{"demandes":5933,"recus":5933,"illiquides":4305,"courts":2,"scannes":1626,"trouves":732,"echecs":0},"nb":732,"btc":[]}
 --- orb
-{"le":"2026-11-10T08:26:46.112Z","duree":0,"hits":[],"comptes":{"demandes":5933,"recus":1,"inutilisables":0,"illiquides":0,"scannes":1,"candidats":0,"confirmes":0,"nonConfirmes":0,"trouves":0},"echecs":{},"message":"Il est 03:26 (New York) : le range de 15 min va de 09:30 à 09:45 et la première barre après se termine à 09:50. Relance après 09:50.","coupureBtc":"08:26 UTC","jour":"2026-11-10"}
+{"le":"2026-11-10T08:32:26.096Z","duree":0,"hits":[],"comptes":{"demandes":5933,"recus":1,"inutilisables":0,"illiquides":0,"scannes":1,"candidats":0,"confirmes":0,"nonConfirmes":0,"trouves":0},"echecs":{},"message":"Il est 03:32 (New York) : le range de 15 min va de 09:30 à 09:45 et la première barre après se termine à 09:50. Relance après 09:50.","coupureBtc":"08:32 UTC","jour":"2026-11-10"}
