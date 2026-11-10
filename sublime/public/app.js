@@ -222,7 +222,7 @@
     const z = new Array(n * n), sol = new Array(n);
     for (let l = 0; l < n; l++) for (let c = 0; c < n; c++) { const [a, b] = tr(l, c); z[a * n + b] = z0[l * n + c]; }
     for (let l = 0; l < n; l++) { const [a, b] = tr(l, s0[l]); sol[a] = b; }
-    return { n, z, sol };
+    return { n, z, sol, d: base.d || 0 };
   }
   // Niveaux classés du plus facile au plus difficile ; au-delà, les plus durs reviennent retournés
   function grilleDuNiveau(niveau) {
@@ -240,6 +240,11 @@
   let G = null; // grille
   let P = null; // état de la partie
   let mode = "niveau";
+
+  // Aides offertes selon la difficulté de la grille : facile = rien, puis 1 astuce + 1 chat, 2 + 2, 3 + 3
+  function aidesPour(d) { return d < 50 ? 0 : d < 100 ? 1 : d < 160 ? 2 : 3; }
+  const dispo = (k) => ((P && P.aides && P.aides[k]) || 0) + (profil[k] || 0);
+  function utiliser(k) { if (P.aides && P.aides[k] > 0) P.aides[k]--; else profil[k]--; }
 
   function nouvellePartie(niveau, recommence) {
     return { nv: NV, n: 10, niveau, croix: {}, chats: [], poissons: POISSONS_MAX, recommence: !!recommence, offerts: [] };
@@ -277,11 +282,18 @@
     P = partie;
     G = mode === "jour" ? grilleDuJour(P.date) : grilleDuNiveau(P.niveau);
     historique.length = 0;
+    let annonce = "";
+    if (!P.aides) {
+      const a = aidesPour(G.d);
+      P.aides = { astuces: a, chats: a };
+      if (a) annonce = "Grille plus corsée : " + a + " astuce" + (a > 1 ? "s" : "") + " et " + a + " chat" + (a > 1 ? "s" : "") + " offerts pour celle-ci.";
+    }
     $("titre-niveau").textContent = mode === "jour" ? "Défi du jour" : "Niveau " + P.niveau;
     $("sous-titre").textContent = mode === "jour" ? dateLisible(P.date) : etiquette(P.niveau);
     $("msg-jeu").textContent = "";
     dessinerPlateau();
     majTout();
+    if (annonce) info(annonce, 6000);
     if (P.poissons <= 0) perdu();
   }
   function dateLisible(d) { return new Date(d + "T12:00:00Z").toLocaleDateString("fr-CH", { weekday: "long", day: "numeric", month: "long" }); }
@@ -330,10 +342,10 @@
   }
 
   function majBonus() {
-    $("nb-chats").textContent = profil.chats;
-    $("nb-astuces").textContent = profil.astuces;
-    $("btn-chat").classList.toggle("vide", !profil.chats);
-    $("btn-astuce").classList.toggle("vide", !profil.astuces);
+    $("nb-chats").textContent = dispo("chats");
+    $("nb-astuces").textContent = dispo("astuces");
+    $("btn-chat").classList.toggle("vide", !dispo("chats"));
+    $("btn-astuce").classList.toggle("vide", !dispo("astuces"));
     document.querySelectorAll(".chat-mini").forEach((e) => (e.innerHTML = svgChat(profil.pelage)));
   }
   function majCroq(gain) {
@@ -451,7 +463,7 @@
   // ---------- Bonus ----------
   $("btn-chat").addEventListener("click", () => {
     if (!P || fini()) return;
-    if (!profil.chats) return info("Pas de chat gratuit. Réussis un niveau sans perdre de poisson pour en gagner un.");
+    if (!dispo("chats")) return info("Pas de chat gratuit. Réussis un niveau sans perdre de poisson pour en gagner un.");
     const n = G.n;
     const libres = [];
     for (let k = 0; k < n; k++) if (!P.chats.some((i) => G.z[i] === k)) libres.push(k);
@@ -459,7 +471,7 @@
     const k = libres[Math.floor(Math.random() * libres.length)];
     let cible = -1;
     for (let l = 0; l < n; l++) if (G.z[l * n + G.sol[l]] === k) cible = l * n + G.sol[l];
-    profil.chats--;
+    utiliser("chats");
     delete P.croix[cible];
     P.chats.push(cible);
     P.offerts.push(cible);
@@ -473,7 +485,7 @@
 
   $("btn-astuce").addEventListener("click", () => {
     if (!P || fini()) return;
-    if (!profil.astuces) return info("Pas d'astuce. Réussis un niveau sans recommencer pour en gagner une.");
+    if (!dispo("astuces")) return info("Pas d'astuce. Réussis un niveau sans recommencer pour en gagner une.");
     const n = G.n;
     const oubliees = new Set();
     for (const i of P.chats) {
@@ -505,7 +517,7 @@
       marquees = liste.length >= 2 ? liste.slice(0, liste.length - 1) : liste;
       info(marquees.length + (marquees.length > 1 ? " croix posées" : " croix posée") + " dans une couleur.");
     }
-    profil.astuces--;
+    utiliser("astuces");
     joue("bonus");
     for (const j of marquees) { P.croix[j] = "aide"; majCase(j, true); historique.push({ type: "croix", i: j, avant: 0 }); }
     majBonus();
@@ -632,10 +644,10 @@
   }
 
   let minuterieInfo;
-  function info(t) {
+  function info(t, duree) {
     $("msg-jeu").textContent = t;
     clearTimeout(minuterieInfo);
-    minuterieInfo = setTimeout(() => ($("msg-jeu").textContent = ""), 3500);
+    minuterieInfo = setTimeout(() => ($("msg-jeu").textContent = ""), duree || 3500);
   }
 
   // ---------- Défi du jour ----------
