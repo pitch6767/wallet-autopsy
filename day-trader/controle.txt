@@ -1,27 +1,25 @@
 env.DB (day-trader)            D1 Database         
 env.ASSETS                     Assets              
 
-Uploaded day-trader (4.01 sec)
-Deployed day-trader triggers (1.32 sec)
+Uploaded day-trader (3.29 sec)
+Deployed day-trader triggers (0.77 sec)
   https://day-trader.pitch67.workers.dev
   schedule: * * * * *
   schedule: 17 13 * * 1-5
-Current Version ID: ecd886f6-5899-4ce1-ab3f-51110e154705
+Current Version ID: a1be1b1f-d4b1-4c20-8c22-626391544274
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 === page
 200
 === sonde
-{"ok":true,"horloge":{"newYork":"2026-11-10 07:35","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 12:35"}}
+{"ok":true,"horloge":{"newYork":"2026-11-10 07:41","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 12:41"}}
 === controles
---- relance du test (25 grosses + 75 volatiles, sans BTC)
-{"n":100,"grosses":["NVDA","AMD","MU","AAPL","SPCX"],"volatiles":["OMH","SMX","MF","KOD","LQDA"],"coupure":"2026-09-29","coupureJ":"2026-05-12","premiereJ":"2025-12-24","derniereJ":"2026-11-09"}
 --- regles
 {"n":158,"familles":{"intraday":39,"journalier":105,"résultats":14}}
 --- etat taches
-{"dernier-papier":{"quand":"2026-11-10T12:36:28.363Z","r":{"symboles":0,"lignes":0}},"dernier-test":{"quand":"2026-11-10T12:38:16.312Z","r":{"pos":24,"total":100}}}
+{"dernier-papier":{"quand":"2026-11-10T12:41:14.347Z","r":{"symboles":0,"lignes":0}},"dernier-test":{"quand":"2026-11-10T12:43:20.608Z","r":{"pos":72,"total":100}}}
 --- test
-{"pos":24,"regles":158,"tiennent":["j-breakout_20d-3j:marche","j-bull_flag-3j:consensus","j-bull_flag-5j:consensus","j-oversold-1j:consensus","j-oversold-3j:consensus","j-oversold-3j:sortie","j-oversold-5j:sortie","j-oversold_bounce-1j:aucun","j-oversold_bounce-1j:consensus","j-oversold_bounce-1j:liquide"],"ex":[{"regle":"orb-low2:tm","A":3,"B":1},{"regle":"orb-mid1:tm","A":42,"B":116},{"regle":"res-20j:aucun","A":12,"B":6},{"regle":"res-20j:consensus","A":6,"B":2},{"regle":"res-20j:liquide","A":12,"B":6},{"regle":"res-20j:marche","A":9,"B":1},{"regle":"res-20j:sortie","A":12,"B":6},{"regle":"res-20j:tout","A":5,"B":null}]}
+{"pos":72,"regles":158,"tiennent":["j-breakout_20d-3j:aucun","j-breakout_20d-3j:liquide","j-breakout_20d-3j:marche","j-breakout_20d-3j:sortie","j-breakout_20d-3j:x2","j-breakout_20d-5j:liquide","j-bull_flag-5j:consensus","j-oversold-1j:aucun","j-oversold-1j:sortie","j-oversold-1j:x2"],"ex":[{"regle":"orb-low2:tm","A":11,"B":15},{"regle":"orb-mid1:tm","A":93,"B":264},{"regle":"res-20j:aucun","A":16,"B":12},{"regle":"res-20j:consensus","A":8,"B":3},{"regle":"res-20j:liquide","A":12,"B":6},{"regle":"res-20j:marche","A":13,"B":6},{"regle":"res-20j:sortie","A":16,"B":12},{"regle":"res-20j:tout","A":5,"B":null}]}
 --- erreurs
-{"pos":24,"echecs":12,"erreurs":["INTC : Cannot read properties of undefined (reading 'o')","GOOG : Cannot read properties of undefined (reading 'o')","TSM : Cannot read properties of undefined (reading 'o')","LLY : Cannot read properties of undefined (reading 'o')","MRVL : Cannot read properties of undefined (reading 'o')","AMAT : Cannot read properties of undefined (reading 'o')","PLTR : Cannot read properties of undefined (reading 'o')","LRCX : Cannot read properties of undefined (reading 'o')","BRK.B : Cannot read properties of undefined (reading 'o')","GEV : Cannot read properties of undefined (reading 'o')","LITE : Cannot read properties of undefined (reading 'o')","COHR : Cannot read properties of undefined (reading 'o')"]}
+{"pos":72,"echecs":41,"erreurs":["BCAX : Cannot read properties of undefined (reading 'o')","DNA : Cannot read properties of undefined (reading 'o')","BRUN : Cannot read properties of undefined (reading 'o')","SHAZ : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","BMBL : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","OPTX : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","WYFI : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","ATEC : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","AVTX : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","TWST : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","BSP : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","ABTC : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","FPS : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","AMLX : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30","REAX : Cannot read properties of undefined (reading 'o') @     at construirePool (index.js:1381:24) |     at index.js:1674:30"]}
