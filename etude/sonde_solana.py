@@ -2,7 +2,7 @@
 import json, urllib.request
 def get(u):
     with urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "analyse"}), timeout=180) as r: return json.load(r)
-dep = "2026-11-09T23:00:00Z"
+dep = "2026-11-10T14:15:00Z"
 R = get(f"https://72-11-157-70.sslip.io/api/bot/banc/decisions?depuis={dep}")
 B = [t for t in get(f"https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis={dep}&plafond=200")["trades"] if t["num"] == 600005]
 P = [t for t in R.get("tradesPaper", []) if t["n"] == 600005]
@@ -16,3 +16,4 @@ for c in cyc:
 print("\nDÉCISIONS refusées :")
 for d in R["decisions"]:
     if not d.get("pris"): print(" ", d.get("at", "")[11:19], d.get("base"), d.get("cote"), d.get("prix"), "k", d.get("k"), "|", str(d.get("statut"))[:220])
+# relance 14:15:31
