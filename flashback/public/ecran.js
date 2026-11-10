@@ -115,10 +115,8 @@
       cad.regle(q.y);
       tinte(true);
     } else if (ph === "danse") {
-      sc.innerHTML = '<div class="danse-ecran"><div class="titre">Pause danse !</div></div><div class="sous-titre">Téléphone en main, on se lève et on danse. Le plus déchaîné gagne des points.</div><div class="egaliseur"><i></i><i></i><i></i><i></i><i></i></div><div class="minuteur"><i></i></div>';
+      sc.innerHTML = '<div class="danse-ecran"><div class="titre">Pause danse !</div></div><div class="sous-titre">Tout le monde se lève et danse !</div><div class="egaliseur"><i></i><i></i><i></i><i></i><i></i></div><div class="minuteur"><i></i></div>';
       parle("Pause danse !");
-    } else if (ph === "revele" && q.sous === "danse") {
-      sc.innerHTML = '<div class="question">' + (q.danseurs && q.danseurs.length ? "Roi de la piste : " + echappe(q.danseurs[0]) + (q.danseurs[1] ? "<div class='sous-titre'>Puis " + q.danseurs.slice(1).map(echappe).join(" et ") + "</div>" : "") : "Personne n'a dansé… dommage !") + "</div>";
     } else if (ph === "annee") {
       couper(true);
       const t = q.type === "blind" ? "En quelle année est sortie « " + q.titre + " » ?" : q.texte;

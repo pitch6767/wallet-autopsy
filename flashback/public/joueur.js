@@ -30,8 +30,6 @@
     if (n && !/^(19[2-9]\d|20[0-2]\d)$/.test(n)) return ($("erreur").textContent = "L'année de naissance doit avoir 4 chiffres, par exemple 1966.");
     profil.nom = nom; profil.naissance = n ? +n : 0;
     try { localStorage.setItem("fb-profil", JSON.stringify(profil)); } catch (e) {}
-    // autorisation des mouvements pour la pause danse (iPhone)
-    try { if (window.DeviceMotionEvent && DeviceMotionEvent.requestPermission) await DeviceMotionEvent.requestPermission(); } catch (e) {}
     $("profil").classList.add("cache");
     $("jeu").classList.remove("cache");
     $("jeu").innerHTML = '<p class="attente">Connexion à la partie ' + code + "…</p>";
@@ -61,7 +59,6 @@
     if (!nouveau) return barre();
     choixFait = etat.moi && etat.moi.choix !== undefined ? etat.moi.choix : null;
     const J = $("jeu");
-    stopDanse();
 
     if (ph === "salon") {
       J.innerHTML = '<p class="attente">Tu es dans la partie ' + code + ' !<br><br>Regarde l\'écran : la partie commence dès que tout le monde est là.</p>' +
@@ -93,7 +90,6 @@
       return barre();
     }
     if (ph === "revele") {
-      if (q.sous === "danse") { J.innerHTML = '<div class="resultat neutre">' + (j && j.gains ? "Bravo, +" + j.gains + " points de danse ! 🕺" : "La danse est finie !") + "</div>"; return; }
       if (q.sous === "annee" || q.type === "annee") {
         J.innerHTML = '<div class="resultat ' + (j && j.gains ? "oui" : "non") + '">C\'était en ' + q.y + "<br>" + (j && j.gains ? "+" + j.gains + " points" : "Pas de points cette fois") + "</div>";
         vibre(j && j.gains ? 40 : [60, 40, 60]);
@@ -137,28 +133,10 @@
     barre();
   }
 
-  // ---------- Pause danse : le téléphone mesure les mouvements ----------
-  let energie = 0, dernierEnvoi = 0, ecouteDanse = null, tapsDanse = null, prec = null;
+  // ---------- Pause danse : un simple moment pour danser ----------
   function danse(J) {
-    energie = 0; prec = null;
-    J.innerHTML = '<h2 style="text-align:center">Pause danse !</h2><p class="consigne" style="text-align:center">Garde ton téléphone en main et danse !</p><div class="vu"><div class="zone" id="zone" style="height:0%"></div></div>' +
-      '<button class="gros-bouton sobre" id="btn-tape">Pas de capteur ? Tape en rythme ici</button><div class="minuteur tel-min"><i></i></div>';
-    let niveau = 0;
-    const affiche = (v) => { niveau = Math.max(niveau * 0.9, v); const z = $("zone"); if (z) z.style.height = Math.min(100, niveau) + "%"; };
-    ecouteDanse = (e) => {
-      const a = e.accelerationIncludingGravity || e.acceleration;
-      if (!a || a.x == null) return;
-      if (prec) { const d = Math.abs(a.x - prec.x) + Math.abs(a.y - prec.y) + Math.abs(a.z - prec.z); energie += d; affiche(d * 4); }
-      prec = { x: a.x, y: a.y, z: a.z };
-      envoie();
-    };
-    addEventListener("devicemotion", ecouteDanse);
-    tapsDanse = () => { energie += 6; affiche(60); vibre(10); envoie(); };
-    $("btn-tape").addEventListener("pointerdown", tapsDanse);
-    barre();
+    J.innerHTML = '<p class="attente" style="font-size:30px;color:var(--ambre)">💃 Pause danse ! 🕺</p><p class="attente">Tout le monde se lève et danse sur la chanson !</p>';
   }
-  function envoie() { const t = Date.now(); if (t - dernierEnvoi > 700) { dernierEnvoi = t; conn.envoie({ type: "danse", energie: Math.round(energie) }); } }
-  function stopDanse() { if (ecouteDanse) { removeEventListener("devicemotion", ecouteDanse); ecouteDanse = null; if (energie) conn.envoie({ type: "danse", energie: Math.round(energie) }); } }
 
   // ---------- Souvenir ----------
   function souvenir(J, q) {

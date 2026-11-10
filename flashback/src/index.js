@@ -116,9 +116,6 @@ export class Salle extends DurableObject {
     } else if (m.type === "annee" && this.phase === "annee" && ouvert && !this.reponses.has(p.id)) {
       const v = Math.round(Number(m.valeur));
       if (v >= 1950 && v <= 2015) { this.reponses.set(p.id, { annee: v, t: Date.now() }); this.diffuse(); if (this.tousOntRepondu()) this.raccourcir(); }
-    } else if (m.type === "danse" && this.phase === "danse") {
-      const e = Math.max(0, Math.min(1e6, Number(m.energie) || 0));
-      this.reponses.set(p.id, { energie: e });
     } else if (m.type === "souvenir" && this.phase === "souvenir") {
       const texte = String(m.texte || "").trim().slice(0, 500);
       const prev = this.reponses.get(p.id) || {};
@@ -249,23 +246,7 @@ export class Salle extends DurableObject {
       }, this.rev());
       return;
     }
-    if (this.phase === "danse") {
-      const classes = [...this.reponses.entries()].filter(([, r]) => r.energie > 0).sort((a, b) => b[1].energie - a[1].energie);
-      classes.forEach(([id], rang) => {
-        const j = this.joueurs.get(id);
-        if (!j) return;
-        j.gains = rang === 0 ? 300 : rang === 1 ? 200 : 100;
-        j.score += j.gains;
-      });
-      this.q.danseurs = classes.slice(0, 3).map(([id]) => this.joueurs.get(id) && this.joueurs.get(id).nom).filter(Boolean);
-      this.phase = "revele";
-      this.q.sous = "danse";
-      this.fin = Date.now() + this.rev();
-      this.duree = this.rev();
-      this.diffuse();
-      this.minuterie = setTimeout(() => this.ouvrir("annee"), this.rev());
-      return;
-    }
+    if (this.phase === "danse") return this.ouvrir("annee");
     if (this.phase === "annee") {
       for (const [id, r] of this.reponses) {
         const j = this.joueurs.get(id);
