@@ -1,1 +1,391 @@
-<!doctype html><meta charset="utf-8"><title>Day Trader</title><p>day-trader-app : en construction</p>
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d1117">
+<title>Day Trader</title>
+<!-- day-trader-app -->
+<style>
+:root{--bg:#0d1117;--carte:#161b22;--bord:#2a313c;--txt:#e6edf3;--doux:#8b949e;--vert:#3fb950;--rouge:#f85149;--jaune:#d29922;--bleu:#58a6ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding-bottom:40px}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--bord);padding:10px 16px 0;padding-top:max(10px,env(safe-area-inset-top))}
+h1{font-size:18px;margin:0 0 2px}
+#horloge{color:var(--doux);font-size:12px}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:none;background:var(--carte);color:var(--txt);border:1px solid var(--bord);border-radius:20px;padding:7px 13px;font-size:14px}
+nav button.actif{background:var(--bleu);border-color:var(--bleu);color:#04101f;font-weight:600}
+main{padding:12px 16px}
+section{display:none}section.actif{display:block}
+.carte{background:var(--carte);border:1px solid var(--bord);border-radius:12px;padding:14px;margin-bottom:12px}
+.carte h2{font-size:16px;margin:0 0 8px}
+.doux{color:var(--doux);font-size:13px}
+label{display:block;font-size:13px;color:var(--doux);margin:8px 0 3px}
+input,select{width:100%;background:#0b0f14;color:var(--txt);border:1px solid var(--bord);border-radius:8px;padding:10px;font-size:16px}
+.ligne{display:flex;gap:8px}.ligne>*{flex:1}
+button.go{width:100%;margin-top:12px;background:var(--bleu);color:#04101f;border:0;border-radius:10px;padding:12px;font-size:16px;font-weight:600}
+button.second{background:var(--carte);color:var(--txt);border:1px solid var(--bord);border-radius:10px;padding:10px 12px;font-size:14px;margin-top:8px}
+button:disabled{opacity:.5}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:6px 4px;border-bottom:1px solid var(--bord);text-align:left;vertical-align:top}
+th{color:var(--doux);font-weight:500}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.ok{color:var(--vert)}.ko{color:var(--rouge)}.att{color:var(--jaune)}
+.pastille{display:inline-block;border-radius:6px;padding:1px 7px;font-size:12px;background:#21262d;margin:1px 3px 1px 0}
+.gros{font-size:22px;font-weight:700}
+.barre{display:flex;height:22px;border-radius:6px;overflow:hidden;margin:8px 0;font-size:11px;font-weight:600}
+.barre div{display:flex;align-items:center;justify-content:center;color:#04101f;white-space:nowrap;overflow:hidden}
+a{color:var(--bleu)}
+.lien{color:var(--bleu);text-decoration:underline;cursor:pointer}
+.err{background:#2d1316;border:1px solid #5a1d22;color:#ffb4b0;border-radius:10px;padding:10px;margin:8px 0}
+.avert{background:#2b2110;border:1px solid #5c4313;color:#f3d19c;border-radius:10px;padding:10px;font-size:13px;margin:8px 0}
+.charge{color:var(--doux);font-style:italic}
+svg{width:100%;height:auto;display:block}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:14px}.kv b{font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <h1>Day Trader <span class="doux">· actions US + BTC</span></h1>
+  <div id="horloge">…</div>
+  <nav id="onglets">
+    <button data-o="scanner" class="actif">Scanner</button>
+    <button data-o="trade">Trade</button>
+    <button data-o="nouvelles">Nouvelles</button>
+    <button data-o="resultats">Résultats</button>
+    <button data-o="congres">Congrès</button>
+    <button data-o="alertes">Alertes</button>
+    <button data-o="reglages">Réglages</button>
+  </nav>
+</header>
+<main>
+
+<section id="scanner" class="actif">
+  <div class="carte">
+    <h2>Figures du jour (avant l'ouverture)</h2>
+    <div class="doux">Toutes les actions US (liste Nasdaq Trader) + BTC, clôtures journalières sur 3 mois. Lancé tout seul chaque jour de semaine à 14 h 17 (heure suisse en hiver), avant l'ouverture de New York.</div>
+    <div id="sjInfo" class="doux" style="margin-top:6px"></div>
+    <button class="second" id="sjGo">Relancer maintenant (≈ 1 min)</button>
+    <div style="margin-top:8px"><select id="sjFiltre"><option value="">Toutes les figures</option></select></div>
+    <div id="sjListe"></div>
+  </div>
+  <div class="carte">
+    <h2>Cassures du range d'ouverture (ORB)</h2>
+    <div class="doux">Première barre de 5 min qui clôture au-dessus du haut des 15 premières minutes. Actions : séance de New York (9 h 30). BTC : journée UTC (00 h 00).</div>
+    <div id="orbInfo" class="doux" style="margin-top:6px"></div>
+    <button class="second" id="orbGo">Scanner maintenant (≈ 1 min)</button>
+    <div id="orbListe"></div>
+  </div>
+  <div class="doux">Un scan est une liste de graphiques qui remplissent une règle, pas une liste d'actions à acheter.</div>
+</section>
+
+<section id="trade">
+  <div class="carte">
+    <h2>Préparer un trade</h2>
+    <div class="doux">Entrée → stop et cible → Time Machine (10 000 replays + l'historique) → taille → contrôle du risque. Rien n'est envoyé à un courtier.</div>
+    <div class="ligne">
+      <div><label>Symbole</label><input id="tSym" placeholder="TSLA ou BTC" autocapitalize="characters"></div>
+      <div><label>Jour (vide = dernier)</label><input id="tJour" type="date"></div>
+    </div>
+    <div class="ligne">
+      <div><label>Setup</label><select id="tSetup"><option value="orb">Cassure du range (ORB)</option><option value="level">Clôture au-dessus d'un niveau</option></select></div>
+      <div><label>Niveau (si setup niveau)</label><input id="tNiveau" inputmode="decimal" placeholder="ex. 371.20"></div>
+    </div>
+    <div class="ligne">
+      <div><label>Stop</label><select id="tStop"><option value="or-mid">Milieu du range</option><option value="or-low">Bas du range</option><option value="pct:1">1 % sous l'entrée</option><option value="pct:2">2 % sous l'entrée</option><option value="atr:1.5">1,5 × ATR</option><option value="prix">Mon prix…</option></select></div>
+      <div><label>Cible</label><select id="tCible"><option>1R</option><option>1.5R</option><option selected>2R</option><option>3R</option><option value="prix">Mon prix…</option></select></div>
+    </div>
+    <div class="ligne">
+      <div><label>Prix du stop (si « mon prix »)</label><input id="tStopPrix" inputmode="decimal"></div>
+      <div><label>Prix de la cible (si « mon prix »)</label><input id="tCiblePrix" inputmode="decimal"></div>
+    </div>
+    <details style="margin-top:8px"><summary class="doux">Entrée manuelle (si pas de déclenchement)</summary>
+      <div class="ligne">
+        <div><label>Prix d'entrée</label><input id="tPrixE" inputmode="decimal"></div>
+        <div><label>Heure de clôture de la barre d'entrée</label><input id="tHeureE" placeholder="10:15"></div>
+      </div>
+    </details>
+    <button class="go" id="tGo">Analyser</button>
+  </div>
+  <div id="tRes"></div>
+</section>
+
+<section id="nouvelles">
+  <div class="carte">
+    <h2>Nouvelles</h2>
+    <label>Symboles (séparés par des virgules)</label><input id="nSym" placeholder="TSLA, NVDA, BTC" autocapitalize="characters">
+    <label>Dernières heures</label><select id="nH"><option>12</option><option selected>24</option><option>72</option></select>
+    <button class="go" id="nGo">Lire les nouvelles</button>
+  </div>
+  <div id="nRes"></div>
+  <div class="doux">Les titres sont des pistes, pas des faits : ouvre l'article avant d'agir.</div>
+</section>
+
+<section id="resultats">
+  <div class="carte">
+    <h2>Résultats trimestriels (SEC)</h2>
+    <div class="ligne"><div><label>Symbole</label><input id="rSym" placeholder="AAPL" autocapitalize="characters"></div><div><label>Trimestres</label><select id="rN"><option>4</option><option selected>6</option><option>8</option></select></div></div>
+    <button class="go" id="rGo">Lire les comptes</button>
+  </div>
+  <div id="rRes"></div>
+</section>
+
+<section id="congres">
+  <div class="carte">
+    <h2>Trades du Congrès (Chambre)</h2>
+    <div class="ligne"><div><label>Élu (vide = tous)</label><input id="cM" placeholder="Pelosi"></div><div><label>Depuis</label><input id="cD" type="date"></div></div>
+    <button class="go" id="cGo">Lire les déclarations</button>
+  </div>
+  <div id="cRes"></div>
+</section>
+
+<section id="alertes">
+  <div class="carte">
+    <h2>Alertes de prix</h2>
+    <div class="doux">Vérifiées chaque minute par le serveur. Elles s'affichent ici quand elles sonnent.</div>
+    <div class="ligne"><div><label>Type</label><select id="aT"><option value="dessus">Prix au-dessus</option><option value="dessous">Prix au-dessous</option><option value="pct">Mouvement % depuis la veille</option><option value="heure">Heure (New York)</option><option value="ouverture">Ouverture de New York</option></select></div><div><label>Symbole</label><input id="aS" autocapitalize="characters" placeholder="TSLA"></div></div>
+    <div class="ligne"><div><label>Prix / % / heure</label><input id="aV" placeholder="370.04 · 3 · 15:55"></div><div><label>Libellé</label><input id="aL" placeholder="facultatif"></div></div>
+    <button class="go" id="aGo">Ajouter</button>
+  </div>
+  <div id="aListe"></div>
+</section>
+
+<section id="reglages">
+  <div class="carte">
+    <h2>Tes limites</h2>
+    <div id="regForm"></div>
+    <button class="go" id="regGo">Enregistrer</button>
+    <div id="regMsg" class="doux"></div>
+  </div>
+  <div class="carte doux">
+    D'après <a href="https://github.com/Jakeschincariol/day-trader-skill">day-trader-skill</a> (Jake Schincariol, licence MIT), sans le courtier.
+    Pas un conseil financier : l'app lit des données publiques gratuites (Yahoo Finance, Nasdaq Trader, SEC, Chambre des représentants) et fait des calculs. Yahoo n'est pas une source officielle et peut avoir du retard. La plupart des day traders perdent de l'argent.
+  </div>
+</section>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const n2 = (x) => x == null ? "—" : Number(x).toLocaleString("fr-CH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pc = (x) => x == null ? "—" : (100 * x).toFixed(1) + " %";
+const big = (x) => x == null ? "—" : Math.abs(x) >= 1e9 ? (x / 1e9).toFixed(2) + " Md" : Math.abs(x) >= 1e6 ? (x / 1e6).toFixed(1) + " M" : n2(x);
+const FIG = { breakout_20d: "cassure 20 j", bull_flag: "drapeau haussier", reclaim_ma20: "repasse MA20", oversold: "survendu", oversold_bounce: "rebond survente" };
+let ETAT = {};
+
+async function api(chemin, opt = {}) {
+  const r = await fetch(chemin, { method: opt.method || "GET", headers: { "content-type": "application/json" }, body: opt.body ? JSON.stringify(opt.body) : undefined });
+  const j = await r.json().catch(() => ({ erreur: "réponse illisible (HTTP " + r.status + ")" }));
+  if (!r.ok || j.erreur) throw new Error(j.erreur || "HTTP " + r.status);
+  return j;
+}
+function erreur(el, e) { el.innerHTML = `<div class="err">${esc(e.message || e)}</div>`; }
+function occupe(btn, oui, txt) { btn.disabled = oui; if (oui) { btn.dataset.t = btn.textContent; btn.textContent = txt || "Patiente…"; } else if (btn.dataset.t) btn.textContent = btn.dataset.t; }
+
+document.querySelectorAll("#onglets button").forEach((b) => b.onclick = () => montrer(b.dataset.o));
+function montrer(o) {
+  document.querySelectorAll("#onglets button").forEach((x) => x.classList.toggle("actif", x.dataset.o === o));
+  document.querySelectorAll("section").forEach((s) => s.classList.toggle("actif", s.id === o));
+  if (o === "alertes") chargerAlertes();
+  scrollTo(0, 0);
+}
+
+async function etat() {
+  try {
+    ETAT = await api("/api/etat");
+    const h = ETAT.horloge;
+    $("#horloge").textContent = `New York ${h.newYork.slice(11)} · Bourse ${h.bourse}${h.seance ? " (" + h.seance + ")" : ""} · UTC ${h.utc.slice(11)}`;
+    formReglages();
+  } catch (e) { $("#horloge").textContent = "Erreur : " + e.message; }
+}
+
+// ---------------------------------------------------------------- scanner
+let SJ = null;
+function afficherSJ() {
+  if (!SJ || SJ.vide) { $("#sjInfo").textContent = "Pas encore de scan : touche « Relancer maintenant »."; $("#sjListe").innerHTML = ""; return; }
+  const c = SJ.comptes || {};
+  $("#sjInfo").textContent = `Scan du ${new Date(SJ.le).toLocaleString("fr-CH")} · ${c.scannes ?? "?"} graphiques liquides scannés sur ${c.demandes ?? "?"} · ${SJ.hits.length} trouvés`;
+  const f = $("#sjFiltre").value;
+  const h = SJ.hits.filter((x) => !f || x.figures.includes(f)).slice(0, 150);
+  $("#sjListe").innerHTML = h.length ? `<table><tr><th>Symbole</th><th>Figures</th><th class="num">Prix</th><th class="num">RSI</th></tr>${h.map((x) => `<tr><td><span class="lien" data-s="${esc(x.symbol)}">${esc(x.symbol)}</span></td><td>${x.figures.map((t) => `<span class="pastille">${FIG[t] || t}</span>`).join("")}</td><td class="num">${n2(x.prix)}</td><td class="num">${x.rsi}</td></tr>`).join("")}</table>${SJ.hits.length > 150 ? '<div class="doux">150 premiers (les plus échangés en dollars)</div>' : ""}` : '<div class="doux">Rien pour ce filtre.</div>';
+}
+$("#sjFiltre").innerHTML += Object.entries(FIG).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
+$("#sjFiltre").onchange = afficherSJ;
+$("#sjGo").onclick = async (ev) => { occupe(ev.target, true, "Scan en cours… (≈ 1 min)"); try { SJ = await api("/api/scan-jour", { method: "POST" }); afficherSJ(); } catch (e) { erreur($("#sjListe"), e); } occupe(ev.target, false); };
+let ORB = null;
+function afficherOrb() {
+  if (!ORB || ORB.vide) { $("#orbInfo").textContent = "Pas encore de scan ORB."; $("#orbListe").innerHTML = ""; return; }
+  const c = ORB.comptes || {};
+  $("#orbInfo").innerHTML = `Scan du ${new Date(ORB.le).toLocaleString("fr-CH")} · jour ${esc(ORB.jour || "")} · coupure ${esc(ORB.coupure || "—")}${ORB.coupureBtc ? " / " + esc(ORB.coupureBtc) : ""} · ${c.scannes ?? 0} scannés, ${c.candidats ?? 0} candidats, ${c.confirmes ?? 0} confirmés${c.nonConfirmes ? `, <b>${c.nonConfirmes} non confirmés</b> (limite de 200 graphiques, les plus échangés d'abord)` : ""}`
+    + (ORB.message ? `<div class="avert">Actions : ${esc(ORB.message)}</div>` : "") + (ORB.messageBtc ? `<div class="avert">BTC : ${esc(ORB.messageBtc)}</div>` : "");
+  $("#orbListe").innerHTML = ORB.hits.length ? `<table><tr><th>Symbole</th><th>À</th><th class="num">Prix</th><th class="num">Range</th><th class="num">+%</th></tr>${ORB.hits.map((x) => `<tr><td><span class="lien" data-s="${esc(x.symbol)}">${esc(x.symbol)}</span></td><td>${esc(x.a)}</td><td class="num">${n2(x.prix)}</td><td class="num">${n2(x.bas)}–${n2(x.haut)}</td><td class="num">${x.pctAuDessus}</td></tr>`).join("")}</table>` : "";
+}
+$("#orbGo").onclick = async (ev) => { occupe(ev.target, true, "Scan en cours… (≈ 1 min)"); try { ORB = await api("/api/orb", { method: "POST" }); afficherOrb(); } catch (e) { erreur($("#orbListe"), e); } occupe(ev.target, false); };
+document.addEventListener("click", (ev) => { const s = ev.target.dataset && ev.target.dataset.s; if (s) { $("#tSym").value = s; montrer("trade"); analyser(); } });
+
+// ---------------------------------------------------------------- trade
+let DERNIER = null;
+async function analyser() {
+  const btn = $("#tGo"); const out = $("#tRes");
+  const stop = $("#tStop").value === "prix" ? "price:" + $("#tStopPrix").value : $("#tStop").value;
+  const cible = $("#tCible").value === "prix" ? "price:" + $("#tCiblePrix").value : $("#tCible").value;
+  const q = { symbol: $("#tSym").value.trim(), jour: $("#tJour").value || undefined, setup: $("#tSetup").value, niveau: $("#tNiveau").value || undefined, stop, cible, prixEntree: $("#tPrixE").value || undefined, heureEntree: $("#tHeureE").value || undefined };
+  if (q.setup === "level" && $("#tStop").value.startsWith("or-")) q.stop = "pct:1";
+  occupe(btn, true, "Calcul… (10 000 replays)"); out.innerHTML = '<div class="charge">Lecture des données et calcul…</div>';
+  try { DERNIER = await api("/api/trade", { method: "POST", body: q }); out.innerHTML = rendreTrade(DERNIER); brancherTrade(); }
+  catch (e) { erreur(out, e); }
+  occupe(btn, false);
+}
+$("#tGo").onclick = analyser;
+const STAT = { declenche: ["DÉCLENCHÉ", "ok"], attente: ["EN ATTENTE", "att"], expire: ["EXPIRÉ", "ko"], "pas-de-donnees": ["PAS DE DONNÉES", "ko"], erreur: ["ERREUR", "ko"] };
+function rendreTrade(r) {
+  const e = r.entree; const st = STAT[e.statut] || [e.statut, ""];
+  let h = `<div class="carte"><h2>1 · Entrée — ${esc(r.symbol)} <span class="doux">${esc(r.nom)} · ${esc(r.jour)}</span></h2>
+    <div class="gros ${st[1]}">${st[0]}</div><div>${esc(e.raison)}</div>
+    <div class="kv" style="margin-top:8px">${e.range ? `<span>Range ${e.range.minutes} min</span><b>${n2(e.range.bas)} – ${n2(e.range.haut)}</b>` : ""}
+    ${e.declenchement ? `<span>Déclenchement</span><b>${n2(e.declenchement.prix)} à ${e.declenchement.heure} (${e.tz})</b>` : ""}
+    ${e.derniere ? `<span>Dernière barre</span><b>${e.derniere.barre} · ${n2(e.derniere.cloture)}</b>` : ""}
+    <span>Dernier prix Yahoo</span><b>${n2(r.dernierPrix)} ${esc(r.devise || "")}</b></div></div>`;
+  if (!r.plan) return h + '<div class="doux">Pas de déclenchement : pas de plan. Tu peux donner une entrée manuelle (prix + heure) pour rejouer quand même.</div>';
+  const p = r.plan;
+  if (p.erreur) return h + `<div class="carte"><h2>2 · Sortie</h2><div class="err">${esc(p.erreur)}</div></div>`;
+  h += `<div class="carte"><h2>2 · Stop et cible (avant d'entrer)</h2><div class="kv">
+    <span>Entrée</span><b>${n2(p.entree)}</b><span>Stop</span><b class="ko">${n2(p.stop)}</b><span>Cible</span><b class="ok">${n2(p.cible)}</b>
+    <span>Risque / unité</span><b>${n2(p.risqueParPart)}</b><span>Cible en R</span><b>${p.rCible}R</b>${p.flatBy ? `<span>Sortir au plus tard</span><b>${p.flatBy} New York</b>` : ""}</div>
+    ${p.avertissements.map((a) => `<div class="avert">${esc(a)}</div>`).join("")}<div class="doux" style="margin-top:6px">Un stop est un plan, pas une garantie : un gap ou un marché rapide peut l'exécuter plus loin.</div></div>`;
+  const t = r.tm;
+  if (t && t.erreur) h += `<div class="carte"><h2>3 · Time Machine</h2><div class="err">${esc(t.erreur)}</div></div>`;
+  else if (t) {
+    const m = t.mc;
+    h += `<div class="carte"><h2>3 · Time Machine</h2>
+      <div class="doux">${m.replays.toLocaleString("fr-CH")} replays de ${m.barresRestantes} barres de 5 min, tirées des ${m.seancesPool} séances complètes du ${m.du} au ${m.au} · graine ${m.graine} · jusqu'à ${esc(m.jusqua)}</div>
+      <div class="barre"><div style="width:${100 * m.pCible}%;background:var(--vert)">cible ${pc(m.pCible)}</div><div style="width:${100 * m.pNi}%;background:#6e7681">ni l'un ni l'autre ${pc(m.pNi)}</div><div style="width:${100 * m.pStop}%;background:var(--rouge)">stop ${pc(m.pStop)}</div></div>
+      <div><b>${esc(t.verdict)}</b></div>${t.notes.map((x) => `<div class="doux">${esc(x)}</div>`).join("")}
+      <div class="kv" style="margin-top:8px"><span>Prix à ${esc(m.jusqua)} (médiane)</span><b>${n2(m.medianeCloture)}</b><span>5 % – 95 %</span><b>${n2(m.p5)} – ${n2(m.p95)}</b><span>R moyen</span><b>${m.rMoyen}</b><span>Finit gagnant</span><b>${pc(m.pVert)}</b></div>
+      ${eventail(m, p)}
+      ${t.historique ? `<h2 style="margin-top:12px">La même règle sur les vraies séances passées</h2><div>Sur ${t.historique.seances} séances : déclenchée ${t.historique.declenches} fois → cible ${t.historique.cible}, stop ${t.historique.stop}, ni l'un ni l'autre ${t.historique.cloture} · R moyen ${t.historique.rMoyen ?? "—"}</div>
+        <details><summary class="doux">Voir les ${t.historique.trades.length} trades</summary><table><tr><th>Date</th><th>À</th><th class="num">Entrée</th><th>Issue</th><th class="num">R</th></tr>${t.historique.trades.slice().reverse().map((x) => `<tr><td>${x.date}</td><td>${x.heure}</td><td class="num">${n2(x.entree)}</td><td class="${x.issue === "cible" ? "ok" : x.issue === "stop" ? "ko" : ""}">${x.issue}</td><td class="num">${x.R}</td></tr>`).join("")}</table></details>` : ""}
+      <div class="doux" style="margin-top:8px">${esc(t.note)}</div></div>`;
+  }
+  const o = r.ordre;
+  h += `<div class="carte"><h2>4 · Taille de la position</h2>${o.erreur ? `<div class="err">${esc(o.erreur)}</div>` : `<div class="kv">
+    <span>Quantité</span><b class="gros">${o.quantite} ${o.unite}</b><span>Montant</span><b>${n2(o.montant)} $</b><span>Perte au stop</span><b class="ko">−${n2(o.perteAuStop)} $</b><span>Gain à la cible</span><b class="ok">+${n2(o.gainALaCible)} $</b><span>Limite qui décide</span><b>${esc(o.limitante)}</b><span>Prix utilisé</span><b>${n2(o.prixEntree)} (${esc(o.reference)})</b></div>`}</div>`;
+  const rk = r.risque;
+  h += `<div class="carte"><h2>5 · Contrôle du risque : <span class="${rk.verdict === "OK" ? "ok" : "ko"}">${rk.verdict}</span></h2><table>${rk.regles.map((x) => `<tr><td class="${x.passe ? "ok" : "ko"}">${x.passe ? "✓" : "✗"}</td><td><b>${esc(x.nom)}</b><br><span class="doux">${esc(x.detail)}</span></td></tr>`).join("")}</table></div>`;
+  h += `<div class="carte"><button class="second" id="btAlertes">Ajouter les alertes : stop, cible${p.flatBy ? ", sortie " + p.flatBy : ""}</button><br><button class="second" id="btJournal" ${o.erreur ? "disabled" : ""}>J'ai pris ce trade (compte dans les limites du jour)</button><div id="btMsg" class="doux"></div></div>`;
+  return h;
+}
+function eventail(m, p) {
+  const b = m.bandes; if (!b || b.length < 2) return "";
+  const W = 340, H = 170, all = b.flat().concat([p.stop, p.cible]); const lo = Math.min(...all), hi = Math.max(...all);
+  const x = (i) => 30 + (W - 34) * i / (b.length - 1), y = (v) => 8 + (H - 22) * (1 - (v - lo) / (hi - lo || 1));
+  const zone = (a, z) => b.map((v, i) => `${x(i)},${y(v[a])}`).join(" ") + " " + b.map((v, i) => `${x(b.length - 1 - i)},${y(b[b.length - 1 - i][z])}`).join(" ");
+  const lig = (v, c) => `<line x1="30" x2="${W - 4}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-dasharray="4 3"/><text x="2" y="${y(v) + 4}" fill="${c}" font-size="9">${v.toFixed(0)}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}"><polygon points="${zone(0, 4)}" fill="#58a6ff22"/><polygon points="${zone(1, 3)}" fill="#58a6ff44"/><polyline points="${b.map((v, i) => `${x(i)},${y(v[2])}`).join(" ")}" fill="none" stroke="#58a6ff" stroke-width="1.5"/>${lig(p.cible, "#3fb950")}${lig(p.stop, "#f85149")}${lig(p.entree, "#8b949e")}<text x="30" y="${H - 2}" fill="#8b949e" font-size="9">${m.heures[0] || ""}</text><text x="${W - 4}" y="${H - 2}" fill="#8b949e" font-size="9" text-anchor="end">${m.heures[m.heures.length - 1] || ""}</text></svg><div class="doux">Éventail des prix : médiane, 25–75 % (foncé) et 5–95 % (clair) sur 2 000 chemins.</div>`;
+}
+function brancherTrade() {
+  const p = DERNIER && DERNIER.plan; if (!p || p.erreur) return;
+  const ba = $("#btAlertes"); if (ba) ba.onclick = async () => {
+    const al = [{ type: "dessous", symbol: p.symbol, prix: p.stop, libelle: "stop", date: p.jour }, { type: "dessus", symbol: p.symbol, prix: p.cible, libelle: "cible", date: p.jour }];
+    if (p.flatBy) al.push({ type: "heure", heure: p.flatBy, libelle: `sortir de ${p.symbol}`, date: p.jour });
+    try { await api("/api/alertes", { method: "POST", body: { alertes: al } }); $("#btMsg").textContent = `${al.length} alertes ajoutées (onglet Alertes).`; } catch (e) { $("#btMsg").textContent = e.message; }
+  };
+  const bj = $("#btJournal"); if (bj) bj.onclick = async () => {
+    const o = DERNIER.ordre;
+    try { await api("/api/journal", { method: "POST", body: { symbol: p.symbol, quantite: o.quantite, entree: o.prixEntree, stop: p.stop, cible: p.cible, perteMax: o.perteAuStop } }); $("#btMsg").textContent = "Noté : ce trade compte maintenant dans la perte et le nombre de trades du jour."; } catch (e) { $("#btMsg").textContent = e.message; }
+  };
+}
+
+// ---------------------------------------------------------------- nouvelles
+$("#nGo").onclick = async (ev) => {
+  const out = $("#nRes"); occupe(ev.target, true, "Lecture…"); out.innerHTML = "";
+  try {
+    const r = await api("/api/nouvelles?symbols=" + encodeURIComponent($("#nSym").value) + "&heures=" + $("#nH").value);
+    out.innerHTML = r.map((b) => `<div class="carte"><h2>${esc(b.symbol)} ${b.mouvement ? `<span class="${b.mouvement.pct >= 0 ? "ok" : "ko"}">${n2(b.mouvement.prix)} (${b.mouvement.pct >= 0 ? "+" : ""}${b.mouvement.pct} %)</span>` : ""}</h2>
+      ${b.titres.length ? b.titres.map((t) => `<div style="margin:8px 0"><a href="${esc(t.lien)}" target="_blank" rel="noopener">${esc(t.titre)}</a><div class="doux">${esc(t.heureNY)} New York · ${esc(t.source)} ${t.tags.map((x) => `<span class="pastille">${x}</span>`).join("")}</div></div>`).join("") : '<div class="doux">Aucun titre sur la période.</div>'}
+      ${b.depots.length ? `<div style="margin-top:8px"><b>Dépôts 8-K à la SEC</b>${b.depots.map((d) => `<div><a href="${esc(d.lien)}" target="_blank" rel="noopener">${esc(d.date)} · items ${esc(d.items)}</a></div>`).join("")}</div>` : ""}
+      ${b.erreurs.map((x) => `<div class="doux">${esc(x)}</div>`).join("")}</div>`).join("") || '<div class="doux">Donne au moins un symbole.</div>';
+  } catch (e) { erreur(out, e); }
+  occupe(ev.target, false);
+};
+
+// ---------------------------------------------------------------- résultats SEC
+$("#rGo").onclick = async (ev) => {
+  const out = $("#rRes"); occupe(ev.target, true, "Lecture SEC…"); out.innerHTML = "";
+  try {
+    const r = await api(`/api/analyste?symbol=${encodeURIComponent($("#rSym").value.trim())}&trimestres=${$("#rN").value}`);
+    out.innerHTML = `<div class="carte"><h2>${esc(r.nom)} <span class="doux">${esc(r.symbol)}</span></h2><div style="overflow-x:auto"><table>
+      <tr><th>Fin</th><th class="num">Revenu</th><th class="num">/an</th><th class="num">Net</th><th class="num">BPA</th><th class="num">/an</th><th class="num">Marge brute</th><th class="num">Marge op.</th><th class="num">Marge nette</th></tr>
+      ${r.lignes.map((l) => `<tr><td>${l.fin}<br><span class="doux">${esc(l.periode)}${l.derive ? " · déduit" : ""}</span></td><td class="num">${big(l.revenu)}</td><td class="num ${l.revenuSurUnAn >= 0 ? "ok" : "ko"}">${l.revenuSurUnAn ?? "—"}%</td><td class="num">${big(l.resultatNet)}</td><td class="num">${l.bpa ?? "—"}</td><td class="num ${l.bpaSurUnAn >= 0 ? "ok" : "ko"}">${l.bpaSurUnAn ?? "—"}%</td><td class="num">${l.margeBrute ?? "—"}%</td><td class="num">${l.margeOp ?? "—"}%</td><td class="num">${l.margeNette ?? "—"}%</td></tr>`).join("")}
+      </table></div><div class="doux" style="margin-top:6px">${esc(r.note)} « /an » = par rapport au même trimestre un an avant.</div></div>`;
+  } catch (e) { erreur(out, e); }
+  occupe(ev.target, false);
+};
+
+// ---------------------------------------------------------------- Congrès
+$("#cGo").onclick = async (ev) => {
+  const out = $("#cRes"); occupe(ev.target, true, "Lecture…"); out.innerHTML = "";
+  try {
+    const r = await api(`/api/congres?membre=${encodeURIComponent($("#cM").value)}&depuis=${$("#cD").value}`);
+    out.innerHTML = `<div class="carte"><h2>${r.nombre} déclaration(s) de transactions en ${r.annee}</h2><table><tr><th>Déposé</th><th>Élu</th><th></th></tr>${r.rapports.map((x) => `<tr><td>${x.depose}</td><td>${esc(x.membre)} <span class="doux">${esc(x.circonscription)}</span></td><td><a href="${esc(x.pdf)}" target="_blank" rel="noopener">PDF</a></td></tr>`).join("")}</table><div class="doux" style="margin-top:6px">${esc(r.note)} Le détail (actions, achat/vente, montants) est dans chaque PDF.</div></div>`;
+  } catch (e) { erreur(out, e); }
+  occupe(ev.target, false);
+};
+
+// ---------------------------------------------------------------- alertes
+async function chargerAlertes() {
+  const out = $("#aListe");
+  try {
+    const al = await api("/api/alertes");
+    const lib = (a) => a.type === "dessus" ? `${a.symbol} ≥ ${a.prix}` : a.type === "dessous" ? `${a.symbol} ≤ ${a.prix}` : a.type === "pct" ? `${a.symbol} bouge de ${a.pct} %` : a.type === "heure" ? `${a.heure} New York` : "ouverture de New York";
+    out.innerHTML = al.length ? `<div class="carte"><table>${al.map((a) => `<tr><td>${a.sonneeLe ? '<span class="ok">🔔 sonnée</span>' : '<span class="doux">en veille</span>'}</td><td><b>${esc(lib(a))}</b> ${a.libelle ? `<span class="doux">· ${esc(a.libelle)}</span>` : ""}${a.date ? `<br><span class="doux">le ${a.date} seulement</span>` : ""}${a.sonneeLe ? `<br><span class="doux">${esc(a.texte || "")} · ${new Date(a.sonneeLe).toLocaleString("fr-CH")}</span>` : ""}${a.dernierPrix ? `<br><span class="doux">dernier prix ${n2(a.dernierPrix)}</span>` : ""}</td><td>${a.sonneeLe ? `<span class="lien" data-reset="${a.id}">réarmer</span><br>` : ""}<span class="lien" data-del="${a.id}">suppr.</span></td></tr>`).join("")}</table></div>` : '<div class="doux">Aucune alerte.</div>';
+    out.querySelectorAll("[data-del]").forEach((x) => x.onclick = async () => { await api("/api/alertes?id=" + x.dataset.del, { method: "DELETE" }); chargerAlertes(); });
+    out.querySelectorAll("[data-reset]").forEach((x) => x.onclick = async () => { await api("/api/alertes?id=" + x.dataset.reset, { method: "PATCH" }); chargerAlertes(); });
+  } catch (e) { erreur(out, e); }
+}
+$("#aGo").onclick = async () => {
+  const t = $("#aT").value, s = $("#aS").value.trim().toUpperCase(), v = $("#aV").value.trim(), lb = $("#aL").value.trim();
+  const a = { type: t, libelle: lb || undefined };
+  if (t === "dessus" || t === "dessous") { a.symbol = s; a.prix = parseFloat(v.replace(",", ".")); }
+  if (t === "pct") { a.symbol = s; a.pct = parseFloat(v.replace(",", ".")); }
+  if (t === "heure") a.heure = v.replace("h", ":");
+  try { await api("/api/alertes", { method: "POST", body: a }); $("#aV").value = ""; chargerAlertes(); } catch (e) { erreur($("#aListe"), e); }
+};
+
+// ---------------------------------------------------------------- réglages
+const CHAMPS = [
+  ["budget", "Budget du compte ($)"], ["max_loss_per_trade_usd", "Perte max par trade ($)"], ["max_daily_loss_usd", "Perte max par jour ($)"],
+  ["max_trades_per_day", "Trades max par jour"], ["max_position_pct", "Position max (% du compte)"], ["cash_buffer_pct", "Liquidités toujours gardées (%)"],
+  ["max_order_usd", "Ordre max ($)"], ["min_order_usd", "Ordre min ($)"], ["min_reward_risk", "Rendement/risque minimum"],
+  ["no_entries_before", "Pas d'entrée avant (New York)"], ["no_entries_after", "Pas d'entrée après (New York)"], ["flat_by", "Tout fermer à (New York)"],
+  ["btc_decimales", "Décimales pour la quantité de BTC"], ["blocked", "Liste noire (symboles séparés par des virgules)"],
+  ["sec_user_agent", "Contact SEC (nom + e-mail, exigé par la SEC)"],
+];
+function formReglages() {
+  const r = ETAT.reglages || {}; if ($("#regForm").dataset.fait) return;
+  $("#regForm").innerHTML = CHAMPS.map(([k, l]) => `<label>${l}</label><input data-k="${k}" value="${esc(Array.isArray(r[k]) ? r[k].join(", ") : r[k] ?? "")}">`).join("");
+  $("#regForm").dataset.fait = 1;
+}
+$("#regGo").onclick = async () => {
+  const o = {};
+  document.querySelectorAll("#regForm input").forEach((i) => {
+    const k = i.dataset.k, v = i.value.trim();
+    if (k === "blocked") o[k] = v ? v.toUpperCase().split(/[\s,]+/).filter(Boolean) : [];
+    else if (["no_entries_before", "no_entries_after", "flat_by", "sec_user_agent"].includes(k)) o[k] = v;
+    else o[k] = parseFloat(v.replace(",", "."));
+  });
+  try { await api("/api/reglages", { method: "POST", body: o }); $("#regMsg").textContent = "Enregistré."; etat(); } catch (e) { $("#regMsg").textContent = e.message; }
+};
+
+(async () => {
+  await etat();
+  try { SJ = await api("/api/scan-jour"); afficherSJ(); } catch (e) { erreur($("#sjListe"), e); }
+  try { ORB = await api("/api/orb"); afficherOrb(); } catch (e) {}
+  setInterval(etat, 60000);
+})();
+</script>
+</body>
+</html>

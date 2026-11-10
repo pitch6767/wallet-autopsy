@@ -2,7 +2,7 @@ name: Deploy Day Trader
 on:
   push:
     branches: [main]
-    paths: [day-trader/src/**, day-trader/public/**, day-trader/wrangler.jsonc, .github/workflows/day-trader.yml]
+    paths: [day-trader/src/**, day-trader/public/**, day-trader/wrangler.jsonc, day-trader/controle.sh, .github/workflows/day-trader.yml]
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,7 +12,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -36,7 +36,7 @@ jobs:
             {
               tail -12 /tmp/d.log
               echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" $U/
-              echo "=== sonde"; curl -sS -m 120 "$U/api/sonde"; echo
+              echo "=== sonde"; curl -sS -m 60 "$U/api/sonde"; echo
               if [ -f controle.sh ]; then echo "=== controles"; bash controle.sh "$U"; fi
             } > controle.txt 2>&1
           fi
