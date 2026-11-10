@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le livre des souvenirs — Flashback</title>
+<meta name="theme-color" content="#2B1611">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Righteous&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css?v=1">
+</head>
+<body>
+<main class="livre">
+  <div class="logo" style="font-size:30px">Flashback</div>
+  <h1>Le livre des souvenirs</h1>
+  <p class="petit" id="intro"></p>
+  <div id="pages"></div>
+</main>
+<script src="/commun.js?v=1"></script>
+<script>
+  const code = location.pathname.split("/").pop();
+  fetch("/api/livre/" + code).then((r) => r.json()).then((d) => {
+    const l = (d.livre || []).slice().reverse();
+    document.getElementById("intro").textContent = l.length ? "Partie " + code + " : " + l.length + " souvenir" + (l.length > 1 ? "s" : "") + " gardé" + (l.length > 1 ? "s" : "") + "." : "Aucun souvenir écrit pour l'instant. Pendant les moments souvenirs, écrivez-les sur votre téléphone : ils apparaîtront ici.";
+    document.getElementById("pages").innerHTML = l.map((s) =>
+      '<article class="page-souvenir"><div class="theme">' + s.annee + " · " + echappe(s.theme) + "</div><blockquote>" + echappe(s.texte) + '</blockquote><div class="sig">' + echappe(s.nom) + ", " + new Date(s.quand).toLocaleDateString("fr-CH") + "</div></article>").join("");
+  });
+</script>
+</body>
+</html>

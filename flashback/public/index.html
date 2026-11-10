@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flashback</title>
+<meta name="description" content="Le jeu des souvenirs de 1960 à 2010 : chansons, séries, événements. Chacun joue sur son téléphone.">
+<meta name="theme-color" content="#2B1611">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Righteous&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css?v=1">
+<!-- flashback-app -->
+</head>
+<body>
+
+<main id="accueil" class="accueil">
+  <div class="logo">Flashback</div>
+  <p class="accroche">Le jeu des souvenirs, de 1960 à 2010. Chacun joue sur son téléphone.</p>
+  <div id="cadran-accueil"></div>
+  <div class="choix-accueil">
+    <button class="gros-bouton" id="btn-creer">Lancer une partie sur cet écran</button>
+    <p class="petit">À ouvrir sur la télévision, une tablette ou un ordinateur que tout le monde voit.</p>
+    <div class="rejoindre-code">
+      <input id="code" maxlength="4" placeholder="CODE" autocomplete="off" aria-label="Code de la partie">
+      <button class="gros-bouton sobre" id="btn-rejoindre">Rejoindre</button>
+    </div>
+    <p class="petit">Pour jouer avec ton téléphone, scanne le code affiché à l'écran.</p>
+  </div>
+</main>
+
+<main id="ecran" class="ecran cache">
+  <header class="ecran-haut">
+    <div class="logo">Flashback</div>
+    <div class="manche" id="manche"></div>
+    <div class="reglages">
+      <button class="btn-rond" id="btn-voix">Voix : oui</button>
+      <button class="btn-rond" id="btn-suivant">Passer</button>
+    </div>
+  </header>
+  <div id="cadran-ecran"></div>
+  <section class="scene" id="scene"></section>
+  <footer class="bande" id="bande"></footer>
+</main>
+
+<audio id="audio" preload="auto"></audio>
+<script src="/qrcode.js"></script>
+<script src="/commun.js?v=1"></script>
+<script src="/ecran.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "flashback",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": ["/api/*", "/ws/*", "/j/*", "/livre/*"] },
+  "durable_objects": { "bindings": [{ "name": "SALLE", "class_name": "Salle" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Salle"] }]
+}

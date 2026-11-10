@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flashback — je joue</title>
+<meta name="theme-color" content="#2B1611">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Righteous&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css?v=1">
+</head>
+<body>
+<main class="tel">
+  <div class="haut">
+    <div class="logo">Flashback</div>
+    <div class="moi cache" id="moi"></div>
+  </div>
+
+  <section id="profil">
+    <h2>Qui joue ?</h2>
+    <p class="consigne">Ton prénom s'affichera sur l'écran.</p>
+    <label for="nom">Prénom</label>
+    <input id="nom" maxlength="16" autocomplete="given-name" autocapitalize="words">
+    <p style="margin:18px 0 8px">Ton personnage</p>
+    <div class="emojis" id="emojis"></div>
+    <p style="margin:18px 0 8px">Ta couleur</p>
+    <div class="couleurs" id="couleurs"></div>
+    <label for="naissance" style="display:block;margin-top:18px">Année de naissance <span class="petit">(facultatif : pour dire quel âge tu avais)</span></label>
+    <input id="naissance" inputmode="numeric" maxlength="4" placeholder="ex. 1966">
+    <p class="erreur" id="erreur"></p>
+    <button class="gros-bouton" id="btn-jouer" style="width:100%">Je joue</button>
+  </section>
+
+  <section id="jeu" class="cache"></section>
+</main>
+<script src="/commun.js?v=1"></script>
+<script src="/joueur.js?v=1"></script>
+</body>
+</html>
