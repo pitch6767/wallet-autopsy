@@ -1,31 +1,31 @@
 env.DB (day-trader)            D1 Database         
 env.ASSETS                     Assets              
 
-Uploaded day-trader (3.26 sec)
-Deployed day-trader triggers (0.67 sec)
+Uploaded day-trader (5.43 sec)
+Deployed day-trader triggers (1.21 sec)
   https://day-trader.pitch67.workers.dev
   schedule: * * * * *
   schedule: 17 13 * * 1-5
-Current Version ID: 85c460f6-64c0-4fb6-a85d-5496c22b44bd
+Current Version ID: b1ea4395-b4c8-4301-a8bc-3b21455fa77a
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 === page
 200
 === sonde
-{"ok":true,"horloge":{"newYork":"2026-11-10 05:57","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 10:57"}}
+{"ok":true,"horloge":{"newYork":"2026-11-10 06:05","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 11:05"}}
 === controles
 --- scan-jour (liste triée)
-{"duree":3,"comptes":{"demandes":5933,"recus":5913,"illiquides":4290,"courts":2,"scannes":1621,"trouves":730,"echecs":20},"top":["NVDA","AAPL","MSFT"]}
+{"duree":4,"comptes":{"demandes":5933,"recus":5933,"illiquides":4305,"courts":2,"scannes":1626,"trouves":732,"echecs":0},"top":["NVDA","AAPL","MSFT"]}
 --- regles
-{"n":48,"news":3}
---- relance du test (verrou ajouté)
-{"total":1624,"coupure":"2026-09-29"}
+{"n":48,"news":2}
 --- etat taches
-{"dernier-test":{"quand":"2026-11-10T11:00:54.615Z","r":{"pos":120,"total":1624}},"dernier-veilleur":{"quand":"2026-11-10T11:01:12.309Z","r":{"alarme":"posée"}},"dernier-alertes":{"quand":"2026-11-10T11:01:12.534Z","r":0},"dernier-news":{"quand":"2026-11-10T11:01:12.629Z","r":{"suivis":0}},"dernier-papier":{"quand":"2026-11-10T11:01:13.232Z","r":{"symboles":1,"lignes":0}}}
+{"dernier-papier":{"quand":"2026-11-10T11:06:13.517Z","r":{"symboles":1,"lignes":0}},"dernier-test":{"quand":"2026-11-10T11:07:57.251Z","r":{"pos":320,"total":1624}},"dernier-veilleur":{"quand":"2026-11-10T11:08:12.972Z","r":{"alarme":1794308896765}},"dernier-alertes":{"quand":"2026-11-10T11:08:13.194Z","r":0},"dernier-news":{"quand":"2026-11-10T11:08:13.521Z","r":{"suivis":0}}}
 --- test
-{"etat":{"pos":120,"total":1624,"coupure":"2026-09-29","seances":60,"fini":false},"regles":48,"top":[{"regle":"lowF-figure","A":-775,"B":-5},{"regle":"low2-figure","A":-711,"B":-32},{"regle":"low1-figure","A":-629,"B":-76},{"regle":"midF-figure","A":-682,"B":-188},{"regle":"mid2-figure","A":-489,"B":-256}],"choix":{"top20":{"couples":20,"avecTradesB":20,"tradesB":286,"gainB":1315,"moyPctB":0.46,"gainA":4639},"top100":{"couples":100,"avecTradesB":100,"tradesB":1140,"gainB":666,"moyPctB":0.058,"gainA":12500},"top500":{"couples":500,"avecTradesB":500,"tradesB":5791,"gainB":-6833,"moyPctB":-0.118,"gainA":31493}}}
+{"etat":{"pos":320,"total":1624,"coupure":"2026-09-29","seances":60,"fini":false},"regles":48,"top":[{"regle":"low1-marche","A":-6376,"B":374},{"regle":"low2-figure","A":-1586,"B":-115},{"regle":"lowF-figure","A":-1681,"B":-134},{"regle":"mid2-marche","A":-6697,"B":-223},{"regle":"lowF-marche","A":-6465,"B":-356}],"choix":{"top20":{"couples":20,"avecTradesB":20,"tradesB":212,"gainB":921,"moyPctB":0.435,"gainA":4021},"top100":{"couples":100,"avecTradesB":99,"tradesB":1022,"gainB":285,"moyPctB":0.028,"gainA":13127},"top500":{"couples":500,"avecTradesB":491,"tradesB":5430,"gainB":-1510,"moyPctB":-0.028,"gainA":43156}}}
 --- papier
 {"depuis":null,"jusqua":null,"n":0,"top":[]}
 --- news
-{"veilleur":{"dernierTour":{"quand":"2026-11-10T11:01:22.726Z","lus":40,"nouveaux":0},"alarme":1794308487726},"n":41,"ex":[{"sym":"WSC","items":"8.01,9.01","prix0":20.63,"en_seance":0},{"sym":"SYF","items":"7.01,9.01","prix0":73.22,"en_seance":0},{"sym":"LNTH","items":"8.01","prix0":101.01,"en_seance":0}]}
+{"veilleur":{"dernierTour":{"quand":"2026-11-10T11:08:58.349Z","lus":40,"nouveaux":0},"alarme":1794308943349},"n":60,"ex":[{"sym":"CYCU","items":"8.01,9.01","prix0":2.47,"en_seance":0},{"sym":"LPCN","items":"8.01,9.01","prix0":1.72,"en_seance":0},{"sym":"WCC","items":"7.01,9.01","prix0":316.47,"en_seance":0}]}
+--- suppression news-2
+[]
