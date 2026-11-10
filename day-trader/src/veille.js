@@ -170,13 +170,14 @@ export async function suiviNews(env, maintenantMs = Date.now()) {
     const date = local(n.debut_suivi, MARCHES.actions).date; const se = seance(date, MARCHES.actions);
     const finMs = versUtc(date, se ? se[1] - 5 : 955, MARCHES.actions); // sortie au plus tard 15 h 55
     for (const seuil of SEUILS) {
+      if (n.prix0 < 1) continue; // Pitch 11.11 : pas d'achat sur les actions à moins de 1 $
       const i = pts.findIndex((x) => x.ms < n.debut_suivi + 30 * 60e3 && x.c >= n.prix0 * (1 + seuil / 100));
       if (i < 0 || !pts[i + 1]) continue;
       const entree = pts[i + 1].o * (1 + GLISSEMENT);
       const basDepuis = Math.min(...pts.slice(0, i + 1).map((x) => x.l));
-      let stop = Math.floor(Math.min(basDepuis, n.prix0) * 100) / 100;
-      if (entree - stop < entree * 0.003) stop = Math.floor(entree * 0.997 * 100) / 100; // stop d'au moins 0,3 %
-      const cible = Math.round((entree + 2 * (entree - stop)) * 100) / 100;
+      let stop = Math.min(basDepuis, n.prix0); // plus d'arrondi au centime (AITX à 0,0005 $ donnait stop = 0)
+      if (entree - stop < entree * 0.003) stop = entree * 0.997; // stop d'au moins 0,3 %
+      const cible = entree + 2 * (entree - stop);
       let sortie = null, issue = null, j = i + 1;
       for (j = i + 1; j < pts.length && pts[j].ms <= finMs; j++) {
         const b = pts[j];
@@ -188,7 +189,7 @@ export async function suiviNews(env, maintenantMs = Date.now()) {
       let statut = "ferme";
       if (sortie == null) { const der = pts[Math.min(j, pts.length) - 1]; sortie = der.c; if (maintenantMs < finMs + 5 * 60e3) { statut = "ouvert"; issue = "en cours"; } else issue = "fin de séance"; }
       const hm = (ms) => hhmm(local(ms, MARCHES.actions).min);
-      st.push(db.prepare("INSERT OR REPLACE INTO papier VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(date, `news-${seuil}`, n.sym, statut, hm(pts[i + 1].ms), +entree.toFixed(4), stop, cible, statut === "ferme" ? hm(pts[Math.min(j, pts.length - 1)].ms) : null, +sortie.toFixed(4), issue + (n.source === "prnewswire" ? " · communiqué PR Newswire" : " · 8-K " + (n.items || "")), (sortie - entree) / entree, (sortie - entree) / (entree - stop), new Date(maintenantMs).toISOString()));
+      st.push(db.prepare("INSERT OR REPLACE INTO papier VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(date, `news-${seuil}`, n.sym, statut, hm(pts[i + 1].ms), entree, stop, cible, statut === "ferme" ? hm(pts[Math.min(j, pts.length - 1)].ms) : null, sortie, issue + (n.source === "prnewswire" ? " · communiqué PR Newswire" : " · 8-K " + (n.items || "")), (sortie - entree) / entree, (sortie - entree) / (entree - stop), new Date(maintenantMs).toISOString()));
     }
     const fini = maintenantMs > Math.max(n.debut_suivi + 65 * 60e3, finMs + 5 * 60e3) ? 1 : 0;
     st.push(db.prepare("UPDATE news SET m5 = ?, m15 = ?, m60 = ?, max30 = ?, fini = ?, maj = ? WHERE id = ?").bind(a(5), a(15), m60, max30, fini, new Date(maintenantMs).toISOString(), n.id));
