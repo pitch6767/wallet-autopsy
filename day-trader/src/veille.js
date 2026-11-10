@@ -13,7 +13,7 @@ export const ITEMS = {
   "5.02": "départ ou arrivée d'un dirigeant", "5.03": "statuts modifiés", "5.07": "vote des actionnaires", "7.01": "communication (Reg FD)",
   "8.01": "autre événement", "9.01": "documents joints",
 };
-export const SEUILS = [0.5, 1, 2]; // % de hausse depuis le prix de la nouvelle qui « lance la tendance »
+export const SEUILS = [0.5, 1]; // Pitch 10.11 : pas plus de 1 %, après c'est trop tard // % de hausse depuis le prix de la nouvelle qui « lance la tendance »
 
 const FLUX = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=8-K&company=&dateb=&owner=include&start=0&count=40&output=atom";
 const dec = (s) => String(s || "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'");

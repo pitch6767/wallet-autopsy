@@ -69,7 +69,7 @@ svg{width:100%;height:auto;display:block}
 <section id="papier" class="actif">
   <div class="carte">
     <h2>Paper automatique</h2>
-    <div class="doux">Toutes les 5 min, les 48 règles (les leurs + nos filtres Bot95) tournent toutes seules sur les 150 actions les plus échangées + le BTC, et les 3 règles « news » sur chaque 8-K. Argent fictif : 1 000 $ par trade. Exécution réaliste : achat à l'ouverture de la barre suivante + 0,05 % de glissement, stop exécuté plus bas en cas de gap, frais 0,1 % par côté sur le BTC. <b>Ce sont des trades papier, pas des exécutions réelles.</b></div>
+    <div class="doux">Toutes les 5 min, les 48 règles (les leurs + nos filtres Bot95) tournent toutes seules sur les 150 actions les plus échangées + le BTC, et les 2 règles « news » sur chaque 8-K. Argent fictif : 1 000 $ par trade. Exécution réaliste : achat à l'ouverture de la barre suivante + 0,05 % de glissement, stop exécuté plus bas en cas de gap, frais 0,1 % par côté sur le BTC. <b>Ce sont des trades papier, pas des exécutions réelles.</b></div>
     <div id="papInfo" class="doux" style="margin-top:6px"></div>
     <button class="second" id="papMaj">Actualiser</button>
   </div>
@@ -90,7 +90,7 @@ svg{width:100%;height:auto;display:block}
 <section id="direct">
   <div class="carte">
     <h2>News en direct (8-K de la SEC)</h2>
-    <div class="doux">Le flux officiel des annonces des sociétés cotées est lu toutes les 5 secondes. Pour chaque annonce : prix au moment de la nouvelle, puis mouvement à +5, +15 et +60 min. Si le prix monte de 0,5 %, 1 % ou 2 % dans les 30 min, la règle « news » correspondante achète en papier. Annonce hors séance : suivi depuis l'ouverture suivante (c'est l'écart que les actions tokenisées pourraient capter).</div>
+    <div class="doux">Le flux officiel des annonces des sociétés cotées est lu toutes les 5 secondes. Pour chaque annonce : prix au moment de la nouvelle, puis mouvement à +5, +15 et +60 min. Si le prix monte de 0,5 % ou 1 % dans les 30 min (pas plus : après, c'est trop tard), la règle « news » correspondante achète en papier. Annonce hors séance : suivi depuis l'ouverture suivante (c'est l'écart que les actions tokenisées pourraient capter).</div>
     <div id="nwEtat" class="doux" style="margin-top:6px"></div>
     <button class="second" id="nwMaj">Actualiser</button>
   </div>
