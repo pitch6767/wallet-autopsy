@@ -1,15 +1,15 @@
 
-Total Upload: 35.06 KiB / gzip: 12.18 KiB
+Total Upload: 36.50 KiB / gzip: 12.60 KiB
 Worker Startup Time: 2 ms
 Your Worker has access to the following bindings:
 Binding                 Resource            
 env.SALLE (Salle)       Durable Object      
 env.ASSETS              Assets              
 
-Uploaded flashback (4.04 sec)
-Deployed flashback triggers (0.45 sec)
+Uploaded flashback (3.51 sec)
+Deployed flashback triggers (0.43 sec)
   https://flashback.pitch67.workers.dev
-Current Version ID: dd212bdd-a0b9-4417-8d8a-d3eacc6f5940
+Current Version ID: 03c2d543-f363-4f85-8b8a-b440d2b1a7ed
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
@@ -18,10 +18,19 @@ code sortie: 0
 === joueur
 200
 === salle
-{"code":"DRJX"}
+{"code":"FSDB"}
+=== videos
+fc15NK89NjI 200
+MlUGUSTHg3c 200
+5L9riIlydjQ 200
+4i6NgsMkYqM 200
+OnqMSHh3TG8 200
+p4wcqHkOcc8 200
+tYoNil1lpgk 200
+YTY7BntVmi0 200
 === deezer 0
-{"chanson":{"t":"Retiens la nuit","a":"Johnny Hallyday","y":1961},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/7/5/1/0/751d5d4673aa90e2ae602d312a26e081.mp3?hdnea=exp=1794343980~acl=/api/1/1/7/5/1/0/751d5d4673aa90e2ae602d312a26e081.mp3*~data=user_id=0,application_id=42~hmac=88ba60bd71adfca5f6dfd7bfff6420ce87c3176f8592993047a1ae21b3935c0e","pochette":"https://cdn-images.dzcdn.net/images/cover/ff631833c84c5b36027c427552601e0f/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/2461958"}}
+{"chanson":{"t":"Retiens la nuit","a":"Johnny Hallyday","y":1961},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/7/5/1/0/751d5d4673aa90e2ae602d312a26e081.mp3?hdnea=exp=1794344472~acl=/api/1/1/7/5/1/0/751d5d4673aa90e2ae602d312a26e081.mp3*~data=user_id=0,application_id=42~hmac=eed465617df800c11138334d03625335aeba8b3921760aab4e9b4b1afbcd80e3","pochette":"https://cdn-images.dzcdn.net/images/cover/ff631833c84c5b36027c427552601e0f/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/2461958"}}
 === deezer 40
-{"chanson":{"t":"Another One Bites the Dust","a":"Queen","y":1980,"danse":1},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/7/0/d/0/70dfc1ad79bdd6e1d69d16e1a37c06eb.mp3?hdnea=exp=1794343981~acl=/api/1/1/7/0/d/0/70dfc1ad79bdd6e1d69d16e1a37c06eb.mp3*~data=user_id=0,application_id=42~hmac=5c1315b0fc16d8d5b32aeaf4aae4e704bbbb70fc9140a6959a3f1a0a55432137","pochette":"https://cdn-images.dzcdn.net/images/cover/156c197582a4d4b40e17d72b79d3df62/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/4092324041"}}
+{"chanson":{"t":"Another One Bites the Dust","a":"Queen","y":1980,"danse":1},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/7/0/d/0/70dfc1ad79bdd6e1d69d16e1a37c06eb.mp3?hdnea=exp=1794344473~acl=/api/1/1/7/0/d/0/70dfc1ad79bdd6e1d69d16e1a37c06eb.mp3*~data=user_id=0,application_id=42~hmac=84383eddc81bba061a74cd69b3485090ca851e016ee2e5426e239d6aa4505b39","pochette":"https://cdn-images.dzcdn.net/images/cover/156c197582a4d4b40e17d72b79d3df62/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/4092324041"}}
 === deezer 80
-{"chanson":{"t":"Rehab","a":"Amy Winehouse","y":2006},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/2/1/d/0/21dd455c62dd8ecfbb94a879455fce82.mp3?hdnea=exp=1794343981~acl=/api/1/1/2/1/d/0/21dd455c62dd8ecfbb94a879455fce82.mp3*~data=user_id=0,application_id=42~hmac=ce7a5b5bff05f42d2c50de2bb25b7a9f6cd6bb6c387d8b33c9b944f9d205da47","pochette":"https://cdn-images.dzcdn.net/images/cover/5772b495f0dcdf660d0fc88c4c38a3fa/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/2176852"}}
+{"chanson":{"t":"Rehab","a":"Amy Winehouse","y":2006},"extrait":{"preview":"https://cdnt-preview.dzcdn.net/api/1/1/2/1/d/0/21dd455c62dd8ecfbb94a879455fce82.mp3?hdnea=exp=1794344473~acl=/api/1/1/2/1/d/0/21dd455c62dd8ecfbb94a879455fce82.mp3*~data=user_id=0,application_id=42~hmac=f1e84abb644298f8ead90a4ff3d3fb92f5f6d7d73f777dd1021223b9168b58ad","pochette":"https://cdn-images.dzcdn.net/images/cover/5772b495f0dcdf660d0fc88c4c38a3fa/500x500-000000-80-0-0.jpg","lien":"https://www.deezer.com/track/2176852"}}
