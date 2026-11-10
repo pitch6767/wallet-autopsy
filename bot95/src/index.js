@@ -520,7 +520,9 @@ export class Bot {
     await this.ready;
     this.demarrer();
     const u = new URL(req.url);
-    const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } });
+    const refus = (o, st) => Response.json(o, { status: st, headers: { "cache-control": "no-store" } });
+    const empreinteCode = async (c) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("bot95-reel|" + String(c || ""))))].map((x) => x.toString(16).padStart(2, "0")).join("");
+const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } });
     if (this.SG && !["/api/cle_signaux", "/api/flux_signaux", "/api/reveil", "/api/chainlink_migration"].includes(u.pathname)) {   // moteur de signaux seul : rien d'autre
       if (u.pathname === "/api/sante" || u.pathname === "/api/statut") return json(this.sgStatut());
       return new Response("introuvable (moteur de signaux seul)", { status: 404 });
@@ -764,6 +766,19 @@ export class Bot {
     }
     if (u.pathname === "/api/verif") return json({ verif: this.e.verif });
     if (u.pathname === "/api/v1/trades") return json({ BTC: this.e.V1.trades, ETH: this.e.V1x.ETH.trades });
+    // 10.11.2026 (Pitch : « Protège le réel ») : reprise, test et état détaillé du réel exigent le code du réel (empreinte SHA-256
+    // gardée dans l'objet, jamais le code lui-même). L'arrêt d'urgence reste ouvert : l'arrêt doit toujours marcher, d'un seul toucher.
+    if (u.pathname === "/api/reel/code" && req.method === "POST") {
+      const b = await req.json().catch(() => ({})), deja = await this.state.storage.get("codeReelHash");
+      if (deja && (await empreinteCode(b.ancien)) !== deja) return refus({ ok: false, erreur: "ancien code faux" }, 401);
+      if (String(b.nouveau || "").length < 6) return refus({ ok: false, erreur: "6 caractères au moins" }, 400);
+      await this.state.storage.put("codeReelHash", await empreinteCode(b.nouveau)); return json({ ok: true });
+    }
+    if (["/api/reel/etat", "/api/reel/test", "/api/reel/reprise"].includes(u.pathname)) {
+      const h = await this.state.storage.get("codeReelHash");
+      if (!h) return refus({ ok: false, a_definir: true, erreur: "aucun code du réel défini" }, 401);
+      if ((await empreinteCode(req.headers.get("x-code-reel"))) !== h) return refus({ ok: false, erreur: "code du réel requis" }, 401);
+    }
     if (u.pathname === "/api/reel/etat") {
       const r = { configure: this.reel.configure(), modeReel: this.reel.modeReel(), arret: !!this.e.reelStop, mise: +this.env.MISE_REEL || null,
         signataire: this.reel.signataire || null, portefeuille: this.env.POLY_ADRESSE_PORTEFEUILLE || null, journal: this.reel.journal.slice(0, 20) };
@@ -4267,7 +4282,7 @@ $('#app').className='';$('#app').innerHTML=
 (()=>{const V=d.v1;const it=Object.entries(V.issues||{}).map(([k,x])=>k+' '+x.n+' ('+usd(x.pnl)+')').join(' · ')||'—';
 const tv=V.trades.map(t=>'<tr><td>'+t.heure.slice(5,16).replace('T',' ')+'</td><td>'+t.cote+'</td><td>'+f(t.prix,3)+'</td><td>'+f(t.proba,2)+'</td><td>'+(t.B&&t.B.parts?f(t.B.parts,0)+' à '+f(t.B.cout/t.B.parts,2):'—')+'</td><td>'+t.issue+'</td><td class="'+(t.net>=0?'ok':'ko')+'">'+usd(t.net)+'</td></tr>').join('')||'<tr><td colspan=7 class=mu>Aucun trade encore</td></tr>';
 const p=V.pos?'<div style="margin-top:8px">En cours : '+V.pos.cote+' à '+f(V.pos.prix,3)+' · proba '+f(V.pos.probaActuelle,2)+' · offre opposée '+f(V.pos.offre,2)+' · servie '+f(V.pos.B.parts,0)+'/'+f(V.pos.parts,0)+'</div>':'';
-const R=V.reel||{};const bandeau=R.actif?'<div class=card style="border-color:var(--ko)"><b class=ko>ARGENT RÉEL ACTIF</b> — mise '+R.mise+' $ par entrée<button onclick="fetch(\'/api/reel/arret\',{method:\'POST\'}).then(go)">ARRÊT D\'URGENCE</button></div>':(R.arret?'<div class=card><b>Réel à l\'arrêt</b><button onclick="fetch(\'/api/reel/reprise\',{method:\'POST\'}).then(go)">Reprendre le réel</button></div>':'');
+window.reprendreReel=async function(){var c=prompt("Code du réel");if(!c)return;var r=await fetch("/api/reel/reprise",{method:"POST",headers:{"x-code-reel":c}});var j=await r.json().catch(function(){return{}});if(j.a_definir){var n=prompt("Aucun code du réel n'existe encore. Choisis-en un (6 caractères au moins) :");if(!n||n.length<6){alert("Code trop court");return}if(prompt("Retape le même code :")!==n){alert("Les deux codes ne correspondent pas");return}await fetch("/api/reel/code",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({nouveau:n})});r=await fetch("/api/reel/reprise",{method:"POST",headers:{"x-code-reel":n}});j=await r.json().catch(function(){return{}})}if(!j.ok){alert(j.erreur||"Refusé");return}go()};const R=V.reel||{};const bandeau=R.actif?'<div class=card style="border-color:var(--ko)"><b class=ko>ARGENT RÉEL ACTIF</b> — mise '+R.mise+' $ par entrée<button onclick="fetch(\'/api/reel/arret\',{method:\'POST\'}).then(go)">ARRÊT D\'URGENCE</button></div>':(R.arret?'<div class=card><b>Réel à l\'arrêt</b><button onclick="reprendreReel()">Reprendre le réel</button></div>':'');
 return bandeau+'<div class=card><b>V1 — paires BTC (jambe 55 filtrée)</b> <span class=mu>'+(R.actif?'RÉEL':'fantôme')+' · </span> <span class=mu>temps réel'+(V.polyOk?'':' — <span class=ko>carnet en direct déconnecté</span>')+'</span><div class=g style="margin-top:8px"><div><div class=k>Capital</div><div class=v>'+f(V.capital)+' $</div></div><div><div class=k>Gain</div><div class="v '+(V.pnl>=0?'ok':'ko')+'">'+usd(V.pnl)+'</div></div><div><div class=k>Gagnés / perdus</div><div class=v>'+V.gains+' / '+V.pertes+'</div></div></div>'+
 '<div class=mu style="margin-top:6px">Réglage A : élan 5 s + stop à −15 points · entrées refusées par l\'élan : '+(V.refusElan||0)+' · source la plus rapide : '+Object.entries(V.sources||{}).map(([k,n])=>k+' '+n).join(', ')+'</div><div class=mu>Issues : '+it+'</div><div class=mu>Réaction : message Polymarket reçu en '+f(V.latPolyMed,3)+' s (90 % sous '+f(V.latPolyP90,3)+' s) · décisions en '+f(V.latDecMed,3)+' s (90 % sous '+f(V.latDecP90,3)+' s)</div>'+p+
 '<table style="margin-top:8px"><tr><th>Heure UTC</th><th>Jambe</th><th>Prix</th><th>Proba</th><th>Autre jambe</th><th>Issue</th><th>Net</th></tr>'+tv+'</table></div>'})()+

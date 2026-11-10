@@ -7,8 +7,9 @@ jobs:
     steps:
       - run: |
           echo "@@@DEBUT"
-          curl -s -m 20 -A "Mozilla/5.0" https://bot95.pitch67.workers.dev/api/reel/etat | python3 -c "
-          import json,sys
-          d=json.load(sys.stdin)
-          print({k:(('present' if d.get(k) else 'absent') if k in ('signataire','portefeuille') else d.get(k)) for k in ['configure','modeReel','arret','mise','signataire','portefeuille']}, 'solde' in d, len(d.get('journal') or []))"
+          U=https://bot95.pitch67.workers.dev
+          for p in "GET /api/reel/etat" "POST /api/reel/reprise" "POST /api/reel/test"; do set -- $p; echo "$p sans code : $(curl -s -m 20 -A Mozilla/5.0 -X $1 -w ' HTTP %{http_code}' $U$2 | head -c 200)"; done
+          echo "POST /api/reel/reprise faux code : $(curl -s -m 20 -A Mozilla/5.0 -X POST -H 'x-code-reel: faux' -w ' HTTP %{http_code}' $U/api/reel/reprise | head -c 200)"
+          echo "page : $(curl -s -m 20 -A Mozilla/5.0 $U/ | grep -c reprendreReel) mention(s) de reprendreReel, HTTP $(curl -s -o /dev/null -m 20 -A Mozilla/5.0 -w '%{http_code}' $U/)"
+          echo "etat general : $(curl -s -m 20 -A Mozilla/5.0 $U/api/etat | head -c 120)"
           echo "@@@FIN"
