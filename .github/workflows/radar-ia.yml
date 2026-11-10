@@ -38,7 +38,7 @@ jobs:
               echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" $U/
               # demande.txt contient « fabriquer » quand une édition doit être fabriquée tout de suite
               if grep -q refaire demande.txt 2>/dev/null; then
-                echo "=== refaire"; curl -sS -m 900 -X POST -H "content-type: application/json" -d "{\"refaire\":\"$(TZ=Europe/Zurich date +%F)-soir\",\"creneau\":\"soir\"}" "$U/api/fabriquer"; echo
+                echo "=== refaire"; curl -sS -m 900 -X POST -H "content-type: application/json" -d "{\"refaire\":\"$(TZ=Europe/Zurich date +%F)-matin\",\"creneau\":\"matin\"}" "$U/api/fabriquer"; echo
               elif grep -q fabriquer demande.txt 2>/dev/null; then
                 echo "=== fabrication"; curl -sS -m 900 -X POST -H "content-type: application/json" -d '{}' "$U/api/fabriquer"; echo
               fi

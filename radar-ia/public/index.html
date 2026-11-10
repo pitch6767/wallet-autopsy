@@ -79,14 +79,17 @@ function carte(c) {
   cartesParId[c.id] = c;
   const e = c.extra || {};
   const meta = [
-    `<span class="badge">${esc(c.genre === "video" ? "Vidéo" : c.genre === "depot" ? "GitHub" : c.genre === "papier" ? "Papier" : c.genre === "version" ? "Version" : NOMS_RUB[c.rubrique] || "")}</span>`,
+    `<span class="badge">${esc(c.genre === "video" ? "Vidéo" : c.genre === "depot" ? "GitHub" : c.genre === "papier" ? "Papier" : c.genre === "version" ? "Version" : c.genre === "modele" || c.genre === "libre" ? (e.type || "Modèle") : NOMS_RUB[c.rubrique] || "")}</span>`,
+    c.lu ? `<span class="badge gris">lu en entier</span>` : "",
     c.statut ? `<span class="badge gris">${esc(c.statut)}</span>` : "",
     c.type_video ? `<span class="badge gris">${esc(c.type_video)}</span>` : "",
     `<span>${esc(c.genre === "video" ? (e.chaine || c.source) : c.source)}</span>`,
     `<span>${heure(c.date)}</span>`,
   ].join("");
   let plus = "";
-  if (c.genre === "depot") plus = `<p class="aussi">${esc([e.langage, e.etoiles_jour ? `+${e.etoiles_jour} ★ aujourd'hui` : e.etoiles ? `${e.etoiles} ★` : "", e.licence ? `licence ${e.licence}` : "licence à vérifier", c.essai ? `essai : ${c.essai}` : "", e.signal].filter(Boolean).join(" · "))}</p>`;
+  if (c.genre === "depot") plus = `<p class="aussi">${esc([e.vitesse ? `+${e.vitesse} ★ par jour` : "", e.etoiles ? `${e.etoiles} ★ au total` : "", e.langage, e.licence ? `licence ${e.licence}` : "licence à vérifier", c.essai ? `essai : ${c.essai}` : "", e.signal].filter(Boolean).join(" · "))}</p>`;
+  if (c.genre === "modele" || c.genre === "libre") plus = `<p class="aussi">${esc([e.params ? `${e.params} milliards de paramètres` : "", e.params ? `≈ ${Math.ceil(e.params * 0.6 + 1)} Go de mémoire en version compressée Q4 (estimation)` : "", e.gguf ? "version GGUF (Ollama / LM Studio)" : "", `${e.likes || 0} ♥`, `${e.telechargements || 0} téléchargements`].filter(Boolean).join(" · "))}</p>`;
+  if (e.points) plus = `<p class="aussi">${e.points} points · ${e.commentaires || 0} commentaires · <a href="${esc(e.hn)}" target="_blank" rel="noopener">discussion Hacker News</a></p>`;
   if (c.genre === "papier" && e.votes) plus = `<p class="aussi">${e.votes} votes sur Hugging Face · <a href="${esc(e.arxiv)}" target="_blank" rel="noopener">arXiv</a></p>`;
   const aussi = (c.autres || []).length ? `<p class="aussi">Aussi chez : ${c.autres.map((o) => `<a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.source)}</a>`).join(", ")}</p>` : "";
   const fav = favoris.has(c.id);
@@ -97,7 +100,7 @@ function carte(c) {
     ${c.pourquoi ? `<p class="pourquoi">${esc(c.pourquoi)}</p>` : ""}
     ${plus}${aussi}
     <div class="actions">
-      <a class="principal" href="${esc(c.url)}" target="_blank" rel="noopener">${c.genre === "video" ? "Regarder" : c.genre === "depot" ? "Voir le dépôt" : "Lire la source"}</a>
+      <a class="principal" href="${esc(c.url)}" target="_blank" rel="noopener">${c.genre === "video" ? "Regarder" : c.genre === "depot" ? "Voir le dépôt" : c.genre === "modele" || c.genre === "libre" ? "Voir le modèle" : "Lire la source"}</a>
       <button class="fav" data-fav="${esc(c.id)}">${fav ? "★ Sauvegardé" : "☆ Sauvegarder"}</button>
       <button data-plus="${esc(c.id)}" title="Plus de sujets comme ça">＋</button>
       <button data-moins="${esc(c.id)}" title="Moins de sujets comme ça">－</button>
@@ -118,11 +121,13 @@ async function afficherEdition(id) {
   const m = $("#contenu");
   if (e.vide) { m.innerHTML = `<div class="vide">La première édition n'est pas encore prête.<br>Elle arrivera à l'heure prévue (réglages).</div>`; return; }
   edition = e; favoris = new Set(e.favoris || []);
-  let h = `<p class="aussi">${esc(e.titre)} · ${e.stats?.retenus || 0} sujets retenus sur ${e.stats?.candidats || 0} nouveautés</p>`;
+  let h = `<p class="aussi">${esc(e.titre)} · ${e.stats?.retenus || 0} sujets retenus sur ${e.stats?.candidats || 0} nouveautés${e.stats?.doublons_retires ? ` · ${e.stats.doublons_retires} doublons écartés` : ""}</p>`;
   if (e.une?.length) h += `<h2 class="une">Le plus important</h2>` + e.une.map(carte).join("");
   for (const r of e.rubriques || []) h += `<h2>${esc(r.titre)}</h2>` + r.cartes.map(carte).join("");
+  if (e.modeles?.length) h += `<h2>Nouveaux modèles</h2>` + e.modeles.map(carte).join("");
+  if (e.libres?.length) h += `<h2>Modèles non censurés</h2>` + e.libres.map(carte).join("");
   if (e.videos?.length) h += `<h2>À regarder</h2>` + e.videos.map(carte).join("");
-  if (e.depots?.length) h += `<h2>Repos du jour</h2>` + e.depots.map(carte).join("");
+  if (e.depots?.length) h += `<h2>Repos qui explosent</h2>` + e.depots.map(carte).join("");
   m.innerHTML = h;
 }
 
