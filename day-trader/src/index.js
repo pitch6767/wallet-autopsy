@@ -129,9 +129,10 @@ export default {
           essai("accesswire", "https://www.accessnewswire.com/newsroom/api/rss"),
           essai("hyperliquid-xyz", "https://api.hyperliquid.xyz/info", post({ type: "allMids", dex: "xyz" })),
           essai("hyperliquid-dexs", "https://api.hyperliquid.xyz/info", post({ type: "perpDexs" })),
-          essai("kraken-paires", "https://api.kraken.com/0/public/AssetPairs?pair=NVDAxUSD"),
-          essai("kraken-tickers-x", "https://api.kraken.com/0/public/Ticker?pair=NVDAxUSD,TSLAxUSD"),
-          essai("kraken-futures", "https://futures.kraken.com/derivatives/api/v3/tickers"),
+          (async () => { const r = await (await fetch("https://api.kraken.com/0/public/AssetPairs")).json(); const k = Object.entries(r.result || {}).filter(([n, v]) => /NVDA|TSLA|AAPL/i.test(n + (v.wsname || ""))).map(([n, v]) => n + "=" + v.wsname); return { nom: "kraken-spot-x", code: 200, debut: JSON.stringify(k).slice(0, 600) }; })(),
+          (async () => { const r = await (await fetch("https://futures.kraken.com/derivatives/api/v3/tickers")).json(); const k = (r.tickers || []).filter((t) => /NVDA|TSLA|AAPL|SPY|QQQ/i.test(t.symbol + (t.pair || ""))).map((t) => t.symbol + "=" + t.pair + "@" + t.markPrice); return { nom: "kraken-fut-x", code: 200, debut: JSON.stringify(k).slice(0, 600) }; })(),
+          essai("globe2", "https://www.globenewswire.com/rss/list"),
+          essai("newsfile", "https://feeds.newsfilecorp.com/feed/newsfile_ca.xml"),
         ]));
       }
       if (p === "/api/sonde") return json({ ok: true, horloge: horloge() });
