@@ -1,21 +1,25 @@
 env.DB (day-trader)            D1 Database         
 env.ASSETS                     Assets              
 
-Uploaded day-trader (3.29 sec)
-Deployed day-trader triggers (1.10 sec)
+Uploaded day-trader (3.88 sec)
+Deployed day-trader triggers (0.88 sec)
   https://day-trader.pitch67.workers.dev
   schedule: * * * * *
   schedule: 17 13 * * 1-5
-Current Version ID: ef5d245c-8d41-413b-b968-f9037f7515f1
+Current Version ID: d898f2e2-04d2-42bf-b6dc-11d272b8aae4
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 === page
 200
 === sonde
-{"ok":true,"horloge":{"newYork":"2026-11-10 06:19","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 11:19"}}
+{"ok":true,"horloge":{"newYork":"2026-11-10 07:27","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 12:27"}}
 === controles
---- news
-{"veilleur":{"dernierTour":{"quand":"2026-11-10T11:23:44.441Z","lus":40,"nouveaux":0},"alarme":1794309829441},"parSource":{"sec":61},"course":{"paires":0,"prnPremier":0,"secPremier":0,"avanceMediane":null},"ex":[{"source":"sec","sym":"AP","prix0":6,"hl0":null,"kf0":null,"titre":""},{"source":"sec","sym":"CYCU","prix0":2.47,"hl0":null,"kf0":null,"titre":""},{"source":"sec","sym":"LPCN","prix0":1.72,"hl0":null,"kf0":null,"titre":""},{"source":"sec","sym":"WCC","prix0":316.47,"hl0":null,"kf0":null,"titre":""},{"source":"sec","sym":"TSLX","prix0":17.94,"hl0":null,"kf0":null,"titre":""},{"source":"sec","sym":"NWSA","prix0":26.57,"hl0":null,"kf0":null,"titre":""}]}
---- taches
-{"dernier-test":{"quand":"2026-11-10T11:22:26.713Z","r":{"pos":720,"total":1624}},"dernier-jetons":{"quand":"2026-11-10T11:23:15.098Z","r":0}}
+--- relance du test (25 grosses + 75 volatiles, sans BTC)
+{"n":100,"grosses":["NVDA","AMD","MU","AAPL","SPCX"],"volatiles":["OMH","SMX","MF","KOD","LQDA"],"coupure":"2026-09-29","coupureJ":"2026-05-12","premiereJ":"2025-12-24","derniereJ":"2026-11-09"}
+--- regles
+{"n":158,"familles":{"intraday":39,"journalier":105,"résultats":14}}
+--- etat taches
+{"dernier-papier":{"quand":"2026-11-10T12:31:13.001Z","r":{"symboles":0,"lignes":0}},"dernier-test":{"quand":"2026-11-10T12:32:24.952Z","r":{"pos":48,"total":100}}}
+--- test
+{"pos":48,"regles":139,"tiennent":["j-breakout_20d-1j:liquide","j-breakout_20d-3j:aucun","j-breakout_20d-3j:liquide","j-breakout_20d-3j:marche","j-breakout_20d-3j:sortie","j-breakout_20d-3j:x2","j-breakout_20d-5j:aucun","j-breakout_20d-5j:liquide","j-breakout_20d-5j:marche","j-breakout_20d-5j:sortie"],"ex":[{"regle":"orb-low2:tm","A":6,"B":14},{"regle":"orb-mid1:tm","A":24,"B":72},{"regle":"res-20j:aucun","A":1,"B":4},{"regle":"res-20j:consensus","A":null,"B":1},{"regle":"res-20j:marche","A":1,"B":4},{"regle":"res-20j:sortie","A":1,"B":4},{"regle":"res-20j:x2","A":1,"B":4},{"regle":"res-5j:aucun","A":1,"B":4}]}
