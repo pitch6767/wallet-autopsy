@@ -1,31 +1,31 @@
 env.DB (day-trader)            D1 Database         
 env.ASSETS                     Assets              
 
-Uploaded day-trader (5.84 sec)
-Deployed day-trader triggers (1.24 sec)
+Uploaded day-trader (3.26 sec)
+Deployed day-trader triggers (0.67 sec)
   https://day-trader.pitch67.workers.dev
   schedule: * * * * *
   schedule: 17 13 * * 1-5
-Current Version ID: 5497b65f-7ed6-47dc-a171-62536894a295
+Current Version ID: 85c460f6-64c0-4fb6-a85d-5496c22b44bd
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 === page
 200
 === sonde
-{"ok":true,"horloge":{"newYork":"2026-11-10 05:52","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 10:52"}}
+{"ok":true,"horloge":{"newYork":"2026-11-10 05:57","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-10 10:57"}}
 === controles
 --- scan-jour (liste triée)
-{"duree":3,"comptes":{"demandes":5933,"recus":5933,"illiquides":4305,"courts":2,"scannes":1626,"trouves":732,"echecs":0},"top":["NVDA","AAPL","MSFT"]}
+{"duree":3,"comptes":{"demandes":5933,"recus":5913,"illiquides":4290,"courts":2,"scannes":1621,"trouves":730,"echecs":20},"top":["NVDA","AAPL","MSFT"]}
 --- regles
 {"n":48,"news":3}
 --- relance du test (verrou ajouté)
-{"total":1629,"coupure":"2026-09-29"}
+{"total":1624,"coupure":"2026-09-29"}
 --- etat taches
-{"dernier-papier":{"quand":"2026-11-10T10:51:14.077Z","r":{"symboles":1,"lignes":0}},"dernier-veilleur":{"quand":"2026-11-10T10:55:13.347Z","r":{"alarme":1794308113501}},"dernier-alertes":{"quand":"2026-11-10T10:55:13.568Z","r":0},"dernier-news":{"quand":"2026-11-10T10:55:13.840Z","r":{"suivis":0}},"dernier-test":{"quand":"2026-11-10T10:55:46.920Z","r":{"pos":360,"total":1629}}}
+{"dernier-test":{"quand":"2026-11-10T11:00:54.615Z","r":{"pos":120,"total":1624}},"dernier-veilleur":{"quand":"2026-11-10T11:01:12.309Z","r":{"alarme":"posée"}},"dernier-alertes":{"quand":"2026-11-10T11:01:12.534Z","r":0},"dernier-news":{"quand":"2026-11-10T11:01:12.629Z","r":{"suivis":0}},"dernier-papier":{"quand":"2026-11-10T11:01:13.232Z","r":{"symboles":1,"lignes":0}}}
 --- test
-{"etat":{"pos":360,"total":1629,"coupure":"2026-09-29","seances":60,"fini":false},"regles":48,"top":[{"regle":"lowF-marche","A":-2460,"B":1386},{"regle":"low1-marche","A":-2115,"B":1374},{"regle":"low2-marche","A":-2389,"B":1321},{"regle":"low1-consensus","A":-2850,"B":679},{"regle":"lowF-consensus","A":-3275,"B":669}],"choix":{"top20":{"couples":20,"avecTradesB":20,"tradesB":124,"gainB":-176,"moyPctB":-0.142,"gainA":2250},"top100":{"couples":100,"avecTradesB":93,"tradesB":940,"gainB":-270,"moyPctB":-0.029,"gainA":9300},"top500":{"couples":500,"avecTradesB":490,"tradesB":6010,"gainB":-3872,"moyPctB":-0.064,"gainA":29901}}}
+{"etat":{"pos":120,"total":1624,"coupure":"2026-09-29","seances":60,"fini":false},"regles":48,"top":[{"regle":"lowF-figure","A":-775,"B":-5},{"regle":"low2-figure","A":-711,"B":-32},{"regle":"low1-figure","A":-629,"B":-76},{"regle":"midF-figure","A":-682,"B":-188},{"regle":"mid2-figure","A":-489,"B":-256}],"choix":{"top20":{"couples":20,"avecTradesB":20,"tradesB":286,"gainB":1315,"moyPctB":0.46,"gainA":4639},"top100":{"couples":100,"avecTradesB":100,"tradesB":1140,"gainB":666,"moyPctB":0.058,"gainA":12500},"top500":{"couples":500,"avecTradesB":500,"tradesB":5791,"gainB":-6833,"moyPctB":-0.118,"gainA":31493}}}
 --- papier
 {"depuis":null,"jusqua":null,"n":0,"top":[]}
 --- news
-{"veilleur":{"dernierTour":{"quand":"2026-11-10T10:55:55.151Z","lus":40,"nouveaux":0},"alarme":1794308160151},"n":38,"ex":[{"sym":"STI","items":"2.02,9.01","prix0":4.16,"en_seance":0},{"sym":"UPLD","items":"1.01,7.01,9.01","prix0":3.815,"en_seance":0},{"sym":"VDTA","items":"7.01,9.01","prix0":3.38,"en_seance":0}]}
+{"veilleur":{"dernierTour":{"quand":"2026-11-10T11:01:22.726Z","lus":40,"nouveaux":0},"alarme":1794308487726},"n":41,"ex":[{"sym":"WSC","items":"8.01,9.01","prix0":20.63,"en_seance":0},{"sym":"SYF","items":"7.01,9.01","prix0":73.22,"en_seance":0},{"sym":"LNTH","items":"8.01","prix0":101.01,"en_seance":0}]}
