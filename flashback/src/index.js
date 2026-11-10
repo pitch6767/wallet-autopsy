@@ -1,6 +1,6 @@
 // Flashback — serveur : une salle par partie (Durable Object), téléphones et écran reliés en temps réel
 import { DurableObject } from "cloudflare:workers";
-import { CHANSONS, ECRANS, EVENEMENTS, CULTURE, SOUVENIRS } from "./contenu.js";
+import { CHANSONS, ECRANS, EVENEMENTS, CULTURE, SOUVENIRS, ARCHIVES } from "./contenu.js";
 
 const json = (d, s = 200) =>
   new Response(JSON.stringify(d), { status: s, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
@@ -27,7 +27,7 @@ async function extraitDeezer(ch, env) {
   return null;
 }
 
-const DUREES = { blind: 16000, revele: 4500, danse: 11000, annee: 13000, ecran: 20000, evenement: 20000, culture: 11000, souvenir: 45000 };
+const DUREES = { archive: 45000, blind: 16000, revele: 4500, danse: 11000, annee: 13000, ecran: 20000, evenement: 20000, culture: 11000, souvenir: 45000 };
 
 export class Salle extends DurableObject {
   constructor(ctx, env) {
@@ -158,6 +158,7 @@ export class Salle extends DurableObject {
     // rythme : beaucoup de musique, une touche de télé, d'actualité, de culture et un ou deux souvenirs
     const motif = ["blind", "ecran", "blind", "evenement", "blind", "souvenir", "blind", "ecran", "blind", "evenement", "blind", "blind", "ecran", "blind", "souvenir", "blind"];
     const prog = [];
+    const utilisees = new Set();
     let danses = 0;
     for (let i = 0; i < L; i++) {
       let type = motif[i % motif.length];
@@ -188,6 +189,14 @@ export class Salle extends DurableObject {
       } else if (type === "souvenir") {
         const s = souv.pop();
         prog.push({ type: "souvenir", txt: s.txt, q: s.q, y: s.y });
+      }
+      // une archive TV si la question en a une (jamais deux fois la même dans la partie)
+      const derniere = prog[prog.length - 1];
+      if (derniere) {
+        const arch = ARCHIVES.find((a) => !utilisees.has(a.id) && (
+          (a.artiste && derniere.type === "blind" && derniere.ch.a === a.artiste) ||
+          (!a.artiste && a.y && (derniere.type === "evenement" || derniere.type === "annee" || derniere.type === "souvenir") && derniere.y === a.y)));
+        if (arch) { utilisees.add(arch.id); prog.push({ type: "archive", video: arch.id, titre: arch.titre }); }
       }
       // une carte culture de temps en temps
       if ((i === 3 || i === 9 || i === 14) && cult.length && i < L - 1) prog.push({ type: "culture", texte: cult.pop() });
@@ -284,6 +293,7 @@ export class Salle extends DurableObject {
       question = { type: q.type, finale: !!q.finale, y: q.y, texte: q.texte || null, sous: q.sous || null };
       if (q.options) question.options = q.options;
       if (q.type === "souvenir") { question.txt = q.txt; question.q = q.q; }
+      if (q.type === "archive") { question.video = q.video; question.titre = q.titre; }
       if (q.type === "blind") {
         question.extrait = !!q.extrait;
         if (pourEcran && q.extrait) { question.preview = q.extrait.preview; }

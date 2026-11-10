@@ -34,6 +34,7 @@ jobs:
               echo "=== page"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" $U/
               echo "=== joueur"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" $U/j/ABCD
               echo "=== salle"; curl -sS -m 20 -X POST $U/api/salle; echo
+              echo "=== videos"; for v in fc15NK89NjI MlUGUSTHg3c 5L9riIlydjQ 4i6NgsMkYqM OnqMSHh3TG8 p4wcqHkOcc8 tYoNil1lpgk YTY7BntVmi0; do echo "$v $(curl -sS -m 20 -o /dev/null -w '%{http_code}' "https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v=$v")"; done
               echo "=== deezer 0"; curl -sS -m 30 "$U/api/test-deezer?i=0"; echo
               echo "=== deezer 40"; curl -sS -m 30 "$U/api/test-deezer?i=40"; echo
               echo "=== deezer 80"; curl -sS -m 30 "$U/api/test-deezer?i=80"; echo

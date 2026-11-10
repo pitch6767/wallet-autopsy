@@ -136,6 +136,11 @@
       sc.innerHTML = '<div class="question">' + echappe(q.texte) + "</div>" + opts(q, true) + (q.type === "ecran" ? '<div class="sous-titre">Première diffusion : ' + q.y + "</div>" : "");
       cad.regle(q.y);
       tinte(true);
+    } else if (ph === "archive") {
+      couper(true);
+      speechSynthesis.cancel();
+      sc.innerHTML = '<div class="sous-titre">📺 Archive de la télévision suisse</div><div class="video"><div id="yt"></div></div><div class="minuteur"><i></i></div>';
+      video(q.video);
     } else if (ph === "culture") {
       sc.innerHTML = '<div class="carte-papier"><h2>Le saviez-vous ?</h2><p>' + echappe(q.texte) + "</p></div>";
       parle("Le saviez-vous ? " + q.texte);
@@ -184,6 +189,33 @@
       '<div class="reglage" style="justify-content:center"><button class="gros-bouton" id="btn-encore">Rejouer</button><a class="gros-bouton sobre" style="text-decoration:none" href="/livre/' + code + '" target="_blank">Le livre des souvenirs</a></div>';
     $("btn-encore").onclick = () => conn.envoie({ type: "demarrer", decennies: reglages.decennies, longueur: reglages.longueur });
     if (j[0]) parle("Bravo " + j[0].nom + " !");
+  }
+
+  // ---------- Archives vidéo (lecteur YouTube visible, jamais caché) ----------
+  let ytPret = null, lecteur = null;
+  function chargerYT() {
+    if (ytPret) return ytPret;
+    ytPret = new Promise((ok) => {
+      window.onYouTubeIframeAPIReady = ok;
+      const sc = document.createElement("script");
+      sc.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(sc);
+    });
+    return ytPret;
+  }
+  async function video(id) {
+    await chargerYT();
+    if (!document.getElementById("yt")) return;
+    try { lecteur && lecteur.destroy(); } catch (e) {}
+    lecteur = new YT.Player("yt", {
+      videoId: id, width: "100%", height: "100%",
+      playerVars: { autoplay: 1, rel: 0, playsinline: 1 },
+      events: {
+        onReady: (e) => { try { e.target.playVideo(); } catch (err) {} },
+        onError: () => conn.envoie({ type: "suivant" }),
+        onStateChange: (e) => { if (e.data === 0) conn.envoie({ type: "suivant" }); },
+      },
+    });
   }
 
   // petite cloche de révélation

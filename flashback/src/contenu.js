@@ -192,3 +192,15 @@ export const SOUVENIRS = [
   { y: 1965, txt: "Les années 60 : les yé-yé, le transistor et « Salut les copains ».", q: "Quelle était votre idole quand vous étiez jeune ?" },
   { y: 2003, txt: "Été 2003 : la canicule, et Alinghi qui gagne la Coupe de l'America.", q: "Que faisiez-vous pendant cet été brûlant ?" },
 ];
+
+// Archives TV (vidéos YouTube intégrées, lecteur visible, montrées APRÈS la réponse)
+export const ARCHIVES = [
+  { id: "fc15NK89NjI", titre: "Céline Dion gagne l'Eurovision pour la Suisse (1988)", artiste: "Céline Dion", y: 1988 },
+  { id: "MlUGUSTHg3c", titre: "Claude François à la télévision suisse (1976)", artiste: "Claude François" },
+  { id: "5L9riIlydjQ", titre: "Patrick Juvet en reportage à New York (1978)", artiste: "Patrick Juvet" },
+  { id: "4i6NgsMkYqM", titre: "La campagne pour le droit de vote des femmes (1971)", y: 1971 },
+  { id: "OnqMSHh3TG8", titre: "Le tunnel routier du Saint-Gothard (1980)", y: 1980 },
+  { id: "p4wcqHkOcc8", titre: "Dernières répétitions de la Fête des Vignerons (1977)", y: 1977 },
+  { id: "tYoNil1lpgk", titre: "L'Expo 64 vue d'en haut (1964)", y: 1964 },
+  { id: "YTY7BntVmi0", titre: "Bernhard Russi (1971)", y: 1972 },
+];

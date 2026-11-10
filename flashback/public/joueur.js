@@ -103,6 +103,7 @@
     }
     if (ph === "danse") return danse(J);
     if (ph === "annee") return annee(J, q);
+    if (ph === "archive") { J.innerHTML = '<p class="attente">📺 Archive de la télévision suisse<br><br><b>' + echappe(q.titre) + "</b><br><br>Regardez l'écran !</p>"; return; }
     if (ph === "culture") { J.innerHTML = '<p class="attente">📻 Regardez l\'écran…<br><br>' + echappe(q.texte) + "</p>"; return; }
     if (ph === "souvenir") return souvenir(J, q);
   }
