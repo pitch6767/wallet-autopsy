@@ -23443,6 +23443,8 @@ var Bot = class {
     await this.ready;
     this.demarrer();
     const u = new URL(req.url);
+    const refus = /* @__PURE__ */ __name((o, st) => Response.json(o, { status: st, headers: { "cache-control": "no-store" } }), "refus");
+    const empreinteCode = /* @__PURE__ */ __name(async (c) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("bot95-reel|" + String(c || ""))))].map((x) => x.toString(16).padStart(2, "0")).join(""), "empreinteCode");
     const json = /* @__PURE__ */ __name((x) => Response.json(x, { headers: { "cache-control": "no-store" } }), "json");
     if (this.SG && !["/api/cle_signaux", "/api/flux_signaux", "/api/reveil", "/api/chainlink_migration"].includes(u.pathname)) {
       if (u.pathname === "/api/sante" || u.pathname === "/api/statut") return json(this.sgStatut());
@@ -23908,6 +23910,18 @@ var Bot = class {
     }
     if (u.pathname === "/api/verif") return json({ verif: this.e.verif });
     if (u.pathname === "/api/v1/trades") return json({ BTC: this.e.V1.trades, ETH: this.e.V1x.ETH.trades });
+    if (u.pathname === "/api/reel/code" && req.method === "POST") {
+      const b = await req.json().catch(() => ({})), deja = await this.state.storage.get("codeReelHash");
+      if (deja && await empreinteCode(b.ancien) !== deja) return refus({ ok: false, erreur: "ancien code faux" }, 401);
+      if (String(b.nouveau || "").length < 6) return refus({ ok: false, erreur: "6 caract\xE8res au moins" }, 400);
+      await this.state.storage.put("codeReelHash", await empreinteCode(b.nouveau));
+      return json({ ok: true });
+    }
+    if (["/api/reel/etat", "/api/reel/test", "/api/reel/reprise"].includes(u.pathname)) {
+      const h = await this.state.storage.get("codeReelHash");
+      if (!h) return refus({ ok: false, a_definir: true, erreur: "aucun code du r\xE9el d\xE9fini" }, 401);
+      if (await empreinteCode(req.headers.get("x-code-reel")) !== h) return refus({ ok: false, erreur: "code du r\xE9el requis" }, 401);
+    }
     if (u.pathname === "/api/reel/etat") {
       const r = {
         configure: this.reel.configure(),
@@ -30239,7 +30253,7 @@ $('#app').className='';$('#app').innerHTML=
 (()=>{const V=d.v1;const it=Object.entries(V.issues||{}).map(([k,x])=>k+' '+x.n+' ('+usd(x.pnl)+')').join(' \xB7 ')||'\u2014';
 const tv=V.trades.map(t=>'<tr><td>'+t.heure.slice(5,16).replace('T',' ')+'</td><td>'+t.cote+'</td><td>'+f(t.prix,3)+'</td><td>'+f(t.proba,2)+'</td><td>'+(t.B&&t.B.parts?f(t.B.parts,0)+' \xE0 '+f(t.B.cout/t.B.parts,2):'\u2014')+'</td><td>'+t.issue+'</td><td class="'+(t.net>=0?'ok':'ko')+'">'+usd(t.net)+'</td></tr>').join('')||'<tr><td colspan=7 class=mu>Aucun trade encore</td></tr>';
 const p=V.pos?'<div style="margin-top:8px">En cours : '+V.pos.cote+' \xE0 '+f(V.pos.prix,3)+' \xB7 proba '+f(V.pos.probaActuelle,2)+' \xB7 offre oppos\xE9e '+f(V.pos.offre,2)+' \xB7 servie '+f(V.pos.B.parts,0)+'/'+f(V.pos.parts,0)+'</div>':'';
-const R=V.reel||{};const bandeau=R.actif?'<div class=card style="border-color:var(--ko)"><b class=ko>ARGENT R\xC9EL ACTIF</b> \u2014 mise '+R.mise+' $ par entr\xE9e<button onclick="fetch('/api/reel/arret',{method:'POST'}).then(go)">ARR\xCAT D'URGENCE</button></div>':(R.arret?'<div class=card><b>R\xE9el \xE0 l'arr\xEAt</b><button onclick="fetch('/api/reel/reprise',{method:'POST'}).then(go)">Reprendre le r\xE9el</button></div>':'');
+window.reprendreReel=async function(){var c=prompt("Code du r\xE9el");if(!c)return;var r=await fetch("/api/reel/reprise",{method:"POST",headers:{"x-code-reel":c}});var j=await r.json().catch(function(){return{}});if(j.a_definir){var n=prompt("Aucun code du r\xE9el n'existe encore. Choisis-en un (6 caract\xE8res au moins) :");if(!n||n.length<6){alert("Code trop court");return}if(prompt("Retape le m\xEAme code :")!==n){alert("Les deux codes ne correspondent pas");return}await fetch("/api/reel/code",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({nouveau:n})});r=await fetch("/api/reel/reprise",{method:"POST",headers:{"x-code-reel":n}});j=await r.json().catch(function(){return{}})}if(!j.ok){alert(j.erreur||"Refus\xE9");return}go()};const R=V.reel||{};const bandeau=R.actif?'<div class=card style="border-color:var(--ko)"><b class=ko>ARGENT R\xC9EL ACTIF</b> \u2014 mise '+R.mise+' $ par entr\xE9e<button onclick="fetch('/api/reel/arret',{method:'POST'}).then(go)">ARR\xCAT D'URGENCE</button></div>':(R.arret?'<div class=card><b>R\xE9el \xE0 l'arr\xEAt</b><button onclick="reprendreReel()">Reprendre le r\xE9el</button></div>':'');
 return bandeau+'<div class=card><b>V1 \u2014 paires BTC (jambe 55 filtr\xE9e)</b> <span class=mu>'+(R.actif?'R\xC9EL':'fant\xF4me')+' \xB7 </span> <span class=mu>temps r\xE9el'+(V.polyOk?'':' \u2014 <span class=ko>carnet en direct d\xE9connect\xE9</span>')+'</span><div class=g style="margin-top:8px"><div><div class=k>Capital</div><div class=v>'+f(V.capital)+' $</div></div><div><div class=k>Gain</div><div class="v '+(V.pnl>=0?'ok':'ko')+'">'+usd(V.pnl)+'</div></div><div><div class=k>Gagn\xE9s / perdus</div><div class=v>'+V.gains+' / '+V.pertes+'</div></div></div>'+
 '<div class=mu style="margin-top:6px">R\xE9glage A : \xE9lan 5 s + stop \xE0 \u221215 points \xB7 entr\xE9es refus\xE9es par l'\xE9lan : '+(V.refusElan||0)+' \xB7 source la plus rapide : '+Object.entries(V.sources||{}).map(([k,n])=>k+' '+n).join(', ')+'</div><div class=mu>Issues : '+it+'</div><div class=mu>R\xE9action : message Polymarket re\xE7u en '+f(V.latPolyMed,3)+' s (90 % sous '+f(V.latPolyP90,3)+' s) \xB7 d\xE9cisions en '+f(V.latDecMed,3)+' s (90 % sous '+f(V.latDecP90,3)+' s)</div>'+p+
 '<table style="margin-top:8px"><tr><th>Heure UTC</th><th>Jambe</th><th>Prix</th><th>Proba</th><th>Autre jambe</th><th>Issue</th><th>Net</th></tr>'+tv+'</table></div>'})()+
