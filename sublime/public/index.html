@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Sublime</title>
-<meta name="theme-color" content="#FBF5EC">
+<meta name="theme-color" content="#FFF4E4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -12,7 +12,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <link rel="icon" href="/icon-192.png">
-<link rel="stylesheet" href="/style.css?v=3">
+<link rel="stylesheet" href="/style.css?v=4">
 <!-- sublime-app -->
 </head>
 <body>
@@ -20,38 +20,79 @@
 <section id="ecran-connexion" class="ecran">
   <div class="logo"><span class="chat-logo"></span></div>
   <h1>Sublime</h1>
-  <p class="sous">Un chat par couleur, par ligne, par colonne.<br>Et jamais deux chats qui se touchent.</p>
+  <p class="sous">Des chats malicieux se cachent dans la grille.<br>Un chat par couleur, par ligne, par colonne,<br>et jamais deux chats qui se touchent.</p>
   <form id="form-connexion" autocomplete="off">
     <label for="nom">Prénom</label>
     <input id="nom" type="text" maxlength="20" autocapitalize="words" required>
     <label for="pin">Code PIN (4 chiffres)</label>
     <input id="pin" type="password" inputmode="numeric" pattern="\d{4}" maxlength="4" required>
     <p id="msg-connexion" class="msg"></p>
-    <button type="submit" class="btn principal" data-action="connexion">Se connecter</button>
+    <button type="submit" class="btn principal">Se connecter</button>
     <button type="button" class="btn secondaire" id="btn-inscription">Créer mon compte</button>
   </form>
 </section>
 
-<section id="ecran-jeu" class="ecran cache">
-  <header class="barre">
-    <div>
-      <div class="niveau" id="titre-niveau">Niveau 1</div>
-      <div class="joueur" id="nom-joueur"></div>
-    </div>
-    <div class="poissons" id="poissons" aria-label="Vies"></div>
+<section id="ecran-app" class="ecran cache">
+  <header class="entete">
+    <div class="croquettes" id="croquettes" title="Croquettes"><span class="ic-croq"></span><b id="nb-croq">0</b></div>
+    <div class="joueur" id="nom-joueur"></div>
+    <button class="btn-son" id="btn-son" aria-label="Son">🔊</button>
   </header>
 
-  <div class="plateau-cadre"><div id="plateau" class="plateau"></div></div>
-  <p class="aide-geste">Touche&nbsp;: croix · Double touche&nbsp;: chat</p>
-
-  <div class="outils">
-    <button class="outil" id="btn-annuler"><span class="ic">↶</span>Annuler</button>
-    <button class="outil" id="btn-recommencer"><span class="ic">⟲</span>Recommencer</button>
-    <button class="outil bonus" id="btn-chat"><span class="ic chat-mini"></span>Chat gratuit<b id="nb-chats">0</b></button>
-    <button class="outil bonus" id="btn-astuce"><span class="ic">💡</span>Astuce<b id="nb-astuces">0</b></button>
+  <!-- Vue jeu (niveaux et défi du jour) -->
+  <div id="vue-jeu" class="vue">
+    <div class="barre">
+      <div>
+        <div class="niveau" id="titre-niveau">Niveau 1</div>
+        <div class="sous-titre" id="sous-titre"></div>
+      </div>
+      <div class="poissons" id="poissons" aria-label="Vies"></div>
+    </div>
+    <div class="plateau-cadre"><div id="plateau" class="plateau"></div></div>
+    <p class="aide-geste">Touche&nbsp;: croix · Double touche&nbsp;: chat</p>
+    <div class="outils">
+      <button class="outil" id="btn-annuler"><span class="ic">↶</span>Annuler</button>
+      <button class="outil" id="btn-recommencer"><span class="ic">⟲</span>Recommencer</button>
+      <button class="outil bonus" id="btn-chat"><span class="ic chat-mini"></span>Chat gratuit<b id="nb-chats">0</b></button>
+      <button class="outil bonus" id="btn-astuce"><span class="ic">💡</span>Astuce<b id="nb-astuces">0</b></button>
+    </div>
+    <p id="msg-jeu" class="msg-jeu"></p>
   </div>
-  <p id="msg-jeu" class="msg-jeu"></p>
+
+  <!-- Vue défi du jour (accueil du défi) -->
+  <div id="vue-jour" class="vue cache">
+    <div class="carte-vue">
+      <div class="jour-chat" id="jour-chat"></div>
+      <h2>Défi du jour</h2>
+      <p class="doux" id="jour-texte"></p>
+      <div class="serie" id="jour-serie"></div>
+      <button class="btn principal" id="btn-jour">Jouer le défi</button>
+    </div>
+  </div>
+
+  <!-- Vue collection -->
+  <div id="vue-chats" class="vue cache">
+    <h2 class="titre-vue">Mes chats</h2>
+    <p class="doux centre">Avance dans les niveaux pour adopter de nouveaux chats.<br>Touche un chat adopté pour le faire jouer dans la grille.</p>
+    <div class="collection" id="collection"></div>
+  </div>
+
+  <!-- Vue café -->
+  <div id="vue-cafe" class="vue cache">
+    <h2 class="titre-vue">Le café des chats</h2>
+    <div class="cafe" id="cafe"></div>
+    <p class="doux centre">Gagne des croquettes en réussissant des niveaux et décore le café.</p>
+    <div class="boutique" id="boutique"></div>
+  </div>
+
   <button class="lien" id="btn-deconnexion">Changer de joueur</button>
+
+  <nav class="onglets">
+    <button class="onglet actif" data-vue="jeu"><span>🧩</span>Niveaux</button>
+    <button class="onglet" data-vue="jour"><span>📅</span>Défi du jour</button>
+    <button class="onglet" data-vue="chats"><span>🐱</span>Mes chats</button>
+    <button class="onglet" data-vue="cafe"><span>☕</span>Café</button>
+  </nav>
 </section>
 
 <div id="voile" class="voile cache">
@@ -63,7 +104,9 @@
     <button class="btn secondaire cache" id="voile-btn2"></button>
   </div>
 </div>
+<div id="fete" class="fete"></div>
+<label id="haptique" class="cache-ecran"><input type="checkbox" switch></label>
 
-<script src="/app.js?v=3"></script>
+<script src="/app.js?v=4"></script>
 </body>
 </html>

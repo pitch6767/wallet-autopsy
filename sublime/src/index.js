@@ -12,7 +12,10 @@ async function hache(texte) {
 const cle = (nom) => "u:" + nom.trim().toLowerCase();
 
 function publique(u) {
-  return { nom: u.nom, niveau: u.niveau, chats: u.chats, astuces: u.astuces, partie: u.partie || null, stats: u.stats || {} };
+  return {
+    nom: u.nom, niveau: u.niveau, chats: u.chats, astuces: u.astuces, partie: u.partie || null, stats: u.stats || {},
+    croquettes: u.croquettes || 0, pelage: u.pelage || "roux", deco: u.deco || [], jour: u.jour || {},
+  };
 }
 
 export class Coffre extends DurableObject {
@@ -55,6 +58,10 @@ export class Coffre extends DurableObject {
       u.astuces = ent(corps.astuces, u.astuces);
       if (corps.stats && typeof corps.stats === "object") u.stats = { reussis: ent(corps.stats.reussis, 0), parfaits: ent(corps.stats.parfaits, 0) };
       u.partie = corps.partie && JSON.stringify(corps.partie).length < 20000 ? corps.partie : null;
+      u.croquettes = ent(corps.croquettes, u.croquettes || 0);
+      if (typeof corps.pelage === "string" && /^[a-z]{1,20}$/.test(corps.pelage)) u.pelage = corps.pelage;
+      if (Array.isArray(corps.deco)) u.deco = corps.deco.filter((x) => typeof x === "string" && /^[a-z]{1,20}$/.test(x)).slice(0, 30);
+      if (corps.jour && typeof corps.jour === "object" && JSON.stringify(corps.jour).length < 20000) u.jour = corps.jour;
       u.maj = Date.now();
       await st.put(k, u);
       return json({ ok: true });
