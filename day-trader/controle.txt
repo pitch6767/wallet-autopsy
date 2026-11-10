@@ -1,19 +1,30 @@
 env.ASSETS                     Assets              
 
-Uploaded day-trader (3.43 sec)
-Deployed day-trader triggers (0.46 sec)
+Uploaded day-trader (3.01 sec)
+Deployed day-trader triggers (0.77 sec)
   https://day-trader.pitch67.workers.dev
   schedule: * * * * *
   schedule: 17 13 * * 1-5
   schedule: 25 21 * * 1-5
-Current Version ID: 4cd655ce-921b-431e-969f-c08aaf10f87d
+Current Version ID: 86c07cf2-7d78-4d6b-b604-22462988726e
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 === page
 200
 === sonde
-{"ok":true,"horloge":{"newYork":"2026-11-10 17:04","bourse":"fermée","seance":"09:30–16:00","utc":"2026-11-10 22:04"}}
+{"ok":true,"horloge":{"newYork":"2026-11-10 17:23","bourse":"fermée","seance":"09:30–16:00","utc":"2026-11-10 22:23"}}
 === controles
---- par action
-{"etat":{"pos":60,"total":100,"fini":false},"n":60,"tiennent":57,"edgePos":52,"toujours":0,"ex":[{"sym":"OMH","regle":"5j:contre+volatile+chute5","ga":187,"gb":14048,"edge":11850,"garder":-71.3},{"sym":"FTH","regle":"5j:contre","ga":9051,"gb":1562,"edge":6869,"garder":30.2},{"sym":"MRNA","regle":"5j:grosse+tendance","ga":366,"gb":9272,"edge":1220,"garder":459.4},{"sym":"QMCO","regle":"5j:marche","ga":1591,"gb":5847,"edge":3541,"garder":148},{"sym":"FSLY","regle":"5j:contre","ga":6408,"gb":941,"edge":3528,"garder":51.1},{"sym":"AXTI","regle":"5j:contre","ga":5166,"gb":1702,"edge":3021,"garder":143},{"sym":"AEHR","regle":"5j:contre","ga":5792,"gb":718,"edge":3929,"garder":121.2},{"sym":"IOVA","regle":"5j:volatile+tendance","ga":1331,"gb":4426,"edge":-1155,"garder":184.7}]}
+--- reponse brute
+HTTP/2 200 
+date: Tue, 10 Nov 2026 22:23:25 GMT
+content-type: application/json
+content-length: 121
+cache-control: no-store
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=sgdUEUXS9cO64IX%2FP3vH4H48zb%2F6sAcbICH%2FwLozrYn89jr8dMO3%2BZfPDSfkOCb9m7tuiP1%2BUVnTZcfV%2FNTj9yECUhouwitPhSw37vE5trDciXeep6rP2d%2F4LZ6KuI%2BLt3q2hZPQkZNTTqk9V%2Bda4hE%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a58876285e25b08e-ATL
+alt-svc: h3=":443"; ma=86400
+
+{"ok":true,"horloge":{"newYork":"2026-11-10 17:23","bourse":"fermée","seance":"09:30–16:00","utc":"2026-11-10 22:23"}}
