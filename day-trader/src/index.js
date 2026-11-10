@@ -20,7 +20,14 @@ function coffre(env) {
   const appel = async (corps) => (await st.fetch("https://coffre/", { method: "POST", body: JSON.stringify(corps) })).json();
   return { get: async (cle) => (await appel({ op: "get", cle })).valeur, put: (cle, valeur) => appel({ op: "put", cle, valeur }) };
 }
-async function reglages(c) { return { ...REGLAGES_DEFAUT, ...((await c.get("reglages")) || {}) }; }
+let ENV = null;
+async function reglages(c) {
+  const r = { ...REGLAGES_DEFAUT, ...((await c.get("reglages")) || {}) };
+  if (!r.sec_user_agent && ENV && ENV.DB) {
+    try { const l = await ENV.DB.prepare("SELECT valeur FROM config WHERE cle = 'contact_sec'").first(); if (l) r.sec_user_agent = l.valeur; } catch (e) {}
+  }
+  return r;
+}
 
 async function lancerScanJour(env) {
   const c = coffre(env);
@@ -54,6 +61,7 @@ const json = (x, code = 200) => Response.json(x, { status: code, headers: { "Cac
 
 export default {
   async fetch(req, env, ctx) {
+    ENV = env;
     const u = new URL(req.url); const p = u.pathname; const c = coffre(env);
     try {
       if (!p.startsWith("/api/")) return env.ASSETS.fetch(req);
