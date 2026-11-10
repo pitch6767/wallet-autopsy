@@ -68,11 +68,11 @@ export function strategiesJour(J, { qqq = {}, liquide = false, resultats = new S
 export function barresJour(s, aujourdHuiNY) {
   const out = [];
   for (let i = 0; i < s.t.length; i++) {
-    const o = s.o?.[i], h = s.h?.[i], l = s.l?.[i], c = s.c[i];
+    const o = s.o?.[i], h = s.h?.[i], l = s.l?.[i], c = s.c[i], v = s.v?.[i] || 0;
     if ([o, h, l, c].some((x) => x == null)) continue;
     const d = new Date(s.t[i] * 1000 - 4 * 3600e3).toISOString().slice(0, 10);
     if (d >= aujourdHuiNY) continue; // seulement les journées terminées
-    out.push({ d, o, h, l, c });
+    out.push({ d, o, h, l, c, v });
   }
   return out;
 }

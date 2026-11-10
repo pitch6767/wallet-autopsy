@@ -4,6 +4,7 @@ import { graphique, sparkTout, barres, parLots } from "./donnees.js";
 import { marcheDe, estBtc, local } from "./temps.js";
 import { REGLES, simulerSeance, figureALaCloture, construirePool } from "./regles.js";
 import { REGLES_J, strategiesJour, barresJour, qqqJour, datesBonsResultats } from "./labo.js";
+import { SCHEMA_COMBO, accumulerAction, ecrireAcc } from "./combos.js";
 import { cloturesJour } from "./scanner.js";
 
 export const SCHEMA = [
@@ -13,6 +14,8 @@ export const SCHEMA = [
   "CREATE TABLE IF NOT EXISTS papier (date TEXT, regle TEXT, sym TEXT, statut TEXT, entree_h TEXT, entree REAL, stop REAL, cible REAL, sortie_h TEXT, sortie REAL, issue TEXT, pct REAL, r REAL, maj TEXT, PRIMARY KEY (date, regle, sym))",
   "CREATE TABLE IF NOT EXISTS news (id TEXT PRIMARY KEY, cik TEXT, sym TEXT, nom TEXT, quand INTEGER, items TEXT, lien TEXT, en_seance INTEGER, prix0 REAL, debut_suivi INTEGER, m5 REAL, m15 REAL, m60 REAL, max30 REAL, fini INTEGER DEFAULT 0, maj TEXT, source TEXT DEFAULT 'sec', titre TEXT, vu INTEGER, hl0 REAL, hl5 REAL, hl15 REAL, hl60 REAL, hlouv REAL, kf0 REAL, kf5 REAL, kf15 REAL, kf60 REAL, kfouv REAL)",
   "CREATE INDEX IF NOT EXISTS news_quand ON news (quand)",
+  SCHEMA_COMBO,
+  "CREATE TABLE IF NOT EXISTS papier_j (date_signal TEXT, regle TEXT, sym TEXT, h INTEGER, entree_d TEXT, entree REAL, stop REAL, sortie_d TEXT, sortie REAL, issue TEXT, pct REAL, qqq_pct REAL, statut TEXT, maj TEXT, PRIMARY KEY (date_signal, regle, sym))",
 ];
 export async function schema(db) { for (const s of SCHEMA) await db.prepare(s).run(); }
 export async function lireEtat(db, cle) { const r = await db.prepare("SELECT valeur FROM etat WHERE cle = ?").bind(cle).first(); return r ? JSON.parse(r.valeur) : null; }
@@ -50,7 +53,7 @@ export async function choisirUnivers(liquides) {
 
 export async function demarrer(env, liquides) {
   await schema(env.DB);
-  await env.DB.batch([env.DB.prepare("DELETE FROM bt"), env.DB.prepare("DELETE FROM bt_jour")]);
+  await env.DB.batch([env.DB.prepare("DELETE FROM bt"), env.DB.prepare("DELETE FROM bt_jour"), env.DB.prepare("DELETE FROM bt_combo")]);
   const u = await choisirUnivers(liquides);
   const symboles = [...u.grosses, ...u.volatiles];
   const qJ = barresJour(await graphique("QQQ", "1y", "1d"), local(Date.now(), marcheDe("QQQ")).date).map((x) => x.d);
@@ -75,7 +78,10 @@ export async function lotSuivant(env, taille = 12) {
   const qqqS = seancesCompletes(await graphique("QQQ", "60d", "5m"), "QQQ");
   const qqq = Object.fromEntries(qqqS);
   const aujNY = local(Date.now(), marcheDe("QQQ")).date;
-  const qqqJ = qqqJour(barresJour(await graphique("QQQ", "1y", "1d"), aujNY));
+  const qqqBarres = barresJour(await graphique("QQQ", "1y", "1d"), aujNY);
+  const qqqJ = qqqJour(qqqBarres);
+  const volatiles = new Set(etat.volatiles || []);
+  const acc = {};
   const grosses = new Set(etat.grosses || []);
   const uaL = await env.DB.prepare("SELECT valeur FROM config WHERE cle = 'contact_sec'").first(); const ua = uaL ? uaL.valeur : "";
   let ciks = {};
@@ -100,6 +106,7 @@ export async function lotSuivant(env, taille = 12) {
     let resultats = new Set();
     if (ua && ciks[sym]) { try { const dates = [...(await datesBonsResultats(ciks[sym], ua))].sort(); for (const dd of dates) { const x = J.find((b) => b.d >= dd); if (x) resultats.add(x.d); } } catch (e) {} }
     for (const tr of strategiesJour(J, { qqq: qqqJ, liquide, resultats })) trades.push({ ...tr, per: tr.d < etat.coupureJ ? "A" : "B" });
+    accumulerAction(J, { qqq: qqqJ, qqqBarres, grosse: liquide, volatile: volatiles.has(sym), resultats }, qqqJ, etat.coupureJ, acc);
     const parRegle = {}; for (const x of trades) (parRegle[x.rid] = parRegle[x.rid] || []).push(x);
     return parRegle;
   });
@@ -120,6 +127,7 @@ export async function lotSuivant(env, taille = 12) {
   const cur = await lireEtat(env.DB, "test");
   if (!cur || cur.gen !== etat.gen) return cur; // le test a été relancé pendant ce lot : on jette ce lot
   for (let i = 0; i < st.length; i += 400) await env.DB.batch(st.slice(i, i + 400));
+  await ecrireAcc(env.DB, acc);
   etat.pos += lot.length; etat.verrou = null;
   if (etat.pos >= etat.liste.length) { etat.fini = true; etat.finLe = new Date().toISOString(); }
   await ecrireEtat(env.DB, "test", etat);

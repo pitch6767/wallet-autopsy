@@ -11,6 +11,42 @@ import { suiviNews, statsNews, photosJetons, ITEMS, SEUILS } from "./veille.js";
 import { REGLES, BASES, FILTRES } from "./regles.js";
 import { REGLES_J, BASES_J, FILTRES_J } from "./labo.js";
 export { Veilleur } from "./veille.js";
+import { classementCombos, CONDITIONS, NB_REGLES } from "./combos.js";
+import { tourPapierJour, resumePJ } from "./pj.js";
+import { classeurXlsx } from "./xlsx.js";
+import { nomRegle } from "./combos.js";
+
+async function fichierExcel(env) {
+  await base(env);
+  const db = env.DB; const e = await lireEtat(db, "test");
+  const cb = await classementCombos(db, 1000, true);
+  const cl = await classement(db, 1000);
+  const rg = await (async () => { const n = {}; for (const r of [...REGLES, ...REGLES_J]) n[r.id] = { nom: `${r.base.nom} ${r.filtre.nom}`, camp: r.filtre.camp, famille: r.famille }; return n; })();
+  const pj = await resumePJ(db); const pi = await resume(db);
+  const ligneC = (r, i) => [i + 1, r.regle, r.nom, +r.regle.split("j:")[0], r.regle.split(":")[1].split("+").length, r.A.trades, r.A.gagnants, r.A.gain, r.A.contreQqq, r.A.t, r.B.trades, r.B.gagnants, r.B.gain, r.B.contreQqq, r.B.t, r.tient ? "OUI" : "non"];
+  const enteteC = ["Rang", "Code", "Description", "Jours gardés", "Nb conditions", "A trades", "A % gagnants", "A gain $", "A vs QQQ $", "A t", "B trades", "B % gagnants", "B gain $", "B vs QQQ $", "B t", "Tient"];
+  const tiennent = cb.toutes.filter((r) => r.tient);
+  const feuilles = [
+    ["Meilleures stratégies", [enteteC, ...tiennent.map(ligneC)]],
+    ["Toutes combinaisons", [enteteC, ...cb.toutes.map(ligneC)]],
+    ["Leurs règles + nos filtres", [["Code", "Famille", "Camp du filtre", "Description", "A trades", "A % gagnants", "A gain $", "B trades", "B % gagnants", "B gain $", "Creux $", "Tient"],
+      ...cl.regles.sort((a, b) => (b.tient - a.tient) || (((b.B || {}).gain ?? -1e9) - ((a.B || {}).gain ?? -1e9))).map((x) => [x.regle, (rg[x.regle] || {}).famille || "", (rg[x.regle] || {}).camp || "", (rg[x.regle] || {}).nom || "", x.A?.trades ?? "", x.A?.gagnants ?? "", x.A?.gain ?? "", x.B?.trades ?? "", x.B?.gagnants ?? "", x.B?.gain ?? "", x.creuxTotal, x.tient ? "OUI" : "non"])]],
+    ["Paper journalier", [["Combinaison", "Description", "Signaux", "Fermés", "Ouverts", "Gagnants", "Gain $", "vs QQQ $"], ...pj.parRegle.map((x) => [x.regle, nomRegle(x.regle), x.signaux, x.fermes, x.ouverts, x.gagnants, x.gain, x.contreQqq])]],
+    ["Paper intraday", [["Règle", "Description", "Trades", "Gagnants", "Ouverts", "Gain $", "Gain du jour $", "Creux $"], ...pi.regles.map((x) => [x.regle, (rg[x.regle] || {}).nom || x.regle, x.trades, x.gagnants, x.ouverts, x.gain, x.gainJour, x.creux])]],
+    ["Lisez-moi", [["Rubrique", "Explication"],
+      ["Créé le", new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC"],
+      ["Actions testées", e ? `${e.liste.length} : 25 plus grosses (${(e.grosses || []).join(", ")}) + 75 plus volatiles` : ""],
+      ["Périodes (journalier)", e ? `A = du ${e.premiereJ} au ${e.coupureJ} ; B = du ${e.coupureJ} au ${e.derniereJ}` : ""],
+      ["Périodes (intraday)", e ? `A = du ${e.premiere} au ${e.coupure} ; B = du ${e.coupure} au ${e.derniere}` : ""],
+      ["Mise", "1 000 $ par trade (2 000 $ pour les versions mise ×2). Achat à l'ouverture du lendemain + 0,05 % de glissement, stop 2 × ATR, sortie à la clôture du dernier jour."],
+      ["vs QQQ $", "Gain du trade moins ce qu'aurait rapporté le QQQ (Nasdaq) sur exactement la même fenêtre. Positif = la stratégie a battu le simple fait de garder le Nasdaq."],
+      ["t", "Gain moyen divisé par son incertitude. 2 ou plus = gain nettement au-dessus de zéro, peu probable par hasard sur cette période."],
+      ["Tient", "Au moins 30 trades sur A et B, gagne sur A et B, bat le QQQ sur A et B, t ≥ 2 sur B."],
+      ["Attention", "Avec près de 2 000 combinaisons testées, certaines passent par hasard. Ce sont des simulations sur le passé, pas des exécutions réelles : seul le paper sur des jours nouveaux départage."]]],
+  ];
+  const nom = `meilleures-strategies-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  return new Response(classeurXlsx(feuilles), { headers: { "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Content-Disposition": `attachment; filename="${nom}"`, "Cache-Control": "no-store" } });
+}
 
 const PAPIER_TAILLE = 150; // actions les plus échangées suivies en paper (+ BTC)
 let SCHEMA_OK = false;
@@ -75,6 +111,7 @@ export default {
     ENV = env;
     const u = new URL(req.url); const p = u.pathname; const c = coffre(env);
     try {
+      if (p === "/excel") return await fichierExcel(env);
       if (!p.startsWith("/api/")) return env.ASSETS.fetch(req);
       const corps = req.method === "POST" ? await req.json().catch(() => ({})) : {};
       if (p === "/api/etat") {
@@ -113,9 +150,12 @@ export default {
         if (req.method === "DELETE") { const le = u.searchParams.get("le"); j = j.filter((x) => x.le !== le); await c.put("journal", j); }
         return json(j);
       }
-      if (p.startsWith("/api/test") || p.startsWith("/api/papier") || p.startsWith("/api/news") || p === "/api/regles") await base(env);
+      if (p.startsWith("/api/test") || p.startsWith("/api/combos") || p.startsWith("/api/papier") || p.startsWith("/api/news") || p === "/api/regles") await base(env);
       if (p === "/api/regles") return json({ bases: BASES, filtres: FILTRES, regles: [...REGLES, ...REGLES_J].map((r) => ({ id: r.id, base: r.base.nom, filtre: r.filtre.nom, camp: r.filtre.camp, famille: r.famille })), news: SEUILS.map((x) => ({ id: "news-" + x, nom: `8-K puis hausse de ${x} % dans les 30 min, stop sous le prix de la nouvelle, cible 2R` })) });
       if (p === "/api/test/demarrer" && req.method === "POST") { const l = (await c.get("liquides")) || []; if (!l.length) return json({ erreur: "Lance d'abord le scan du jour (il donne la liste des actions liquides)." }, 400); return json(await demarrer(env, l)); }
+      if (p === "/api/combos") return json({ ...(await classementCombos(env.DB, +(u.searchParams.get("mise") || 1000))), conditions: CONDITIONS, nbRegles: NB_REGLES, etat: await lireEtat(env.DB, "test") });
+      if (p === "/api/papier-j") return json(await resumePJ(env.DB, +(u.searchParams.get("mise") || 1000)));
+      if (p === "/api/papier-j/tour" && req.method === "POST") return json(await tourPapierJour(env));
       if (p === "/api/test") return json(await classement(env.DB, +(u.searchParams.get("mise") || 1000)));
       if (p === "/api/papier") return json(await resume(env.DB, { mise: +(u.searchParams.get("mise") || 1000), depuis: u.searchParams.get("depuis") || "" }));
       if (p === "/api/papier/trades") return json(await tradesPapier(env.DB, { regle: u.searchParams.get("regle") || "", date: u.searchParams.get("date") || "" }, +(u.searchParams.get("mise") || 1000)));
@@ -146,6 +186,7 @@ export default {
     ENV = env;
     const c = coffre(env);
     if (ev.cron === "17 13 * * 1-5") { ctx.waitUntil(lancerScanJour(env).catch(() => {})); return; }
+    if (ev.cron === "25 21 * * 1-5") { await base(env); try { const r = await tourPapierJour(env); await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("dernier-papier-j", JSON.stringify({ quand: new Date().toISOString(), r })).run(); } catch (e) { await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("erreur-papier-j", JSON.stringify({ quand: new Date().toISOString(), e: String(e.message || e) })).run(); } return; }
     await base(env);
     const journal = async (cle, f) => { try { const r = await f(); await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("dernier-" + cle, JSON.stringify({ quand: new Date().toISOString(), r })).run(); } catch (e) { await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("erreur-" + cle, JSON.stringify({ quand: new Date().toISOString(), e: String(e.message || e) })).run(); } };
     // 1. veilleur des nouvelles toujours armé

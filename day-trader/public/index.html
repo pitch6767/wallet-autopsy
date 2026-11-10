@@ -73,6 +73,7 @@ svg{width:100%;height:auto;display:block}
     <div id="papInfo" class="doux" style="margin-top:6px"></div>
     <button class="second" id="papMaj">Actualiser</button>
   </div>
+  <div id="pjRes"></div>
   <div id="papRes"></div>
   <div id="papTrades"></div>
 </section>
@@ -82,8 +83,9 @@ svg{width:100%;height:auto;display:block}
     <h2>Leurs idées et les nôtres, seules puis liées</h2>
     <div class="doux">Intraday : 60 jours de barres 5 min. Journalier et résultats : 1 an. Sur les 25 plus grosses + les 75 plus volatiles. Chaque règle avec la même exécution réaliste que le paper. Méthode Bot95 : <b>période A</b> (1re moitié) pour choisir, <b>période B</b> (2e moitié, jamais vue au moment du choix) pour vérifier. Une règle « tient » seulement si elle gagne sur A <b>et</b> sur B. 1 000 $ par trade.</div>
     <div id="clEtat" class="doux" style="margin-top:6px"></div>
-    <button class="second" id="clMaj">Actualiser</button> <button class="second" id="clRelance">Relancer le test complet</button>
+    <a class="second" style="display:inline-block;text-decoration:none" href="/excel">⬇ Fichier Excel des meilleures stratégies</a><br><button class="second" id="clMaj">Actualiser</button> <button class="second" id="clRelance">Relancer le test complet</button>
   </div>
+  <div id="cbRes"></div>
   <div id="clRes"></div>
 </section>
 
@@ -243,7 +245,15 @@ async function tradesDe(regle) {
     out.scrollIntoView({ behavior: "smooth" });
   } catch (e) { erreur(out, e); }
 }
-$("#papMaj").onclick = chargerPapier;
+$("#papMaj").onclick = () => { chargerPapier(); chargerPJ(); };
+async function chargerPJ() {
+  const out = $("#pjRes");
+  try {
+    const r = await api("/api/papier-j");
+    out.innerHTML = `<div class="carte"><h2>Paper journalier (combinaisons qui tiennent)</h2><div class="doux">${r.figeeLe ? `${r.regles.length} combinaisons figées le ${new Date(r.figeeLe).toLocaleString("fr-CH")}. ` : "Démarre ce soir à 22 h 25 (heure suisse), après la clôture de New York. "}Chaque soir : nouveaux signaux, achat papier à l'ouverture du lendemain, 1 000 $ par trade.</div>
+      ${r.parRegle.length ? `<table><tr><th>Combinaison</th><th class="num">Signaux</th><th class="num">Gain</th><th class="num">vs QQQ</th></tr>${r.parRegle.map((x) => `<tr><td>${esc(x.regle)}</td><td class="num">${x.signaux}<br><span class="doux">${x.fermes} fermés · ${x.ouverts} ouverts</span></td><td class="num ${cls(x.gain)}">${usd(x.gain)}</td><td class="num ${cls(x.contreQqq)}">${usd(x.contreQqq)}</td></tr>`).join("")}</table><div class="doux">Trades ouverts valorisés à la dernière clôture (provisoire).</div>` : ""}</div>`;
+  } catch (e) { erreur(out, e); }
+}
 
 async function chargerClassement() {
   await noms(); const out = $("#clRes");
@@ -270,6 +280,21 @@ async function chargerClassement() {
   } catch (e) { erreur(out, e); }
 }
 $("#clMaj").onclick = chargerClassement;
+async function chargerCombos() {
+  const out = $("#cbRes");
+  try {
+    const r = await api("/api/combos");
+    const lig = (x) => `<tr><td><b>${esc(x.regle)}</b><br><span class="doux">${esc(x.nom)}</span></td>
+      <td class="num">${x.A.trades} tr.<br>${x.A.gagnants} %<br>${usd(x.A.gain)}<br><span class="doux">vs QQQ ${usd(x.A.contreQqq)}</span></td>
+      <td class="num">${x.B.trades} tr.<br>${x.B.gagnants} %<br><b class="${cls(x.B.gain)}">${usd(x.B.gain)}</b><br><span class="doux">vs QQQ <b class="${cls(x.B.contreQqq)}">${usd(x.B.contreQqq)}</b> · t ${x.B.t}</span></td></tr>`;
+    out.innerHTML = `<div class="carte"><h2>Combinaisons libres (1 à 3 conditions)</h2>
+      <div class="doux">${r.nbRegles} règles : chaque mélange de 1, 2 ou 3 des ${r.conditions.length} conditions (leurs ${r.conditions.filter((c) => c.camp === "leur").length}, nôtres et autres ${r.conditions.filter((c) => c.camp !== "leur").length}) × garder 1, 3 ou 5 jours. Achat à l'ouverture du lendemain, stop 2 × ATR. Chaque trade est comparé au QQQ sur la même fenêtre.<br>
+      <b>« Tient »</b> = au moins 30 trades sur A et sur B, gagne sur les deux, <b>bat le QQQ</b> sur les deux, et t ≥ 2 sur B (gain moyen nettement au-dessus de zéro).</div>
+      <div class="kv" style="margin-top:8px"><span>Règles testées</span><b>${r.totalRegles}</b><span>Avec assez de trades</span><b>${r.avecAssezDeTrades}</b><span>Tiennent</span><b class="ok">${r.tiennent}</b></div>
+      <div class="avert">Avec autant de combinaisons, certaines passent par pur hasard. Seul le paper sur des jours nouveaux départage : les combinaisons qui tiennent passent en paper journalier automatiquement.</div>
+      <div style="overflow-x:auto"><table><tr><th>Combinaison</th><th class="num">A</th><th class="num">B</th></tr>${r.top.slice(0, 60).map(lig).join("") || '<tr><td colspan="3" class="doux">Aucune pour l\'instant (le test tourne).</td></tr>'}</table></div></div>`;
+  } catch (e) { erreur(out, e); }
+}
 $("#clRelance").onclick = async (ev) => { if (!confirm("Effacer les résultats du test et tout relancer ?")) return; try { await api("/api/test/demarrer", { method: "POST" }); chargerClassement(); } catch (e) { erreur($("#clRes"), e); } };
 
 async function chargerDirect() {
@@ -293,8 +318,8 @@ function montrer(o) {
   document.querySelectorAll("#onglets button").forEach((x) => x.classList.toggle("actif", x.dataset.o === o));
   document.querySelectorAll("section").forEach((s) => s.classList.toggle("actif", s.id === o));
   if (o === "alertes") chargerAlertes();
-  if (o === "papier") chargerPapier();
-  if (o === "classement") chargerClassement();
+  if (o === "papier") { chargerPapier(); chargerPJ(); }
+  if (o === "classement") { chargerCombos(); chargerClassement(); }
   if (o === "direct") chargerDirect();
   scrollTo(0, 0);
 }
@@ -488,7 +513,7 @@ $("#regGo").onclick = async () => {
 
 (async () => {
   await etat();
-  chargerPapier();
+  chargerPapier(); chargerPJ();
   try { SJ = await api("/api/scan-jour"); afficherSJ(); } catch (e) { erreur($("#sjListe"), e); }
   try { ORB = await api("/api/orb"); afficherOrb(); } catch (e) {}
   setInterval(etat, 60000);
