@@ -205,7 +205,7 @@ export default {
     const journal = async (cle, f) => { try { const r = await f(); await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("dernier-" + cle, JSON.stringify({ quand: new Date().toISOString(), r })).run(); } catch (e) { await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("erreur-" + cle, JSON.stringify({ quand: new Date().toISOString(), e: String(e.message || e) })).run(); } };
     // 1. veilleur des nouvelles toujours armé
     await journal("veilleur", async () => { await veilleur(env).fetch("https://v/demarrer"); return (await veilleur(env).fetch("https://v/etat")).json(); });
-    await journal("jetons", async () => { const r = await (await env.JETONS.get(env.JETONS.idFromName("jetons")).fetch("https://j/demarrer")).json(); delete r.derniers; return r; });
+    await journal("jetons", async () => { const r = await (await env.JETONS.get(env.JETONS.idFromName("jetons")).fetch("https://j/demarrer")).json(); return { hl: r.hl, kf: r.kf, jetons: r.jetons, ouverts: r.ouverts, erreurs: Object.fromEntries(Object.entries(r.derniers || {}).filter(([k]) => k.startsWith("erreur"))), exemple: Object.entries(r.derniers || {}).slice(0, 5) }; });
     await journal("flux", async () => (await env.FLUX.get(env.FLUX.idFromName("alpaca")).fetch("https://f/demarrer")).json());
     // 2. alertes de prix
     await journal("alertes", async () => {
