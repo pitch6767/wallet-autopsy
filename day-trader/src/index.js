@@ -12,7 +12,7 @@ import { REGLES, BASES, FILTRES } from "./regles.js";
 import { REGLES_J, BASES_J, FILTRES_J } from "./labo.js";
 export { Veilleur } from "./veille.js";
 export { Flux } from "./flux.js";
-import { statsFlux } from "./flux.js";
+import { statsFlux, statsEclair } from "./flux.js";
 import { classementCombos, CONDITIONS, NB_REGLES } from "./combos.js";
 import { tourPapierJour, resumePJ } from "./pj.js";
 import { classeurXlsx } from "./xlsx.js";
@@ -168,6 +168,7 @@ export default {
       if (p === "/api/papier") return json(await resume(env.DB, { mise: +(u.searchParams.get("mise") || 1000), depuis: u.searchParams.get("depuis") || "" }));
       if (p === "/api/papier/trades") return json(await tradesPapier(env.DB, { regle: u.searchParams.get("regle") || "", date: u.searchParams.get("date") || "" }, +(u.searchParams.get("mise") || 1000)));
       if (p === "/api/news") { const st = await statsNews(env.DB); const ve = await (await veilleur(env).fetch("https://v/etat")).json(); return json({ ...st, origine: await statsOrigine(env.DB), veilleur: ve, items: ITEMS }); }
+      if (p === "/api/eclair") return json(await statsEclair(env.DB));
       if (p === "/api/flux") return json({ ...(await statsFlux(env.DB)), etat: await (await env.FLUX.get(env.FLUX.idFromName("alpaca")).fetch("https://f/etat")).json() });
       if (p === "/api/origine/tour") return json(await tourOrigine(env));
       if (p === "/api/sonde2") {

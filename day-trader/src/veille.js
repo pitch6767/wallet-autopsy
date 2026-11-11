@@ -75,14 +75,21 @@ export async function prixTokens() {
 
 const PRN = "https://www.prnewswire.com/rss/news-releases-list.rss";
 const BOURSE = /\((?:NYSE American|NYSE|NASDAQ|Nasdaq|AMEX|Cboe)\s*:\s*([A-Z]{1,5}(?:\.[A-Z])?)\)/g;
-export function lirePrn(xml) {
+const CATEG = /<category[^>]*>\s*(?:NYSE American|NYSE|NASDAQ|Nasdaq|AMEX|NYSEAMERICAN|NYSEMKT|Cboe)\s*:\s*([A-Z]{1,5}(?:\.[A-Z])?)\s*<\/category>/g;
+// Agences de communiqués lues directement (Pitch 11.11 : les grosses montées NNOX, SMX… sortaient là et on ne les voyait pas)
+export const AGENCES = [
+  { nom: "globenewswire", url: "https://www.globenewswire.com/RssFeed/orgclass/1/feedTitle/GlobeNewswire%20-%20News%20about%20Public%20Companies" },
+  { nom: "businesswire", url: "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeEFpRWQ==" },
+  { nom: "accessnewswire", url: "https://www.accessnewswire.com/newsroom/rss" },
+];
+export function lirePrn(xml, prefixe = "prn") {
   const out = [];
   for (const it of xml.split("<item>").slice(1)) {
     const g = (b) => dec(((new RegExp(`<${b}[^>]*>([\\s\\S]*?)</${b}>`)).exec(it) || [])[1] || "").replace(/<!\[CDATA\[|\]\]>/g, "").trim();
     const titre = g("title"), lien = g("link"), desc = g("description"), quand = Date.parse(g("pubDate"));
-    const syms = [...new Set([...(titre + " " + desc).matchAll(BOURSE)].map((m) => m[1].replace(".", "-")))];
+    const syms = [...new Set([...(titre + " " + desc).matchAll(BOURSE), ...it.matchAll(CATEG)].map((m) => m[1].replace(".", "-")))];
     if (!lien || !syms.length) continue;
-    out.push({ id: "prn:" + lien.replace(/^https?:\/\/[^/]+/, "").slice(0, 180), titre, lien, quand, syms });
+    out.push({ id: prefixe + ":" + lien.replace(/^https?:\/\/[^/]+/, "").slice(0, 180), titre, lien, quand, syms });
   }
   return out;
 }
@@ -92,7 +99,7 @@ export class Veilleur {
   async fetch(req) {
     const u = new URL(req.url);
     if (u.pathname === "/demarrer") { const a = await this.s.getAlarm(); if (!a) await this.s.setAlarm(Date.now() + 1000); return Response.json({ alarme: a || "posée" }); }
-    if (u.pathname === "/etat") return Response.json({ dernierTour: await this.s.get("dernierTour"), erreur: await this.s.get("erreur"), erreurPrn: await this.s.get("erreurPrn"), alarme: await this.s.getAlarm() });
+    if (u.pathname === "/etat") return Response.json({ dernierTour: await this.s.get("dernierTour"), erreur: await this.s.get("erreur"), erreurPrn: await this.s.get("erreurPrn"), agences: Object.fromEntries(await Promise.all(AGENCES.map(async (a) => [a.nom, await this.s.get("ag:" + a.nom)]))), alarme: await this.s.getAlarm() });
     return new Response("?", { status: 404 });
   }
   async alarm() {
@@ -100,6 +107,10 @@ export class Veilleur {
     catch (e) { await this.s.put("erreur", { quand: new Date().toISOString(), texte: String(e.message || e) }); }
     try { await this.tourPrn(); await this.s.delete("erreurPrn"); }
     catch (e) { await this.s.put("erreurPrn", { quand: new Date().toISOString(), texte: String(e.message || e) }); }
+    for (const a of AGENCES) {
+      try { const n = await this.tourAgence(a); await this.s.put("ag:" + a.nom, { quand: new Date().toISOString(), lus: n }); }
+      catch (e) { await this.s.put("ag:" + a.nom, { quand: new Date().toISOString(), erreur: String(e.message || e) }); }
+    }
     await this.s.setAlarm(Date.now() + 5000);
   }
   async ua() { const l = await this.env.DB.prepare("SELECT valeur FROM config WHERE cle = 'contact_sec'").first(); return l ? l.valeur : ""; }
@@ -139,8 +150,21 @@ export class Veilleur {
     const premierTour = !(await this.s.get("prnPret")); if (premierTour) { await this.s.put("prnPret", 1); return; } // pas d'ancien stock au démarrage
     await this.enregistrer(nouveaux.flatMap((e) => e.syms.slice(0, 2).map((sym) => ({ id: e.id + "|" + sym, sym, cik: null, nom: "", quand: e.quand || Date.now(), items: "", lien: e.lien, source: "prnewswire", titre: e.titre.slice(0, 300) }))));
   }
+  async tourAgence(a) {
+    const r = await fetch(a.url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; day-trader-app)" } });
+    if (r.status !== 200) throw new Error(`${a.nom} : HTTP ${r.status}`);
+    const ent = lirePrn(await r.text(), a.nom);
+    const cle = "vus:" + a.nom; const vus = new Set((await this.s.get(cle)) || []);
+    const nouveaux = ent.filter((e) => !vus.has(e.id)); nouveaux.forEach((e) => vus.add(e.id));
+    await this.s.put(cle, [...vus].slice(-800));
+    if (!(await this.s.get("pret:" + a.nom))) { await this.s.put("pret:" + a.nom, 1); return ent.length; }
+    await this.enregistrer(nouveaux.flatMap((e) => e.syms.slice(0, 2).map((sym) => ({ id: e.id + "|" + sym, sym, cik: null, nom: "", quand: e.quand || Date.now(), items: "", lien: e.lien, source: a.nom, titre: e.titre.slice(0, 300) }))));
+    return ent.length;
+  }
   async enregistrer(liste) {
     if (!liste.length) return;
+    // réaction éclair d'abord (prix en direct à 0 et 5 s), avant les lectures lentes ci-dessous
+    try { const f = this.env.FLUX.get(this.env.FLUX.idFromName("alpaca")); this.state.waitUntil(f.fetch("https://f/reagir", { method: "POST", body: JSON.stringify(liste.map((e) => ({ id: e.id, sym: e.sym, source: e.source, titre: e.titre, cree: e.quand }))) })); } catch (x) {}
     const vu = Date.now(); const tok = await prixTokens(); const st = [];
     for (const e of liste) {
       let prix0 = null, enSeance = 0, debut = e.quand;
