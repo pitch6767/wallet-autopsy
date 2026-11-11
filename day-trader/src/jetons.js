@@ -131,12 +131,12 @@ export async function verifierJetons(env) {
   const cles = Object.keys(prix).filter((k) => !k.startsWith("erreur") && cotees.has(k.split(":")[1]));
   const syms = [...new Set(cles.map((k) => k.split(":")[1]))];
   const { data } = await sparkTout(syms, "1d", "5m");
-  const garde = [], ecart = [];
+  const garde = [], ecart = {};
   for (const k of cles) {
     const c = data[k.split(":")[1]]; const cl = c && c.c ? [...c.c].reverse().find((x) => x != null) : null;
-    if (cl && Math.abs(prix[k] / cl - 1) < 0.05) garde.push(k); else ecart.push(k);
+    if (cl && Math.abs(prix[k] / cl - 1) < 0.05) garde.push(k); else ecart[k] = cl ? `jeton ${prix[k]} / bourse ${cl}` : "pas de prix en bourse";
   }
   await (await stub.fetch("https://j/actions", { method: "POST", body: JSON.stringify(garde) })).json();
   const exclus = Object.keys(prix).filter((k) => !k.startsWith("erreur") && !garde.includes(k));
-  return { actions: garde.length, exclus: exclus.length, exemplesExclus: exclus.slice(0, 40) };
+  return { actions: garde.length, exclus: exclus.length, garde, ecartPrix: ecart, nonCotes: exclus.filter((k) => !ecart[k]) };
 }
