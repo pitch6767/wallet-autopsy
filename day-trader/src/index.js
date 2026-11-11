@@ -201,7 +201,7 @@ export default {
     await base(env);
     const journal = async (cle, f) => { try { const r = await f(); await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("dernier-" + cle, JSON.stringify({ quand: new Date().toISOString(), r })).run(); } catch (e) { await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("erreur-" + cle, JSON.stringify({ quand: new Date().toISOString(), e: String(e.message || e) })).run(); } };
     // 1. veilleur des nouvelles toujours armé
-    await journal("veilleur", async () => (await veilleur(env).fetch("https://v/demarrer")).json());
+    await journal("veilleur", async () => { await veilleur(env).fetch("https://v/demarrer"); return (await veilleur(env).fetch("https://v/etat")).json(); });
     await journal("flux", async () => (await env.FLUX.get(env.FLUX.idFromName("alpaca")).fetch("https://f/demarrer")).json());
     // 2. alertes de prix
     await journal("alertes", async () => {
