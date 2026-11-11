@@ -5,7 +5,7 @@ import { scanJour, scanOrb } from "./scanner.js";
 import { parcours, REGLAGES_DEFAUT } from "./trade.js";
 import { nouvelles, analyste, congres, verifierAlertes } from "./infos.js";
 import { local, MARCHES, seance, hhmm } from "./temps.js";
-import { schema, demarrer, lotSuivant, classement, lireEtat } from "./test.js";
+import { schema, demarrer, lotSuivant, classement, lireEtat, ecrireEtat } from "./test.js";
 import { tourPapier, resume, tradesPapier } from "./papier.js";
 import { suiviNews, statsNews, photosJetons, ITEMS, SEUILS } from "./veille.js";
 import { REGLES, BASES, FILTRES } from "./regles.js";
@@ -13,7 +13,7 @@ import { REGLES_J, BASES_J, FILTRES_J } from "./labo.js";
 export { Veilleur } from "./veille.js";
 export { Flux } from "./flux.js";
 export { Jetons } from "./jetons.js";
-import { statsJetons } from "./jetons.js";
+import { statsJetons, verifierJetons } from "./jetons.js";
 import { statsFlux, statsEclair } from "./flux.js";
 import { classementCombos, CONDITIONS, NB_REGLES } from "./combos.js";
 import { tourPapierJour, resumePJ } from "./pj.js";
@@ -206,6 +206,7 @@ export default {
     // 1. veilleur des nouvelles toujours armé
     await journal("veilleur", async () => { await veilleur(env).fetch("https://v/demarrer"); return (await veilleur(env).fetch("https://v/etat")).json(); });
     await journal("jetons", async () => { const r = await (await env.JETONS.get(env.JETONS.idFromName("jetons")).fetch("https://j/demarrer")).json(); return { hl: r.hl, kf: r.kf, jetons: r.jetons, ouverts: r.ouverts, erreurs: Object.fromEntries(Object.entries(r.derniers || {}).filter(([k]) => k.startsWith("erreur"))), exemple: Object.entries(r.derniers || {}).slice(0, 5) }; });
+    { const mn = new Date(ev.scheduledTime).getUTCMinutes(); if (mn % 30 === 2 || !(await lireEtat(env.DB, "jetons_actions"))) await journal("jetons_actions", async () => { const r = await verifierJetons(env); await ecrireEtat(env.DB, "jetons_actions", { le: new Date().toISOString(), ...r }); return r; }); }
     await journal("flux", async () => (await env.FLUX.get(env.FLUX.idFromName("alpaca")).fetch("https://f/demarrer")).json());
     // 2. alertes de prix
     await journal("alertes", async () => {

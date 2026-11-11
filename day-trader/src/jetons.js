@@ -3,6 +3,7 @@
 // en 5, 15 ou 30 s, achat papier (1 000 $) ; les 9 façons de vendre sont testées sur l'heure qui suit.
 // On rattache ensuite la news éventuelle (SEC, agences, flux) vue sur la même action.
 import { calculerSorties } from "./flux.js";
+import { univers, sparkTout } from "./donnees.js";
 
 const G = 0.001; // 0,1 % payé à l'entrée et à la sortie (écart + frais estimés sur ces marchés)
 export const FENETRES = [5, 15, 30];
@@ -14,16 +15,31 @@ const KF_WS = "https://futures.kraken.com/ws/v1";
 export class Jetons {
   constructor(state, env) {
     this.state = state; this.env = env; this.s = state.storage;
-    this.ws = {}; this.hist = new Map(); this.positions = new Map(); this.derniers = {};
+    this.ws = {}; this.hist = new Map(); this.positions = new Map(); this.derniers = {}; this.actions = null;
+    // reprise après redémarrage : positions ouvertes et liste des vraies actions gardées en mémoire durable
+    state.blockConcurrencyWhile(async () => {
+      const l = (await this.s.get("actions")) || null; this.actions = l ? new Set(l) : null;
+      for (const [k, v] of await this.s.list({ prefix: "pos:" })) this.positions.set(k.slice(4), v);
+    });
   }
   async fetch(req) {
     const u = new URL(req.url);
     if (u.pathname === "/demarrer") { await this.connecter(); if (!(await this.s.getAlarm())) await this.s.setAlarm(Date.now() + 30e3); return Response.json(this.etat()); }
     if (u.pathname === "/etat") return Response.json(this.etat());
+    if (u.pathname === "/actions") { const l = await req.json(); this.actions = new Set(l); await this.s.put("actions", l); return Response.json({ ok: l.length }); }
     return new Response("?", { status: 404 });
   }
-  etat() { return { hl: !!this.ws.hl, kf: !!this.ws.kf, jetons: this.hist.size, ouverts: this.positions.size, derniers: this.derniers }; }
-  async alarm() { try { await this.connecter(); } catch (e) {} await this.s.setAlarm(Date.now() + 30e3); }
+  etat() { return { hl: !!this.ws.hl, kf: !!this.ws.kf, jetons: this.hist.size, actions: this.actions ? this.actions.size : null, ouverts: this.positions.size, derniers: this.derniers }; }
+  async alarm() {
+    try { await this.connecter(); } catch (e) {}
+    // sauvegarde des positions (avec leur parcours de prix) et fermeture de celles qui ont 1 heure
+    const t = Date.now();
+    for (const [id, pos] of [...this.positions]) {
+      if (t - pos.t >= 60 * 60e3) { try { await this.fermer(id); } catch (e) {} }
+      else await this.s.put("pos:" + id, pos);
+    }
+    await this.s.setAlarm(Date.now() + 30e3);
+  }
   async connecter() {
     await this.env.DB.prepare(SCHEMA_JETONS).run();
     if (!this.ws.hl) await this.ouvrir("hl", HL_WS, (ws) => ws.send(JSON.stringify({ method: "subscribe", subscription: { type: "allMids", dex: "xyz" } })), (j) => {
@@ -56,6 +72,7 @@ export class Jetons {
     if (h.length && h[h.length - 1][1] === p) { h[h.length - 1][0] = t; } else h.push([t, p]);
     while (h.length && h[0][0] < t - 60e3) h.shift();
     for (const pos of this.positions.values()) if (pos.k === k) { const d = pos.tr; if (!d.length || d[d.length - 1][1] !== p) d.push([t, p]); }
+    if (!this.actions || !this.actions.has(k)) return; // Pitch 11.11 : seulement les vraies actions cotées tokenisées
     for (const w of FENETRES) {
       let mini = Infinity; for (const [ms, q] of h) if (ms >= t - w * 1000 && q < mini) mini = q;
       if (!isFinite(mini)) continue;
@@ -65,7 +82,6 @@ export class Jetons {
         const pos = { id: cle, k, place, sym, w, s, t, base: mini, entree: p * (1 + G), tr: [] }; const id = `${cle}|${t}`;
         this.positions.set(id, pos);
         this.state.waitUntil(this.ouvrirTrade(id, pos));
-        setTimeout(() => this.state.waitUntil(this.fermer(id)), 60 * 60e3);
       }
     }
   }
@@ -80,7 +96,7 @@ export class Jetons {
     await db.prepare("INSERT OR IGNORE INTO jeton_trade (cle, sym, place, fenetre, seuil, t, base, entree, news, statut) VALUES (?,?,?,?,?,?,?,?,?,?)").bind(id, pos.sym, pos.place, pos.w, pos.s, pos.t, pos.base, pos.entree, news, "ouvert").run();
   }
   async fermer(id) {
-    const pos = this.positions.get(id); if (!pos) return; this.positions.delete(id);
+    const pos = this.positions.get(id); if (!pos) return; this.positions.delete(id); await this.s.delete("pos:" + id);
     const so = calculerSorties(pos.tr.map(([ms, p]) => [ms, p * (1 - G) / (1 - 0.0005)]), pos.entree, pos.t, pos.base);
     await this.env.DB.prepare("UPDATE jeton_trade SET sorties = ?, statut = 'ferme' WHERE cle = ?").bind(JSON.stringify(so), id).run();
   }
@@ -101,4 +117,23 @@ export async function statsJetons(db) {
   return { trades: l.length, ouverts: l.filter((x) => x.statut === "ouvert").length,
     resultats: Object.values(res).map((y) => ({ ...y, gain: Math.round(y.gain) })).sort((a, b) => b.gain - a.gain),
     derniers: l.slice(0, 40).map((x) => ({ sym: x.sym, place: x.place, fenetre: x.fenetre, seuil: x.seuil, t: x.t, news: x.news, statut: x.statut, meilleur: x.sorties ? Math.max(...Object.values(JSON.parse(x.sorties)).map((r) => r.pct)) : null })) };
+}
+
+// Liste des jetons qui sont de VRAIES actions cotées aux États-Unis : symbole présent dans la liste officielle
+// de Nasdaq Trader (actions, hors ETF) ET prix du jeton à moins de 5 % du prix de l'action en bourse.
+export async function verifierJetons(env) {
+  const stub = env.JETONS.get(env.JETONS.idFromName("jetons"));
+  const e = await (await stub.fetch("https://j/etat")).json(); const prix = e.derniers || {};
+  const cotees = new Set((await univers()).map((x) => x[0]));
+  const cles = Object.keys(prix).filter((k) => !k.startsWith("erreur") && cotees.has(k.split(":")[1]));
+  const syms = [...new Set(cles.map((k) => k.split(":")[1]))];
+  const { data } = await sparkTout(syms, "1d", "5m");
+  const garde = [], ecart = [];
+  for (const k of cles) {
+    const c = data[k.split(":")[1]]; const cl = c && c.c ? [...c.c].reverse().find((x) => x != null) : null;
+    if (cl && Math.abs(prix[k] / cl - 1) < 0.05) garde.push(k); else ecart.push(k);
+  }
+  await (await stub.fetch("https://j/actions", { method: "POST", body: JSON.stringify(garde) })).json();
+  const exclus = Object.keys(prix).filter((k) => !k.startsWith("erreur") && !garde.includes(k));
+  return { actions: garde.length, exclus: exclus.length, exemplesExclus: exclus.slice(0, 40) };
 }
