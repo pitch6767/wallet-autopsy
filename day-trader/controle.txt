@@ -1,19 +1,19 @@
 env.ASSETS                     Assets              
 
-Uploaded day-trader (4.26 sec)
-Deployed day-trader triggers (0.80 sec)
+Uploaded day-trader (4.92 sec)
+Deployed day-trader triggers (1.08 sec)
   https://day-trader.pitch67.workers.dev
   schedule: * * * * *
   schedule: 17 13 * * 1-5
   schedule: 25 21 * * 1-5
-Current Version ID: 7e370ba3-48d5-41a0-ac5c-3b43a130c1ef
+Current Version ID: 43a58e42-b69c-499d-86b6-91780db2988a
 
 Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
 code sortie: 0
 === page
 200
 === sonde
-{"ok":true,"horloge":{"newYork":"2026-11-11 05:14","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-11 10:14"}}
+{"ok":true,"horloge":{"newYork":"2026-11-11 10:53","bourse":"ouverte","seance":"09:30–16:00","utc":"2026-11-11 15:53"}}
 === controles
 --- ok
-{"ok":true,"horloge":{"newYork":"2026-11-11 05:14","bourse":"pas encore ouverte","seance":"09:30–16:00","utc":"2026-11-11 10:14"}}
+{"ok":true,"horloge":{"newYork":"2026-11-11 10:53","bourse":"ouverte","seance":"09:30–16:00","utc":"2026-11-11 15:53"}}
