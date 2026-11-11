@@ -12,6 +12,7 @@ export const SEUILS_ECLAIR = [0.5, 1]; // Pitch 10.11 : pas plus de 1 %
 export const SCHEMA_ECLAIR = [
   "CREATE TABLE IF NOT EXISTS eclair (cle TEXT PRIMARY KEY, sym TEXT, source TEXT, titre TEXT, recu INTEGER, cree INTEGER, p0 REAL, age0 INTEGER, p5 REAL, max5m REAL, min5m REAL, fin INTEGER DEFAULT 0)",
   "CREATE TABLE IF NOT EXISTS eclair_trade (cle TEXT, seuil REAL, sym TEXT, entree REAL, t_entree INTEGER, sorties TEXT, statut TEXT, PRIMARY KEY (cle, seuil))",
+  "ALTER TABLE eclair ADD COLUMN ppub REAL", "ALTER TABLE eclair ADD COLUMN t5 INTEGER",
   "CREATE TABLE IF NOT EXISTS eclair_vue (sym TEXT, source TEXT, id TEXT, recu INTEGER, cree INTEGER, titre TEXT, PRIMARY KEY (source, id))",
 ];
 // Sorties testées en parallèle sur le même achat (Pitch 11.11 : « vendre au bon moment, pas bêtement »)
@@ -72,7 +73,7 @@ export class Flux {
   async reagir(e, c) {
     const sym = String(e.sym || "").replace("-", "."); if (!/^[A-Z.]{1,6}$/.test(sym) || !c.key) return;
     const recu = Date.now(); const db = this.env.DB;
-    for (const q of SCHEMA_ECLAIR) await db.prepare(q).run();
+    for (const q of SCHEMA_ECLAIR) { try { await db.prepare(q).run(); } catch (x) {} }
     await db.prepare("INSERT OR IGNORE INTO eclair_vue VALUES (?,?,?,?,?,?)").bind(sym, e.source || "", String(e.id), recu, e.cree || null, (e.titre || "").slice(0, 300)).run();
     const a = this.actifs.get(sym); if (a && recu - a < 10 * 60e3) return; // même action déjà suivie depuis moins de 10 min : on ne rachète pas
     this.actifs.set(sym, recu);
@@ -87,7 +88,13 @@ export class Flux {
     let p5 = recents.length ? recents[recents.length - 1][1] : null;
     if (p5 == null) { const q = (await this.prix([sym], c))[sym]; if (q && Date.parse(q.t) > recu) p5 = q.p; }
     const t5 = Date.now();
-    await db.prepare("UPDATE eclair SET p5 = ? WHERE cle = ?").bind(p5, cle).run();
+    // Pitch 11.11 : de combien le titre avait déjà bougé entre la publication de la news et notre achat ?
+    let ppub = null;
+    if (e.cree && e.cree < recu) try {
+      const h = await fetch(`${DATA}/v2/stocks/${encodeURIComponent(sym)}/trades?feed=iex&limit=1000&start=${new Date(e.cree - 30 * 60e3).toISOString()}&end=${new Date(e.cree).toISOString()}&sort=desc`, { headers: { "APCA-API-KEY-ID": c.key, "APCA-API-SECRET-KEY": c.secret } });
+      if (h.ok) { const j = await h.json(); const t = (j.trades || [])[0]; if (t) ppub = t.p; }
+    } catch (x) {}
+    await db.prepare("UPDATE eclair SET p5 = ?, ppub = ?, t5 = ? WHERE cle = ?").bind(p5, ppub, t5, cle).run();
     const achats = SEUILS_ECLAIR.filter((s) => p5 != null && p5 >= p0 * (1 + s / 100)).map((s) => ({ seuil: s, entree: p5 * (1 + G) }));
     for (const x of achats) await db.prepare("INSERT OR IGNORE INTO eclair_trade VALUES (?,?,?,?,?,?,?)").bind(cle, x.seuil, sym, x.entree, t5, null, "ouvert").run();
     await new Promise((r) => setTimeout(r, 60 * 60e3 - 5000));
@@ -170,7 +177,12 @@ export async function statsEclair(db) {
   const premier = {}; for (const g of groupes) { const p = g.v[0].source; const x = (premier[p] = premier[p] || { source: p, premier: 0, total: 0 }); x.premier++; }
   for (const v of vues) (premier[v.source] = premier[v.source] || { source: v.source, premier: 0, total: 0 }).total++;
   const pc = (a, b) => (a && b ? +(100 * (b / a - 1)).toFixed(2) : null);
-  return { evenements: ev.length, achats: tr.length, resultats: Object.values(res).map((x) => ({ ...x, gain: Math.round(x.gain) })).sort((a, b) => b.gain - a.gain),
+  // avance du titre avant qu'on puisse acheter : prix à la publication -> prix à notre achat possible (5 s après réception)
+  const av = ev.filter((x) => x.ppub && x.p5 && x.cree);
+  const med = (a) => { if (!a.length) return null; const t = [...a].sort((p, q) => p - q); return t[Math.floor(t.length / 2)]; };
+  const avance = { news: av.length, retardMedianS: med(av.map((x) => (x.t5 - x.cree) / 1000)), avanceMedianePct: med(av.map((x) => 100 * (x.p5 / x.ppub - 1))),
+    parSource: Object.values(av.reduce((m, x) => { const k = x.source; const y = (m[k] = m[k] || { source: k, news: 0, r: [], a: [] }); y.news++; y.r.push((x.t5 - x.cree) / 1000); y.a.push(100 * (x.p5 / x.ppub - 1)); return m; }, {})).map((y) => ({ source: y.source, news: y.news, retardMedianS: med(y.r), avanceMedianePct: med(y.a) })) };
+  return { avance, evenements: ev.length, achats: tr.length, resultats: Object.values(res).map((x) => ({ ...x, gain: Math.round(x.gain) })).sort((a, b) => b.gain - a.gain),
     premiers: Object.values(premier).sort((a, b) => b.premier - a.premier),
-    derniers: ev.slice(0, 40).map((x) => ({ sym: x.sym, source: x.source, titre: x.titre, recu: x.recu, age0: x.age0, p0: x.p0, m5s: pc(x.p0, x.p5), max5m: pc(x.p0, x.max5m), min5m: pc(x.p0, x.min5m), achete: tr.some((t) => t.cle === x.cle) })) };
+    derniers: ev.slice(0, 40).map((x) => ({ avantNous: pc(x.ppub, x.p5), retardS: x.cree && x.t5 ? Math.round((x.t5 - x.cree) / 1000) : null, sym: x.sym, source: x.source, titre: x.titre, recu: x.recu, age0: x.age0, p0: x.p0, m5s: pc(x.p0, x.p5), max5m: pc(x.p0, x.max5m), min5m: pc(x.p0, x.min5m), achete: tr.some((t) => t.cle === x.cle) })) };
 }
