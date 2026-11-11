@@ -125,7 +125,20 @@ export async function statsJetons(db) {
   // une ligne par saut (avec la meilleure idée du moment)
   const sauts = l.filter((x) => x.seuil === meilleure.seuil && x.fenetre === meilleure.fenetre).slice(0, 60).map((x) => { const r = x.sorties ? JSON.parse(x.sorties)[meilleure.sortie] : null;
     return { sym: x.sym, t: x.t, news: x.news, entree: x.entree, statut: x.statut, pct: r ? r.pct : null, venteT: r ? r.quand : null, raison: r ? r.raison : null }; });
+  // Pitch 11.11 : retard de notre achat par rapport à la publication de la news (news cherchée 30 min avant / après le saut)
+  if (sauts.length) {
+    const t0 = Math.min(...sauts.map((x) => x.t)) - 30 * 60e3, t1 = Math.max(...sauts.map((x) => x.t)) + 30 * 60e3;
+    let N = [];
+    try { N = N.concat((await db.prepare("SELECT sym, source, titre, COALESCE(quand, vu) pub, vu FROM news WHERE vu BETWEEN ? AND ?").bind(t0, t1).all()).results); } catch (e) {}
+    try { N = N.concat((await db.prepare("SELECT sym, source, titre, COALESCE(cree, recu) pub, recu vu FROM eclair_vue WHERE recu BETWEEN ? AND ?").bind(t0, t1).all()).results); } catch (e) {}
+    for (const x of sauts) {
+      const c = N.filter((n) => n.sym === x.sym && Math.abs(n.pub - x.t) <= 30 * 60e3).sort((a, b) => Math.abs(a.pub - x.t) - Math.abs(b.pub - x.t))[0];
+      if (c) { x.news = `${c.source} · ${c.titre || ""}`.slice(0, 200); x.newsPub = c.pub; x.newsVu = c.vu; x.retardS = Math.round((x.t - c.pub) / 1000); }
+    }
+  }
+  const avecNews = sauts.filter((x) => x.retardS != null).map((x) => x.retardS).sort((a, b) => a - b);
   return { trades: l.length, ouverts: l.filter((x) => x.statut === "ouvert").length, idees, meilleure, sauts,
+    retardMedianS: avecNews.length ? avecNews[Math.floor(avecNews.length / 2)] : null, sautsAvecNews: avecNews.length,
     resultats: Object.values(res).map((y) => ({ ...y, gain: Math.round(y.gain), gains: Math.round(y.gains), pertes: Math.round(y.pertes) })).sort((a, b) => b.gain - a.gain),
     derniers: l.slice(0, 40).map((x) => ({ sym: x.sym, place: x.place, fenetre: x.fenetre, seuil: x.seuil, t: x.t, news: x.news, statut: x.statut, meilleur: x.sorties ? Math.max(...Object.values(JSON.parse(x.sorties)).map((r) => r.pct)) : null })) };
 }
