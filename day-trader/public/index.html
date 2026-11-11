@@ -120,11 +120,6 @@ svg{width:100%;height:auto;display:block}
     <div id="sjListe"></div>
   </div>
   <div class="carte">
-    <h2>Suivi des figures : achat, rendement, vente (paper)</h2>
-    <div class="doux">Chaque figure du scan est achetée à l'ouverture du jour suivant (1 000 $). Vente à la clôture du dernier jour prévu, ou avant si le prix touche le stop (2 × la variation moyenne d'un jour sous le prix d'achat). Durée = celle qui a le mieux marché pour cette figure dans nos tests.</div>
-    <div id="suiviListe" style="margin-top:8px"></div>
-  </div>
-  <div class="carte">
     <h2>Cassures du range d'ouverture (ORB)</h2>
     <div class="doux">Première barre de 5 min qui clôture au-dessus du haut des 15 premières minutes. Actions : séance de New York (9 h 30). BTC : journée UTC (00 h 00).</div>
     <div id="orbInfo" class="doux" style="margin-top:6px"></div>
@@ -389,14 +384,17 @@ async function etat() {
 }
 
 // ---------------------------------------------------------------- scanner
-let SJ = null;
+let SJ = null, SUIVI = [];
 function afficherSJ() {
   if (!SJ || SJ.vide) { $("#sjInfo").textContent = "Pas encore de scan : touche « Relancer maintenant »."; $("#sjListe").innerHTML = ""; return; }
   const c = SJ.comptes || {};
   $("#sjInfo").textContent = `Scan du ${new Date(SJ.le).toLocaleString("fr-CH")} · ${c.scannes ?? "?"} graphiques liquides scannés sur ${c.demandes ?? "?"} · ${SJ.hits.length} trouvés`;
   const f = $("#sjFiltre").value;
   const h = SJ.hits.filter((x) => !f || x.figures.includes(f)).slice(0, 150);
-  $("#sjListe").innerHTML = h.length ? `<table><tr><th>Symbole</th><th>Figures</th><th class="num">Prix</th><th class="num">RSI</th></tr>${h.map((x) => `<tr><td><span class="lien" data-s="${esc(x.symbol)}">${esc(x.symbol)}</span></td><td>${x.figures.map((t) => `<span class="pastille">${FIG[t] || t}</span>`).join("")}</td><td class="num">${n2(x.prix)}</td><td class="num">${x.rsi}</td></tr>`).join("")}</table>${SJ.hits.length > 150 ? '<div class="doux">150 premiers (les plus échangés en dollars)</div>' : ""}` : '<div class="doux">Rien pour ce filtre.</div>';
+  const fr = (d) => d ? d.slice(8, 10) + "." + d.slice(5, 7) : "—";
+  const S = Object.fromEntries((SUIVI || []).map((x) => [x.sym + "|" + x.date_fig, x]));
+  $("#sjListe").innerHTML = h.length ? `<div style="overflow-x:auto"><table><tr><th>Action</th><th>Figure le</th><th>Acheté</th><th class="num">Rendement</th><th>Vente</th></tr>${h.map((x) => { const v = S[x.symbol + "|" + x.date] || {}; return `<tr><td><span class="lien" data-s="${esc(x.symbol)}"><b>${esc(x.symbol)}</b></span><br>${x.figures.map((t) => `<span class="pastille">${FIG[t] || t}</span>`).join("")}</td><td>${fr(x.date)}<br><span class="doux">${n2(x.prix)}</span></td><td>${v.achat ? fr(v.achat_d) + "<br>" + n2(v.achat) : '<span class="doux">' + (v.achat_d ? fr(v.achat_d) + " à l'ouverture" : "—") + "</span>"}</td><td class="num"><b class="${cls(v.rendement)}">${v.rendement != null ? (v.rendement >= 0 ? "+" : "") + (100 * v.rendement).toFixed(2) + " %" : "—"}</b></td><td>${v.statut === "vendu" ? "vendu " + fr(v.vente_d) + '<br><span class="doux">' + esc(v.raison) + "</span>" : v.vente_d ? fr(v.vente_d) + " clôture" + (v.stop ? '<br><span class="doux">stop ' + n2(v.stop) + "</span>" : "") : "—"}</td></tr>`; }).join("")}</table></div>
+    <div class="doux">Achat (paper) à l'ouverture du jour suivant la figure. Vente à la clôture du jour indiqué, ou avant si le prix touche le stop. Rendement mis à jour toutes les 5 min.</div>${SJ.hits.length > 150 ? '<div class="doux">150 premiers (les plus échangés en dollars)</div>' : ""}` : '<div class="doux">Rien pour ce filtre.</div>';
 }
 $("#sjFiltre").innerHTML += Object.entries(FIG).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
 $("#sjFiltre").onchange = afficherSJ;
@@ -566,17 +564,7 @@ $("#regGo").onclick = async () => {
   try { await api("/api/reglages", { method: "POST", body: o }); $("#regMsg").textContent = "Enregistré."; etat(); } catch (e) { $("#regMsg").textContent = e.message; }
 };
 
-async function chargerSuivi() {
-  const out = $("#suiviListe");
-  try {
-    const r = await api("/api/figures-suivi"); const fr = (d) => d ? d.split("-").reverse().join(".") : "—";
-    const L = r.lignes; const fini = L.filter((x) => x.statut === "vendu");
-    const tot = fini.reduce((a, x) => a + (x.rendement || 0) * 1000, 0);
-    out.innerHTML = L.length ? `<div class="kv"><span>Trades vendus</span><b>${fini.length} · gagnants ${fini.filter((x) => x.rendement > 0).length}</b><span>Gain des trades vendus</span><b class="${cls(tot)}">${usd(Math.round(tot))}</b></div>
-      <div style="overflow-x:auto"><table><tr><th>Action · figure</th><th>Figure le</th><th>Achat</th><th class="num">Rendement</th><th>Vente</th></tr>${L.map((x) => `<tr><td><b>${esc(x.sym)}</b><br><span class="doux">${esc(x.figures.join(", "))} · ${x.duree} j</span></td><td>${fr(x.date_fig)}</td><td>${x.achat ? fr(x.achat_d) + "<br>" + x.achat.toFixed(2) : '<span class="doux">' + fr(x.achat_d) + " à l'ouverture</span>"}</td><td class="num"><b class="${cls(x.rendement)}">${x.rendement != null ? (x.rendement >= 0 ? "+" : "") + (100 * x.rendement).toFixed(2) + " %" : "—"}</b></td><td>${x.statut === "vendu" ? "vendu le " + fr(x.vente_d) + "<br><span class='doux'>" + esc(x.raison) + "</span>" : x.stop ? "le " + fr(x.vente_d) + " à la clôture<br><span class='doux'>ou stop à " + x.stop.toFixed(2) + "</span>" : "le " + fr(x.vente_d)}</td></tr>`).join("")}</table></div>
-      <div class="avert">Simulation (paper). Rendement en cours = prix actuel (Yahoo, peut avoir 15 min de retard) comparé au prix d'achat.</div>` : '<div class="doux">Premier calcul dans quelques minutes.</div>';
-  } catch (e) { erreur(out, e); }
-}
+async function chargerSuivi() { try { SUIVI = (await api("/api/figures-suivi")).lignes; afficherSJ(); } catch (e) {} }
 
 (async () => {
   await etat();
