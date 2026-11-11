@@ -117,7 +117,15 @@ export async function statsJetons(db) {
       y.trades++; if (r.pct > 0) { y.gagnants++; y.gains += r.pct * 1000; } else y.pertes += r.pct * 1000; y.gain += r.pct * 1000;
     }
   }
-  return { trades: l.length, ouverts: l.filter((x) => x.statut === "ouvert").length,
+  // idées sans distinction news : achat (seuil, fenêtre) × vente
+  const id = {};
+  for (const y of Object.values(res)) { const k = `${y.seuil}|${y.fenetre}|${y.sortie}`; const z = (id[k] = id[k] || { seuil: y.seuil, fenetre: y.fenetre, sortie: y.sortie, trades: 0, gagnants: 0, gains: 0, pertes: 0, gain: 0 }); for (const c of ["trades", "gagnants", "gains", "pertes", "gain"]) z[c] += y[c]; }
+  const idees = Object.values(id).map((z) => ({ ...z, gains: Math.round(z.gains), pertes: Math.round(z.pertes), gain: Math.round(z.gain) })).sort((a, b) => b.gain - a.gain);
+  const meilleure = idees[0] || { seuil: 0.5, fenetre: 30, sortie: "suiveur 2 %" };
+  // une ligne par saut (avec la meilleure idée du moment)
+  const sauts = l.filter((x) => x.seuil === meilleure.seuil && x.fenetre === meilleure.fenetre).slice(0, 60).map((x) => { const r = x.sorties ? JSON.parse(x.sorties)[meilleure.sortie] : null;
+    return { sym: x.sym, t: x.t, news: x.news, entree: x.entree, statut: x.statut, pct: r ? r.pct : null, venteT: r ? r.quand : null, raison: r ? r.raison : null }; });
+  return { trades: l.length, ouverts: l.filter((x) => x.statut === "ouvert").length, idees, meilleure, sauts,
     resultats: Object.values(res).map((y) => ({ ...y, gain: Math.round(y.gain), gains: Math.round(y.gains), pertes: Math.round(y.pertes) })).sort((a, b) => b.gain - a.gain),
     derniers: l.slice(0, 40).map((x) => ({ sym: x.sym, place: x.place, fenetre: x.fenetre, seuil: x.seuil, t: x.t, news: x.news, statut: x.statut, meilleur: x.sorties ? Math.max(...Object.values(JSON.parse(x.sorties)).map((r) => r.pct)) : null })) };
 }
