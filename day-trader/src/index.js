@@ -11,6 +11,8 @@ import { suiviNews, statsNews, photosJetons, ITEMS, SEUILS } from "./veille.js";
 import { REGLES, BASES, FILTRES } from "./regles.js";
 import { REGLES_J, BASES_J, FILTRES_J } from "./labo.js";
 export { Veilleur } from "./veille.js";
+export { Flux } from "./flux.js";
+import { statsFlux } from "./flux.js";
 import { classementCombos, CONDITIONS, NB_REGLES } from "./combos.js";
 import { tourPapierJour, resumePJ } from "./pj.js";
 import { classeurXlsx } from "./xlsx.js";
@@ -166,6 +168,7 @@ export default {
       if (p === "/api/papier") return json(await resume(env.DB, { mise: +(u.searchParams.get("mise") || 1000), depuis: u.searchParams.get("depuis") || "" }));
       if (p === "/api/papier/trades") return json(await tradesPapier(env.DB, { regle: u.searchParams.get("regle") || "", date: u.searchParams.get("date") || "" }, +(u.searchParams.get("mise") || 1000)));
       if (p === "/api/news") { const st = await statsNews(env.DB); const ve = await (await veilleur(env).fetch("https://v/etat")).json(); return json({ ...st, origine: await statsOrigine(env.DB), veilleur: ve, items: ITEMS }); }
+      if (p === "/api/flux") return json({ ...(await statsFlux(env.DB)), etat: await (await env.FLUX.get(env.FLUX.idFromName("alpaca")).fetch("https://f/etat")).json() });
       if (p === "/api/origine/tour") return json(await tourOrigine(env));
       if (p === "/api/sonde2") {
         const essai = async (nom, url, opt = {}) => { const t = Date.now(); try { const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; day-trader-app)" }, ...opt }); const x = await r.text(); return { nom, code: r.status, ms: Date.now() - t, debut: x.slice(0, 700) }; } catch (e) { return { nom, err: String(e) }; } };
@@ -198,6 +201,7 @@ export default {
     const journal = async (cle, f) => { try { const r = await f(); await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("dernier-" + cle, JSON.stringify({ quand: new Date().toISOString(), r })).run(); } catch (e) { await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("erreur-" + cle, JSON.stringify({ quand: new Date().toISOString(), e: String(e.message || e) })).run(); } };
     // 1. veilleur des nouvelles toujours armé
     await journal("veilleur", async () => (await veilleur(env).fetch("https://v/demarrer")).json());
+    await journal("flux", async () => (await env.FLUX.get(env.FLUX.idFromName("alpaca")).fetch("https://f/demarrer")).json());
     // 2. alertes de prix
     await journal("alertes", async () => {
       const al = (await c.get("alertes")) || []; if (!al.length) return 0;

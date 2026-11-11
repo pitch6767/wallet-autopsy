@@ -5,8 +5,8 @@
   "workers_dev": true,
   "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
   "limits": { "cpu_ms": 300000 },
-  "durable_objects": { "bindings": [{ "name": "COFFRE", "class_name": "Coffre" }, { "name": "VEILLEUR", "class_name": "Veilleur" }] },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Coffre"] }, { "tag": "v2", "new_sqlite_classes": ["Veilleur"] }],
+  "durable_objects": { "bindings": [{ "name": "COFFRE", "class_name": "Coffre" }, { "name": "VEILLEUR", "class_name": "Veilleur" }, { "name": "FLUX", "class_name": "Flux" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Coffre"] }, { "tag": "v2", "new_sqlite_classes": ["Veilleur"] }, { "tag": "v3", "new_sqlite_classes": ["Flux"] }],
   "d1_databases": [{ "binding": "DB", "database_name": "day-trader", "database_id": "5c5a8e89-b869-4b7b-80b8-0ba6e5e76846" }],
   "triggers": { "crons": ["* * * * *", "17 13 * * 1-5", "25 21 * * 1-5"] }
 }

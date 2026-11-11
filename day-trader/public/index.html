@@ -321,7 +321,7 @@ $("#clRelance").onclick = async (ev) => { if (!confirm("Effacer les résultats d
 async function chargerDirect() {
   const out = $("#nwRes");
   try {
-    const r = await api("/api/news"); const v = r.veilleur || {};
+    const r = await api("/api/news"); try { r.flux = await api("/api/flux"); } catch (x) {} const v = r.veilleur || {};
     $("#nwEtat").innerHTML = `Veilleur : ${v.dernierTour ? `dernier tour ${new Date(v.dernierTour.quand).toLocaleTimeString("fr-CH")} (${v.dernierTour.lus} annonces lues)` : "démarre…"}${v.erreur ? ` · <span class="ko">SEC : ${esc(v.erreur.texte)}</span>` : ""}${v.erreurPrn ? ` · <span class="ko">PR Newswire : ${esc(v.erreurPrn.texte)}</span>` : ""}`;
     const pc2 = (x) => x == null ? "—" : `<span class="${cls(x)}">${x >= 0 ? "+" : ""}${x.toFixed(2)} %</span>`;
     const co = r.course || {};
@@ -330,6 +330,10 @@ async function chargerDirect() {
       <span>Même nouvelle vue par les deux</span><b>${co.paires || 0}</b><span>PR Newswire en premier</span><b>${co.prnPremier || 0}</b><span>SEC en premier</span><b>${co.secPremier || 0}</b><span>Avance médiane</span><b>${co.avanceMediane != null ? co.avanceMediane + " s" : "—"}</b></div>
       ${(co.exemples || []).length ? `<details><summary class="doux">Voir les paires</summary><table>${co.exemples.map((p) => `<tr><td>${esc(p.sym)}</td><td>${esc(p.premier)} +${p.avanceSec} s<br><span class="doux">${esc(p.titre || "")}</span></td></tr>`).join("")}</table></details>` : ""}
       <div class="doux">Temps mesuré à la seconde près au moment où notre veilleur voit l'annonce (lecture toutes les 5 s).</div></div>
+      ${(() => { const f = r.flux || {}; const e = f.etat || {}; const hms = (ms) => ms ? new Date(ms).toLocaleTimeString("fr-CH", { timeZone: "Europe/Zurich" }) : "—"; return `<div class="carte"><h2>Flux en direct (Benzinga via Alpaca)</h2>
+      <div class="kv"><span>Connexion</span><b class="${e.authentifie ? "ok" : "ko"}">${e.authentifie ? "connecté" : e.connecte ? "connexion…" : "coupé"}</b>${e.erreur ? `<span>Dernière erreur</span><b class="ko">${esc(e.erreur.texte)}</b>` : ""}<span>News reçues</span><b>${f.recues || 0}</b><span>Retard médian (sortie → reçue)</span><b>${f.retardMedianS != null ? f.retardMedianS + " s" : "—"}</b><span>Même news vue par SEC / PR Newswire</span><b>${(f.course || {}).paires || 0} · Benzinga premier ${(f.course || {}).benzingaPremier || 0} fois · avance médiane ${(f.course || {}).avanceMedianeS ?? "—"} s</b></div>
+      ${(f.dernieres || []).length ? `<div style="overflow-x:auto"><table><tr><th>Reçue</th><th>Action</th><th class="num">+5 s</th><th class="num">+30 s</th><th class="num">+1 min</th><th class="num">+5 min</th></tr>${f.dernieres.map((x) => `<tr><td>${hms(x.recu)}<br><span class="doux">${x.retardS != null ? x.retardS + " s" : ""}</span></td><td><b>${esc(x.sym)}</b><br><span class="doux">${esc(x.titre)}${x.prixAge != null && x.prixAge > 120 ? " · dernier prix ancien (marché fermé)" : ""}</span></td><td class="num">${pc2(x.m5)}</td><td class="num">${pc2(x.m30)}</td><td class="num">${pc2(x.m60)}</td><td class="num">${pc2(x.m300)}</td></tr>`).join("")}</table></div>` : ""}
+      <div class="doux">Prix = dernier échange sur la bourse IEX (gratuit, une partie du marché seulement). Hors séance, il y a peu ou pas d'échanges.</div></div>`; })()}
       ${(() => { const o = r.origine || {}; const hms = (ms) => ms ? new Date(ms).toLocaleTimeString("fr-CH", { timeZone: "Europe/Zurich" }) : "—"; return `<div class="carte"><h2>Qui a sorti la news en premier ?</h2>
       <div class="doux">Pour chaque news, l'app cherche la même nouvelle partout (Google News, Bing News, Yahoo Finance, Stocktwits) 3 min puis 30 min après, et garde la première publication.</div>
       <div class="kv" style="margin-top:6px"><span>News vérifiées</span><b>${o.cherchees || 0}</b><span>L'action bougeait déjà avant qu'on la voie</span><b class="${o.bougeaitAvant ? "ko" : ""}">${o.bougeaitAvant || 0}</b></div>
