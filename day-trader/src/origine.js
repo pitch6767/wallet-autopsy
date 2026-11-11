@@ -77,10 +77,10 @@ export async function tourOrigine(env, maintenant = Date.now()) {
     for (const [nom, f] of [["google", () => googleNews(q + " when:2d")], ["bing", () => bingNews(q)], ["yahoo", () => yahooNews(n.sym)], ["stocktwits", () => stocktwits(n.sym)]]) {
       try { trouves.push(...(await f())); } catch (e) { erreurs[nom] = String(e.message || e); }
     }
-    // même news = publiée entre 12 h avant et 2 h après notre lecture, et (si on a le titre) titre ressemblant
-    const garde = trouves.filter((x) => x.publie && x.publie >= n.vu - 12 * 3600e3 && x.publie <= n.vu + 2 * 3600e3)
+    // même news = publiée entre 3 h avant (les communiqués « avocats » se répètent chaque jour avec le même titre) et 2 h après notre lecture, et (si on a le titre) titre ressemblant
+    const garde = trouves.filter((x) => x.publie && x.publie >= n.vu - 3 * 3600e3 && x.publie <= n.vu + 2 * 3600e3)
       .map((x) => ({ ...x, score: aTitre ? ressemblance(n.titre, x.titre) : null }))
-      .filter((x) => (aTitre ? x.score >= 0.35 : x.source !== "Stocktwits" && x.publie >= n.vu - 3 * 3600e3));
+      .filter((x) => (aTitre ? x.score >= 0.5 : x.source !== "Stocktwits" && x.publie >= n.vu - 3 * 3600e3));
     for (const x of garde) st.push(db.prepare("INSERT OR IGNORE INTO origine VALUES (?,?,?,?,?,?,?)").bind(n.id, x.source, x.editeur, x.titre, x.publie, x.lien, x.score));
     // notre propre source compte aussi, avec son heure officielle de publication
     const cands = [...garde.map((x) => ({ qui: `${x.editeur || x.source} (via ${x.source})`, ms: x.publie })), { qui: n.source === "prnewswire" ? "PR Newswire" : "SEC 8-K", ms: n.quand || n.vu }];
