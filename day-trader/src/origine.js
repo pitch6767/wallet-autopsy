@@ -74,13 +74,19 @@ export async function tourOrigine(env, maintenant = Date.now()) {
     const aTitre = n.titre && n.titre !== "8-K";
     const q = aTitre ? `"${n.sym}" OR "${nomCourt(n.nom) || n.sym}"` : `"${nomCourt(n.nom) || n.sym}"`;
     const trouves = [];
-    for (const [nom, f] of [["google", () => googleNews(q + " when:2d")], ["bing", () => bingNews(q)], ["yahoo", () => yahooNews(n.sym)], ["stocktwits", () => stocktwits(n.sym)]]) {
+    // 8-K sans titre : impossible de reconnaître la même news ailleurs -> on ne compare qu'avec le flux direct Benzinga
+    if (aTitre) for (const [nom, f] of [["google", () => googleNews(q + " when:2d")], ["bing", () => bingNews(q)], ["yahoo", () => yahooNews(n.sym)], ["stocktwits", () => stocktwits(n.sym)]]) {
       try { trouves.push(...(await f())); } catch (e) { erreurs[nom] = String(e.message || e); }
     }
     // même news = publiée entre 3 h avant (les communiqués « avocats » se répètent chaque jour avec le même titre) et 2 h après notre lecture, et (si on a le titre) titre ressemblant
     const garde = trouves.filter((x) => x.publie && x.publie >= n.vu - 3 * 3600e3 && x.publie <= n.vu + 2 * 3600e3)
       .map((x) => ({ ...x, score: aTitre ? ressemblance(n.titre, x.titre) : null }))
-      .filter((x) => (aTitre ? x.score >= 0.5 : x.source !== "Stocktwits" && x.publie >= n.vu - 3 * 3600e3));
+      .filter((x) => x.score >= 0.5);
+    // flux direct Benzinga : même action, reçue entre 30 min avant et 5 min après notre lecture
+    try {
+      const b = await db.prepare("SELECT MIN(cree) cree, titre FROM flux WHERE sym = ? AND recu BETWEEN ? AND ?").bind(n.sym, n.vu - 30 * 60e3, n.vu + 5 * 60e3).first();
+      if (b && b.cree) garde.push({ source: "Benzinga", editeur: "Benzinga (flux direct)", titre: b.titre || "", publie: b.cree, lien: "", score: null });
+    } catch (e) {}
     for (const x of garde) st.push(db.prepare("INSERT OR IGNORE INTO origine VALUES (?,?,?,?,?,?,?)").bind(n.id, x.source, x.editeur, x.titre, x.publie, x.lien, x.score));
     // notre propre source compte aussi, avec son heure officielle de publication
     const cands = [...garde.map((x) => ({ qui: `${x.editeur || x.source} (via ${x.source})`, ms: x.publie })), { qui: n.source === "prnewswire" ? "PR Newswire" : "SEC 8-K", ms: n.quand || n.vu }];
