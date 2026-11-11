@@ -113,12 +113,12 @@ export async function statsJetons(db) {
     if (!x.sorties) continue; const avecNews = x.news ? "avec news" : "sans news";
     for (const [v, r] of Object.entries(JSON.parse(x.sorties))) {
       const k = `${x.seuil}|${x.fenetre}|${avecNews}|${v}`;
-      const y = (res[k] = res[k] || { seuil: x.seuil, fenetre: x.fenetre, news: avecNews, sortie: v, trades: 0, gagnants: 0, gain: 0 });
-      y.trades++; if (r.pct > 0) y.gagnants++; y.gain += r.pct * 1000;
+      const y = (res[k] = res[k] || { seuil: x.seuil, fenetre: x.fenetre, news: avecNews, sortie: v, trades: 0, gagnants: 0, gain: 0, gains: 0, pertes: 0 });
+      y.trades++; if (r.pct > 0) { y.gagnants++; y.gains += r.pct * 1000; } else y.pertes += r.pct * 1000; y.gain += r.pct * 1000;
     }
   }
   return { trades: l.length, ouverts: l.filter((x) => x.statut === "ouvert").length,
-    resultats: Object.values(res).map((y) => ({ ...y, gain: Math.round(y.gain) })).sort((a, b) => b.gain - a.gain),
+    resultats: Object.values(res).map((y) => ({ ...y, gain: Math.round(y.gain), gains: Math.round(y.gains), pertes: Math.round(y.pertes) })).sort((a, b) => b.gain - a.gain),
     derniers: l.slice(0, 40).map((x) => ({ sym: x.sym, place: x.place, fenetre: x.fenetre, seuil: x.seuil, t: x.t, news: x.news, statut: x.statut, meilleur: x.sorties ? Math.max(...Object.values(JSON.parse(x.sorties)).map((r) => r.pct)) : null })) };
 }
 
