@@ -6,9 +6,10 @@ import { calculerSorties } from "./flux.js";
 import { univers, sparkTout } from "./donnees.js";
 
 const G = 0.001; // 0,1 % payé à l'entrée et à la sortie (écart + frais estimés sur ces marchés)
+export const NOM_JETONS = "jetons-v2";
 export const FENETRES = [5, 15, 30];
 export const SEUILS_J = [0.5, 1];
-export const SCHEMA_JETONS = "CREATE TABLE IF NOT EXISTS jeton_trade (cle TEXT PRIMARY KEY, sym TEXT, place TEXT, fenetre INTEGER, seuil REAL, t INTEGER, base REAL, entree REAL, news TEXT, sorties TEXT, statut TEXT)";
+export const SCHEMA_JETONS = "CREATE TABLE IF NOT EXISTS jeton_trades (cle TEXT PRIMARY KEY, sym TEXT, place TEXT, fenetre INTEGER, seuil REAL, t INTEGER, base REAL, entree REAL, news TEXT, sorties TEXT, statut TEXT)";
 const HL_WS = "https://api.hyperliquid.xyz/ws";
 const KF_WS = "https://futures.kraken.com/ws/v1";
 
@@ -31,6 +32,8 @@ export class Jetons {
   }
   etat() { return { hl: !!this.ws.hl, kf: !!this.ws.kf, jetons: this.hist.size, actions: this.actions ? this.actions.size : null, ouverts: this.positions.size, derniers: this.derniers }; }
   async alarm() {
+    // l'ancienne instance (nom « jetons », sans filtre) s'arrête d'elle-même
+    if (this.state.id.toString() !== this.env.JETONS.idFromName(NOM_JETONS).toString()) { for (const w of Object.values(this.ws)) try { w && w.close(); } catch (e) {} this.ws = {}; await this.s.deleteAll(); return; }
     try { await this.connecter(); } catch (e) {}
     // sauvegarde des positions (avec leur parcours de prix) et fermeture de celles qui ont 1 heure
     const t = Date.now();
@@ -93,18 +96,18 @@ export class Jetons {
       else { const f = await db.prepare("SELECT source, titre FROM eclair_vue WHERE sym = ? AND recu BETWEEN ? AND ? ORDER BY recu DESC LIMIT 1").bind(pos.sym, pos.t - 30 * 60e3, pos.t + 60e3).first(); if (f) news = `${f.source} · ${f.titre || ""}`.slice(0, 300); }
     } catch (e) {}
     pos.news = news;
-    await db.prepare("INSERT OR IGNORE INTO jeton_trade (cle, sym, place, fenetre, seuil, t, base, entree, news, statut) VALUES (?,?,?,?,?,?,?,?,?,?)").bind(id, pos.sym, pos.place, pos.w, pos.s, pos.t, pos.base, pos.entree, news, "ouvert").run();
+    await db.prepare("INSERT OR IGNORE INTO jeton_trades (cle, sym, place, fenetre, seuil, t, base, entree, news, statut) VALUES (?,?,?,?,?,?,?,?,?,?)").bind(id, pos.sym, pos.place, pos.w, pos.s, pos.t, pos.base, pos.entree, news, "ouvert").run();
   }
   async fermer(id) {
     const pos = this.positions.get(id); if (!pos) return; this.positions.delete(id); await this.s.delete("pos:" + id);
     const so = calculerSorties(pos.tr.map(([ms, p]) => [ms, p * (1 - G) / (1 - 0.0005)]), pos.entree, pos.t, pos.base);
-    await this.env.DB.prepare("UPDATE jeton_trade SET sorties = ?, statut = 'ferme' WHERE cle = ?").bind(JSON.stringify(so), id).run();
+    await this.env.DB.prepare("UPDATE jeton_trades SET sorties = ?, statut = 'ferme' WHERE cle = ?").bind(JSON.stringify(so), id).run();
   }
 }
 
 export async function statsJetons(db) {
   await db.prepare(SCHEMA_JETONS).run();
-  const l = (await db.prepare("SELECT * FROM jeton_trade ORDER BY t DESC LIMIT 3000").all()).results;
+  const l = (await db.prepare("SELECT * FROM jeton_trades ORDER BY t DESC LIMIT 3000").all()).results;
   const res = {};
   for (const x of l) {
     if (!x.sorties) continue; const avecNews = x.news ? "avec news" : "sans news";
@@ -122,7 +125,7 @@ export async function statsJetons(db) {
 // Liste des jetons qui sont de VRAIES actions cotées aux États-Unis : symbole présent dans la liste officielle
 // de Nasdaq Trader (actions, hors ETF) ET prix du jeton à moins de 5 % du prix de l'action en bourse.
 export async function verifierJetons(env) {
-  const stub = env.JETONS.get(env.JETONS.idFromName("jetons"));
+  const stub = env.JETONS.get(env.JETONS.idFromName(NOM_JETONS));
   const e = await (await stub.fetch("https://j/etat")).json(); const prix = e.derniers || {};
   const cotees = new Set((await univers()).map((x) => x[0]));
   const cles = Object.keys(prix).filter((k) => !k.startsWith("erreur") && cotees.has(k.split(":")[1]));

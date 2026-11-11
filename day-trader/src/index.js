@@ -170,7 +170,7 @@ export default {
       if (p === "/api/papier") return json(await resume(env.DB, { mise: +(u.searchParams.get("mise") || 1000), depuis: u.searchParams.get("depuis") || "" }));
       if (p === "/api/papier/trades") return json(await tradesPapier(env.DB, { regle: u.searchParams.get("regle") || "", date: u.searchParams.get("date") || "" }, +(u.searchParams.get("mise") || 1000)));
       if (p === "/api/news") { const st = await statsNews(env.DB); const ve = await (await veilleur(env).fetch("https://v/etat")).json(); return json({ ...st, origine: await statsOrigine(env.DB), veilleur: ve, items: ITEMS }); }
-      if (p === "/api/jetons") return json({ ...(await statsJetons(env.DB)), etat: await (await env.JETONS.get(env.JETONS.idFromName("jetons")).fetch("https://j/etat")).json() });
+      if (p === "/api/jetons") return json({ ...(await statsJetons(env.DB)), etat: await (await env.JETONS.get(env.JETONS.idFromName("jetons-v2")).fetch("https://j/etat")).json() });
       if (p === "/api/eclair") return json(await statsEclair(env.DB));
       if (p === "/api/flux") return json({ ...(await statsFlux(env.DB)), etat: await (await env.FLUX.get(env.FLUX.idFromName("alpaca")).fetch("https://f/etat")).json() });
       if (p === "/api/origine/tour") return json(await tourOrigine(env));
@@ -205,7 +205,7 @@ export default {
     const journal = async (cle, f) => { try { const r = await f(); await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("dernier-" + cle, JSON.stringify({ quand: new Date().toISOString(), r })).run(); } catch (e) { await env.DB.prepare("INSERT OR REPLACE INTO etat VALUES (?, ?)").bind("erreur-" + cle, JSON.stringify({ quand: new Date().toISOString(), e: String(e.message || e) })).run(); } };
     // 1. veilleur des nouvelles toujours armé
     await journal("veilleur", async () => { await veilleur(env).fetch("https://v/demarrer"); return (await veilleur(env).fetch("https://v/etat")).json(); });
-    await journal("jetons", async () => { const r = await (await env.JETONS.get(env.JETONS.idFromName("jetons")).fetch("https://j/demarrer")).json(); return { hl: r.hl, kf: r.kf, jetons: r.jetons, ouverts: r.ouverts, erreurs: Object.fromEntries(Object.entries(r.derniers || {}).filter(([k]) => k.startsWith("erreur"))), exemple: Object.entries(r.derniers || {}).slice(0, 5) }; });
+    await journal("jetons", async () => { const r = await (await env.JETONS.get(env.JETONS.idFromName("jetons-v2")).fetch("https://j/demarrer")).json(); return { hl: r.hl, kf: r.kf, jetons: r.jetons, ouverts: r.ouverts, erreurs: Object.fromEntries(Object.entries(r.derniers || {}).filter(([k]) => k.startsWith("erreur"))), exemple: Object.entries(r.derniers || {}).slice(0, 5) }; });
     { const mn = new Date(ev.scheduledTime).getUTCMinutes(); if (mn % 30 === 2 || !(await lireEtat(env.DB, "jetons_actions"))) await journal("jetons_actions", async () => { const r = await verifierJetons(env); await ecrireEtat(env.DB, "jetons_actions", { le: new Date().toISOString(), ...r }); return r; }); }
     await journal("flux", async () => (await env.FLUX.get(env.FLUX.idFromName("alpaca")).fetch("https://f/demarrer")).json());
     // 2. alertes de prix
