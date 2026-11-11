@@ -20,13 +20,25 @@ const nomCourt = (n) => String(n || "").replace(/\b(inc|corp|corporation|co|ltd|
 const dec = (s) => String(s || "").replace(/<!\[CDATA\[|\]\]>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
 
 async function googleNews(q) {
-  const r = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`, { headers: { "User-Agent": UA } });
+  const r = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`, { headers: { "User-Agent": NAV, "Accept-Language": "en-US,en;q=0.9" } });
   if (!r.ok) throw new Error("Google News HTTP " + r.status);
   const xml = await r.text(); const out = [];
   for (const it of xml.split("<item>").slice(1)) {
     const g = (b) => dec(((new RegExp(`<${b}[^>]*>([\\s\\S]*?)</${b}>`)).exec(it) || [])[1] || "");
     const editeur = g("source"); const titre = g("title").replace(new RegExp(`\\s+-\\s+${editeur.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), "");
     out.push({ source: "Google News", editeur, titre, publie: Date.parse(g("pubDate")), lien: g("link") });
+  }
+  return out;
+}
+const NAV = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36";
+// Bing News : autre agrégateur de milliers de sites (Google News refuse souvent les serveurs Cloudflare)
+async function bingNews(q) {
+  const r = await fetch(`https://www.bing.com/news/search?q=${encodeURIComponent(q)}&format=rss&qft=sortbydate%3d%221%22`, { headers: { "User-Agent": NAV } });
+  if (!r.ok) throw new Error("Bing News HTTP " + r.status);
+  const xml = await r.text(); const out = [];
+  for (const it of xml.split("<item>").slice(1)) {
+    const g = (b) => dec(((new RegExp(`<${b}[^>]*>([\\s\\S]*?)</${b}>`)).exec(it) || [])[1] || "");
+    out.push({ source: "Bing News", editeur: g("News:Source") || g("news:Source"), titre: g("title"), publie: Date.parse(g("pubDate")), lien: g("link") });
   }
   return out;
 }
@@ -62,7 +74,7 @@ export async function tourOrigine(env, maintenant = Date.now()) {
     const aTitre = n.titre && n.titre !== "8-K";
     const q = aTitre ? `"${n.sym}" OR "${nomCourt(n.nom) || n.sym}"` : `"${nomCourt(n.nom) || n.sym}"`;
     const trouves = [];
-    for (const [nom, f] of [["google", () => googleNews(q + " when:2d")], ["yahoo", () => yahooNews(n.sym)], ["stocktwits", () => stocktwits(n.sym)]]) {
+    for (const [nom, f] of [["google", () => googleNews(q + " when:2d")], ["bing", () => bingNews(q)], ["yahoo", () => yahooNews(n.sym)], ["stocktwits", () => stocktwits(n.sym)]]) {
       try { trouves.push(...(await f())); } catch (e) { erreurs[nom] = String(e.message || e); }
     }
     // même news = publiée entre 12 h avant et 2 h après notre lecture, et (si on a le titre) titre ressemblant
