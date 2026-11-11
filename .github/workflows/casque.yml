@@ -28,7 +28,7 @@ jobs:
             npx -y wrangler@4 deploy > /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log; sleep 15
             {
               tail -6 /tmp/d.log
-              for p in / /admin /affiche; do echo "$p $(curl -sS -m 20 -o /dev/null -w '%{http_code}' $U$p)"; done
+              for p in / /admin /affiche /qr.js; do echo "$p $(curl -sS -m 20 -o /dev/null -w '%{http_code}' $U$p)"; done
               echo "liste sans code: $(curl -sS -m 20 $U/api/admin/liste)"
               echo "email faux: $(curl -sS -m 20 -X POST -H 'content-type: application/json' -d '{"email":"pasbon"}' $U/api/inscrire)"
             } > controle.txt 2>&1

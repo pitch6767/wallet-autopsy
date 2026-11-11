@@ -1,6 +1,7 @@
 // casque — page de test de demande : désinfection de casques moto et ski (Chablais).
 // Liste d'attente seulement : aucun paiement, aucun service vendu.
 import { DurableObject } from "cloudflare:workers";
+import QRLIB from "./qrlib.js";
 
 const json = (o, st = 200) => Response.json(o, { status: st, headers: { "cache-control": "no-store" } });
 const html = (s) => new Response(s, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -63,6 +64,7 @@ export default {
     if (u.pathname.startsWith("/api/")) return env.LISTE.get(env.LISTE.idFromName("principal")).fetch(req);
     if (u.pathname === "/admin") return html(ADMIN);
     if (u.pathname === "/affiche") return html(AFFICHE);
+    if (u.pathname === "/qr.js") return new Response(QRLIB, { headers: { "content-type": "text/javascript; charset=utf-8", "cache-control": "public, max-age=86400" } });
     if (u.pathname === "/" || u.pathname === "/index.html") return html(PAGE);
     return new Response("introuvable", { status: 404 });
   },
@@ -131,7 +133,7 @@ charger();
 
 const AFFICHE = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Affiche casque</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="/qr.js"></script>
 <style>body{margin:0;background:#fff;color:#111;font-family:system-ui,-apple-system,sans-serif}
 .a4{max-width:190mm;margin:0 auto;padding:16mm 10mm;text-align:center}
 h1{font-size:46px;line-height:1.1;margin:0 0 14px}p{font-size:22px;margin:8px 0}.gros{font-size:30px;font-weight:800}
