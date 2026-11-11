@@ -34,8 +34,10 @@ function creux(pcts) { let c = 0, pic = 0, pire = 0; for (const p of pcts) { c +
 
 export const NB_GROSSES = 25, NB_VOLATILES = 75;
 // Univers choisi par Pitch (10.11) : les 25 plus grosses + les plus volatiles (pas les 1 600)
-export async function choisirUnivers(liquides) {
-  const l = liquides.filter((x) => x !== "BTC");
+export async function choisirUnivers(liquides, jetons = null) {
+  // Pitch 11.11 : uniquement les actions tokenisées (achetables 24 h/24)
+  const l = liquides.filter((x) => x !== "BTC" && (!jetons || jetons.has(x)));
+  if (jetons) for (const x of jetons) if (!l.includes(x)) l.push(x); // jetons peu échangés en bourse : ajoutés en fin de liste
   const grosses = l.slice(0, NB_GROSSES);
   const reste = l.slice(NB_GROSSES);
   const { data } = await sparkTout(reste, "3mo", "1d");
@@ -54,7 +56,9 @@ export async function choisirUnivers(liquides) {
 export async function demarrer(env, liquides) {
   await schema(env.DB);
   await env.DB.batch([env.DB.prepare("DELETE FROM bt"), env.DB.prepare("DELETE FROM bt_jour"), env.DB.prepare("DELETE FROM bt_combo")]);
-  const u = await choisirUnivers(liquides);
+  const ja = await lireEtat(env.DB, "jetons_actions"); const jetons = ja && ja.garde ? new Set(ja.garde.map((k) => k.split(":")[1])) : null;
+  if (!jetons) throw new Error("liste des actions tokenisées pas encore prête");
+  const u = await choisirUnivers(liquides, jetons);
   const symboles = [...u.grosses, ...u.volatiles];
   const qJ = barresJour(await graphique("QQQ", "1y", "1d"), local(Date.now(), marcheDe("QQQ")).date).map((x) => x.d);
   // coupure A/B : milieu des séances de QQQ

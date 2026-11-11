@@ -384,13 +384,13 @@ async function etat() {
 }
 
 // ---------------------------------------------------------------- scanner
-let SJ = null, SUIVI = [];
+let SJ = null, SUIVI = [], JETONS = null;
 function afficherSJ() {
   if (!SJ || SJ.vide) { $("#sjInfo").textContent = "Pas encore de scan : touche « Relancer maintenant »."; $("#sjListe").innerHTML = ""; return; }
   const c = SJ.comptes || {};
-  $("#sjInfo").textContent = `Scan du ${new Date(SJ.le).toLocaleString("fr-CH")} · ${c.scannes ?? "?"} graphiques liquides scannés sur ${c.demandes ?? "?"} · ${SJ.hits.length} trouvés`;
+  $("#sjInfo").textContent = `Scan du ${new Date(SJ.le).toLocaleString("fr-CH")} · actions tokenisées seulement (${JETONS ? JETONS.size : "…"}) · ${JETONS ? SJ.hits.filter((x) => JETONS.has(x.symbol)).length : "…"} figures`;
   const f = $("#sjFiltre").value;
-  const h = SJ.hits.filter((x) => !f || x.figures.includes(f)).slice(0, 150);
+  const h = SJ.hits.filter((x) => (!f || x.figures.includes(f)) && (!JETONS || JETONS.has(x.symbol))).slice(0, 150); // actions tokenisées seulement
   const fr = (d) => d ? d.slice(8, 10) + "." + d.slice(5, 7) : "—";
   const S = Object.fromEntries((SUIVI || []).map((x) => [x.sym + "|" + x.date_fig, x]));
   $("#sjListe").innerHTML = h.length ? `<div style="overflow-x:auto"><table><tr><th>Action</th><th>Figure le</th><th>Acheté</th><th class="num">Rendement</th><th>Vente</th></tr>${h.map((x) => { const v = S[x.symbol + "|" + x.date] || {}; return `<tr><td><span class="lien" data-s="${esc(x.symbol)}"><b>${esc(x.symbol)}</b></span><br>${x.figures.map((t) => `<span class="pastille">${FIG[t] || t}</span>`).join("")}</td><td>${fr(x.date)}<br><span class="doux">${n2(x.prix)}</span></td><td>${v.achat ? fr(v.achat_d) + (v.achat_h ? " " + v.achat_h : "") + (v.jeton ? ' <span class="pastille">jeton</span>' : "") + "<br>" + n2(v.achat) : '<span class="doux">' + (v.achat_d ? fr(v.achat_d) + " à l'ouverture" : "—") + "</span>"}</td><td class="num"><b class="${cls(v.rendement)}">${v.rendement != null ? (v.rendement >= 0 ? "+" : "") + (100 * v.rendement).toFixed(2) + " %" : "—"}</b></td><td>${v.statut === "vendu" ? "vendu " + fr(v.vente_d) + (v.vente_h ? " " + v.vente_h : "") + '<br><span class="doux">' + esc(v.raison) + "</span>" : v.vente_d ? fr(v.vente_d) + (v.vente_h ? " " + v.vente_h : " clôture") + (v.stop ? '<br><span class="doux">stop ' + n2(v.stop) + "</span>" : "") : "—"}</td></tr>`; }).join("")}</table></div>
@@ -564,7 +564,7 @@ $("#regGo").onclick = async () => {
   try { await api("/api/reglages", { method: "POST", body: o }); $("#regMsg").textContent = "Enregistré."; etat(); } catch (e) { $("#regMsg").textContent = e.message; }
 };
 
-async function chargerSuivi() { try { SUIVI = (await api("/api/figures-suivi")).lignes; afficherSJ(); } catch (e) {} }
+async function chargerSuivi() { try { const r = await api("/api/figures-suivi"); SUIVI = r.lignes; JETONS = new Set(r.jetons); afficherSJ(); } catch (e) {} }
 
 (async () => {
   await etat();

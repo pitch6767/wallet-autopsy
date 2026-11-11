@@ -48,7 +48,7 @@ export async function tourSuivi(env) {
   const dur = await durees(db);
   const ja = await lireEtat(db, "jetons_actions"); const jetons = new Set(((ja && ja.garde) || []).filter((k) => k.startsWith("hl:")).map((k) => k.slice(3)));
   const depuis = new Date(Date.now() - 20 * 864e5).toISOString().slice(0, 10);
-  const l = (await db.prepare("SELECT h.* FROM figures_hist h LEFT JOIN figures_suivi s ON s.date_fig = h.date_fig AND s.sym = h.sym WHERE h.date_fig >= ? AND (s.statut IS NULL OR s.statut != 'vendu')").bind(depuis).all()).results;
+  const l = (await db.prepare("SELECT h.* FROM figures_hist h LEFT JOIN figures_suivi s ON s.date_fig = h.date_fig AND s.sym = h.sym WHERE h.date_fig >= ? AND (s.statut IS NULL OR s.statut != 'vendu')").bind(depuis).all()).results.filter((f) => jetons.has(f.sym)); // Pitch 11.11 : actions tokenisées seulement
   const maj = new Date().toISOString(); const st = [];
   await parLots(l, 8, async (f) => {
     const s = await graphique(f.sym, "3mo", "1d"); const J = barresJour(s, "9999");
@@ -97,5 +97,6 @@ export async function tourSuivi(env) {
 export async function lireSuivi(db) {
   await schema(db);
   const l = (await db.prepare("SELECT * FROM figures_suivi ORDER BY date_fig DESC, rendement DESC").all()).results;
-  return { lignes: l.map((x) => ({ ...x, figures: x.figures.split(",").map((f) => NOMS[f] || f) })), dureesParFigure: await durees(db) };
+  const ja = await lireEtat(db, "jetons_actions");
+  return { jetons: ((ja && ja.garde) || []).filter((k) => k.startsWith("hl:")).map((k) => k.slice(3)), lignes: l.filter((x) => x.jeton).map((x) => ({ ...x, figures: x.figures.split(",").map((f) => NOMS[f] || f) })), dureesParFigure: await durees(db) };
 }

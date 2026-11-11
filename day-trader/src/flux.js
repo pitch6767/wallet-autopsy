@@ -72,6 +72,9 @@ export class Flux {
   // Réaction éclair : prix à la news, prix 5 s après ; achat papier si la hausse dépasse le seuil ; sorties testées sur l'heure qui suit
   async reagir(e, c) {
     const sym = String(e.sym || "").replace("-", "."); if (!/^[A-Z.]{1,6}$/.test(sym) || !c.key) return;
+    // Pitch 11.11 : uniquement les actions tokenisées
+    if (!this.jetons || Date.now() - this.jetonsLe > 600e3) { try { const ja = await this.env.DB.prepare("SELECT valeur FROM etat WHERE cle = 'jetons_actions'").first(); this.jetons = new Set(JSON.parse(ja.valeur).garde.map((k) => k.split(":")[1])); this.jetonsLe = Date.now(); } catch (x) {} }
+    if (this.jetons && !this.jetons.has(sym)) return;
     const recu = Date.now(); const db = this.env.DB;
     for (const q of SCHEMA_ECLAIR) { try { await db.prepare(q).run(); } catch (x) {} }
     await db.prepare("INSERT OR IGNORE INTO eclair_vue VALUES (?,?,?,?,?,?)").bind(sym, e.source || "", String(e.id), recu, e.cree || null, (e.titre || "").slice(0, 300)).run();
