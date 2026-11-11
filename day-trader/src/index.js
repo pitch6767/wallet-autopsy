@@ -16,6 +16,7 @@ import { tourPapierJour, resumePJ } from "./pj.js";
 import { classeurXlsx } from "./xlsx.js";
 import { demarrerPA, lotPA, lirePA, classementCap } from "./paraction.js";
 import { nomRegle } from "./combos.js";
+import { tourOrigine, statsOrigine } from "./origine.js";
 
 async function fichierExcel(env) {
   await base(env);
@@ -164,7 +165,8 @@ export default {
       if (p === "/api/test") return json(await classement(env.DB, +(u.searchParams.get("mise") || 1000)));
       if (p === "/api/papier") return json(await resume(env.DB, { mise: +(u.searchParams.get("mise") || 1000), depuis: u.searchParams.get("depuis") || "" }));
       if (p === "/api/papier/trades") return json(await tradesPapier(env.DB, { regle: u.searchParams.get("regle") || "", date: u.searchParams.get("date") || "" }, +(u.searchParams.get("mise") || 1000)));
-      if (p === "/api/news") { const st = await statsNews(env.DB); const ve = await (await veilleur(env).fetch("https://v/etat")).json(); return json({ ...st, veilleur: ve, items: ITEMS }); }
+      if (p === "/api/news") { const st = await statsNews(env.DB); const ve = await (await veilleur(env).fetch("https://v/etat")).json(); return json({ ...st, origine: await statsOrigine(env.DB), veilleur: ve, items: ITEMS }); }
+      if (p === "/api/origine/tour") return json(await tourOrigine(env));
       if (p === "/api/sonde2") {
         const essai = async (nom, url, opt = {}) => { const t = Date.now(); try { const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; day-trader-app)" }, ...opt }); const x = await r.text(); return { nom, code: r.status, ms: Date.now() - t, debut: x.slice(0, 700) }; } catch (e) { return { nom, err: String(e) }; } };
         const post = (b) => ({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) });
@@ -206,6 +208,7 @@ export default {
     // 3. suivi des nouvelles
     await journal("news", () => suiviNews(env));
     await journal("jetons", () => photosJetons(env));
+    await journal("origine", () => tourOrigine(env, ev.scheduledTime));
     // 4. paper toutes les 5 minutes (une minute après la clôture de chaque barre)
     const min = new Date(ev.scheduledTime).getUTCMinutes();
     if (min % 5 === 1) await journal("papier", async () => {
