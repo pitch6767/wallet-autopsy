@@ -1,67 +1,104 @@
-ligne 2140 = PORTEFEUILLE 1114 + 116 ; plafond 100 $ par cycle
-  venant de la 1114 : 178 trades, gain +4688 $, gagnés 47 %
-  venant de la 116 : 125 trades, gain +3000 $, gagnés 43 %
-  pour comparer 1114 : 190 trades, gain +4627 $
-  pour comparer 116 : 126 trades, gain +3577 $
-  pour comparer 600005 : 178 trades, gain +13040 $
-période : 2026-11-08T11:33:11.273Z → 2026-11-12T03:49:28.012Z | 303 trades | gain 7688 $ | misé 15879 $
-
-=== par tranche de mise ===
-mise ≤ 60 $                   261 tr | gagnés  47 % | prix moy 0.345 | gain    +5564 $ | pour 1 $ +0.47 | creux -1007
-mise 60–90 $                    4 tr | gagnés  75 % | prix moy 0.270 | gain    +1580 $ | pour 1 $ +5.26 | creux -84
-mise > 90 $ (≈100)             38 tr | gagnés  29 % | prix moy 0.244 | gain     +544 $ | pour 1 $ +0.14 | creux -903
-
-=== par prix d'entrée ===
-prix 0.00–0.06                 11 tr | gagnés  27 % | prix moy 0.045 | gain    +1272 $ | pour 1 $ +2.83 | creux -202
-prix 0.06–0.10                 23 tr | gagnés  17 % | prix moy 0.073 | gain    +1244 $ | pour 1 $ +0.85 | creux -575
-prix 0.10–0.15                 26 tr | gagnés  38 % | prix moy 0.122 | gain    +2790 $ | pour 1 $ +2.14 | creux -203
-prix 0.15–0.25                 47 tr | gagnés  21 % | prix moy 0.200 | gain     +155 $ | pour 1 $ +0.06 | creux -594
-prix 0.25–0.40                 91 tr | gagnés  42 % | prix moy 0.325 | gain    +1159 $ | pour 1 $ +0.24 | creux -560
-prix 0.40–0.60                 77 tr | gagnés  65 % | prix moy 0.483 | gain     +944 $ | pour 1 $ +0.24 | creux -455
-prix 0.60–1.00                 28 tr | gagnés  79 % | prix moy 0.675 | gain     +124 $ | pour 1 $ +0.10 | creux -189
-
-=== les 15 plus gros gains ===
-  2026-11-10T10:28 UP prix 0.052 mise 68 gain 1149
-  2026-11-09T01:49 UP prix 0.096 mise 100 gain 876
-  2026-11-11T08:12 UP prix 0.066 mise 53 gain 703
-  2026-11-10T08:04 UP prix 0.151 mise 100 gain 527
-  2026-11-08T16:12 DOWN prix 0.091 mise 53 gain 498
-  2026-11-09T18:43 DOWN prix 0.129 mise 69 gain 437
-  2026-11-11T16:07 UP prix 0.11 mise 53 gain 400
-  2026-11-12T02:28 UP prix 0.111 mise 53 gain 399
-  2026-11-10T07:37 DOWN prix 0.111 mise 53 gain 397
-  2026-11-09T22:28 DOWN prix 0.088 mise 40 gain 383
-  2026-11-10T22:18 DOWN prix 0.119 mise 53 gain 366
-  2026-11-08T18:29 DOWN prix 0.125 mise 53 gain 347
-  2026-11-10T10:53 DOWN prix 0.137 mise 53 gain 313
-  2026-11-08T11:33 UP prix 0.117 mise 44 gain 313
-  2026-11-10T00:58 UP prix 0.231 mise 100 gain 312
-part du gain total faite par les 5 / 10 plus gros gains : 49 % / 75 %  (gain total 7688 )
-
-=== et si on plafonnait CHAQUE trade (mise et parts réduites dans la même proportion) ===
-au plus 100 $ par trade       303 tr | gagnés  45 % | prix moy 0.331 | gain    +7688 $ | pour 1 $ +0.48 | creux -839
-au plus 75 $ par trade        303 tr | gagnés  45 % | prix moy 0.331 | gain    +7551 $ | pour 1 $ +0.51 | creux -767
-au plus 50 $ par trade        303 tr | gagnés  45 % | prix moy 0.331 | gain    +6801 $ | pour 1 $ +0.50 | creux -679
-
-=== et si on ne doublait jamais (règle x2 « carnet d'accord » et x2 du signal enlevés : mise ramenée à 50 $) ===
-toujours 50 $                 303 tr | gagnés  45 % | prix moy 0.331 | gain    +6801 $ | pour 1 $ +0.50 | creux -679
-
-=== mises de 100 $ seulement si prix < X, sinon 50 $ max ===
-100 $ si prix < 0.08          303 tr | gagnés  45 % | prix moy 0.331 | gain    +6917 $ | pour 1 $ +0.50 | creux -739
-100 $ si prix < 0.1           303 tr | gagnés  45 % | prix moy 0.331 | gain    +7231 $ | pour 1 $ +0.52 | creux -739
-100 $ si prix < 0.15          303 tr | gagnés  45 % | prix moy 0.331 | gain    +7369 $ | pour 1 $ +0.52 | creux -785
-100 $ si prix < 0.2           303 tr | gagnés  45 % | prix moy 0.331 | gain    +7429 $ | pour 1 $ +0.52 | creux -785
-
-=== par jour ===
-08.11                          53 tr | gagnés  57 % | prix moy 0.341 | gain    +2309 $ | pour 1 $ +0.93 | creux -221
-09.11                          65 tr | gagnés  35 % | prix moy 0.325 | gain     +642 $ | pour 1 $ +0.19 | creux -839
-10.11                          74 tr | gagnés  45 % | prix moy 0.311 | gain    +2239 $ | pour 1 $ +0.53 | creux -727
-11.11                          84 tr | gagnés  45 % | prix moy 0.349 | gain    +1787 $ | pour 1 $ +0.39 | creux -387
-12.11                          27 tr | gagnés  48 % | prix moy 0.329 | gain     +711 $ | pour 1 $ +0.56 | creux -222
-
-=== tickets à ≈100 $ : jour par jour (gagnés / joués, gain) ===
-08.11 1 / 2 77 $
-09.11 2 / 8 387 $
-10.11 4 / 15 112 $
-11.11 3 / 11 -210 $
-12.11 1 / 2 178 $
+ONGLET TRADES (600005) : 100 trades dont 100 réglés, gain 7421.8 | miroir : 100 | anciens non miroir : 0
+BANC 600005           : 100 trades réglés, gain 7421.8
+OK    04:13:36 UP 0.084 100 1012.87 | banc : ('UP', 0.084, 100, 1012.87)
+OK    04:43:30 UP 0.26 100 265.67 | banc : ('UP', 0.26, 100, 265.67)
+OK    04:45:37 DOWN 0.47 100 105.15 | banc : ('DOWN', 0.47, 100, 105.15)
+OK    05:44:03 DOWN 0.061 100 -100 | banc : ('DOWN', 0.061, 100, -100)
+OK    06:48:37 UP 0.321 100 -100 | banc : ('UP', 0.322, 100, -100)
+OK    06:54:10 UP 0.072 100 -100 | banc : ('UP', 0.072, 100, -100)
+OK    07:37:31 DOWN 0.129 100 627.98 | banc : ('DOWN', 0.13, 100, 627.98)
+OK    08:04:14 UP 0.153 100 516.02 | banc : ('UP', 0.153, 100, 516.02)
+OK    08:28:33 UP 0.112 100 -100 | banc : ('UP', 0.112, 100, -100)
+OK    10:22:05 DOWN 0.428 13.36 16.64 | banc : ('DOWN', 0.428, 13.36, 16.64)
+OK    10:27:08 UP 0.328 100 191.5 | banc : ('UP', 0.328, 100, 191.5)
+OK    10:39:18 DOWN 0.086 100 -100 | banc : ('DOWN', 0.086, 100, -100)
+OK    10:48:11 UP 0.32 100 198.74 | banc : ('UP', 0.32, 100, 198.74)
+OK    10:53:49 DOWN 0.153 100 518.2 | banc : ('DOWN', 0.153, 100, 518.2)
+OK    10:59:36 UP 0.05 53.32 -53.32 | banc : ('UP', 0.05, 53.32, -53.32)
+OK    11:04:21 DOWN 0.15 100 -100 | banc : ('DOWN', 0.15, 100, -100)
+OK    11:59:20 UP 0.077 100 -100 | banc : ('UP', 0.077, 100, -100)
+OK    12:07:34 UP 0.306 8.02 -8.02 | banc : ('UP', 0.306, 8.02, -8.02)
+OK    12:07:34 UP 0.305 2.99 -2.99 | banc : ('UP', 0.305, 2.99, -2.99)
+OK    12:39:09 UP 0.287 40.36 -40.36 | banc : ('UP', 0.287, 40.36, -40.36)
+OK    13:30:06 DOWN 0.654 100 49.28 | banc : ('DOWN', 0.654, 100, 49.28)
+OK    14:41:11 DOWN 0.34 100 -100 | banc : ('DOWN', 0.34, 100, -100)
+OK    15:50:03 DOWN 0.523 51.15 43.41 | banc : ('DOWN', 0.523, 51.15, 43.41)
+OK    15:56:50 UP 0.383 100 -100 | banc : ('UP', 0.383, 100, -100)
+OK    17:25:25 UP 0.354 100 170.53 | banc : ('UP', 0.354, 100, 170.53)
+OK    18:01:57 DOWN 0.316 18.17 -18.17 | banc : ('DOWN', 0.317, 18.17, -18.17)
+OK    18:01:57 DOWN 0.315 14.58 -14.58 | banc : ('DOWN', 0.315, 14.58, -14.58)
+OK    18:07:04 DOWN 0.132 100 -100 | banc : ('DOWN', 0.132, 100, -100)
+OK    19:29:03 UP 0.27 100 252.36 | banc : ('UP', 0.27, 100, 252.36)
+OK    20:54:01 DOWN 0.063 100 -100 | banc : ('DOWN', 0.064, 100, -100)
+OK    21:19:13 DOWN 0.223 100 -100 | banc : ('DOWN', 0.223, 100, -100)
+OK    21:28:31 DOWN 0.437 100 -100 | banc : ('DOWN', 0.437, 100, -100)
+OK    23:25:22 UP 0.45 100 -100 | banc : ('UP', 0.45, 100, -100)
+OK    00:49:00 UP 0.081 100 1062.12 | banc : ('UP', 0.081, 100, 1062.12)
+OK    00:58:58 UP 0.09 100 -100 | banc : ('UP', 0.09, 100, -100)
+OK    01:21:00 UP 0.372 100 157.41 | banc : ('UP', 0.372, 100, 157.41)
+OK    03:58:56 UP 0.365 100 -100 | banc : ('UP', 0.365, 100, -100)
+OK    05:10:38 UP 0.429 100 124.29 | banc : ('UP', 0.429, 100, 124.29)
+OK    05:20:23 DOWN 0.35 100 -100 | banc : ('DOWN', 0.35, 100, -100)
+OK    05:27:53 UP 0.276 100 -100 | banc : ('UP', 0.276, 100, -100)
+OK    05:55:20 UP 0.574 100 69.2 | banc : ('UP', 0.574, 100, 69.2)
+OK    06:11:24 DOWN 0.454 100 112.11 | banc : ('DOWN', 0.454, 100, 112.11)
+OK    07:30:23 DOWN 0.4 100 139.92 | banc : ('DOWN', 0.4, 100, 139.92)
+OK    07:35:19 DOWN 0.45 100 113.98 | banc : ('DOWN', 0.45, 100, 113.98)
+OK    07:43:40 UP 0.202 100 -100 | banc : ('UP', 0.202, 100, -100)
+OK    07:53:31 UP 0.412 100 -100 | banc : ('UP', 0.412, 100, -100)
+OK    08:12:55 UP 0.079 100 1084.55 | banc : ('UP', 0.079, 100, 1084.55)
+OK    08:38:27 UP 0.352 100 -100 | banc : ('UP', 0.352, 100, -100)
+OK    08:52:47 DOWN 0.38 100 152.21 | banc : ('DOWN', 0.38, 100, 152.21)
+OK    09:38:02 UP 0.364 100 -100 | banc : ('UP', 0.364, 100, -100)
+OK    10:07:58 UP 0.5 51.75 -51.75 | banc : ('UP', 0.5, 51.75, -51.75)
+OK    11:06:22 UP 0.22 100 -100 | banc : ('UP', 0.22, 100, -100)
+OK    11:23:39 UP 0.492 100 -100 | banc : ('UP', 0.492, 100, -100)
+OK    13:50:31 UP 0.398 16.17 22.79 | banc : ('UP', 0.398, 16.17, 22.79)
+OK    14:27:50 UP 0.177 100 -100 | banc : ('UP', 0.177, 100, -100)
+OK    14:32:29 UP 0.43 100 -100 | banc : ('UP', 0.43, 100, -100)
+OK    15:51:40 UP 0.295 100 223.18 | banc : ('UP', 0.295, 100, 223.18)
+OK    16:07:29 UP 0.115 100 716.78 | banc : ('UP', 0.115, 100, 716.78)
+OK    16:16:24 UP 0.532 43.49 -43.49 | banc : ('UP', 0.532, 43.49, -43.49)
+OK    16:30:44 UP 0.4 100 -100 | banc : ('UP', 0.4, 100, -100)
+OK    16:38:59 DOWN 0.337 100 183.45 | banc : ('DOWN', 0.337, 100, 183.45)
+OK    16:49:04 DOWN 0.196 100 -100 | banc : ('DOWN', 0.196, 100, -100)
+OK    16:52:10 DOWN 0.163 100 479.05 | banc : ('DOWN', 0.163, 100, 479.05)
+OK    17:04:28 UP 0.091 100 -100 | banc : ('UP', 0.091, 100, -100)
+OK    17:16:40 UP 0.792 67.24 16.44 | banc : ('UP', 0.792, 67.24, 16.44)
+OK    17:22:43 UP 0.356 77.7 -77.7 | banc : ('UP', 0.356, 77.7, -77.7)
+OK    17:59:02 DOWN 0.46 100 -100 | banc : ('DOWN', 0.46, 100, -100)
+OK    18:23:52 DOWN 0.246 100 -100 | banc : ('DOWN', 0.245, 100, -100)
+OK    18:36:39 UP 0.36 100 165.87 | banc : ('UP', 0.36, 100, 165.87)
+OK    19:16:55 UP 0.616 100 -100 | banc : ('UP', 0.616, 100, -100)
+OK    19:48:30 DOWN 0.299 100 -100 | banc : ('DOWN', 0.299, 100, -100)
+OK    20:38:19 DOWN 0.09 100 946.13 | banc : ('DOWN', 0.09, 100, 946.13)
+OK    20:58:27 DOWN 0.063 31.26 -31.26 | banc : ('DOWN', 0.063, 31.26, -31.26)
+OK    20:58:27 DOWN 0.063 26.78 -26.78 | banc : ('DOWN', 0.063, 26.78, -26.78)
+OK    21:03:58 UP 0.19 100 -100 | banc : ('UP', 0.19, 100, -100)
+OK    21:12:27 UP 0.32 100 198.3 | banc : ('UP', 0.32, 100, 198.3)
+OK    21:23:00 UP 0.52 100 86.06 | banc : ('UP', 0.52, 100, 86.06)
+OK    21:27:46 UP 0.435 100 121.31 | banc : ('UP', 0.435, 100, 121.31)
+OK    21:32:45 UP 0.616 100 -100 | banc : ('UP', 0.617, 100, -100)
+OK    21:49:02 UP 0.155 100 -100 | banc : ('UP', 0.155, 100, -100)
+OK    22:13:48 DOWN 0.42 100 128.81 | banc : ('DOWN', 0.42, 100, 128.81)
+OK    22:16:04 UP 0.449 100 114.22 | banc : ('UP', 0.45, 100, 114.22)
+OK    22:40:20 DOWN 0.405 100 137.01 | banc : ('DOWN', 0.405, 100, 137.01)
+OK    22:48:30 DOWN 0.487 84.3 82.9 | banc : ('DOWN', 0.487, 84.3, 82.9)
+OK    22:57:50 DOWN 0.214 100 343.13 | banc : ('DOWN', 0.214, 100, 343.13)
+OK    00:27:33 DOWN 0.32 5.03 -5.03 | banc : ('DOWN', 0.32, 5.03, -5.03)
+OK    00:38:26 UP 0.499 100 93.68 | banc : ('UP', 0.499, 100, 93.68)
+OK    00:44:01 DOWN 0.359 100 -100 | banc : ('DOWN', 0.358, 100, -100)
+OK    01:48:05 DOWN 0.316 11.4 -11.4 | banc : ('DOWN', 0.316, 11.4, -11.4)
+OK    01:48:05 DOWN 0.316 11.4 -11.4 | banc : ('DOWN', 0.316, 11.4, -11.4)
+OK    01:54:06 UP 0.138 24.92 -24.92 | banc : ('UP', 0.138, 24.92, -24.92)
+OK    01:54:08 UP 0.213 22.9 -22.9 | banc : ('UP', 0.213, 22.9, -22.9)
+OK    01:54:08 UP 0.215 21.85 -21.85 | banc : ('UP', 0.215, 21.85, -21.85)
+OK    01:57:25 DOWN 0.692 100 -100 | banc : ('DOWN', 0.692, 100, -100)
+OK    02:00:20 DOWN 0.591 100 64.45 | banc : ('DOWN', 0.591, 100, 64.45)
+OK    02:42:04 UP 0.127 100 643.26 | banc : ('UP', 0.127, 100, 643.26)
+OK    02:49:07 DOWN 0.305 100 -100 | banc : ('DOWN', 0.305, 100, -100)
+OK    02:51:31 DOWN 0.445 100 116.19 | banc : ('DOWN', 0.445, 100, 116.19)
+OK    02:55:51 DOWN 0.698 51.06 20.59 | banc : ('DOWN', 0.698, 51.06, 20.59)
+OK    03:20:44 UP 0.234 100 -100 | banc : ('UP', 0.234, 100, -100)
+trades du banc absents de l'onglet Trades : []
+écarts : 0
