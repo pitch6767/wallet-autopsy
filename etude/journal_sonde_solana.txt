@@ -1,8 +1,8 @@
 version : "12.11.2026 garde-fous 3 + rejeu de la panne"
-mode : "paper"
-enMarche : true
 actives : [600005]
-activesDepuis : {"600005": "2026-11-09T23:49:26.543Z"}
 dernierSignal : {"101": null, "105": null, "116": null, "1114": null, "600005": null}
-sourceSignaux : {"source": "bot95-signaux", "connecte": true, "depuis": "2026-11-12T14:37:57.063Z", "dernierMessage": "2026-11-12T14:43:17.065Z", "derniereErreur": null, "refuses": 0, "dernierRefus": null, "cle": "QzxCmNFijXwRGpsk"}
-moteur : {"lu": "2026-11-12T14:42:56.103Z", "ok": true, "probleme": null, "ages": {"perp": 0.05, "okx": 0.12, "bn": 0.09, "cb": 0.03, "cl": 0.51}, "erreurLecture": null}
+moteur : {"lu": "2026-11-12T14:44:56.104Z", "ok": true, "probleme": null, "ages": {"perp": 0.02, "okx": 0.03, "bn": 0.07, "cb": 0.03, "cl": 1.08}, "erreurLecture": null}
+rejeu : {"lance": "2026-11-12T14:38:01.119Z", "recus": 3563, "fini": "2026-11-12T14:38:18.773Z", "resultat": {"notes": 2029, "ignores": {"marché non vérifié": 1534}}, "erreur": null}
+banc : trades rejoués réglés 14296 | dont 600005 : 22
+onglet Trades 600005 depuis 04 h 50 : 23 réglés 23 gain 726.22
+banc 600005 (sans plafond) depuis 04 h 50 : 26 gain 3210.97
