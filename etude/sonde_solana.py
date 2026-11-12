@@ -10,3 +10,4 @@ print("dernierSignal", e.get("dernierSignal")); print("sourceSignaux", e.get("so
 t = get("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=2026-11-12T13:30:00Z")
 from collections import Counter
 L = t.get("trades") or []; print("trades réglés du banc depuis 14 h 30 :", len(L), Counter(x.get("num") or x.get("n") for x in L).most_common(15))
+# 2e lecture 14:02
