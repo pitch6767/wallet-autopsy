@@ -25010,11 +25010,12 @@ var Bot = class {
       this.connecter("cl2", "https://ws-live-v2.polymarket.com/ws", [JSON.stringify({ op: "auth", rid: "a1", auth: { apiKey: this.pbCreds.apiKey, secret: this.pbCreds.secret, passphrase: this.pbCreds.passphrase } })], (m) => this.surCl2(m), JSON.stringify({ op: "ping" }), 2e4);
   }
   async connecter(nom, url, abos, surMsg, ping, periode) {
-    if (this.ws[nom + "_en_cours"]) return;
+    if (this.ws[nom + "_en_cours"] && now() - (this.ws[nom + "_en_cours_t"] || 0) < 20) return;
     this.ws[nom + "_en_cours"] = true;
+    this.ws[nom + "_en_cours_t"] = now();
     try {
       const ancien = this.ws[nom];
-      const r = await fetch(url, { headers: { Upgrade: "websocket" } });
+      const r = await fetch(url, { headers: { Upgrade: "websocket" }, signal: AbortSignal.timeout(1e4) });
       const ws = r.webSocket;
       if (!ws) throw new Error("pas de websocket (HTTP " + r.status + ")");
       ws.accept();
