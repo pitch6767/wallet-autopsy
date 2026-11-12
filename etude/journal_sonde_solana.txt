@@ -1,55 +1,23 @@
-{
- "version": "12.11.2026 garde-fous 2 (connexion signaux)",
- "mode": "paper",
- "enMarche": true,
- "choisies": [
-  101,
-  105,
-  301,
-  107,
-  214,
-  1114,
-  213,
-  1011,
-  2,
-  11,
-  14,
-  15,
-  600005,
-  127,
-  116
- ],
- "actives": [
-  600005
- ],
- "activesDepuis": {
-  "600005": "2026-11-09T23:49:26.543Z"
- },
- "dernierSignal": {
-  "101": null,
-  "105": null,
-  "116": null,
-  "1114": null,
-  "600005": null
- },
- "sourceSignaux": {
-  "source": "bot95-signaux",
-  "connecte": true,
-  "depuis": "2026-11-12T13:30:28.176Z",
-  "dernierMessage": "2026-11-12T13:41:31.981Z",
-  "derniereErreur": null,
-  "refuses": 0,
-  "dernierRefus": null,
-  "cle": "QzxCmNFijXwRGpsk"
- }
-}
-bot95-signaux clients : {'clients': 0, 'actif': True}
-journal :
-  2026-11-12T13:41:30.719Z 201 écarté par « + idées » (gros trade) clients None
-  2026-11-12T13:41:30.719Z 101 écarté par « + idées » (gros trade) clients None
-  2026-11-12T13:19:24.678Z 201 diffusé clients 0
-  2026-11-12T13:19:24.678Z 101 diffusé clients 0
-  2026-11-12T13:19:03.021Z 119 diffusé clients 0
-  2026-11-12T13:19:03.021Z 121 diffusé clients 0
-  2026-11-12T13:13:29.290Z 201 diffusé clients 0
-  2026-11-12T13:13:29.290Z 101 diffusé clients 0
+PORTEFEUILLE 400 + idées | résumé None | archive 0 dont depuis 03:50 UTC 0 | derniers 0 
+PORTEFEUILLE 400 | résumé {'depuis': 1792400176.173, 'n': 3058, 'gains': 1591, 'pertes': 1467, 'pnl': 65623.65000000008} | archive 1500 dont depuis 03:50 UTC 47 | derniers 60 
+    ['2026-11-12T04:23:38.476Z', 'Up', 0.1276, -39.43, 'une seule jambe', 0.361, 82]
+    ['2026-11-12T04:23:38.557Z', 'Up', 0.1276, -23.22, 'une seule jambe', 0.406, 81]
+    ['2026-11-12T04:28:04.009Z', 'Up', 0.2842, -6, 'une seule jambe', 0.53, 116]
+corrige : desaccord 20 + foule bybit x2 + idées | résumé None | archive 0 dont depuis 03:50 UTC 0 | derniers 0 
+corrige : desaccord 20 + foule bybit x2 | résumé {'depuis': 1791931340.173, 'n': 1601, 'gains': 551, 'pertes': 1050, 'pnl': 53291.81000000005} | archive 1500 dont depuis 03:50 UTC 27 | derniers 60 
+    ['2026-11-12T04:11:07.572Z', 'Up', 0.2635, 294.05, 'une seule jambe', 0.452, 232]
+    ['2026-11-12T04:15:08.698Z', 'Up', 0.2731, -109.38, 'une seule jambe', 0.458, 291]
+    ['2026-11-12T04:23:38.557Z', 'Up', 0.1291, -31.08, 'une seule jambe', 0.416, 81]
+corrige : V2-F + pas les deux baissent + carnet + sur mesure | résumé None | archive 0 dont depuis 03:50 UTC 0 | derniers 0 
+corrige : V2-F + pas les deux baissent + carnet | résumé {'depuis': 1791921132.191, 'n': 2206, 'gains': 1071, 'pertes': 1135, 'pnl': 47183.940000000155} | archive 1500 dont depuis 03:50 UTC 37 | derniers 60 
+    ['2026-11-12T04:15:56.370Z', 'Up', 0.1584, -31.3, 'une seule jambe', 0.348, 244]
+    ['2026-11-12T04:23:38.557Z', 'Up', 0.1291, -27.37, 'une seule jambe', 0.416, 81]
+    ['2026-11-12T04:28:04.009Z', 'Up', 0.2897, -13.06, 'une seule jambe', 0.527, 116]
+TWAP fin quantiles + idées | résumé None | archive 0 dont depuis 03:50 UTC 0 | derniers 0 
+TWAP fin quantiles | résumé {'depuis': 1791633049.024, 'n': 1947, 'gains': 891, 'pertes': 1056, 'pnl': 27361.290000000008} | archive 1500 dont depuis 03:50 UTC 27 | derniers 60 
+    ['2026-11-12T04:23:38.476Z', 'Up', 0.1276, -22.59, 'une seule jambe', 0.361, 82]
+    ['2026-11-12T04:29:22.124Z', 'Down', 0.0214, 567.88, 'une seule jambe', 0.253, 38]
+    ['2026-11-12T04:43:50.444Z', 'Up', 0.117, 11.53, 'une seule jambe', 0.408, 70]
+sig clés ['sig:BTC:29902410', 'sig:BTC:29902411', 'sig:BTC:29902412'] 
+doc exemple (début): {"colonnes": ["t", "start", "prix_a_battre", "proba_up_modele", "bybit_perp", "okx_perp", "binance_spot", "coinbase", "chainlink", "bybit_meilleur_achat", "bybit_meilleure_vente", "prof_achat_1pb", "prof_vente_1pb", "prof_achat_3pb", "prof_vente_3pb", "prof_achat_5pb", "prof_vente_5pb", "prof_achat_10pb", "prof_vente_10pb", "perp_achats_usd", "perp_ventes_usd", "perp_plus_gros_achat", "perp_plus_grosse_vente", "perp_nb_echanges", "liq_longs_usd", "liq_courts_usd", "pm_up_achat", "pm_up_vente", "pm_up_achat_taille", "pm_up_vente_taille", "pm_up_retrait_achat", "pm_up_retrait_vente", "pm_up_ajou
+sig après 03:50 UTC : 120 ['sig:BTC:29902410', 'sig:BTC:29902411'] ['sig:BTC:29902528', 'sig:BTC:29902529']
