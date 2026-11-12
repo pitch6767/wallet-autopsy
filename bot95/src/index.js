@@ -1330,12 +1330,15 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
   }
 
   async connecter(nom, url, abos, surMsg, ping, periode) {
-    if (this.ws[nom + "_en_cours"]) return;
-    this.ws[nom + "_en_cours"] = true;
+    // 12.11.2026 (Pitch : « je veux connaître le problème ») : le 12.11 vers 03:50 UTC, l'ouverture du flux Bybit du moteur de Dublin est restée
+    // bloquée sans fin (pas de limite de temps) → « en cours » pour toujours, plus aucune reconnexion, plus aucun signal pendant 10 h.
+    // Désormais : 10 s au plus pour ouvrir un flux, et un verrou de plus de 20 s est considéré comme mort.
+    if (this.ws[nom + "_en_cours"] && now() - (this.ws[nom + "_en_cours_t"] || 0) < 20) return;
+    this.ws[nom + "_en_cours"] = true; this.ws[nom + "_en_cours_t"] = now();
     try {
       // 28.10.2026 : l'ancien flux reste ouvert jusqu'à ce que le nouveau soit prêt (avant : coupure à chaque changement de jetons, 2 fois par cycle)
       const ancien = this.ws[nom];
-      const r = await fetch(url, { headers: { Upgrade: "websocket" } });
+      const r = await fetch(url, { headers: { Upgrade: "websocket" }, signal: AbortSignal.timeout(10000) });
       const ws = r.webSocket;
       if (!ws) throw new Error("pas de websocket (HTTP " + r.status + ")");
       ws.accept();
