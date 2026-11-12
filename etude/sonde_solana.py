@@ -8,7 +8,7 @@ def get(u):
         except Exception as e: err = str(e); time.sleep(2)
     return {"erreur": err}
 B = "https://bot95.pitch67.workers.dev"
-DEB, FIN = "2026-11-12T03:30:00", "2026-11-12T14:15:00"
+DEB, FIN = "2026-11-12T01:30:00", "2026-11-12T14:15:00"
 cat = get(B + "/api/catalogue").get("strategies") or []
 noms = sorted({x["nom"] for x in cat} | {"BY1 contre-elan calme 100 $", "TWAP fin", "TWAP fin anti-saut", "TWAP fin prevision Chainlink", "TWAP fin quantiles", "TWAP fin sauts", "V2-F incertitude 0,01 %",
   "corrige : V2-F + pas les deux baissent", "corrige : V2-F ecart qui grandit", "corrige : desaccord 20", "corrige marge mesuree : V2-F", "contrarien 5 min + 1 h"})
@@ -25,9 +25,9 @@ print("stratégies avec trades dans le trou :", len(H))
 for n, v in sorted(H.items(), key=lambda kv: -len(kv[1]["archive"]))[:40]:
     print(f"  {len(v['archive']):3d} archive | {len(v['derniers']):3d} complets (depuis {v['derniers_depuis']}) | {n}")
 S = {}
-k0 = int(1794455400 / 60) - 2   # 03:50 UTC
+k0 = int(1794447000 / 60) - 2   # 01:30 UTC
 apres = "sig:BTC:" + str(k0)
-for _ in range(12):
+for _ in range(20):
     d = get(B + "/api/sig?a=BTC&n=120&apres=" + urllib.parse.quote(apres))
     ks = d.get("cles") or []
     if not ks: break
@@ -39,3 +39,10 @@ os.makedirs("etude/rejeu", exist_ok=True)
 with gzip.open("etude/rejeu/donnees.json.gz", "wt") as f: json.dump({"hist": H, "sig": S, "noms": noms}, f)
 print("taille", os.path.getsize("etude/rejeu/donnees.json.gz"))
 subprocess.run(["git", "add", "etude/rejeu/donnees.json.gz"])
+# contrôle : vrais trades du banc (moteur de Dublin en marche) de 01:30 à 03:53 UTC, pour comparer avec le rejeu
+t = get("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=2026-11-12T01:30:00Z")
+with gzip.open("etude/rejeu/banc_controle.json.gz", "wt") as f: json.dump([x for x in (t.get("trades") or []) if x.get("ouvert", "") < "2026-11-12T04:00"], f)
+t2 = get("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=2026-11-10T00:00:00Z")
+with gzip.open("etude/rejeu/banc_remplissage.json.gz", "wt") as f: json.dump(t2.get("trades") or [], f)
+subprocess.run(["git", "add", "etude/rejeu/banc_controle.json.gz", "etude/rejeu/banc_remplissage.json.gz"])
+print("banc contrôle", len(t.get("trades") or []), "remplissage", len(t2.get("trades") or []))
