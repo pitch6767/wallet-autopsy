@@ -1,33 +1,5 @@
-noms : 786
-stratégies avec trades dans le trou : 28
-   67 archive |  60 complets (depuis 2026-11-12T02:28:14.035Z) | PORTEFEUILLE 400
-   60 archive |  60 complets (depuis 2026-11-12T01:40:45.043Z) | PORTEFEUILLE 400 corrige
-   60 archive |  60 complets (depuis 2026-11-12T01:40:45.043Z) | PORTEFEUILLE 600
-   56 archive |  56 complets (depuis 2026-11-12T00:43:02.008Z) | corrige : V2-F + pas les deux baissent + carnet
-   56 archive |  56 complets (depuis 2026-11-12T00:43:02.008Z) | corrige : desaccord 20 + carnet
-   54 archive |  54 complets (depuis 2026-11-12T00:13:30.864Z) | corrige : V2-F ecart qui grandit + carnet
-   41 archive |  41 complets (depuis 2026-11-11T21:28:12.383Z) | corrige : V2-F + pas les deux baissent + carnet ecart serre
-   41 archive |  41 complets (depuis 2026-11-11T21:28:12.383Z) | corrige : desaccord 20 + carnet ecart serre
-   39 archive |  39 complets (depuis 2026-11-11T21:06:38.470Z) | corrige : V2-F ecart qui grandit + carnet ecart serre
-   38 archive |  38 complets (depuis 2026-11-11T17:22:03.214Z) | corrige marge mesuree : V2-F + foule bybit x2
-   36 archive |  36 complets (depuis 2026-11-11T15:42:13.708Z) | corrige : desaccord 20 + foule bybit x2
-   35 archive |  35 complets (depuis 2026-11-11T07:38:56.953Z) | TWAP fin quantiles
-   35 archive |  35 complets (depuis 2026-11-11T07:38:56.953Z) | TWAP fin sauts
-   31 archive |  31 complets (depuis 2026-11-11T09:38:02.368Z) | V2-F incertitude 0,01 % + foule bybit x2
-   25 archive |  25 complets (depuis 2026-11-11T01:09:05.302Z) | TWAP fin quantiles + ecart serre
-   24 archive |  24 complets (depuis 2026-11-10T21:19:18.229Z) | TWAP fin + carnet
-   24 archive |  24 complets (depuis 2026-11-10T21:19:18.229Z) | TWAP fin anti-saut + carnet
-   24 archive |  24 complets (depuis 2026-11-10T17:03:55.208Z) | TWAP fin quantiles + carnet
-   22 archive |  22 complets (depuis 2026-11-10T13:44:27.726Z) | TWAP fin sauts + carnet
-   17 archive |  17 complets (depuis 2026-11-10T06:33:58.721Z) | TWAP fin + carnet ecart serre
-   17 archive |  17 complets (depuis 2026-11-10T06:33:58.721Z) | TWAP fin anti-saut + carnet ecart serre
-   17 archive |  17 complets (depuis 2026-11-10T00:58:42.865Z) | TWAP fin quantiles + carnet ecart serre
-   17 archive |  17 complets (depuis 2026-11-10T00:24:24.633Z) | TWAP fin sauts + carnet ecart serre
-   16 archive |  16 complets (depuis 2026-11-09T23:23:56.415Z) | TWAP fin prevision Chainlink + carnet
-   15 archive |  15 complets (depuis 2026-11-09T23:39:28.804Z) | TWAP fin quantiles + foule bybit x2
-   12 archive |  12 complets (depuis 2026-11-09T23:09:05.006Z) | TWAP fin sauts + foule bybit x2
-   11 archive |  11 complets (depuis 2026-11-08T21:09:00.001Z) | TWAP fin prevision Chainlink + carnet ecart serre
-    3 archive |   3 complets (depuis 2026-11-05T21:59:19.123Z) | TWAP fin billets 40-90 s
-lignes sig (minutes) : 770 sig:BTC:29907449 sig:BTC:29908220
-taille 2658821
-banc contrôle 9068 remplissage 98889
+version 12.11.2026 garde-fous 2 (connexion signaux) | actives [600005] | mode paper
+dernierSignal {'101': '2026-11-12T14:10:49.332Z', '105': '2026-11-12T14:10:49.298Z', '116': None, '1114': '2026-11-12T14:10:49.323Z', '600005': None}
+sourceSignaux {'source': 'bot95-signaux', 'connecte': True, 'depuis': '2026-11-12T14:09:44.259Z', 'dernierMessage': '2026-11-12T14:23:44.260Z', 'derniereErreur': None, 'refuses': 0, 'dernierRefus': None, 'cle': 'QzxCmNFijXwRGpsk'}
+trades réglés du banc depuis 14 h 55 : 968 [(10, 2), (110, 2), (210, 2), (310, 2), (112, 2), (12, 2), (212, 2), (312, 2), (214, 2), (14, 2), (114, 2), (314, 2)]
+600005 : [('14:02:37', 'DOWN', 0.4804, 103.6373, 104.526), ('14:10:49', 'UP', 0.2426, 210.6036, -210.6036), ('14:10:49', 'UP', 0.241, 315.9385, -315.9385)]
