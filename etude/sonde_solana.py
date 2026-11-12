@@ -2,6 +2,11 @@
 import subprocess, sys, time
 r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "--break-system-packages", "playwright"], capture_output=True, text=True); print("pip", r.returncode, r.stderr[-300:])
 r = subprocess.run([sys.executable, "-m", "playwright", "install", "--with-deps", "chromium"], capture_output=True, text=True); print("install", r.returncode, r.stderr[-300:])
+import importlib, site
+importlib.invalidate_caches(); sys.path += [site.getusersitepackages()] + site.getsitepackages()
+r = subprocess.run([sys.executable, "-m", "pip", "show", "-f", "playwright"], capture_output=True, text=True); print([l for l in r.stdout.splitlines() if l.startswith("Location")])
+for l in r.stdout.splitlines():
+    if l.startswith("Location:"): sys.path.insert(0, l.split(": ", 1)[1])
 try:
   from playwright.sync_api import sync_playwright
   with sync_playwright() as p:
