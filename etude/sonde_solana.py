@@ -1,20 +1,22 @@
-# 12.11.2026 : rejeu de la panne inséré ? Trades = banc pour la 600005 ? (lecture seule ; boucle 8 min au plus)
+# 12.11.2026 : rejeu (2e passage) + contrôle Trades = banc pour la 600005 pendant la panne (lecture seule ; boucle 9 min au plus)
 import json, urllib.request, time
 def get(u):
     try:
         with urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "analyse"}), timeout=60) as r: return json.loads(r.read())
     except Exception as e: return {"erreur": str(e)}
 B = "https://72-11-157-70.sslip.io/api/bot"
-for k in range(16):
-    e = get(B + "/banc/etat")
-    if (e.get("rejeu") or {}).get("fini"): break
+for k in range(17):
+    e = get(B + "/banc/etat"); r = e.get("rejeu") or {}
+    if "(2)" in str(e.get("version")) and r.get("fini") and r.get("lance", "") > "2026-11-12T14:50": break
     time.sleep(30)
 for k in ["version", "actives", "dernierSignal", "moteur", "rejeu"]: print(k, ":", json.dumps(e.get(k), ensure_ascii=False))
-t = get(B + "/banc/trades?depuis=2026-11-12T03:50:00Z").get("trades") or []
-rj = [x for x in t if x.get("rejoue")]
-print("banc : trades rejoués réglés", len(rj), "| dont 600005 :", len([x for x in t if x["num"] == 600005 and x.get("rejoue")]))
-d = get(B + "/banc/decisions?depuis=2026-11-12T03:50:00Z")
-tp = [x for x in (d.get("tradesPaper") or []) if x.get("n") == 600005]
-print("onglet Trades 600005 depuis 04 h 50 :", len(tp), "réglés", sum(1 for x in tp if x.get("statut") == "settled"), "gain", round(sum(x.get("gain") or 0 for x in tp), 2))
-L = [x for x in t if x["num"] == 600005]
-print("banc 600005 (sans plafond) depuis 04 h 50 :", len(L), "gain", round(sum(x["pnl"] for x in L), 2))
+D, F = "2026-11-12T03:53:00Z", "2026-11-12T14:02:30"
+t = get(B + "/banc/trades?plafond=100&depuis=" + D).get("trades") or []
+b = sorted([(x["ouvert"][:19], x["side"], round(x["mise"], 2), round(x["pnl"], 2)) for x in t if x["num"] == 600005 and x["ouvert"] < F])
+d = get(B + "/banc/decisions?depuis=" + D)
+p = sorted([(x["ouvert"][:19], x["cote"], round(x["mise"], 2), round(x.get("gain") or 0, 2)) for x in (d.get("tradesPaper") or []) if x.get("n") == 600005 and x["ouvert"] < F])
+print("banc 600005 (100 $/cycle) pendant la panne :", len(b), "trades, gain", round(sum(x[3] for x in b), 2))
+print("onglet Trades 600005 pendant la panne     :", len(p), "trades, gain", round(sum(x[3] for x in p), 2))
+print("identiques :", b == p)
+if b != p: print("banc seul :", [x for x in b if x not in p][:10]); print("Trades seul :", [x for x in p if x not in b][:10])
+for x in b: print("  ", x)
