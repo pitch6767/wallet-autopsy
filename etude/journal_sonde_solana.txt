@@ -1,5 +1,8 @@
-version 12.11.2026 garde-fous 2 (connexion signaux) | actives [600005] | mode paper
-dernierSignal {'101': '2026-11-12T14:10:49.332Z', '105': '2026-11-12T14:10:49.298Z', '116': None, '1114': '2026-11-12T14:10:49.323Z', '600005': None}
-sourceSignaux {'source': 'bot95-signaux', 'connecte': True, 'depuis': '2026-11-12T14:09:44.259Z', 'dernierMessage': '2026-11-12T14:23:44.260Z', 'derniereErreur': None, 'refuses': 0, 'dernierRefus': None, 'cle': 'QzxCmNFijXwRGpsk'}
-trades réglés du banc depuis 14 h 55 : 968 [(10, 2), (110, 2), (210, 2), (310, 2), (112, 2), (12, 2), (212, 2), (312, 2), (214, 2), (14, 2), (114, 2), (314, 2)]
-600005 : [('14:02:37', 'DOWN', 0.4804, 103.6373, 104.526), ('14:10:49', 'UP', 0.2426, 210.6036, -210.6036), ('14:10:49', 'UP', 0.241, 315.9385, -315.9385)]
+version : "12.11.2026 garde-fous 3 + rejeu de la panne"
+mode : "paper"
+enMarche : true
+actives : [600005]
+activesDepuis : {"600005": "2026-11-09T23:49:26.543Z"}
+dernierSignal : {"101": null, "105": null, "116": null, "1114": null, "600005": null}
+sourceSignaux : {"source": "bot95-signaux", "connecte": true, "depuis": "2026-11-12T14:37:57.063Z", "dernierMessage": "2026-11-12T14:43:17.065Z", "derniereErreur": null, "refuses": 0, "dernierRefus": null, "cle": "QzxCmNFijXwRGpsk"}
+moteur : {"lu": "2026-11-12T14:42:56.103Z", "ok": true, "probleme": null, "ages": {"perp": 0.05, "okx": 0.12, "bn": 0.09, "cb": 0.03, "cl": 0.51}, "erreurLecture": null}
