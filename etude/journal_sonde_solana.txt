@@ -1,110 +1,55 @@
-https://bot95-signaux.pitch67.workers.dev/api/statut {"moteur": "signaux", "heure": "2026-11-12T13:24:21.608Z", "nums": "101,201,121,28,119", "clients": 0, "ages_s": {"perp": 0.06, "okx": 0, "bn": 0.05, "cb": 0.19, "cl": 0.34}, "flux": {"perp": true, "okx": true, "bn": true, "cb": true, "cl": true, "poly": true, "act": true}, "cycle": {"start": 1794489600, "slug": "btc-updown-5m-1794489600", "prixABattre": 72460.79747245922, "source": "moyenne Chainlink 60 s"}, "ouvertes": 0, "strategies": 28, "reglements": 73, "margeMesureeBTC": 15.900647761299233, "minutesDuo": 75, "reconnexions": {"poly": 154, "cl": 7, "act": 16, "cb": 1, "perp": 4, "okx": 1, "bn": 1}, "erreurs": ["13:21:52 BTC: BTC prix d'ouverture HTTP 429", "13:16:52 BTC: BTC prix d'ouverture HTTP 429", "13:06:57 BTC: BTC prix d'ouverture HTTP 429", "13:06:52 BTC: BTC prix d'ouverture HTTP 429", "13:01:58 BTC: BTC prix d'ouverture HTTP 429", "13:01:53 BTC: BTC prix d'ouverture HTTP 429", "13:01:43 BTC: BTC prix d'ouverture HTTP 429", "13:00:06 flux poly fermé: code 1013", "12:56:57 BTC: BTC prix d'ouverture HTTP 429", "12:56:47 BTC: BTC prix d'ouverture HTTP 429", "12:51:53 BTC: BTC prix d'ouverture HTTP 429", "12:51:48 BTC: BTC prix d'ouverture HTTP 429", "12:51:43 BTC: BTC prix d'ouverture HTTP 429", "12:46:52 BTC: BTC prix d'ouverture HTTP 429", "12:41:47 BTC: BTC prix d'ouverture HTTP 429", "12:41:42 BTC: BTC prix d'ouverture HTTP 429", "12:41:40 flux poly fermé: code 1013", "12:37:02 flux perp: pas de websocket (HTTP 502)", "12:37:01 flux perp: pas de websocket (HTTP 502)", "12:37:00 flux perp: pas de websocket (HTTP 502)"]}
-journal (50 derniers):
-  {"at": "2026-11-12T13:19:24.678Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.37, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:19:24.678Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.37, "statut": "diffusé", "mult": 2, "clients": 0}
-  {"at": "2026-11-12T13:19:03.021Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Down", "prix": 0.42, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:19:03.021Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.42, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:13:29.290Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.11, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:13:29.290Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.11, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T13:07:35.563Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.05, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:07:35.563Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.05, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:04:27.234Z", "num": 28, "nom": "TWAP fin prevision Chainlink + carnet ecart serre", "depuis": "TWAP fin prevision Chainlink", "cote": "Down", "prix": 0.47, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:04:00.340Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Down", "prix": 0.47, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T13:04:00.340Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.47, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:56:38.975Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.54, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:56:38.975Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.54, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:53:33.024Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Up", "prix": 0.54, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 0.06308178644394502, "mom10": -2.0299751419806853, "lag5":
-  {"at": "2026-11-12T12:53:33.024Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Up", "prix": 0.54, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 0.06308178644394502, "mom10": -2.0299751419806853, "lag5": -0.0270894453314838
-  {"at": "2026-11-12T12:52:13.275Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.16, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:52:13.275Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.16, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T12:41:39.722Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.57, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:41:39.722Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.57, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:18:31.588Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Up", "prix": 0.46, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:18:31.588Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Up", "prix": 0.46, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:04:11.630Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.36, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:04:11.630Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.36, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T12:04:10.146Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Down", "prix": 0.1, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T12:04:10.146Z", "num": 28, "nom": "TWAP fin prevision Chainlink + carnet ecart serre", "depuis": "TWAP fin prevision Chainlink", "cote": "Down", "prix": 0.1, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:04:10.146Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.1, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T12:04:10.146Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.1, "statut": "diffusé", "mult": 2, "clients": 0}
-  {"at": "2026-11-12T12:04:10.146Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.1, "statut": "diffusé", "mult": 6, "clients": 0}
-  {"at": "2026-11-12T11:49:20.667Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.17, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:49:20.667Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.17, "statut": "diffusé", "mult": 2, "clients": 0}
-  {"at": "2026-11-12T11:49:20.667Z", "num": 28, "nom": "TWAP fin prevision Chainlink + carnet ecart serre", "depuis": "TWAP fin prevision Chainlink", "cote": "Down", "prix": 0.17, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:49:20.204Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.17, "statut": "diffusé", "mult": 2, "clients": 0}
-  {"at": "2026-11-12T11:49:11.270Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Up", "prix": 0.53, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 2.959230595646659, "mom10": 9.563974071934354, "lag5": 0.0
-  {"at": "2026-11-12T11:30:41.575Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.79, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:30:41.575Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.79, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:24:01.486Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.68, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": -0.016821503741084598, "mom10": -1.9620573214051547, "lag5": -0.051298620786
-  {"at": "2026-11-12T11:23:43.073Z", "num": 28, "nom": "TWAP fin prevision Chainlink + carnet ecart serre", "depuis": "TWAP fin prevision Chainlink", "cote": "Up", "prix": 0.34, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:07:32.111Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.62, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 2.8109035063680494, "mom10": 3.5210643863101723, "lag5": -0.02486605479532
-  {"at": "2026-11-12T11:07:32.111Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.62, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 2.8109035063680494, "mom10": 3.5210643863101723, "lag5": -0.02486605479532
-  {"at": "2026-11-12T11:03:05.448Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.33, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:03:05.448Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.33, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T10:52:27.431Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.51, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T10:52:27.431Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.51, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T10:13:25.349Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.57, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 1.7692105618916685, "mom10": -1.1082490472472273, "lag5": -0.020704907941284
-  {"at": "2026-11-12T10:13:25.349Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.57, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 1.7692105618916685, "mom10": -1.1082490472472273, "lag5": -0.020704907941284
-  {"at": "2026-11-12T10:04:01.331Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.41, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T10:04:01.331Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.41, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T10:04:01.003Z", "num": 28, "nom": "TWAP fin prevision Chainlink + carnet ecart serre", "depuis": "TWAP fin prevision Chainlink", "cote": "Down", "prix": 0.44, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T09:53:51.882Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.4, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T09:53:51.882Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.4, "statut": "diffusé", "mult": 3, "clients": 0}
-
-https://bot95-signaux.pitch67.workers.dev/api/sante {"moteur": "signaux", "heure": "2026-11-12T13:24:21.878Z", "nums": "101,201,121,28,119", "clients": 0, "ages_s": {"perp": 0.01, "okx": 0, "bn": 0.02, "cb": 0.22, "cl": 0.61}, "flux": {"perp": true, "okx": true, "bn": true, "cb": true, "cl": true, "poly": true, "act": true}, "cycle": {"start": 1794489600, "slug": "btc-updown-5m-1794489600", "prixABattre": 72460.79747245922, "source": "moyenne Chainlink 60 s"}, "ouvertes": 0, "strategies": 28, "reglements": 73, "margeMesureeBTC": 15.900647761299233, "minutesDuo": 75, "reconnexions": {"poly": 154, "cl": 7, "act": 16, "cb": 1, "perp": 4, "okx": 1, "bn": 1}, "erreurs": ["13:21:52 BTC: BTC prix d'ouverture HTTP 429", "13:16:52 BTC: BTC prix d'ouverture HTTP 429", "13:06:57 BTC: BTC prix d'ouverture HTTP 429", "13:06:52 BTC: BTC prix d'ouverture HTTP 429", "13:01:58 BTC: BTC prix d'ouverture HTTP 429", "13:01:53 BTC: BTC prix d'ouverture HTTP 429", "13:01:43 BTC: BTC prix d'ouverture HTTP 429", "13:00:06 flux poly fermé: code 1013", "12:56:57 BTC: BTC prix d'ouverture HTTP 429", "12:56:47 BTC: BTC prix d'ouverture HTTP 429", "12:51:53 BTC: BTC prix d'ouverture HTTP 429", "12:51:48 BTC: BTC prix d'ouverture HTTP 429", "12:51:43 BTC: BTC prix d'ouverture HTTP 429", "12:46:52 BTC: BTC prix d'ouverture HTTP 429", "12:41:47 BTC: BTC prix d'ouverture HTTP 429", "12:41:42 BTC: BTC prix d'ouverture HTTP 429", "12:41:40 flux poly fermé: code 1013", "12:37:02 flux perp: pas de websocket (HTTP 502)", "12:37:01 flux perp: pas de websocket (HTTP 502)", "12:37:00 flux perp: pas de websocket (HTTP 502)"]}
-journal (50 derniers):
-  {"at": "2026-11-12T13:19:24.678Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.37, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:19:24.678Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.37, "statut": "diffusé", "mult": 2, "clients": 0}
-  {"at": "2026-11-12T13:19:03.021Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Down", "prix": 0.42, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:19:03.021Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.42, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:13:29.290Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.11, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:13:29.290Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.11, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T13:07:35.563Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.05, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:07:35.563Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.05, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:04:27.234Z", "num": 28, "nom": "TWAP fin prevision Chainlink + carnet ecart serre", "depuis": "TWAP fin prevision Chainlink", "cote": "Down", "prix": 0.47, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T13:04:00.340Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Down", "prix": 0.47, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T13:04:00.340Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.47, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:56:38.975Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.54, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:56:38.975Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.54, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:53:33.024Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Up", "prix": 0.54, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 0.06308178644394502, "mom10": -2.0299751419806853, "lag5":
-  {"at": "2026-11-12T12:53:33.024Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Up", "prix": 0.54, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 0.06308178644394502, "mom10": -2.0299751419806853, "lag5": -0.0270894453314838
-  {"at": "2026-11-12T12:52:13.275Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.16, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:52:13.275Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.16, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T12:41:39.722Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.57, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:41:39.722Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.57, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:18:31.588Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Up", "prix": 0.46, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:18:31.588Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Up", "prix": 0.46, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:04:11.630Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.36, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:04:11.630Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.36, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T12:04:10.146Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Down", "prix": 0.1, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T12:04:10.146Z", "num": 28, "nom": "TWAP fin prevision Chainlink + carnet ecart serre", "depuis": "TWAP fin prevision Chainlink", "cote": "Down", "prix": 0.1, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T12:04:10.146Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.1, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T12:04:10.146Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.1, "statut": "diffusé", "mult": 2, "clients": 0}
-  {"at": "2026-11-12T12:04:10.146Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.1, "statut": "diffusé", "mult": 6, "clients": 0}
-  {"at": "2026-11-12T11:49:20.667Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.17, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:49:20.667Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.17, "statut": "diffusé", "mult": 2, "clients": 0}
-  {"at": "2026-11-12T11:49:20.667Z", "num": 28, "nom": "TWAP fin prevision Chainlink + carnet ecart serre", "depuis": "TWAP fin prevision Chainlink", "cote": "Down", "prix": 0.17, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:49:20.204Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.17, "statut": "diffusé", "mult": 2, "clients": 0}
-  {"at": "2026-11-12T11:49:11.270Z", "num": 119, "nom": "TWAP fin quantiles + carnet ecart serre", "depuis": "TWAP fin quantiles", "cote": "Up", "prix": 0.53, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 2.959230595646659, "mom10": 9.563974071934354, "lag5": 0.0
-  {"at": "2026-11-12T11:30:41.575Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.79, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:30:41.575Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.79, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:24:01.486Z", "num": 121, "nom": "TWAP fin sauts + carnet", "depuis": "TWAP fin sauts", "cote": "Down", "prix": 0.68, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": -0.016821503741084598, "mom10": -1.9620573214051547, "lag5": -0.051298620786
-  {"at": "2026-11-12T11:23:43.073Z", "num": 28, "nom": "TWAP fin prevision Chainlink + carnet ecart serre", "depuis": "TWAP fin prevision Chainlink", "cote": "Up", "prix": 0.34, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:07:32.111Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.62, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 2.8109035063680494, "mom10": 3.5210643863101723, "lag5": -0.02486605479532
-  {"at": "2026-11-12T11:07:32.111Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.62, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 2.8109035063680494, "mom10": 3.5210643863101723, "lag5": -0.02486605479532
-  {"at": "2026-11-12T11:03:05.448Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.33, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T11:03:05.448Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.33, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T10:52:27.431Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.51, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T10:52:27.431Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.51, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T10:13:25.349Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.57, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 1.7692105618916685, "mom10": -1.1082490472472273, "lag5": -0.020704907941284
-  {"at": "2026-11-12T10:13:25.349Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Up", "prix": 0.57, "statut": "écarté par « + idées » (gros trade)", "garder": false, "mult": 1, "lead": 1.7692105618916685, "mom10": -1.1082490472472273, "lag5": -0.020704907941284
-  {"at": "2026-11-12T10:04:01.331Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.41, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T10:04:01.331Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.41, "statut": "diffusé", "mult": 3, "clients": 0}
-  {"at": "2026-11-12T10:04:01.003Z", "num": 28, "nom": "TWAP fin prevision Chainlink + carnet ecart serre", "depuis": "TWAP fin prevision Chainlink", "cote": "Down", "prix": 0.44, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T09:53:51.882Z", "num": 201, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.4, "statut": "diffusé", "mult": 1, "clients": 0}
-  {"at": "2026-11-12T09:53:51.882Z", "num": 101, "nom": "PORTEFEUILLE 400", "depuis": "V2-F incertitude 0,01 %", "cote": "Down", "prix": 0.4, "statut": "diffusé", "mult": 3, "clients": 0}
-
-https://bot95-signaux.pitch67.workers.dev/api/flux_signaux {"clients": 0, "actif": true}
-
-https://bot95.pitch67.workers.dev/api/flux_signaux {"clients": 1, "actif": true}
-
+{
+ "version": "12.11.2026 garde-fous 2 (connexion signaux)",
+ "mode": "paper",
+ "enMarche": true,
+ "choisies": [
+  101,
+  105,
+  301,
+  107,
+  214,
+  1114,
+  213,
+  1011,
+  2,
+  11,
+  14,
+  15,
+  600005,
+  127,
+  116
+ ],
+ "actives": [
+  600005
+ ],
+ "activesDepuis": {
+  "600005": "2026-11-09T23:49:26.543Z"
+ },
+ "dernierSignal": {
+  "101": null,
+  "105": null,
+  "116": null,
+  "1114": null,
+  "600005": null
+ },
+ "sourceSignaux": {
+  "source": "bot95-signaux",
+  "connecte": true,
+  "depuis": "2026-11-12T13:30:28.176Z",
+  "dernierMessage": "2026-11-12T13:41:31.981Z",
+  "derniereErreur": null,
+  "refuses": 0,
+  "dernierRefus": null,
+  "cle": "QzxCmNFijXwRGpsk"
+ }
+}
+bot95-signaux clients : {'clients': 0, 'actif': True}
+journal :
+  2026-11-12T13:41:30.719Z 201 écarté par « + idées » (gros trade) clients None
+  2026-11-12T13:41:30.719Z 101 écarté par « + idées » (gros trade) clients None
+  2026-11-12T13:19:24.678Z 201 diffusé clients 0
+  2026-11-12T13:19:24.678Z 101 diffusé clients 0
+  2026-11-12T13:19:03.021Z 119 diffusé clients 0
+  2026-11-12T13:19:03.021Z 121 diffusé clients 0
+  2026-11-12T13:13:29.290Z 201 diffusé clients 0
+  2026-11-12T13:13:29.290Z 101 diffusé clients 0
