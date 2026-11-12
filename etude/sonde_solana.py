@@ -1,14 +1,20 @@
-# 12.11.2026 : affichage lent / vide de l'onglet Trades — temps de réponse du serveur du bot pendant 90 s (lecture seule)
-import time, urllib.request
-def t(u):
+# 12.11.2026 : affichage « — » une fois sur deux — le serveur répond-il toujours pareil ? (lecture seule)
+import time, urllib.request, json, collections
+def g(u):
     a = time.time()
     try:
-        with urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "analyse"}), timeout=90) as r: r.read(); s = r.status
-    except Exception as e: s = str(e)[:40]
-    return round(time.time() - a, 2), s
+        with urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "analyse"}), timeout=60) as r: b = r.read(); s = r.status
+    except urllib.error.HTTPError as e: b = e.read(); s = e.code
+    except Exception as e: b = b""; s = str(e)[:40]
+    return round(time.time() - a, 2), s, b
 B = "https://72-11-157-70.sslip.io/api"
-print("santé (sans calcul) | état garde-fous :")
-for k in range(45):
-    print(time.strftime("%H:%M:%S"), t(B + "/healthz"), t(B + "/bot/banc/etat"), flush=True); time.sleep(1)
-print("banc trades (calcul complet) :", t(B + "/bot/banc/trades?depuis=2026-11-12T00:00:00Z"))
-print("banc decisions :", t(B + "/bot/banc/decisions?depuis=2026-11-12T00:00:00Z"))
+V = collections.Counter(); C = collections.Counter(); lents = []
+for k in range(60):
+    d, s, b = g(B + "/bot/banc/etat")
+    try: v = json.loads(b).get("version")
+    except Exception: v = "pas du JSON: " + b[:60].decode(errors="replace")
+    V[v] += 1
+    d2, s2, b2 = g(B + "/bot/bilan"); C[(s2, b2[:50].decode(errors="replace"))] += 1
+    if d > 1 or d2 > 1: lents.append((time.strftime("%H:%M:%S"), d, d2))
+    time.sleep(0.5)
+print("versions :", dict(V)); print("bilan sans connexion :", dict(C)); print("réponses > 1 s :", lents)
