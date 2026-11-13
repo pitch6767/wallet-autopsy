@@ -1,14 +1,10 @@
-# 13.11.2026 : que renvoie crypto-price avec une heure non alignée (= « prix en direct » du bot) ? (lecture seule)
-import json, urllib.request, datetime, time
+# 13.11.2026 : 2162 active + Trades remis à 11 h ? (lecture seule)
+import json, urllib.request
 def get(u):
-    try:
-        with urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "Mozilla/5.0"}), timeout=60) as r: return json.loads(r.read())
-    except Exception as e: return {"erreur": str(e)}
-for k in range(4):
-    now = time.time(); iso = datetime.datetime.fromtimestamp(now - 1, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    debut = int(now // 300 * 300); isod = datetime.datetime.fromtimestamp(debut, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    a = get(f"https://polymarket.com/api/crypto/crypto-price?symbol=BTC&eventStartTime={iso}&variant=fiveminute")
-    b = get(f"https://polymarket.com/api/crypto/crypto-price?symbol=BTC&eventStartTime={isod}&variant=fiveminute")
-    bn = get("https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT")
-    print(iso, "| « direct » :", a.get("openPrice"), "| ouverture du cycle", isod, ":", b.get("openPrice"), "| Binance :", bn.get("price"))
-    time.sleep(20)
+    with urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "analyse"}), timeout=120) as r: return json.loads(r.read())
+e = get("https://72-11-157-70.sslip.io/api/bot/banc/etat")
+for k in ["version", "actives", "activesDepuis", "choisies"]: print(k, ":", json.dumps(e.get(k), ensure_ascii=False))
+g = e.get("regles", {}); print("règles :", {k: g.get(k) for k in ["vus", "doubles", "doublesF2", "sansEcart", "refuses"]})
+for a in (g.get("acceptes") or [])[:5]: print("  accepté :", a)
+tp = get("https://72-11-157-70.sslip.io/api/bot/banc/decisions?depuis=2026-11-01T00:00:00Z").get("tradesPaper") or []
+print("onglet Trades :", len(tp), "trades ; lignes", sorted({x.get("n") for x in tp}), "; avant 11 h :", sum(1 for x in tp if x.get("ouvert", "") < "2026-11-13T10:00"))
