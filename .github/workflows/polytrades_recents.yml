@@ -1,0 +1,63 @@
+name: Transactions Polymarket BTC 5 min recentes (lecture seule, API publique)
+# 13.11.2026 (Pitch : « je veux trouver des stratégies qui gagnent ds ces marchés ») : toutes les transactions publiques des marchés
+# BTC Up/Down 5 min, un job par jour, pour étudier les portefeuilles gagnants. Lecture seule, aucune clé.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/polytrades_recents.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  h:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        jour: ["2026-11-06", "2026-11-07", "2026-11-08", "2026-11-09", "2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13"]
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 1 }
+      - run: |
+          set +e
+          mkdir -p /tmp/h && cd /tmp/h
+          python3 - > /tmp/h_sortie.txt 2>&1 <<'P'
+          import json, time, gzip, datetime, urllib.request
+          G = "https://gamma-api.polymarket.com"; D = "https://data-api.polymarket.com"
+          def get(u):
+              for k in range(6):
+                  try: return json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "etude-btc5m"}), timeout=60).read())
+                  except Exception as e:
+                      if "404" in str(e) or "400" in str(e): return None
+                      time.sleep(8 if "429" in str(e) else 1.5 * (k + 1))
+              return None
+          j = "${{ matrix.jour }}"
+          d0 = int(datetime.datetime.fromisoformat(j + "T00:00").replace(tzinfo=datetime.timezone.utc).timestamp())
+          M = {}; n = 0; manq = 0; tronques = 0
+          for st in range(d0, min(d0 + 86400, int(time.time()) // 300 * 300 - 600), 300):
+              ev = get(f"{G}/events?slug=btc-updown-5m-{st}")
+              if not ev: manq += 1; continue
+              m = ev[0]["markets"][0]; cid = m.get("conditionId")
+              try: out = json.loads(m["outcomes"]); px = [float(x) for x in json.loads(m["outcomePrices"])]
+              except Exception: out, px = [], []
+              T = []; off = 0
+              while off <= 9500:
+                  r = get(f"{D}/trades?market={cid}&limit=500&offset={off}&takerOnly=false")
+                  if not r: break
+                  T += [[x.get("timestamp"), x.get("proxyWallet"), x.get("side"), x.get("outcome"), x.get("price"), x.get("size"), x.get("transactionHash"), (x.get("name") or x.get("pseudonym") or "")[:40]] for x in r]
+                  if len(r) < 500: break
+                  off += 500; time.sleep(0.1)
+              if off > 9500: tronques += 1
+              M[str(st)] = {"resultat": dict(zip(out, px)), "trades": T}; n += len(T)
+          with gzip.open(f"polytrades_{j}.json.gz", "wt") as f: json.dump({"format": "[timestamp_s, portefeuille, BUY/SELL, outcome, prix, parts, transaction, nom]", "marches": M}, f)
+          print("jour", j, "marches", len(M), "manquants", manq, "tronques (>10000 transactions)", tronques, "transactions", n)
+          P
+          tail -5 /tmp/h_sortie.txt
+          cd /tmp && mkdir -p w && cd w && git init -q && git config user.name histo && git config user.email bot@users.noreply.github.com
+          git remote add origin "$(git -C $GITHUB_WORKSPACE remote get-url origin)"
+          git -C $GITHUB_WORKSPACE config --get-regexp 'http.*extraheader' | while read k v; do git config "$k" "$v"; done
+          b=pt-polytrades_${{ matrix.jour }}
+          git checkout -q --orphan $b; mkdir -p polytrades; cp /tmp/h/*.json.gz polytrades/; cp /tmp/h_sortie.txt polytrades/journal.txt
+          git add polytrades && git commit -qm "$b" && for k in 1 2 3 4; do git push -qf origin HEAD:refs/heads/$b && break; sleep 10; done
