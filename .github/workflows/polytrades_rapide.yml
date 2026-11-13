@@ -1,4 +1,4 @@
-name: Transactions Polymarket BTC 5 min 12-13.11 rapide (lecture seule)
+name: Transactions Polymarket BTC 5 min v2 (lecture seule)
 # 13.11.2026 (Pitch : « je veux trouver des stratégies qui gagnent ds ces marchés ») : toutes les transactions publiques des marchés
 # BTC Up/Down 5 min, un job par jour, pour étudier les portefeuilles gagnants. Lecture seule, aucune clé.
 on:
@@ -14,9 +14,9 @@ jobs:
     timeout-minutes: 340
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 4
       matrix:
-        jour: ["2026-11-13", "2026-11-12"]
+        jour: ["2026-11-13", "2026-11-12", "2026-11-11", "2026-11-10", "2026-11-09", "2026-11-08", "2026-11-07", "2026-11-06"]
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 1 }
@@ -42,19 +42,20 @@ jobs:
               m = ev[0]["markets"][0]; cid = m.get("conditionId")
               try: out = json.loads(m["outcomes"]); px = [float(x) for x in json.loads(m["outcomePrices"])]
               except Exception: out, px = [], []
-              T = []; off = 0
-              while off <= 9500:
-                  r = get(f"{D}/trades?market={cid}&limit=500&offset={off}&takerOnly=false")
-                  if not r: break
-                  T += [[x.get("timestamp"), x.get("proxyWallet"), x.get("side"), x.get("outcome"), x.get("price"), x.get("size"), x.get("transactionHash"), (x.get("name") or x.get("pseudonym") or "")[:40]] for x in r]
-                  if len(r) < 500: break
-                  off += 500
+              T = []; cur = None
+              for _ in range(60):
+                  u = f"{D}/v2/trades?condition={cid}&limit=1000&taker_only=false&filter_amount=0" + (f"&cursor={cur}" if cur else "")
+                  r = get(u)
+                  if not r or not r.get("data"): break
+                  T += [[x.get("timestamp"), x.get("proxy_wallet"), x.get("side"), x.get("outcome"), x.get("price"), x.get("size"), x.get("transaction_hash") or x.get("transactionHash"), (x.get("name") or x.get("pseudonym") or "")[:40]] for x in r["data"]]
+                  cur = (r.get("pagination") or {}).get("next_cursor")
+                  if not cur: break
               return st, {"resultat": dict(zip(out, px)), "trades": T}
           M = {}; n = 0; manq = 0; tronques = 0
           with cf.ThreadPoolExecutor(6) as ex:
               for st, v in ex.map(un, range(d0, min(d0 + 86400, int(time.time()) // 300 * 300 - 600), 300)):
                   if v is None: manq += 1; continue
-                  if len(v["trades"]) >= 10000: tronques += 1
+                  if len(v["trades"]) >= 60000: tronques += 1
                   M[str(st)] = v; n += len(v["trades"])
           with gzip.open(f"polytrades_{j}.json.gz", "wt") as f: json.dump({"format": "[timestamp_s, portefeuille, BUY/SELL, outcome, prix, parts, transaction, nom]", "marches": M}, f)
           print("jour", j, "marches", len(M), "manquants", manq, "tronques (>10000 transactions)", tronques, "transactions", n)
