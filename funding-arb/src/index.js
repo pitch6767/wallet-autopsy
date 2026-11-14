@@ -3,7 +3,7 @@
 // trouve pour chaque actif la meilleure paire (short là où le funding est le plus haut, long là où il est le plus bas),
 // mesure combien de temps l'écart dure, et simule des trades seulement s'il dure et reste rentable après frais.
 import { DurableObject } from "cloudflare:workers";
-const VERSION = "1.1.1";
+const VERSION = "1.2.0";
 
 // Règles proposées (Pitch décide — modifiables ici)
 const REGLES = {
@@ -29,11 +29,10 @@ const prochaineHeure = (now) => Math.ceil((now + 1) / H) * H;
 
 // ---------- Lecteurs par plateforme : {ex, base, sym, rate, intH, next, cont, mark, bid, ask, stock}
 async function binance(env) {
-  const [pi, fi, bt] = await Promise.all([
-    j("https://fapi.binance.com/fapi/v1/premiumIndex"),
-    j("https://fapi.binance.com/fapi/v1/fundingInfo").catch(() => []),
-    j("https://fapi.binance.com/fapi/v1/ticker/bookTicker"),
-  ]);
+  // Binance refuse tous les serveurs Cloudflare : lecture via le serveur de Dublin (relais en lecture seule, cache 60 s)
+  const r = await j("https://72-11-157-70.sslip.io/api/public/binance-funding");
+  if (!Array.isArray(r.premiumIndex) || !Array.isArray(r.bookTicker)) throw new Error("relais Dublin : " + JSON.stringify(r.erreurs || r).slice(0, 150));
+  const pi = r.premiumIndex, fi = Array.isArray(r.fundingInfo) ? r.fundingInfo : [], bt = r.bookTicker;
   const iv = Object.fromEntries(fi.map((x) => [x.symbol, num(x.fundingIntervalHours)]));
   const bk = Object.fromEntries(bt.map((x) => [x.symbol, x]));
   return pi.filter((x) => x.symbol.endsWith("USDT") && x.nextFundingTime > 0).map((x) => ({
@@ -107,7 +106,7 @@ const LECTEURS = { binance, bybit, okx, hyperliquid, deribit };
 
 // Binance et Bybit bloquent les serveurs Cloudflare situés aux États-Unis :
 // on les lit depuis un Durable Object placé en Europe (indice de lieu), d'abord Europe de l'Ouest, sinon Europe de l'Est.
-const VIA_EUROPE = ["binance", "bybit"];
+const VIA_EUROPE = ["bybit"];
 export class Relais extends DurableObject {
   async lire(nom) {
     let lieu = null;
