@@ -1,24 +1,24 @@
-├───────────────┤
-│ 0001_init.sql │
-└───────────────┘
-? About to apply 1 migration(s)
-Your database may not be available to serve requests during the migration, continue?
-🤖 Using fallback value in non-interactive context: yes
-🌀 Executing on remote database funding-arb (e2ad9364-db37-4e09-a60d-ae95879b46e0):
-🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
-🚣 Executed 4 commands in 0.60ms
-┌───────────────┬────────┐
-│ name          │ status │
-├───────────────┼────────┤
-│ 0001_init.sql │ ✅     │
-└───────────────┴────────┘
+env.ASSETS                    Assets           
+
+Uploaded funding-arb (2.35 sec)
+Deployed funding-arb triggers (1.94 sec)
+  https://funding-arb.pitch67.workers.dev
+  schedule: */5 * * * *
+Current Version ID: 74e553d6-4a8b-4127-94bd-296df0127262
+code sortie: 0
+
+ ⛅️ wrangler 4.162.0
+────────────────────
+Resource location: remote 
+
+✅ No migrations to apply!
 migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","version":"1.0.0","statut":{"binance":{"ok":false,"err":"HTTP 403 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META"},"bybit":{"ok":false,"err":"HTTP 403 {\n    error:The Amazon CloudFront distribution is configured to block access from your country\n}"},"deribit":{"ok":false,"err":"HTTP 400 {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32602,\"data\":{\"reason\":\"invalid currency\",\"param\":\"currency\"},\"message\":\"Invalid param"},"okx":{"ok":true,"n":528,"ms":187},"hyperliquid":{"ok":true,"n":329,"ms":558}},"top":[{"base":"SOPH","short":"hyperliquid","long":"okx","spreadH":0.001253646557848225,"cout":0.01275891026322902},{"base":"GPRO","short":"okx","long":"hyperliquid","spreadH":0.0003054749,"cout":0.0388868196104342},{"base":"INIT","short":"hyperliquid","long":"okx","spreadH":0.00025668169007452495,"cout":0.005071334943124188},{"base":"KORU","short":"hyperliquid","long":"okx","spreadH":0.00021546417686366248,"cout":0.003505235945635741},{"base":"UMC","short":"hyperliquid","long":"okx","spreadH":0.0002103187,"cout":0.021130986250733726}]}
+{"app":"funding-arb-app","version":"1.0.1","statut":{"bybit":{"ok":false,"err":"HTTP 403 {\n    error:The Amazon CloudFront distribution is configured to block access from your country\n}"},"binance":{"ok":false,"err":"HTTP 403 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META"},"okx":{"ok":true,"n":528,"ms":139},"deribit":{"ok":true,"n":151,"ms":500},"hyperliquid":{"ok":true,"n":329,"ms":528}},"top":[{"base":"SOPH","short":"hyperliquid","long":"okx","spreadH":0.0011928942027554749,"cout":0.020397569563756934},{"base":"GPRO","short":"okx","long":"hyperliquid","spreadH":0.0003055181,"cout":0.03746189588111126},{"base":"INIT","short":"hyperliquid","long":"okx","spreadH":0.000242992647028675,"cout":0.005036125600230057},{"base":"UMC","short":"hyperliquid","long":"okx","spreadH":0.0002113792,"cout":0.02102599590667859},{"base":"CASHCAT","short":"okx","long":"deribit","spreadH":0.00018714375,"cout":1.431278997535977}]}
 === controles
 --- version
-{"version":"1.0.0"}
+{"version":"1.0.1"}
 --- etat
-{"version":"1.0.0","regles":{"notional":1000,"persistanceMin":60,"horizonH":24,"multipleCout":2,"sortieTicks":1,"maxDonneesManquantesMin":30},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"scan":null,"ouvertes":[],"fermees":[],"total":{"n":0,"net":null,"g":null,"fund":null,"frais":null,"debut":null}}
+{"version":"1.0.1","regles":{"notional":1000,"persistanceMin":60,"horizonH":24,"multipleCout":2,"sortieTicks":1,"maxDonneesManquantesMin":30},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"scan":null,"ouvertes":[],"fermees":[],"total":{"n":0,"net":null,"g":null,"fund":null,"frais":null,"debut":null}}
