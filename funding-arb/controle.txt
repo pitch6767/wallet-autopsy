@@ -1,10 +1,10 @@
 env.ASSETS                    Assets              
 
-Uploaded funding-arb (2.74 sec)
-Deployed funding-arb triggers (0.65 sec)
+Uploaded funding-arb (2.38 sec)
+Deployed funding-arb triggers (0.46 sec)
   https://funding-arb.pitch67.workers.dev
   schedule: */5 * * * *
-Current Version ID: c890fee8-4034-42fa-9c80-667e66a1ec8c
+Current Version ID: ff360608-b305-4764-9de9-3d55e3b383c7
 code sortie: 0
 
  ⛅️ wrangler 4.162.0
@@ -16,9 +16,9 @@ migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","version":"1.2.0","statut":{"okx":{"ok":true,"n":528,"ms":133},"deribit":{"ok":true,"n":151,"ms":273},"bybit":{"ok":true,"n":829,"ms":638,"lieu":"AMS/US"},"hyperliquid":{"ok":true,"n":329,"ms":672},"binance":{"ok":false,"err":"HTTP 401 {\"error\":\"unauthorized\",\"code\":\"UNAUTHORIZED\"}"}},"top":[{"base":"INIT","short":"hyperliquid","long":"bybit","spreadH":0.0012826525,"cout":0.004780725413336641},{"base":"SOPH","short":"bybit","long":"okx","spreadH":0.00066556364364085,"cout":0.003953141239668686},{"base":"DRV","short":"hyperliquid","long":"bybit","spreadH":0.00045400000000000003,"cout":0.02282936976382333},{"base":"ACT","short":"okx","long":"bybit","spreadH":0.0003768006235005,"cout":0.0034816144083938284},{"base":"BTW","short":"bybit","long":"okx","spreadH":0.00036909750000000004,"cout":0.004064494011524256}]}
+{"app":"funding-arb-app","version":"1.2.0","statut":{"okx":{"ok":true,"n":528,"ms":130},"deribit":{"ok":true,"n":151,"ms":262},"binance":{"ok":false,"err":"HTTP 401 {\"error\":\"unauthorized\",\"code\":\"UNAUTHORIZED\"}"},"hyperliquid":{"ok":true,"n":329,"ms":618},"bybit":{"ok":true,"n":829,"ms":1495,"lieu":"AMS/US"}},"top":[{"base":"SOPH","short":"bybit","long":"okx","spreadH":0.0004817152974092249,"cout":0.003483234127563611},{"base":"DRV","short":"hyperliquid","long":"bybit","spreadH":0.00038195,"cout":0.02442530929557259},{"base":"BTW","short":"bybit","long":"okx","spreadH":0.0003649925,"cout":0.00467232324078743},{"base":"ACT","short":"okx","long":"bybit","spreadH":0.00031397236350585,"cout":0.003723189982278847},{"base":"GPRO","short":"okx","long":"hyperliquid","spreadH":0.0002961181,"cout":0.0375960822218807}]}
 === controles
 --- version
 {"version":"1.2.0"}
 --- etat
-{"version":"1.2.0","regles":{"notional":1000,"persistanceMin":60,"horizonH":24,"multipleCout":2,"sortieTicks":1,"maxDonneesManquantesMin":30},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794687034924,"scan":{"statut":{"deribit":{"ok":true,"n":151,"ms":89},"okx":{"ok":false,"err":"HTTP 429 {\"msg\":\"Too Many Requests\",\"code\":\"50011\"}"},"binance":{"ok":false,"err":"HTTP 403 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META (depuis WAW/US)"},"hyperliquid":{"ok":
+{"version":"1.2.0","regles":{"notional":1000,"persistanceMin":60,"horizonH":24,"multipleCout":2,"sortieTicks":1,"maxDonneesManquantesMin":30},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794687934951,"scan":{"statut":{"deribit":{"ok":true,"n":151,"ms":45},"binance":{"ok":false,"err":"HTTP 401 {\"error\":\"unauthorized\",\"code\":\"UNAUTHORIZED\"}"},"okx":{"ok":true,"n":528,"ms":450},"hyperliquid":{"ok":true,"n":329,"ms":756},"bybit":{"ok":true,"n":829,"ms":1019,"lieu":"AMS/US"}},"top":[{"base":"SOPH","stock":false,"short":"bybit","long":"o
