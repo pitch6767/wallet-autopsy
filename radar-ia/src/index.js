@@ -6,7 +6,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { SOURCES, MOTS_IA, MOTS_DEPOT, TYPES_MODELE, RUBRIQUES, POIDS_RUBRIQUES } from "./sources.js";
 
-const VERSION = "1.2.2";
+const VERSION = "1.2.3";
 const MODELE = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const UA = "Mozilla/5.0 (compatible; RadarIA/1.1; +https://radar-ia.pitch67.workers.dev)";
 const FUSEAU = "Europe/Zurich";
@@ -123,6 +123,10 @@ function lireJson(txt, ouvrant = "[") {
   return JSON.parse(txt.slice(a, b + 1).replace(/[\u0000-\u001f]+/g, " "));
 }
 
+// Reddit refuse les demandes trop rapprochées (HTTP 429) : une seule lecture à la fois, 3 s d'écart
+let fileReddit = Promise.resolve();
+const tourReddit = () => { const t = fileReddit.then(() => new Promise((ok) => setTimeout(ok, 3000))); fileReddit = t; return t; };
+
 // Les meilleurs commentaires de la discussion Hacker News ou Reddit d'une carte (texte brut, ou "" si aucun)
 async function commentaires(c, d = {}) {
   const membres = [c, ...(c._membres || [])];
@@ -139,6 +143,7 @@ async function commentaires(c, d = {}) {
     const rd = membres.map((o) => o.url).find((u) => /reddit\.com\/r\/[^/]+\/comments\//.test(u || ""));
     if (rd) {
       d.reddit_essais = (d.reddit_essais || 0) + 1;
+      await tourReddit();
       // le flux RSS d'une discussion Reddit : 1re entrée = le message, les suivantes = les commentaires
       const xml = await (await chercher(rd.split("?")[0].replace(/\/?$/, "/") + ".rss?sort=top&limit=8", {}, 8000)).text();
       const txt = lireFlux(xml).slice(1, 6).map((k) => "- " + nettoyer(k.texte)).filter((t) => t.length > 8);
