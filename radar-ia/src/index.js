@@ -6,7 +6,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { SOURCES, MOTS_IA, MOTS_DEPOT, TYPES_MODELE, RUBRIQUES, POIDS_RUBRIQUES } from "./sources.js";
 
-const VERSION = "1.2.3";
+const VERSION = "1.2.4";
 const MODELE = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const UA = "Mozilla/5.0 (compatible; RadarIA/1.1; +https://radar-ia.pitch67.workers.dev)";
 const FUSEAU = "Europe/Zurich";
@@ -616,6 +616,7 @@ export class Radar extends DurableObject {
   // et repère ce qui a déjà été publié ces 7 derniers jours.
   async dedoublonner(cartes) {
     this._fusions = 0;
+    this._refusGroupes = 0;
     const infos = cartes.filter((c) => ["article", "papier", "version", "video"].includes(c.genre));
     if (infos.length < 2) return cartes;
     // seulement les sujets passés qui partagent au moins 2 mots avec un candidat (sinon la demande devient trop grosse et l'IA s'emballe)
@@ -634,7 +635,7 @@ Réponds UNIQUEMENT par un objet JSON compact sur une seule ligne : {"groupes": 
     try {
       brut = await this.ia([{ role: "system", content: consigne }, { role: "user", content: demande }], 2500);
       r = lireJson(brut, "{");
-      this.ecrire("diag_doublons", { quand: Date.now(), ok: true, candidats: infos.length, passes: passes.length, caracteres_demande: demande.length + consigne.length, caracteres_reponse: brut.length });
+      this.ecrire("diag_doublons", { quand: Date.now(), ok: true, groupes_proposes: (r.groupes || []).length, candidats: infos.length, passes: passes.length, caracteres_demande: demande.length + consigne.length, caracteres_reponse: brut.length });
     } catch (e) {
       this.ecrire("diag_doublons", { quand: Date.now(), ok: false, erreur: String(e).slice(0, 300), candidats: infos.length, passes: passes.length, caracteres_demande: demande.length + consigne.length, caracteres_reponse: brut.length, debut: brut.slice(0, 600), fin: brut.slice(-400) });
       this.ecrire("derniere_erreur_ia", { quand: Date.now(), etape: "doublons", erreur: String(e).slice(0, 300) });
@@ -646,8 +647,13 @@ Réponds UNIQUEMENT par un objet JSON compact sur une seule ligne : {"groupes": 
       if (membres.length < 2) continue;
       membres.sort((a, b) => (a.genre === "video") - (b.genre === "video") || b.score - a.score);
       const chef = membres[0];
+      const motsGroupe = motsTitre(`${chef.titre} ${chef.titre_original}`);
       for (const m of membres.slice(1)) {
         if (retirer.has(m)) continue;
+        // l'IA invente parfois des groupes : on n'accepte que des titres qui ont au moins un mot en commun avec le groupe
+        const mm = motsTitre(`${m.titre} ${m.titre_original}`);
+        if (![...mm].some((w) => motsGroupe.has(w))) { this._refusGroupes = (this._refusGroupes || 0) + 1; continue; }
+        for (const w of mm) motsGroupe.add(w);
         chef.autres.push({ source: m.genre === "video" ? `${m.extra?.chaine || m.source} (vidéo)` : m.source, url: m.url, titre: m.titre_original });
         chef._membres.push(...(m._membres || []));
         chef.score += 0.15 * m.score; // un sujet repris partout est plus important
@@ -666,10 +672,10 @@ Réponds UNIQUEMENT par un objet JSON compact sur une seule ligne : {"groupes": 
     const consigne = `Tu es le rédacteur de « Radar IA », une veille en français pour un lecteur suisse qui teste l'IA chez lui et crée des apps.
 À partir du texte fourni, écris UNIQUEMENT un objet JSON : {"titre": "...", "resume": "...", "pourquoi": "..."}.
 - "titre" : titre informatif en français correct, 7 à 14 mots, qui dit ce que c'est et ce que ça apporte (pour un dépôt ou un modèle : son nom suivi de ce qu'il fait).
-- "resume" : 4 à 5 phrases en français, avec les faits concrets du texte (chiffres, noms, prix, dates, disponibilité, taille du modèle, licence). Rédige avec tes propres mots, ne recopie pas de longues phrases, n'invente rien.
+- "resume" : 4 à 5 phrases en français, d'après l'article seulement (pas les commentaires), avec les faits concrets du texte (chiffres, noms, prix, dates, disponibilité, taille du modèle, licence). Rédige avec tes propres mots, ne recopie pas de longues phrases, n'invente rien.
 - "pourquoi" : une phrase sur ce que cela change concrètement pour lui (tester chez soi, matériel nécessaire, créer une app) ; vide si rien.
 - "avis" : si des commentaires d'internautes sont fournis, 1 à 2 phrases en français sur ce qu'ils en disent (critiques, doutes, retours d'essai, points d'accord) ; vide sinon.
-- "terme" : UN SEUL nom propre ou terme technique du texte que le lecteur risque de ne pas connaître (petite société, projet, outil, concept), tel qu'écrit dans le texte, jamais une liste ; vide si tout est connu du grand public (jamais Nvidia, Google, OpenAI, Apple, Microsoft, Meta, Anthropic, ChatGPT…).`;
+- "terme" : UN SEUL nom propre ou terme technique du texte que le lecteur risque de ne pas connaître (petite société, projet, outil, concept), tel qu'écrit dans le texte, jamais une liste ; vide si tout est connu du grand public ou d'un lecteur qui suit l'IA (jamais Nvidia, Google, OpenAI, Apple, Microsoft, Meta, Anthropic, ChatGPT, Claude, Gemini, ni LLM, IA, GPU, API, open source…).`;
     await parPaquets(cartes, 6, async (c) => {
       let texte = "";
       try {
@@ -711,10 +717,11 @@ Réponds UNIQUEMENT par un objet JSON compact sur une seule ligne : {"groupes": 
     const consigne = `Un article s'intitule « ${titre} » (${resume}). On veut expliquer au lecteur ce qu'est « ${terme} » dans CET article.
 Voici une fiche de référence trouvée sur ${src.source}. Réponds UNIQUEMENT par un objet JSON : {"meme_sens": true ou false, "explication": "..."}.
 - "meme_sens" : true seulement si la fiche décrit exactement la même chose que « ${terme} » dans l'article (même objet, même domaine) ; false sinon (homonyme, autre domaine, sujet plus large).
-- "explication" : 1 ou 2 phrases en français simple, d'après la fiche uniquement.`;
+- "explication" : 1 ou 2 phrases en français simple qui disent ce qu'est « ${terme} », d'après la fiche uniquement ; ne parle ni de l'article, ni de la fiche, ni de ta vérification.`;
     try {
       const r = lireJson(await this.ia([{ role: "system", content: consigne }, { role: "user", content: src.texte }], 300), "{");
-      const t = String(r.explication || "").split("\n")[0].trim();
+      // on retire toute phrase où l'IA commente sa vérification au lieu d'expliquer
+      const t = String(r.explication || "").split("\n")[0].split(/(?<=[.!?])\s+/).filter((p) => !/\b(article|fiche|description|correspond)\b/i.test(p)).join(" ").trim();
       if (String(r.meme_sens) !== "true" || t.length < 20) { d.refus.push(`${terme} : ${src.source} refusée (même sens = ${r.meme_sens})`); return null; }
       return { terme, texte: t.slice(0, 400), source: src.source, url: src.url };
     } catch (e) { d.refus.push(`${terme} : ${String(e).slice(0, 80)}`); return null; }
