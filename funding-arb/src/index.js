@@ -116,6 +116,25 @@ export class Relais extends DurableObject {
     catch (e) { return { ok: false, err: String(e.message || e).slice(0, 200), lieu }; }
   }
 }
+// Sonde temporaire : quelles portes Binance répondent depuis l'Europe
+Relais.prototype.essaiBinance = async function () {
+  const urls = ["https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT", "https://fapi1.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT",
+    "https://fapi2.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT", "https://fapi3.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT",
+    "https://www.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT", "https://data-api.binance.vision/api/v3/ticker/bookTicker?symbol=BTCUSDT"];
+  const out = {};
+  for (const u of urls) { try { const r = await fetch(u); out[u] = r.status + " " + (await r.text()).slice(0, 80); } catch (e) { out[u] = "erreur " + e.message; } }
+  try {
+    const r = await fetch("https://fstream.binance.com/ws/!markPrice@arr", { headers: { Upgrade: "websocket" } });
+    const ws = r.webSocket;
+    if (!ws) out.ws = "pas de websocket, statut " + r.status;
+    else {
+      ws.accept();
+      out.ws = await new Promise((ok) => { const t = setTimeout(() => ok("aucun message en 8 s"), 8000); ws.addEventListener("message", (m) => { clearTimeout(t); ok("OK " + String(m.data).slice(0, 120)); }); });
+      ws.close();
+    }
+  } catch (e) { out.ws = "erreur " + e.message; }
+  return out;
+};
 async function lireEurope(env, nom) {
   let dernier = null;
   for (const hint of ["weur", "eeur"]) {
@@ -250,6 +269,11 @@ export default {
       const { statut, lignes } = await toutLire(env);
       const p = meilleuresPaires(lignes).slice(0, 5).map((x) => ({ base: x.base, short: x.s.ex, long: x.l.ex, spreadH: x.sh, cout: x.cout }));
       return new Response(JSON.stringify({ app: "funding-arb-app", version: VERSION, statut, top: p }), { headers: JSONH });
+    }
+    if (u.pathname === "/api/sonde-binance") {
+      const res = {};
+      for (const hint of ["weur", "eeur"]) res[hint] = await env.RELAIS.get(env.RELAIS.idFromName("relais-" + hint), { locationHint: hint }).essaiBinance();
+      return new Response(JSON.stringify(res, null, 1), { headers: JSONH });
     }
     if (u.pathname === "/api/etat") {
       const e = await env.DB.prepare("SELECT * FROM etat WHERE id=1").first();
