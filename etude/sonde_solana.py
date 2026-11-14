@@ -1,6 +1,10 @@
-# 14.11.2026 : vérification du teneur de paires simulé (lecture seule)
-import json, urllib.request
-g = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "analyse"}), timeout=60).read())
+# 14.11.2026 midi : résultats du teneur de paires simulé (lecture seule)
+import json, urllib.request, gzip, subprocess, os
+g = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "analyse"}), timeout=120).read())
 e = g("https://72-11-157-70.sslip.io/api/bot/banc/etat"); print("version :", e.get("version")); print("actives :", e.get("actives"), "mode :", e.get("mode"))
-try: p = g("https://72-11-157-70.sslip.io/api/bot/paires"); print(json.dumps({k: p.get(k) for k in ["cycles", "gain", "mise", "rendementPct", "cyclesPositifs", "creux", "sommeMedianePaire", "enCours", "enAttente", "derniers"]}, ensure_ascii=False)[:3000])
-except Exception as x: print("paires :", x)
+p = g("https://72-11-157-70.sslip.io/api/bot/paires")
+print(json.dumps({k: p.get(k) for k in ["cycles", "gain", "mise", "rendementPct", "cyclesPositifs", "creux", "sommeMedianePaire", "parJour", "enAttente"]}, ensure_ascii=False))
+os.makedirs("etude/analyse", exist_ok=True)
+with gzip.open("etude/analyse/paires_14.json.gz", "wt") as f: json.dump(p, f)
+subprocess.run(["git", "add", "etude/analyse/paires_14.json.gz"])
+for d in p.get("derniers", [])[:30]: print(d)
