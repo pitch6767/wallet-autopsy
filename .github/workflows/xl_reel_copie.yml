@@ -1,0 +1,17 @@
+# 14.11.2026 : copie du fichier Excel des vrais trades (lecture seule) pour l'étude /motifs — lancé à la main, ~1 min
+name: Copie Excel vrais trades (lecture seule)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  x:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: .github }
+      - run: |
+          curl -sS -m 240 https://bot95.pitch67.workers.dev/excel-reel -o /tmp/r.xlsx; ls -l /tmp/r.xlsx; file /tmp/r.xlsx
+          mkdir -p bot95; cp /tmp/r.xlsx bot95/xl_reel.xlsx
+          git config user.name sonde; git config user.email bot@users.noreply.github.com; git add bot95/xl_reel.xlsx; git commit -q -m "Excel vrais trades [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push -q && break; sleep 5; done
