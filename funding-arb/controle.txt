@@ -1,10 +1,10 @@
 env.ASSETS                    Assets              
 
-Uploaded funding-arb (3.58 sec)
-Deployed funding-arb triggers (0.53 sec)
+Uploaded funding-arb (2.48 sec)
+Deployed funding-arb triggers (0.63 sec)
   https://funding-arb.pitch67.workers.dev
   schedule: */5 * * * *
-Current Version ID: bd9b4abd-02f0-49e5-b6f7-97ac9bc7d2f0
+Current Version ID: 272f071f-1c4a-491f-875b-f7446c1a4545
 code sortie: 0
 
  ⛅️ wrangler 4.162.0
@@ -16,9 +16,14 @@ migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","version":"1.2.0","statut":{"okx":{"ok":true,"n":528,"ms":215},"deribit":{"ok":true,"n":151,"ms":269},"binance":{"ok":true,"n":0,"ms":615},"hyperliquid":{"ok":true,"n":329,"ms":748},"bybit":{"ok":true,"n":829,"ms":1807,"lieu":"AMS/US"}},"top":[{"base":"ZHIPU","short":"okx","long":"hyperliquid","spreadH":0.0019397360848980249,"cout":0.004999527877512412},{"base":"MINIMAX","short":"okx","long":"hyperliquid","spreadH":0.0015573808707617875,"cout":0.005100430623622643},{"base":"BMNR","short":"deribit","long":"hyperliquid","spreadH":0.0012062114500000002,"cout":0.007888784683803038},{"base":"DRV","short":"bybit","long":"hyperliquid","spreadH":0.0011193957,"cout":0.04125120641974775},{"base":"APEX","short":"bybit","long":"hyperliquid","spreadH":0.0011058608999999998,"cout":0.01567698318206758}]}
+{"app":"funding-arb-app","version":"1.2.0","statut":{"okx":{"ok":false,"err":"HTTP 429 {\"msg\":\"Too Many Requests\",\"code\":\"50011\"}"},"deribit":{"ok":true,"n":151,"ms":253},"hyperliquid":{"ok":true,"n":329,"ms":685},"binance":{"ok":true,"n":0,"ms":806},"bybit":{"ok":true,"n":829,"ms":1237,"lieu":"AMS/US"}},"top":[{"base":"ZHIPU","short":"bybit","long":"hyperliquid","spreadH":0.0014801026999999999,"cout":0.005935694088728424},{"base":"MINIMAX","short":"bybit","long":"hyperliquid","spreadH":0.00123082225,"cout":0.005348242651243323},{"base":"DRV","short":"bybit","long":"hyperliquid","spreadH":0.0011575954000000001,"cout":0.053206146204273864},{"base":"BMNR","short":"deribit","long":"hyperliquid","spreadH":0.0011538911499999998,"cout":0.008558844025785266},{"base":"APEX","short":"bybit","long":"hyperliquid","spreadH":0.0010992166999999999,"cout":0.01899550296961835}]}
 === controles
 --- version
 {"version":"1.2.0"}
 --- etat
 {"version":"1.2.0","regles":{"notional":1000,"persistanceMin":60,"horizonH":24,"multipleCout":2,"sortieTicks":1,"maxDonneesManquantesMin":30},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794691234934,"scan":{"statut":{"deribit":{"ok":true,"n":151,"ms":121},"okx":{"ok":false,"err":"HTTP 429 {\"msg\":\"Too Many Requests\",\"code\":\"50011\"}"},"hyperliquid":{"ok":true,"n":329,"ms":449},"binance":{"ok":true,"n":0,"ms":599},"bybit":{"ok":true,"n":829,"ms":1939,"lieu":"AMS/US"}},"top":[{"base":"ZHIPU","stock":true,"short":"bybit","long":"hyperl
+--- relais Dublin
+{'t': 1794691420909, 'premiumIndex': 0, 'fundingInfo': 0, 'bookTicker': 0, 'erreurs': {'bookTicker': 'Binance HTTP 451', 'premiumIndex': 'Binance HTTP 451', 'fundingInfo': 'Binance HTTP 451'}}
+premiumIndex []
+fundingInfo []
+bookTicker []
