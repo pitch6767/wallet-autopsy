@@ -6,7 +6,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { SOURCES, MOTS_IA, MOTS_DEPOT, TYPES_MODELE, RUBRIQUES, POIDS_RUBRIQUES } from "./sources.js";
 
-const VERSION = "1.2.1";
+const VERSION = "1.2.2";
 const MODELE = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const UA = "Mozilla/5.0 (compatible; RadarIA/1.1; +https://radar-ia.pitch67.workers.dev)";
 const FUSEAU = "Europe/Zurich";
@@ -139,8 +139,9 @@ async function commentaires(c, d = {}) {
     const rd = membres.map((o) => o.url).find((u) => /reddit\.com\/r\/[^/]+\/comments\//.test(u || ""));
     if (rd) {
       d.reddit_essais = (d.reddit_essais || 0) + 1;
-      const j = await (await chercher(rd.split("?")[0].replace(/\/?$/, "/") + ".json?sort=top&limit=8", {}, 8000)).json();
-      const txt = (j?.[1]?.data?.children || []).filter((k) => k.kind === "t1" && k.data?.body && !k.data.stickied).slice(0, 5).map((k) => "- " + nettoyer(k.data.body));
+      // le flux RSS d'une discussion Reddit : 1re entrée = le message, les suivantes = les commentaires
+      const xml = await (await chercher(rd.split("?")[0].replace(/\/?$/, "/") + ".rss?sort=top&limit=8", {}, 8000)).text();
+      const txt = lireFlux(xml).slice(1, 6).map((k) => "- " + nettoyer(k.texte)).filter((t) => t.length > 8);
       if (txt.length) return txt.join("\n");
     }
   } catch (e) { d.reddit_erreurs = (d.reddit_erreurs || 0) + 1; d.derniere_erreur_discussion = String(e).slice(0, 120); }
@@ -612,17 +613,21 @@ export class Radar extends DurableObject {
     this._fusions = 0;
     const infos = cartes.filter((c) => ["article", "papier", "version", "video"].includes(c.genre));
     if (infos.length < 2) return cartes;
-    const passes = this.sql.exec(`SELECT titre FROM sujets ORDER BY ts DESC LIMIT 400`).toArray().map((r) => r.titre);
+    // seulement les sujets passés qui partagent au moins 2 mots avec un candidat (sinon la demande devient trop grosse et l'IA s'emballe)
+    const motsCand = infos.map((c) => motsTitre(`${c.titre} ${c.titre_original}`));
+    const proche = (t) => { const m = motsTitre(t); return motsCand.some((mc) => { let k = 0; for (const w of m) if (mc.has(w) && ++k >= 2) return true; return false; }); };
+    const passes = this.sql.exec(`SELECT titre FROM sujets ORDER BY ts DESC LIMIT 400`).toArray().map((r) => r.titre).filter(proche).slice(0, 80);
     const liste = infos.map((c, i) => `${i}. ${c.titre} — ${c.titre_original}`).join("\n");
     const anciens = passes.map((t, i) => `P${i}. ${t}`).join("\n");
     const consigne = `Tu es l'éditeur d'une revue de presse IA. Voici les sujets candidats de l'édition, puis les sujets déjà publiés ces 7 derniers jours.
 1) Regroupe les candidats qui parlent du même sujet : même annonce, même produit, même modèle, même étude — y compris tous les articles et vidéos sur la sortie d'un même modèle (tests, classements, conseils, démonstrations, avis sur ce modèle vont TOUS dans le groupe de cette sortie), même s'ils sont dans des langues différentes ou viennent de sources différentes. Le lecteur ne veut voir qu'une seule carte par sujet.
 2) Liste les candidats qui répètent un sujet déjà publié, SAUF s'ils apportent un fait nouveau important (nouvelle version, chiffres nouveaux, disponibilité réelle).
-Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_publies": [numéros]}. Ne mets dans "groupes" que les groupes d'au moins 2 numéros.`;
+Les numéros valides des candidats vont de 0 à ${infos.length - 1}. N'invente aucun groupe : un groupe n'existe que si les titres parlent vraiment du même sujet. La plupart des candidats ne sont dans aucun groupe.
+Réponds UNIQUEMENT par un objet JSON compact sur une seule ligne : {"groupes": [[numéros], ...], "deja_publies": [numéros]}. Ne mets dans "groupes" que les groupes d'au moins 2 numéros.`;
     let r, brut = "";
     const demande = `CANDIDATS :\n${liste}\n\nDÉJÀ PUBLIÉS :\n${anciens || "(aucun)"}`;
     try {
-      brut = await this.ia([{ role: "system", content: consigne }, { role: "user", content: demande }], 1500);
+      brut = await this.ia([{ role: "system", content: consigne }, { role: "user", content: demande }], 2500);
       r = lireJson(brut, "{");
       this.ecrire("diag_doublons", { quand: Date.now(), ok: true, candidats: infos.length, passes: passes.length, caracteres_demande: demande.length + consigne.length, caracteres_reponse: brut.length });
     } catch (e) {
