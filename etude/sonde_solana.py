@@ -6,3 +6,4 @@ p = g("https://72-11-157-70.sslip.io/api/bot/paires")
 for k in ["v1", "v2", "v1MemePeriodeQueV2"]:
     v = p.get(k) or {}
     print(k, json.dumps({x: v.get(x) for x in ["depuis", "cycles", "gain", "mise", "rendementPct", "cyclesPositifs", "creux", "sommeMedianePaire", "cyclesEquilibres", "cyclesDesequilibres", "parJour"]}, ensure_ascii=False))
+# 1
