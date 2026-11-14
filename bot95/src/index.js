@@ -3,6 +3,7 @@ import { RAPIDE_VERSION, RAPIDE_CODE, RAPIDE_LAUNCHER } from "./rapide_code.js";
 import { QTWAP } from "./quantiles_twap.js";
 import { BETES } from "./portefeuilles_betes.js";
 import CATALOGUE from "./catalogue.json";
+import { PAGE_MOTIFS } from "./motifs.js";
 // 26.10.2026 : numéro fixe de chaque stratégie (même numéro sur les onglets, dans les Excel et dans le bot de trading de Dublin)
 const NUMS = new Map(CATALOGUE.map((c) => [c.nom, c.n]));
 function numDe(nom) { return NUMS.get(String(nom).replace(/ BTC$/, "")) || null; }
@@ -147,6 +148,7 @@ export default {
     // (POST, PUT, DELETE…) est refusée, sauf /api/signal_by1 (protégée par son propre jeton). Les anciennes commandes ouvertes
     // (rapide/*, reel/*, xl_parts, excel_rattrapage, refaire_dublin, reprendre) ne sont plus joignables.
     { const m = req.method.toUpperCase(); if (m !== "GET" && m !== "HEAD" && m !== "OPTIONS" && pathname !== "/api/signal_by1") return new Response("interdit", { status: 403 }); }
+    if (pathname === "/motifs") return new Response(PAGE_MOTIFS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });   // 14.11.2026 : étude des motifs BTC
     // 29.10.2026 (Pitch : « on utilise Cloudflare pour Binance ») : relais du flux public Binance pour le moteur local de Dublin
     // (Binance refuse le serveur de Dublin : 451). Seul le serveur de Dublin peut l'utiliser. Rien n'est stocké, aucun objet n'est réveillé.
     // 06.11.2026 (Pitch : « gagner les 160 ms de retard sur Binance… on fait cela maintenant ») : relais du flux Binance perp (meilleur prix BTCUSDT)
