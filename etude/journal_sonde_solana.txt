@@ -1,6 +1,7 @@
-version : 14.11.2026 H : règles A, D, E, F1, F3 retirées (seule C reste) ; teneur de paires v1 + v2 (/api/bot/paires)
-actives : [2162] mode : paper
-regles : {} 2026-11-14T14:37:47.651Z
-v1 {"depuis": null, "cycles": 181, "gain": -241.88, "mise": 10226.92, "rendementPct": -2.37, "cyclesPositifs": 74, "creux": 277.65, "sommeMedianePaire": 0.8889, "cyclesEquilibres": {"cycles": 91, "gain": 402.97}, "cyclesDesequilibres": {"cycles": 90, "gain": -644.85}, "parJour": {"2026-11-13": -21.4, "2026-11-14": -220.48}}
-v2 {"depuis": null, "cycles": 33, "gain": -14.35, "mise": 891.65, "rendementPct": -1.61, "cyclesPositifs": 19, "creux": 30.29, "sommeMedianePaire": 0.9179, "cyclesEquilibres": {"cycles": 22, "gain": 39.66}, "cyclesDesequilibres": {"cycles": 11, "gain": -54.01}, "parJour": {"2026-11-14": -14.35}}
-v1MemePeriodeQueV2 {"depuis": "2026-11-14T11:25:00.000Z", "cycles": 36, "gain": -21.72, "mise": 2377.64, "rendementPct": -0.91, "cyclesPositifs": 13, "creux": 69.41, "sommeMedianePaire": 0.8869, "cyclesEquilibres": {"cycles": 19, "gain": 110.86}, "cyclesDesequilibres": {"cycles": 17, "gain": -132.58}, "parJour": {"2026-11-14": -21.72}}
+version : 14.11.2026 H : règles A, D, E, F1, F3 retirées (seule C reste) ; remise à zéro 16 h ; teneur de paires 800001 (v1) / 800002 (v2) (/api/bot/paires)
+actives : [2162] mode : paper depuis : {'2162': '2026-11-13T10:00:00.000Z'}
+onglet Trades — trades 2162 visibles depuis 13.11 11 h : 0 | dont avant 16 h : 0 | en attente : 0
+paires : {'v1': 800001, 'v2': 800002} 2026-11-14T15:00:00Z
+v1 800001 {'cycles': 0, 'gain': 0, 'cyclesPositifs': 0}
+v2 800002 {'cycles': 0, 'gain': 0, 'cyclesPositifs': 0}
+avant remise : {"v1": {"version": "v1", "cycles": 182, "gain": -241.07, "mise": 10252.16, "rendementPct": -2.35, "cyclesPositifs": 75, "creux": 277.65, "sommeMedianePaire": 0.8891, "cyclesEquilibres": {"cycles": 92, "gain": 403.78}, "cyclesDesequilibres": {"cycles": 90, "gain": -644.85}, "parJour": {"2026-11-13": -21.4, "2026-11-14": -219.67}, "enAttente": 0}, "v2": {"version": "v2", "cycles": 33, "gain": -14.35, "mise": 891.65, "rendementPct": -1.61, "cyclesPositifs": 19, "creux": 30.29, "sommeMedianePaire": 0.9179, "cyclesEquilibres": {"cycles": 22, "gain": 39.66}, "cyclesDesequilibres": {"cycles": 11, "gain": -54.01}, "parJour": {"2026-11-14": -14.35}, "enAttente": 0}}
