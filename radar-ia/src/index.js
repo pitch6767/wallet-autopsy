@@ -227,7 +227,7 @@ export class Radar extends DurableObject {
       if (p === "/api/editions") return json(this.sql.exec(`SELECT id, cree FROM editions ORDER BY cree DESC LIMIT 60`).toArray());
       if (p === "/api/edition") {
         const id = url.searchParams.get("id");
-        const r = (id ? this.sql.exec(`SELECT contenu FROM editions WHERE id=?`, id) : this.sql.exec(`SELECT contenu FROM editions ORDER BY cree DESC LIMIT 1`)).toArray()[0];
+        const r = (id ? this.sql.exec(`SELECT contenu FROM editions WHERE id=?`, id) : this.sql.exec(`SELECT contenu FROM editions ORDER BY id DESC LIMIT 1`)).toArray()[0];
         if (!r) return json({ vide: true, etat: this.etat() });
         const e = JSON.parse(r.contenu);
         e.favoris = this.sql.exec(`SELECT id FROM favoris`).toArray().map((x) => x.id);
@@ -649,7 +649,7 @@ Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_pub
 - "resume" : 4 à 5 phrases en français, avec les faits concrets du texte (chiffres, noms, prix, dates, disponibilité, taille du modèle, licence). Rédige avec tes propres mots, ne recopie pas de longues phrases, n'invente rien.
 - "pourquoi" : une phrase sur ce que cela change concrètement pour lui (tester chez soi, matériel nécessaire, créer une app) ; vide si rien.
 - "avis" : si des commentaires d'internautes sont fournis, 1 à 2 phrases en français sur ce qu'ils en disent (critiques, doutes, retours d'essai, points d'accord) ; vide sinon.
-- "terme" : le nom propre ou terme technique principal du texte que le lecteur risque de ne pas connaître (société, projet, outil, concept), tel qu'écrit dans le texte ; vide si tout est connu du grand public.`;
+- "terme" : UN SEUL nom propre ou terme technique du texte que le lecteur risque de ne pas connaître (petite société, projet, outil, concept), tel qu'écrit dans le texte, jamais une liste ; vide si tout est connu du grand public (jamais Nvidia, Google, OpenAI, Apple, Microsoft, Meta, Anthropic, ChatGPT…).`;
     await parPaquets(cartes, 6, async (c) => {
       let texte = "";
       try {
@@ -672,7 +672,7 @@ Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_pub
         const r = lireJson(await this.ia([{ role: "system", content: consigne }, { role: "user", content: `Titre : ${c.titre_original}\n\nTexte :\n${texte}${avis ? `\n\nCommentaires des internautes :\n${avis}` : ""}` }], 900), "{");
         if (r.resume && r.resume.length > 80 && complet) { c.resume = r.resume; c.lu = true; }
         if (avis && r.avis && r.avis.length > 30) c.avis = r.avis;
-        if (r.terme && !["depot", "modele", "libre"].includes(c.genre)) c.contexte = await this.definir(String(r.terme).slice(0, 80), c.titre_original);
+        if (r.terme && !/[,;]/.test(r.terme) && !["depot", "modele", "libre"].includes(c.genre)) c.contexte = await this.definir(String(r.terme).slice(0, 80), c.titre_original, c.resume);
         if (r.pourquoi) c.pourquoi = r.pourquoi;
         if (r.titre && r.titre.length > 10 && (c.genre === "depot" || c.genre === "modele" || c.genre === "libre")) c.titre = r.titre;
       } catch (e) { this.ecrire("derniere_erreur_ia", { quand: Date.now(), etape: "lecture", erreur: String(e).slice(0, 300) }); }
@@ -680,13 +680,17 @@ Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_pub
   }
 
   // « C'est quoi ? » : courte explication d'un terme, d'après Wikipédia (français puis anglais) ou GitHub
-  async definir(terme, titre) {
+  async definir(terme, titre, resume) {
     const src = await chercherDefinition(terme);
     if (!src) return null;
-    const consigne = `Explique en 1 ou 2 phrases en français simple, pour un lecteur non spécialiste, ce qu'est « ${terme} », UNIQUEMENT d'après le texte fourni. Si le texte ne parle pas de ce « ${terme} » au sens de l'article « ${titre} », réponds exactement VIDE.`;
+    const consigne = `Un article s'intitule « ${titre} » (${resume}). On veut expliquer au lecteur ce qu'est « ${terme} » dans CET article.
+Voici une fiche de référence trouvée sur ${src.source}. Réponds UNIQUEMENT par un objet JSON : {"meme_sens": true ou false, "explication": "..."}.
+- "meme_sens" : true seulement si la fiche décrit exactement la même chose que « ${terme} » dans l'article (même objet, même domaine) ; false sinon (homonyme, autre domaine, sujet plus large).
+- "explication" : 1 ou 2 phrases en français simple, d'après la fiche uniquement.`;
     try {
-      const t = (await this.ia([{ role: "system", content: consigne }, { role: "user", content: src.texte }], 200)).trim();
-      if (!t || /^VIDE\b/i.test(t) || t.length < 20) return null;
+      const r = lireJson(await this.ia([{ role: "system", content: consigne }, { role: "user", content: src.texte }], 300), "{");
+      const t = String(r.explication || "").split("\n")[0].trim();
+      if (r.meme_sens !== true || t.length < 20) return null;
       return { terme, texte: t.slice(0, 400), source: src.source, url: src.url };
     } catch (e) { return null; }
   }
