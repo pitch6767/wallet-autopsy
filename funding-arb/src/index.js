@@ -2,7 +2,7 @@
 // Toutes les 5 min : lit les taux de financement des perpétuels sur Binance, Bybit, OKX, Hyperliquid, Deribit,
 // trouve pour chaque actif la meilleure paire (short là où le funding est le plus haut, long là où il est le plus bas),
 // mesure combien de temps l'écart dure, et simule des trades seulement s'il dure et reste rentable après frais.
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 
 // Règles proposées (Pitch décide — modifiables ici)
 const REGLES = {
@@ -90,9 +90,10 @@ async function hyperliquid() {
   return [...vu.values()];
 }
 async function deribit() {
-  const r = await j("https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=any&kind=future");
+  const lots = await Promise.all(["BTC", "ETH", "USDC", "USDT"].map((c) =>
+    j(`https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=${c}&kind=future`).then((r) => r.result || [])));
   const vu = new Map();
-  for (const x of r.result || []) {
+  for (const x of lots.flat()) {
     if (!x.instrument_name.endsWith("PERPETUAL") || x.funding_8h == null) continue;
     const base = x.instrument_name.split(/[-_]/)[0];
     if (vu.has(base) && x.instrument_name.includes("_")) continue; // préférer le perp principal
