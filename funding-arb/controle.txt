@@ -1,10 +1,10 @@
-env.ASSETS                    Assets           
+env.ASSETS                    Assets              
 
-Uploaded funding-arb (2.35 sec)
-Deployed funding-arb triggers (1.94 sec)
+Uploaded funding-arb (2.67 sec)
+Deployed funding-arb triggers (0.70 sec)
   https://funding-arb.pitch67.workers.dev
   schedule: */5 * * * *
-Current Version ID: 74e553d6-4a8b-4127-94bd-296df0127262
+Current Version ID: b65f1766-80a2-4474-9b28-038512e3dd3e
 code sortie: 0
 
  ⛅️ wrangler 4.162.0
@@ -16,9 +16,10 @@ migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","version":"1.0.1","statut":{"bybit":{"ok":false,"err":"HTTP 403 {\n    error:The Amazon CloudFront distribution is configured to block access from your country\n}"},"binance":{"ok":false,"err":"HTTP 403 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META"},"okx":{"ok":true,"n":528,"ms":139},"deribit":{"ok":true,"n":151,"ms":500},"hyperliquid":{"ok":true,"n":329,"ms":528}},"top":[{"base":"SOPH","short":"hyperliquid","long":"okx","spreadH":0.0011928942027554749,"cout":0.020397569563756934},{"base":"GPRO","short":"okx","long":"hyperliquid","spreadH":0.0003055181,"cout":0.03746189588111126},{"base":"INIT","short":"hyperliquid","long":"okx","spreadH":0.000242992647028675,"cout":0.005036125600230057},{"base":"UMC","short":"hyperliquid","long":"okx","spreadH":0.0002113792,"cout":0.02102599590667859},{"base":"CASHCAT","short":"okx","long":"deribit","spreadH":0.00018714375,"cout":1.431278997535977}]}
+{"app":"funding-arb-app","version":"1.1.0","statut":{"deribit":{"ok":true,"n":151,"ms":164},"okx":{"ok":true,"n":528,"ms":195},"binance":{"ok":false,"err":"HTTP 403 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<HTML><HEAD><META (depuis WAW/US)"},"hyperliquid":{"ok":true,"n":329,"ms":799},"bybit":{"ok":true,"n":829,"ms":1814,"lieu":"AMS/US"}},"top":[{"base":"INIT","short":"hyperliquid","long":"bybit","spreadH":0.00135795,"cout":0.004437062405522821},{"base":"SOPH","short":"hyperliquid","long":"okx","spreadH":0.000772487514224375,"cout":0.013424435513160554},{"base":"DRV","short":"hyperliquid","long":"bybit","spreadH":0.0003171545,"cout":0.03307126587628759},{"base":"BTW","short":"bybit","long":"okx","spreadH":0.00030828500000000005,"cout":0.005133918666771351},{"base":"GPRO","short":"okx","long":"hyperliquid","spreadH":0.0003074089,"cout":0.0382957639741027}]}
 === controles
 --- version
-{"version":"1.0.1"}
+{"version":"1.1.0"}
 --- etat
-{"version":"1.0.1","regles":{"notional":1000,"persistanceMin":60,"horizonH":24,"multipleCout":2,"sortieTicks":1,"maxDonneesManquantesMin":30},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"scan":null,"ouvertes":[],"fermees":[],"total":{"n":0,"net":null,"g":null,"fund":null,"frais":null,"debut":null}}
+{"version":"1.1.0","regles":{"notional":1000,"persistanceMin":60,"horizonH":24,"multipleCout":2,"sortieTicks":1,"maxDonneesManquantesMin":30},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794685834898,"scan":{"statut":{"okx":{"ok":true,"n":528,"ms":28},"binance":{"ok":false,"err":"HTTP 403 <html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n</body>\r\n</html>\r\n"},"hyperliquid":{"ok":true,"n":329,"ms":75},"deribit":{"ok":true,"n":151,"ms":243},"bybit":{"ok":true,"n":829,"ms":373}},"tocurl: (23) Failure writing output to destination, passed 1360 returned 242
+
