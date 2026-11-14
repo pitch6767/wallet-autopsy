@@ -6,14 +6,14 @@
 import { DurableObject } from "cloudflare:workers";
 import { SOURCES, MOTS_IA, MOTS_DEPOT, TYPES_MODELE, RUBRIQUES, POIDS_RUBRIQUES } from "./sources.js";
 
-const VERSION = "1.2.0";
+const VERSION = "1.2.1";
 const MODELE = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const UA = "Mozilla/5.0 (compatible; RadarIA/1.1; +https://radar-ia.pitch67.workers.dev)";
 const FUSEAU = "Europe/Zurich";
 const H = 3600e3;
 const J = 24 * H;
 // Taille de l'édition (le tri : on ne garde que le meilleur)
-const TAILLE = { une: 5, parRubrique: 4, videos: 5, depots: 10, modeles: 6, libres: 4, lectureComplete: 16 };
+const TAILLE = { une: 5, parRubrique: 4, videos: 5, depots: 10, modeles: 6, libres: 4 };
 
 const json = (o, st = 200) =>
   new Response(JSON.stringify(o), { status: st, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
@@ -124,7 +124,7 @@ function lireJson(txt, ouvrant = "[") {
 }
 
 // Les meilleurs commentaires de la discussion Hacker News ou Reddit d'une carte (texte brut, ou "" si aucun)
-async function commentaires(c) {
+async function commentaires(c, d = {}) {
   const membres = [c, ...(c._membres || [])];
   const nettoyer = (t) => sansHtml(t).slice(0, 500);
   try {
@@ -138,11 +138,12 @@ async function commentaires(c) {
     }
     const rd = membres.map((o) => o.url).find((u) => /reddit\.com\/r\/[^/]+\/comments\//.test(u || ""));
     if (rd) {
+      d.reddit_essais = (d.reddit_essais || 0) + 1;
       const j = await (await chercher(rd.split("?")[0].replace(/\/?$/, "/") + ".json?sort=top&limit=8", {}, 8000)).json();
       const txt = (j?.[1]?.data?.children || []).filter((k) => k.kind === "t1" && k.data?.body && !k.data.stickied).slice(0, 5).map((k) => "- " + nettoyer(k.data.body));
       if (txt.length) return txt.join("\n");
     }
-  } catch (e) { /* discussion inaccessible : la carte reste sans avis */ }
+  } catch (e) { d.reddit_erreurs = (d.reddit_erreurs || 0) + 1; d.derniere_erreur_discussion = String(e).slice(0, 120); }
   return "";
 }
 
@@ -224,7 +225,7 @@ export class Radar extends DurableObject {
         await this.ctx.storage.setAlarm(Date.now() + 1000);
         return json({ ok: true, lance: true, note: "fabrication lancée en arrière-plan, voir /api/etat → derniere_edition" });
       }
-      if (p === "/api/editions") return json(this.sql.exec(`SELECT id, cree FROM editions ORDER BY cree DESC LIMIT 60`).toArray());
+      if (p === "/api/editions") return json(this.sql.exec(`SELECT id, cree FROM editions ORDER BY id DESC LIMIT 60`).toArray());
       if (p === "/api/edition") {
         const id = url.searchParams.get("id");
         const r = (id ? this.sql.exec(`SELECT contenu FROM editions WHERE id=?`, id) : this.sql.exec(`SELECT contenu FROM editions ORDER BY id DESC LIMIT 1`)).toArray()[0];
@@ -274,7 +275,7 @@ export class Radar extends DurableObject {
       depots_suivis: this.sql.exec(`SELECT COUNT(*) n FROM depots`).toArray()[0]?.n || 0,
       sources: this.lire("etat_sources", {}), canaux: this.lire("canaux", {}),
       derniere_collecte: this.lire("derniere_collecte", null), derniere_edition: this.lire("derniere_edition", null),
-      derniere_erreur_ia: this.lire("derniere_erreur_ia", null), derniere_fabrication: this.lire("derniere_fabrication", null),
+      derniere_erreur_ia: this.lire("derniere_erreur_ia", null), diag_doublons: this.lire("diag_doublons", null), diag_ajouts: this.lire("diag_ajouts", null), derniere_fabrication: this.lire("derniere_fabrication", null),
       editions: this.sql.exec(`SELECT id, cree FROM editions ORDER BY cree DESC LIMIT 5`).toArray(),
     };
   }
@@ -576,7 +577,7 @@ export class Radar extends DurableObject {
     const retenues = [...une, ...rubriques.flatMap((r) => r.cartes), ...sections.modeles, ...sections.libres, ...sections.videos, ...sections.depots];
 
     // lecture complète des sujets retenus les plus importants → résumé plus riche
-    const aLire = [...[...une, ...rubriques.flatMap((r) => r.cartes)].slice(0, TAILLE.lectureComplete), ...sections.modeles, ...sections.libres, ...sections.depots];
+    const aLire = [...une, ...rubriques.flatMap((r) => r.cartes), ...sections.modeles, ...sections.libres, ...sections.depots];
     await this.approfondir(aLire);
 
     // marquer comme publiés : seulement ce qui est montré (le reste peut revenir s'il reste frais)
@@ -618,10 +619,17 @@ export class Radar extends DurableObject {
 1) Regroupe les candidats qui parlent du même sujet : même annonce, même produit, même modèle, même étude — y compris tous les articles et vidéos sur la sortie d'un même modèle (tests, classements, conseils, démonstrations, avis sur ce modèle vont TOUS dans le groupe de cette sortie), même s'ils sont dans des langues différentes ou viennent de sources différentes. Le lecteur ne veut voir qu'une seule carte par sujet.
 2) Liste les candidats qui répètent un sujet déjà publié, SAUF s'ils apportent un fait nouveau important (nouvelle version, chiffres nouveaux, disponibilité réelle).
 Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_publies": [numéros]}. Ne mets dans "groupes" que les groupes d'au moins 2 numéros.`;
-    let r;
+    let r, brut = "";
+    const demande = `CANDIDATS :\n${liste}\n\nDÉJÀ PUBLIÉS :\n${anciens || "(aucun)"}`;
     try {
-      r = lireJson(await this.ia([{ role: "system", content: consigne }, { role: "user", content: `CANDIDATS :\n${liste}\n\nDÉJÀ PUBLIÉS :\n${anciens || "(aucun)"}` }], 1500), "{");
-    } catch (e) { this.ecrire("derniere_erreur_ia", { quand: Date.now(), etape: "doublons", erreur: String(e).slice(0, 300) }); return cartes; }
+      brut = await this.ia([{ role: "system", content: consigne }, { role: "user", content: demande }], 1500);
+      r = lireJson(brut, "{");
+      this.ecrire("diag_doublons", { quand: Date.now(), ok: true, candidats: infos.length, passes: passes.length, caracteres_demande: demande.length + consigne.length, caracteres_reponse: brut.length });
+    } catch (e) {
+      this.ecrire("diag_doublons", { quand: Date.now(), ok: false, erreur: String(e).slice(0, 300), candidats: infos.length, passes: passes.length, caracteres_demande: demande.length + consigne.length, caracteres_reponse: brut.length, debut: brut.slice(0, 600), fin: brut.slice(-400) });
+      this.ecrire("derniere_erreur_ia", { quand: Date.now(), etape: "doublons", erreur: String(e).slice(0, 300) });
+      return cartes;
+    }
     const retirer = new Set();
     for (const g of r.groupes || []) {
       const membres = [...new Set((g || []).map((n) => infos[+n]).filter(Boolean))];
@@ -643,6 +651,8 @@ Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_pub
 
   // Lit la page complète (article, page du modèle) et refait un résumé plus riche
   async approfondir(cartes) {
+    const d = { cartes: cartes.length, avec_commentaires: 0, avis: 0, termes: 0, fiches: 0, contextes: 0, refus: [], reddit_erreurs: 0 };
+    this._diag = d;
     const consigne = `Tu es le rédacteur de « Radar IA », une veille en français pour un lecteur suisse qui teste l'IA chez lui et crée des apps.
 À partir du texte fourni, écris UNIQUEMENT un objet JSON : {"titre": "...", "resume": "...", "pourquoi": "..."}.
 - "titre" : titre informatif en français correct, 7 à 14 mots, qui dit ce que c'est et ce que ça apporte (pour un dépôt ou un modèle : son nom suivi de ce qu'il fait).
@@ -665,24 +675,29 @@ Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_pub
         }
       } catch (e) { texte = ""; }
       const complet = texte.length >= 400;
-      const avis = await commentaires(c);
+      const avis = await commentaires(c, d);
+      if (avis) d.avec_commentaires++;
       if (!complet && avis) texte = (c._membres || []).map((o) => o.texte || "").find((t) => t.length > 0) || "";
       if (!complet && !avis) return;
       try {
         const r = lireJson(await this.ia([{ role: "system", content: consigne }, { role: "user", content: `Titre : ${c.titre_original}\n\nTexte :\n${texte}${avis ? `\n\nCommentaires des internautes :\n${avis}` : ""}` }], 900), "{");
         if (r.resume && r.resume.length > 80 && complet) { c.resume = r.resume; c.lu = true; }
-        if (avis && r.avis && r.avis.length > 30) c.avis = r.avis;
-        if (r.terme && !/[,;]/.test(r.terme) && !["depot", "modele", "libre"].includes(c.genre)) c.contexte = await this.definir(String(r.terme).slice(0, 80), c.titre_original, c.resume);
+        if (avis && r.avis && r.avis.length > 30) { c.avis = r.avis; d.avis++; }
+        if (r.terme) d.termes++;
+        if (r.terme && !/[,;]/.test(r.terme) && !["depot", "modele", "libre"].includes(c.genre)) { c.contexte = await this.definir(String(r.terme).slice(0, 80), c.titre_original, c.resume); if (c.contexte) d.contextes++; }
         if (r.pourquoi) c.pourquoi = r.pourquoi;
         if (r.titre && r.titre.length > 10 && (c.genre === "depot" || c.genre === "modele" || c.genre === "libre")) c.titre = r.titre;
       } catch (e) { this.ecrire("derniere_erreur_ia", { quand: Date.now(), etape: "lecture", erreur: String(e).slice(0, 300) }); }
     });
+    this.ecrire("diag_ajouts", { quand: Date.now(), ...d, refus: d.refus.slice(0, 12) });
   }
 
   // « C'est quoi ? » : courte explication d'un terme, d'après Wikipédia (français puis anglais) ou GitHub
   async definir(terme, titre, resume) {
     const src = await chercherDefinition(terme);
-    if (!src) return null;
+    const d = this._diag || { refus: [] };
+    if (!src) { d.refus.push(`${terme} : aucune fiche`); return null; }
+    d.fiches = (d.fiches || 0) + 1;
     const consigne = `Un article s'intitule « ${titre} » (${resume}). On veut expliquer au lecteur ce qu'est « ${terme} » dans CET article.
 Voici une fiche de référence trouvée sur ${src.source}. Réponds UNIQUEMENT par un objet JSON : {"meme_sens": true ou false, "explication": "..."}.
 - "meme_sens" : true seulement si la fiche décrit exactement la même chose que « ${terme} » dans l'article (même objet, même domaine) ; false sinon (homonyme, autre domaine, sujet plus large).
@@ -690,9 +705,9 @@ Voici une fiche de référence trouvée sur ${src.source}. Réponds UNIQUEMENT p
     try {
       const r = lireJson(await this.ia([{ role: "system", content: consigne }, { role: "user", content: src.texte }], 300), "{");
       const t = String(r.explication || "").split("\n")[0].trim();
-      if (r.meme_sens !== true || t.length < 20) return null;
+      if (String(r.meme_sens) !== "true" || t.length < 20) { d.refus.push(`${terme} : ${src.source} refusée (même sens = ${r.meme_sens})`); return null; }
       return { terme, texte: t.slice(0, 400), source: src.source, url: src.url };
-    } catch (e) { return null; }
+    } catch (e) { d.refus.push(`${terme} : ${String(e).slice(0, 80)}`); return null; }
   }
 
   // Résumé, traduction et classement en français par Workers AI, par paquets de 8
