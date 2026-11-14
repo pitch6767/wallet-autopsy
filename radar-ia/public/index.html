@@ -40,6 +40,8 @@ h2.une{color:var(--une)}
 .carte p{margin:0 0 8px}
 .pourquoi{font-size:14px;border-left:3px solid var(--accent);padding-left:9px;color:var(--texte)}
 .aussi{font-size:13px;color:var(--doux)}
+.note{font-size:14px;color:var(--texte)}
+.note a{color:var(--doux)}
 .aussi a{color:var(--doux)}
 .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .actions a,.actions button{font:inherit;font-size:13.5px;text-decoration:none;border:1px solid var(--ligne);background:transparent;color:var(--texte);border-radius:9px;padding:6px 10px}
@@ -98,6 +100,8 @@ function carte(c) {
     <h3>${esc(c.titre)}</h3>
     <p>${esc(c.resume)}</p>
     ${c.pourquoi ? `<p class="pourquoi">${esc(c.pourquoi)}</p>` : ""}
+    ${c.contexte ? `<p class="note"><b>C'est quoi ${esc(c.contexte.terme)} ?</b> ${esc(c.contexte.texte)} <a href="${esc(c.contexte.url)}" target="_blank" rel="noopener">${esc(c.contexte.source)}</a></p>` : ""}
+    ${c.avis ? `<p class="note"><b>Ce qu'en disent les internautes :</b> ${esc(c.avis)}</p>` : ""}
     ${plus}${aussi}
     <div class="actions">
       <a class="principal" href="${esc(c.url)}" target="_blank" rel="noopener">${c.genre === "video" ? "Regarder" : c.genre === "depot" ? "Voir le dépôt" : c.genre === "modele" || c.genre === "libre" ? "Voir le modèle" : "Lire la source"}</a>

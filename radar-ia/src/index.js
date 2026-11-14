@@ -2,10 +2,11 @@
 // Collecte horaire des sources, édition fabriquée à l'heure choisie, résumés en français par Workers AI.
 // v1.1 : doublons éliminés sur toute l'édition et sur 7 jours, articles lus en entier, nouveaux modèles,
 // modèles non censurés, dépôts GitHub classés par vitesse d'étoiles, Hacker News, newsletters, abonnements YouTube.
+// v1.2 : avis des internautes (commentaires Hacker News et Reddit) et « C'est quoi ? » (Wikipédia, GitHub), idées tirées d'Horizon.
 import { DurableObject } from "cloudflare:workers";
 import { SOURCES, MOTS_IA, MOTS_DEPOT, TYPES_MODELE, RUBRIQUES, POIDS_RUBRIQUES } from "./sources.js";
 
-const VERSION = "1.1.3";
+const VERSION = "1.2.0";
 const MODELE = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const UA = "Mozilla/5.0 (compatible; RadarIA/1.1; +https://radar-ia.pitch67.workers.dev)";
 const FUSEAU = "Europe/Zurich";
@@ -120,6 +121,49 @@ function lireJson(txt, ouvrant = "[") {
   const a = txt.indexOf(ouvrant), b = txt.lastIndexOf(fermant);
   if (a < 0 || b < a) throw new Error("pas de JSON");
   return JSON.parse(txt.slice(a, b + 1).replace(/[\u0000-\u001f]+/g, " "));
+}
+
+// Les meilleurs commentaires de la discussion Hacker News ou Reddit d'une carte (texte brut, ou "" si aucun)
+async function commentaires(c) {
+  const membres = [c, ...(c._membres || [])];
+  const nettoyer = (t) => sansHtml(t).slice(0, 500);
+  try {
+    const hn = membres.map((o) => o.extra?.hn).find(Boolean);
+    if (hn) {
+      const id = (hn.match(/id=(\d+)/) || [])[1];
+      const fil = await (await chercher(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, {}, 8000)).json();
+      const kids = await parPaquets((fil?.kids || []).slice(0, 5), 5, async (k) => (await chercher(`https://hacker-news.firebaseio.com/v0/item/${k}.json`, {}, 8000)).json());
+      const txt = kids.filter((k) => k && k.text && !k.deleted && !k.dead).map((k) => "- " + nettoyer(k.text));
+      if (txt.length) return txt.join("\n");
+    }
+    const rd = membres.map((o) => o.url).find((u) => /reddit\.com\/r\/[^/]+\/comments\//.test(u || ""));
+    if (rd) {
+      const j = await (await chercher(rd.split("?")[0].replace(/\/?$/, "/") + ".json?sort=top&limit=8", {}, 8000)).json();
+      const txt = (j?.[1]?.data?.children || []).filter((k) => k.kind === "t1" && k.data?.body && !k.data.stickied).slice(0, 5).map((k) => "- " + nettoyer(k.data.body));
+      if (txt.length) return txt.join("\n");
+    }
+  } catch (e) { /* discussion inaccessible : la carte reste sans avis */ }
+  return "";
+}
+
+// Texte de référence sur un terme : Wikipédia français, puis anglais, puis dépôt GitHub du même nom
+async function chercherDefinition(terme) {
+  for (const l of ["fr", "en"]) {
+    try {
+      const s = await (await chercher(`https://${l}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(terme)}&srlimit=1&format=json`, {}, 8000)).json();
+      const titre = s?.query?.search?.[0]?.title;
+      if (!titre) continue;
+      const p = await (await chercher(`https://${l}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(titre.replace(/ /g, "_"))}`, {}, 8000)).json();
+      if (p?.type === "standard" && (p.extract || "").length > 60) return { texte: p.extract.slice(0, 1500), source: "Wikipédia", url: p.content_urls?.desktop?.page || `https://${l}.wikipedia.org/wiki/${encodeURIComponent(titre)}` };
+    } catch (e) { /* suivant */ }
+  }
+  try {
+    const g = await (await chercher(`https://api.github.com/search/repositories?q=${encodeURIComponent(terme)}&per_page=1`, { headers: { accept: "application/vnd.github+json" } }, 8000)).json();
+    const d = g?.items?.[0];
+    const nom = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (d && d.description && nom(d.name) === nom(terme)) return { texte: `${d.full_name} : ${d.description}`, source: "GitHub", url: d.html_url };
+  } catch (e) { /* rien */ }
+  return null;
 }
 
 // ---------- Worker ----------
@@ -603,7 +647,9 @@ Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_pub
 À partir du texte fourni, écris UNIQUEMENT un objet JSON : {"titre": "...", "resume": "...", "pourquoi": "..."}.
 - "titre" : titre informatif en français correct, 7 à 14 mots, qui dit ce que c'est et ce que ça apporte (pour un dépôt ou un modèle : son nom suivi de ce qu'il fait).
 - "resume" : 4 à 5 phrases en français, avec les faits concrets du texte (chiffres, noms, prix, dates, disponibilité, taille du modèle, licence). Rédige avec tes propres mots, ne recopie pas de longues phrases, n'invente rien.
-- "pourquoi" : une phrase sur ce que cela change concrètement pour lui (tester chez soi, matériel nécessaire, créer une app) ; vide si rien.`;
+- "pourquoi" : une phrase sur ce que cela change concrètement pour lui (tester chez soi, matériel nécessaire, créer une app) ; vide si rien.
+- "avis" : si des commentaires d'internautes sont fournis, 1 à 2 phrases en français sur ce qu'ils en disent (critiques, doutes, retours d'essai, points d'accord) ; vide sinon.
+- "terme" : le nom propre ou terme technique principal du texte que le lecteur risque de ne pas connaître (société, projet, outil, concept), tel qu'écrit dans le texte ; vide si tout est connu du grand public.`;
     await parPaquets(cartes, 6, async (c) => {
       let texte = "";
       try {
@@ -618,14 +664,31 @@ Réponds UNIQUEMENT par un objet JSON : {"groupes": [[numéros], ...], "deja_pub
           texte = texteArticle(html);
         }
       } catch (e) { texte = ""; }
-      if (texte.length < 400) return;
+      const complet = texte.length >= 400;
+      const avis = await commentaires(c);
+      if (!complet && avis) texte = (c._membres || []).map((o) => o.texte || "").find((t) => t.length > 0) || "";
+      if (!complet && !avis) return;
       try {
-        const r = lireJson(await this.ia([{ role: "system", content: consigne }, { role: "user", content: `Titre : ${c.titre_original}\n\nTexte :\n${texte}` }], 700), "{");
-        if (r.resume && r.resume.length > 80) { c.resume = r.resume; c.lu = true; }
+        const r = lireJson(await this.ia([{ role: "system", content: consigne }, { role: "user", content: `Titre : ${c.titre_original}\n\nTexte :\n${texte}${avis ? `\n\nCommentaires des internautes :\n${avis}` : ""}` }], 900), "{");
+        if (r.resume && r.resume.length > 80 && complet) { c.resume = r.resume; c.lu = true; }
+        if (avis && r.avis && r.avis.length > 30) c.avis = r.avis;
+        if (r.terme && !["depot", "modele", "libre"].includes(c.genre)) c.contexte = await this.definir(String(r.terme).slice(0, 80), c.titre_original);
         if (r.pourquoi) c.pourquoi = r.pourquoi;
         if (r.titre && r.titre.length > 10 && (c.genre === "depot" || c.genre === "modele" || c.genre === "libre")) c.titre = r.titre;
       } catch (e) { this.ecrire("derniere_erreur_ia", { quand: Date.now(), etape: "lecture", erreur: String(e).slice(0, 300) }); }
     });
+  }
+
+  // « C'est quoi ? » : courte explication d'un terme, d'après Wikipédia (français puis anglais) ou GitHub
+  async definir(terme, titre) {
+    const src = await chercherDefinition(terme);
+    if (!src) return null;
+    const consigne = `Explique en 1 ou 2 phrases en français simple, pour un lecteur non spécialiste, ce qu'est « ${terme} », UNIQUEMENT d'après le texte fourni. Si le texte ne parle pas de ce « ${terme} » au sens de l'article « ${titre} », réponds exactement VIDE.`;
+    try {
+      const t = (await this.ia([{ role: "system", content: consigne }, { role: "user", content: src.texte }], 200)).trim();
+      if (!t || /^VIDE\b/i.test(t) || t.length < 20) return null;
+      return { terme, texte: t.slice(0, 400), source: src.source, url: src.url };
+    } catch (e) { return null; }
   }
 
   // Résumé, traduction et classement en français par Workers AI, par paquets de 8
