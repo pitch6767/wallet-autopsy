@@ -2,7 +2,8 @@
 // Toutes les 5 min : lit les taux de financement des perpétuels sur Binance, Bybit, OKX, Hyperliquid, Deribit,
 // trouve pour chaque actif la meilleure paire (short là où le funding est le plus haut, long là où il est le plus bas),
 // mesure combien de temps l'écart dure, et simule des trades seulement s'il dure et reste rentable après frais.
-const VERSION = "1.0.1";
+import { DurableObject } from "cloudflare:workers";
+const VERSION = "1.1.0";
 
 // Règles proposées (Pitch décide — modifiables ici)
 const REGLES = {
@@ -104,14 +105,38 @@ async function deribit() {
 }
 const LECTEURS = { binance, bybit, okx, hyperliquid, deribit };
 
+// Binance et Bybit bloquent les serveurs Cloudflare situés aux États-Unis :
+// on les lit depuis un Durable Object placé en Europe (indice de lieu), d'abord Europe de l'Ouest, sinon Europe de l'Est.
+const VIA_EUROPE = ["binance", "bybit"];
+export class Relais extends DurableObject {
+  async lire(nom) {
+    let lieu = null;
+    try { const t = await (await fetch("https://www.cloudflare.com/cdn-cgi/trace")).text(); lieu = (t.match(/colo=(\w+)/) || [])[1] + "/" + (t.match(/loc=(\w+)/) || [])[1]; } catch (e) {}
+    try { return { ok: true, lignes: await LECTEURS[nom](), lieu }; }
+    catch (e) { return { ok: false, err: String(e.message || e).slice(0, 200), lieu }; }
+  }
+}
+async function lireEurope(env, nom) {
+  let dernier = null;
+  for (const hint of ["weur", "eeur"]) {
+    const stub = env.RELAIS.get(env.RELAIS.idFromName("relais-" + hint), { locationHint: hint });
+    const r = await stub.lire(nom);
+    if (r.ok) return r;
+    dernier = r;
+  }
+  throw new Error(dernier.err + " (depuis " + dernier.lieu + ")");
+}
+
 async function toutLire(env) {
   const statut = {}, lignes = [];
   await Promise.all(Object.entries(LECTEURS).map(async ([nom, f]) => {
     const t0 = Date.now();
     try {
-      let l = await f(env);
+      let lieu = null, l;
+      if (VIA_EUROPE.includes(nom) && env.RELAIS) { const r = await lireEurope(env, nom); l = r.lignes; lieu = r.lieu; }
+      else l = await f(env);
       l = l.filter((x) => x.rate != null && x.mark > 0);
-      lignes.push(...l); statut[nom] = { ok: true, n: l.length, ms: Date.now() - t0 };
+      lignes.push(...l); statut[nom] = { ok: true, n: l.length, ms: Date.now() - t0, ...(lieu ? { lieu } : {}) };
     } catch (e) { statut[nom] = { ok: false, err: String(e.message || e).slice(0, 200) }; }
   }));
   return { statut, lignes };

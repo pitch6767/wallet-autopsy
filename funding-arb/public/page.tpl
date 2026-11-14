@@ -50,7 +50,7 @@ async function go(){
   ["Ouvertes",d.ouvertes.length],["Provisoire ouvertes",'<span class="'+cl(ouvPnl.reduce((a,b)=>a+b,0))+'">'+usd(ouvPnl.reduce((a,b)=>a+b,0))+"</span>"]
  ].map(([a,b])=>'<div class="c"><span class="mu">'+a+"</span><b>"+b+"</b></div>").join("");
  const s=d.scan?.statut||{};
- document.getElementById("plat").innerHTML=Object.entries(s).map(([k,v])=>'<div><span class="'+(v.ok?"ok":"ko")+'">'+(v.ok?"●":"✕")+"</span> "+k+" — "+(v.ok?v.n+" perps":v.err)+"</div>").join("")||"—";
+ document.getElementById("plat").innerHTML=Object.entries(s).map(([k,v])=>'<div><span class="'+(v.ok?"ok":"ko")+'">'+(v.ok?"●":"✕")+"</span> "+k+" — "+(v.ok?v.n+" perps"+(v.lieu?" (lu depuis "+v.lieu+")":""):v.err)+"</div>").join("")||"—";
  document.getElementById("ouv").innerHTML=table(["Actif","Short","Long","Ouvert","Durée","Écart/h entrée","Funding","Frais","Provisoire"],
   d.ouvertes.map((p,i)=>[p.base,p.short,p.long,hh(p.ouvert),dur(now-p.ouvert),pc(p.spread_in),usd(p.fund),usd(p.frais),'<span class="'+cl(ouvPnl[i])+'">'+usd(ouvPnl[i])+"</span>"]));
  document.getElementById("fer").innerHTML=table(["Actif","Short","Long","Durée","Funding","Prix","Frais","Net","Sortie"],
