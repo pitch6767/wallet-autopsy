@@ -1,31 +1,14 @@
-# 15.11.2026 : vérification version I + stratégie active 600005 + délai d'achat (lecture seule)
-import json, urllib.request
-import time; print("lu à", time.strftime("%H:%M:%S"))
+# 15.11.2026 : contrôle après déploiement I (lecture seule)
+import json, urllib.request, datetime, time
+print("lu à", time.strftime("%H:%M:%S"))
 g = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "analyse"}), timeout=200).read())
-e = g("https://72-11-157-70.sslip.io/api/bot/banc/etat"); print("version :", e.get("version")); print("actives :", e.get("actives"), "mode :", e.get("mode"), "depuis :", e.get("activesDepuis"))
-p = g("https://72-11-157-70.sslip.io/api/bot/paires"); print("paires :", p.get("numeros"))
-T = g("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=2026-11-15T06:00:00Z&plafond=100")["trades"]
-import datetime
+try: f = urllib.request.urlopen(urllib.request.Request("https://72-11-157-70.sslip.io/api/public/binance-funding", headers={"user-agent": "analyse"}), timeout=60); print("binance-funding :", f.status)
+except Exception as e: print("binance-funding :", e)
+T = g("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=2026-11-15T07:40:00Z&plafond=100")["trades"]
 d = []
 for t in T:
     if t["num"] >= 1000: continue
-    try: ts = datetime.datetime.fromisoformat(t["id"].split("|")[-1].replace("Z", "+00:00")); d.append((datetime.datetime.fromisoformat(t["ouvert"].replace("Z", "+00:00")) - ts).total_seconds())
+    try: d.append((datetime.datetime.fromisoformat(t["ouvert"].replace("Z", "+00:00")) - datetime.datetime.fromisoformat(t["id"].split("|")[-1].replace("Z", "+00:00"))).total_seconds())
     except Exception: pass
-d.sort(); print("délai signal → achat (lignes de base, depuis 07 h) :", len(d), "trades ; médiane", d[len(d)//2] if d else None)
-# 1
-# 2
-# r1
-# r2
-# r3
-# s1
-# s2
-# s3
-# s4
-# s5
-# s6
-# s7
-# s8
-# s9
-# s10
-# t1
-# t2
+d.sort(); print("délai signal → achat depuis 08 h 40 :", len(d), "trades ; médiane", d[len(d)//2] if d else None)
+print("600013 :", sum(1 for t in T if t["num"] == 600013), "trades ; 5600013 :", sum(1 for t in T if t["num"] == 5600013))
