@@ -16,3 +16,4 @@ d.sort(); print("délai 25 dernières min :", len(d), "trades ; médiane", round
 # v3
 # v4
 # v5
+# v6
