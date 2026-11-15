@@ -1,4 +1,5 @@
 name: Transactions Polymarket BTC 5 min v2 (lecture seule)
+# 15.11 soir : côté PRENEUR seul (taker_only=true) pour reproduire exactement la règle de remplissage du teneur de paires
 # 13.11.2026 (Pitch : « je veux trouver des stratégies qui gagnent ds ces marchés ») : toutes les transactions publiques des marchés
 # BTC Up/Down 5 min, un job par jour, pour étudier les portefeuilles gagnants. Lecture seule, aucune clé.
 on:
@@ -16,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        jour: ["2026-11-15"]
+        jour: ["2026-11-15", "2026-11-14", "2026-11-13"]
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 1 }
@@ -44,7 +45,7 @@ jobs:
               except Exception: out, px = [], []
               T = []; cur = None
               for _ in range(60):
-                  u = f"{D}/v2/trades?condition={cid}&limit=1000&taker_only=false&filter_amount=0" + (f"&cursor={cur}" if cur else "")
+                  u = f"{D}/v2/trades?condition={cid}&limit=1000&taker_only=true&filter_amount=0" + (f"&cursor={cur}" if cur else "")
                   r = get(u)
                   if not r or not r.get("data"): break
                   T += [[x.get("timestamp"), x.get("proxy_wallet"), x.get("side"), x.get("outcome"), x.get("price"), x.get("size"), x.get("transaction_hash") or x.get("transactionHash"), (x.get("name") or x.get("pseudonym") or "")[:40]] for x in r["data"]]
@@ -57,13 +58,13 @@ jobs:
                   if v is None: manq += 1; continue
                   if len(v["trades"]) >= 60000: tronques += 1
                   M[str(st)] = v; n += len(v["trades"])
-          with gzip.open(f"polytrades_{j}.json.gz", "wt") as f: json.dump({"format": "[timestamp_s, portefeuille, BUY/SELL, outcome, prix, parts, transaction, nom]", "marches": M}, f)
+          with gzip.open(f"preneurs_{j}.json.gz", "wt") as f: json.dump({"format": "[timestamp_s, portefeuille, BUY/SELL, outcome, prix, parts, transaction, nom]", "marches": M}, f)
           print("jour", j, "marches", len(M), "manquants", manq, "tronques (>10000 transactions)", tronques, "transactions", n)
           P
           tail -5 /tmp/h_sortie.txt
           cd /tmp && mkdir -p w && cd w && git init -q && git config user.name histo && git config user.email bot@users.noreply.github.com
           git remote add origin "$(git -C $GITHUB_WORKSPACE remote get-url origin)"
           git -C $GITHUB_WORKSPACE config --get-regexp 'http.*extraheader' | while read k v; do git config "$k" "$v"; done
-          b=ptr-polytrades_${{ matrix.jour }}
+          b=ptr-preneurs_${{ matrix.jour }}
           git checkout -q --orphan $b; mkdir -p polytrades; cp /tmp/h/*.json.gz polytrades/; cp /tmp/h_sortie.txt polytrades/journal.txt
           git add polytrades && git commit -qm "$b" && for k in 1 2 3 4; do git push -qf origin HEAD:refs/heads/$b && break; sleep 10; done
