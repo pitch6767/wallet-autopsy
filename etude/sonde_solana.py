@@ -16,3 +16,4 @@ p = g("https://72-11-157-70.sslip.io/api/bot/paires")
 for k in ["v1", "v2", "v3", "v4", "v5", "v6"]:
     v = p.get(k) or {}; print(k, v.get("numero"), (v.get("parametres") or {}).get("budgetCote"), {z: v.get(z) for z in ["cycles", "gain", "mise", "cyclesPositifs"]})
 # u1
+# u2
