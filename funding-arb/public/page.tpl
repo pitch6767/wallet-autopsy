@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="app" content="funding-arb-app">
-<title>Funding Arb — fantôme</title>
+<title>Arbitrage de prix — fantôme</title>
 <link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#12161f">
 <style>
@@ -16,15 +16,15 @@ th:first-child,td:first-child{text-align:left}th{color:#94a3b8;font-weight:600}
 .v{color:#4ade80}.r{color:#f87171}.o{color:#fbbf24}.ok{color:#4ade80}.ko{color:#f87171}
 .st{background:#4b2b0b;color:#fbbf24;font-size:10px;border-radius:4px;padding:0 4px;margin-left:4px}
 </style></head><body>
-<header><h1>Funding Arb<span class="badge">FANTÔME</span></h1>
+<header><h1>Arbitrage de prix<span class="badge">FANTÔME</span></h1>
 <div class="mu">Aucun ordre réel. Version __VERSION__ · <span id="maj">…</span></div></header>
 <main>
 <div id="cartes" class="cartes"></div>
 <h2>Plateformes</h2><div id="plat" class="mu"></div>
-<h2>Positions ouvertes (fantôme, résultat provisoire)</h2><div class="tab" id="ouv"></div>
-<h2>Trades fermés (fantôme, résultat après frais)</h2><div class="tab" id="fer"></div>
-<h2>Meilleurs écarts maintenant</h2>
-<div class="mu">Short sur la plateforme au funding le plus haut, long sur la plus basse. Taux ramenés à l'heure pour comparer 1 h / 4 h / 8 h. « Amorti en » = heures de funding nécessaires pour payer le coût aller-retour.</div>
+<h2>Positions ouvertes (fantôme, résultat provisoire si on sortait maintenant)</h2><div class="tab" id="ouv"></div>
+<h2>Trades fermés (fantôme, résultat après tous les frais)</h2><div class="tab" id="fer"></div>
+<h2>Plus gros écarts de prix maintenant</h2>
+<div class="mu">Achat au meilleur prix vendeur, vente au meilleur prix acheteur, même actif sur deux plateformes. « Gain attendu » = gain net pour 10 000 $ par jambe si les prix se rejoignent, après frais d'entrée et de sortie et fourchettes achat/vente. « Vérifié carnet » = même calcul avec les vrais carnets d'ordres pour 10 000 $ (seulement pour les candidats).</div>
 <div class="tab" id="top"></div>
 <h2>Règles du fantôme</h2><div id="regles" class="mu"></div>
 </main>
@@ -43,22 +43,22 @@ async function go(){
  const now=Date.now();
  document.getElementById("maj").textContent=d.t?"dernier scan "+hh(d.t):"pas encore de scan (toutes les 5 min)";
  const t=d.total||{};
- const ouvPnl=d.ouvertes.map(p=>{const s=p.notional/p.px_s_in*(p.px_s_in-p.last_s_ask),l=p.notional/p.px_l_in*(p.last_l_bid-p.px_l_in);return p.fund+s+l-p.frais-p.notional*(FR[p.short]+FR[p.long])});
  document.getElementById("cartes").innerHTML=[
   ["Trades fermés",t.n||0],["Résultat net fermé",'<span class="'+cl(t.net)+'">'+usd(t.net||0)+"</span>"],
-  ["Gagnants",t.n?Math.round(100*t.g/t.n)+"%":"—"],["Funding encaissé",usd(t.fund||0)],["Frais payés",usd(t.frais||0)],
-  ["Ouvertes",d.ouvertes.length],["Provisoire ouvertes",'<span class="'+cl(ouvPnl.reduce((a,b)=>a+b,0))+'">'+usd(ouvPnl.reduce((a,b)=>a+b,0))+"</span>"]
+  ["Gagnants",t.n?Math.round(100*t.g/t.n)+"%":"—"],["Frais payés",usd(t.frais||0)],["Funding (pendant la tenue)",usd(t.fund||0)],
+  ["Ouvertes",d.ouvertes.length],["Provisoire ouvertes",'<span class="'+cl(d.ouvertes.reduce((a,p)=>a+(p.net||0),0))+'">'+usd(d.ouvertes.reduce((a,p)=>a+(p.net||0),0))+"</span>"]
  ].map(([a,b])=>'<div class="c"><span class="mu">'+a+"</span><b>"+b+"</b></div>").join("");
  const s=d.scan?.statut||{};
  document.getElementById("plat").innerHTML=Object.entries(s).map(([k,v])=>'<div><span class="'+(v.ok?"ok":"ko")+'">'+(v.ok?"●":"✕")+"</span> "+k+" — "+(v.ok?v.n+" perps"+(v.lieu?" (lu depuis "+v.lieu+")":""):v.err)+"</div>").join("")||"—";
- document.getElementById("ouv").innerHTML=table(["Actif","Short","Long","Ouvert","Durée","Écart/h entrée","Funding","Frais","Provisoire"],
-  d.ouvertes.map((p,i)=>[p.base,p.short,p.long,hh(p.ouvert),dur(now-p.ouvert),pc(p.spread_in),usd(p.fund),usd(p.frais),'<span class="'+cl(ouvPnl[i])+'">'+usd(ouvPnl[i])+"</span>"]));
- document.getElementById("fer").innerHTML=table(["Actif","Short","Long","Durée","Funding","Prix","Frais","Net","Sortie"],
-  d.fermees.map(p=>{const px=p.fund-p.frais;return[p.base,p.short,p.long,dur(p.ferme-p.ouvert),usd(p.fund),usd(p.net-p.fund+p.frais),usd(p.frais),'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>",p.raison]}));
- document.getElementById("top").innerHTML=table(["Actif","Short","Long","Écart/h","Annualisé","Coût A/R","Amorti en","Dure depuis"],
-  (d.scan?.top||[]).map(p=>[p.base+(p.stock?'<span class="st">STOCK</span>':""),p.short+" "+pc(p.rs)+"/"+p.is+"h",p.long+" "+pc(p.rl)+"/"+p.il+"h",pc(p.sh),pc(p.sh*24*365,0),pc(p.cout,3),p.cout&&p.sh>0?(p.cout/p.sh).toFixed(1)+" h":"—",p.depuis?dur(now-p.depuis):"—"]));
+ const px=x=>x==null?"—":(x>=100?x.toFixed(2):x.toPrecision(5));
+ document.getElementById("ouv").innerHTML=table(["Actif","Achat","Vente","Ouvert","Durée","Écart entrée","Gain attendu","Provisoire"],
+  d.ouvertes.map(p=>[p.base,p.long+" "+px(p.px_l_in),p.short+" "+px(p.px_s_in),hh(p.ouvert),dur(now-p.ouvert),pc(p.spread_in,3),usd(p.cout_est),'<span class="'+cl(p.net)+'">'+usd(p.net)+"</span>"]));
+ document.getElementById("fer").innerHTML=table(["Actif","Achat","Vente","Durée","Écart entrée","Prix","Funding","Frais","Net","Sortie"],
+  d.fermees.map(p=>[p.base,p.long,p.short,dur(p.ferme-p.ouvert),pc(p.spread_in,3),usd(p.net-p.fund+p.frais),usd(p.fund),usd(p.frais),'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>",p.raison]));
+ document.getElementById("top").innerHTML=table(["Actif","Achat (vendeur)","Vente (acheteur)","Écart","Gain attendu","Vérifié carnet"],
+  (d.scan?.top||[]).map(p=>[p.base+(p.stock?'<span class="st">STOCK</span>':""),p.achat+" "+px(p.ask),p.vente+" "+px(p.bid),pc(p.ecart,3),'<span class="'+cl(p.gain)+'">'+usd(p.gain)+"</span>",p.verif==null?"—":(typeof p.verif==="number"?usd(p.verif):p.verif)]));
  const r=d.regles;
- document.getElementById("regles").innerHTML="Mise "+r.notional+" $ par jambe · entrée si l'écart (même paire de plateformes) dure ≥ "+r.persistanceMin+" min ET si le funding attendu sur "+r.horizonH+" h ≥ "+r.multipleCout+"× le coût aller-retour estimé (frais taker des 2 jambes, entrée + sortie, + fourchette achat/vente) · une position par actif · sortie dès que l'écart de la paire passe ≤ 0 · entrée au prix vendeur/acheteur réel du moment, sortie idem. Frais taker utilisés : "+Object.entries(d.frais).map(([k,v])=>k+" "+(v*100).toFixed(3)+"%").join(", ")+" (paliers standard, estimés).";
+ document.getElementById("regles").innerHTML="Mise "+r.notional.toLocaleString("fr-CH")+" $ par jambe · scan chaque minute · entrée si le gain net attendu (prix moyens réels du carnet pour toute la mise, frais taker d'entrée et de sortie des 2 jambes, fourchettes achat/vente) ≥ "+r.gainMin+" $ · une position par actif · sortie dès que le résultat net réalisable atteint "+r.gainMin+" $, ou quand les prix se sont rejoints · écart > "+(r.ecartMaxPrix*100)+" % ignoré (contrats différents) · funding compté pendant la tenue. Frais utilisés : "+Object.entries(d.frais).map(([k,v])=>k+" "+(v*100).toFixed(3)+"%").join(", ")+" (paliers standard, estimés).";
 }
 go();setInterval(go,60e3);
 </script></body></html>
