@@ -41,7 +41,7 @@ function table(cols,rows){return rows.length?"<table><tr>"+cols.map(c=>"<th>"+c+
 async function go(){
  const d=await (await fetch("/api/etat",{cache:"no-store"})).json();
  const now=Date.now();
- document.getElementById("maj").textContent=d.t?"dernier scan "+hh(d.t):"pas encore de scan (toutes les 5 min)";
+ document.getElementById("maj").textContent=d.t?"dernier scan "+hh(d.t):"pas encore de scan (chaque minute)";
  const t=d.total||{};
  document.getElementById("cartes").innerHTML=[
   ["Trades fermés",t.n||0],["Résultat net fermé",'<span class="'+cl(t.net)+'">'+usd(t.net||0)+"</span>"],

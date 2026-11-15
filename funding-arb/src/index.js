@@ -3,7 +3,7 @@
 // achète (en simulation) là où c'est le moins cher et vend là où c'est le plus cher, seulement si le gain attendu
 // après tous les frais atteint l'objectif, avec des prix pris dans les vrais carnets d'ordres pour la mise complète.
 import { DurableObject } from "cloudflare:workers";
-const VERSION = "2.0.0";
+const VERSION = "2.0.1";
 
 // Règles (Pitch décide — modifiables ici)
 const REGLES = {
@@ -137,7 +137,7 @@ async function toutLire(env) {
       let lieu = null, l;
       if (VIA_EUROPE.includes(nom) && env.RELAIS) { const r = await lireEurope(env, nom); l = r.lignes; lieu = r.lieu; }
       else l = await f(env);
-      l = l.filter((x) => x.rate != null && x.mark > 0);
+      l = l.filter((x) => x.mark > 0 || (x.bid > 0 && x.ask > 0));
       lignes.push(...l); statut[nom] = { ok: true, n: l.length, ms: Date.now() - t0, ...(lieu ? { lieu } : {}) };
     } catch (e) { statut[nom] = { ok: false, err: String(e.message || e).slice(0, 200) }; }
   }));
@@ -187,12 +187,15 @@ function ecarts(lignes) {
   const N = REGLES.notional, res = [];
   for (const [base, l] of par) {
     if (l.length < 2) continue;
-    const a = l.reduce((m, x) => (x.ask < m.ask ? x : m)), b = l.reduce((m, x) => (x.bid > m.bid ? x : m));
-    if (a.ex === b.ex) continue;
-    if (b.bid / a.ask - 1 > REGLES.ecartMaxPrix) continue;
-    const ecart = b.bid / a.ask - 1;
-    const gain = N * ecart - N * (demiSpread(a) + demiSpread(b)) - fraisAR(a, b, N); // au sommet du carnet, sortie à prix égaux
-    res.push({ base, a, b, ecart, gain, stock: !!(a.stock || b.stock) });
+    let best = null; // toutes les paires de plateformes, on garde la plus rentable
+    for (const a of l) for (const b of l) {
+      if (a.ex === b.ex) continue;
+      const ecart = b.bid / a.ask - 1;
+      if (ecart > REGLES.ecartMaxPrix) continue;
+      const gain = N * ecart - N * (demiSpread(a) + demiSpread(b)) - fraisAR(a, b, N); // au sommet du carnet, sortie à prix égaux
+      if (!best || gain > best.gain) best = { base, a, b, ecart, gain, stock: !!(a.stock || b.stock) };
+    }
+    if (best) res.push(best);
   }
   return res.sort((x, y) => y.gain - x.gain);
 }
@@ -267,7 +270,7 @@ export default {
     if (u.pathname === "/api/sonde") {
       const { statut, lignes } = await toutLire(env);
       const p = ecarts(lignes).slice(0, 5).map((x) => ({ base: x.base, achat: x.a.ex, vente: x.b.ex, ecart: x.ecart, gain: x.gain }));
-      return new Response(JSON.stringify({ app: "funding-arb-app", version: VERSION, statut, top: p }), { headers: JSONH });
+      return new Response(JSON.stringify({ app: "funding-arb-app", type: "arbitrage-prix", version: VERSION, statut, top: p }), { headers: JSONH });
     }
     if (u.pathname === "/api/etat") {
       const e = await env.DB.prepare("SELECT * FROM etat WHERE id=1").first();
