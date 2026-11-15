@@ -1,59 +1,30 @@
-env.ASSETS                    Assets              
-
-Uploaded funding-arb (2.43 sec)
-Deployed funding-arb triggers (0.71 sec)
-  https://funding-arb.pitch67.workers.dev
-  schedule: */5 * * * *
-Current Version ID: f7626591-15f6-429b-ae33-fc92541dc74e
-code sortie: 0
-
- ⛅️ wrangler 4.162.0
-────────────────────
-Resource location: remote 
-
-✅ No migrations to apply!
+├───────────────┤
+│ 0002_prix.sql │
+└───────────────┘
+? About to apply 1 migration(s)
+Your database may not be available to serve requests during the migration, continue?
+🤖 Using fallback value in non-interactive context: yes
+🌀 Executing on remote database funding-arb (e2ad9364-db37-4e09-a60d-ae95879b46e0):
+🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
+🚣 Executed 4 commands in 0.77ms
+┌───────────────┬────────┐
+│ name          │ status │
+├───────────────┼────────┤
+│ 0002_prix.sql │ ✅     │
+└───────────────┴────────┘
 migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","version":"1.2.1","statut":{"okx":{"ok":true,"n":528,"ms":182},"deribit":{"ok":true,"n":151,"ms":208},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":667},"bybit":{"ok":true,"n":829,"ms":1369,"lieu":"AMS/US"}},"top":[{"base":"INIT","short":"bybit","long":"okx","spreadH":0.00239107528576955,"cout":0.002893449455390854},{"base":"MSTU","short":"bybit","long":"okx","spreadH":0.00114266,"cout":0.004558583803162759},{"base":"MSTR","short":"bybit","long":"deribit","spreadH":0.0008951025,"cout":0.0023979589824498163},{"base":"SNXX","short":"hyperliquid","long":"deribit","spreadH":0.0007885389500000001,"cout":0.0064670917610805},{"base":"BMNR","short":"hyperliquid","long":"okx","spreadH":0.0007848695164716125,"cout":0.010234127922014717}]}
+{"app":"funding-arb-app","version":"2.0.0","statut":{"okx":{"ok":true,"n":528,"ms":114},"deribit":{"ok":true,"n":151,"ms":240},"hyperliquid":{"ok":true,"n":329,"ms":473},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\"}"},"bybit":{"ok":true,"n":829,"ms":935,"lieu":"AMS/US"}},"top":[{"base":"SOPH","achat":"hyperliquid","vente":"bybit","ecart":0.020900321543408262,"gain":136.72683607998084},{"base":"GIGADEV","achat":"hyperliquid","vente":"okx","ecart":0.01515125682687457,"gain":80.79639165212353},{"base":"UNITREE","achat":"hyperliquid","vente":"bybit","ecart":0.004462185331741919,"gain":18.047077544330037},{"base":"XLV","achat":"okx","vente":"bybit","ecart":0.0037633838651542906,"gain":15.04881198662589},{"base":"ACT","achat":"okx","vente":"bybit","ecart":0.0030116992934090536,"gain":4.4973824065742285}]}
 === controles
 --- version
-{"version":"1.2.1"}
+{"version":"2.0.0"}
 --- bilan
-total {'n': 29, 'net': -111.55667388648807, 'g': 1, 'fund': 29.258516120364334, 'frais': 58.6, 'debut': 1794688834686}
-ouvertes 8
- O MSTU bybit okx 0.0 h fund 0 frais 1.05
- O MVLL bybit okx 0.0 h fund 0 frais 1.05
- O SILVER hyperliquid deribit 0.2 h fund 0.0 frais 0.95
- O PURR bybit okx 0.4 h fund 0 frais 1.05
- O BARD bybit okx 1.6 h fund 2.78 frais 1.05
- O ZRO bybit deribit 2.8 h fund 1.25 frais 1.05
- O NBIS bybit deribit 5.4 h fund 0.1 frais 1.05
- O ACT okx bybit 8.4 h fund 2.25 frais 1.05
- F BMNR bybit hyperliquid 2.3 h fund 0.56 frais 2 net -6.44 écart ≤ 0
- F MU bybit hyperliquid 2.1 h fund 0.19 frais 2 net -2.12 écart ≤ 0
- F NVDA bybit deribit 3.5 h fund 0.13 frais 2.1 net -2.77 écart ≤ 0
- F SOPH hyperliquid bybit 2.0 h fund 12.1 frais 2 net 6.72 écart ≤ 0
- F ZHIPU bybit hyperliquid 1.8 h fund 0.27 frais 2 net -3.2 écart ≤ 0
- F SOXL bybit deribit 2.8 h fund 0.04 frais 2.1 net -2.96 écart ≤ 0
- F MSTU bybit okx 2.6 h fund 0 frais 2.1 net -7.32 écart ≤ 0
- F SOXS deribit bybit 2.9 h fund -0.07 frais 2.1 net -3.68 écart ≤ 0
- F ORCL hyperliquid deribit 2.7 h fund 0.18 frais 1.9 net -2.88 écart ≤ 0
- F CRCL bybit okx 4.7 h fund 0 frais 2.1 net -1.93 écart ≤ 0
- F SILVER hyperliquid deribit 1.8 h fund 0.24 frais 1.9 net -2.18 écart ≤ 0
- F INTC hyperliquid deribit 1.7 h fund 0.34 frais 1.9 net -2.47 écart ≤ 0
- F MU hyperliquid deribit 1.6 h fund 0.15 frais 1.9 net -2.19 écart ≤ 0
- F CRWV hyperliquid deribit 1.3 h fund 0.35 frais 1.9 net -4.63 écart ≤ 0
- F SLX okx bybit 0.4 h fund 0 frais 2.1 net -3.65 écart ≤ 0
- F AKE okx bybit 0.2 h fund 1.33 frais 2.1 net -0.28 écart ≤ 0
- F MSTU okx bybit 1.8 h fund 0 frais 2.1 net -10.58 écart ≤ 0
- F SILVER deribit hyperliquid 0.5 h fund 0.18 frais 1.9 net -2.59 écart ≤ 0
- F INTW bybit okx 0.8 h fund 0 frais 2.1 net -3.93 écart ≤ 0
- F TQQQ bybit okx 0.6 h fund 0 frais 2.1 net -2.1 écart ≤ 0
- F BARD bybit okx 3.1 h fund 0.68 frais 2.1 net -3.05 écart ≤ 0
- F GPS okx bybit 2.8 h fund 0.22 frais 2.1 net -2.93 écart ≤ 0
- F BMNR deribit hyperliquid 2.7 h fund 1.22 frais 1.9 net -21.55 écart ≤ 0
- F ACT okx bybit 2.3 h fund 1.29 frais 2.1 net -0.68 écart ≤ 0
- F MSTU okx bybit 1.8 h fund 8.89 frais 2.1 net -14.6 écart ≤ 0
-{'deribit': (True, 151), 'binance': (False, None), 'okx': (True, 528), 'hyperliquid': (True, 226), 'bybit': (True, 829)}
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    print({k:(v['ok'],v.get('n')) for k,v in d['scan']['statut'].items()})
+                                             ~~~~~~~~~^^^^^^^^^^
+TypeError: 'NoneType' object is not subscriptable
+total {'n': 0, 'net': None, 'g': None, 'fund': None, 'frais': None, 'debut': None}
+ouvertes 0
