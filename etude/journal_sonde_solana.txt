@@ -1,37 +1,4 @@
-version 14.11.2026 H : règles A, D, E, F1, F3 retirées (seule C reste) ; remise à zéro 16 h ; teneur de paires 800001 à 800004 (/api/bot/paires)
-actives [2162] paper
-moteur {"lu": "2026-11-15T05:57:49.623Z", "ok": true, "probleme": null, "ages": {"perp": 0.16, "okx": 0.16, "bn": 0.27, "cb": 0.1, "cl": 0.5}, "erreurLecture": null}
-source {"source": "bot95-signaux", "connecte": true, "depuis": "2026-11-14T21:18:50.555Z", "dernierMessage": "2026-11-15T05:58:34.788Z", "derniereErreur": null, "refuses": 0, "dernierRefus": null, "cle": "QzxCmNFijXwRGpsk"}
-banc 109455
-onglet Trades depuis 16 h : 27 gain 0
-   2026-11-15T05:52:32 UP 0.3299998944000338 52.34500036959988 None pending
-   2026-11-15T04:24:07 UP 0.27244504442897566 100 None settled
-   2026-11-15T04:08:37 UP 0.38999993370001124 100 None settled
-   2026-11-15T03:00:40 UP 0.55 4.2776305 None settled
-   2026-11-15T02:46:14 UP 0.5179280805067409 51.687251718226406 None settled
-   2026-11-15T01:49:20 DOWN 0.19329789796267885 100 None settled
-   2026-11-15T01:19:13 DOWN 0.0950107300367967 100 None settled
-   2026-11-15T00:59:04 UP 0.4073017804790032 100 None settled
-   2026-11-15T00:05:12 UP 0.4 4.168 None settled
-   2026-11-14T23:45:40 UP 0.8316063641171832 50.589377725589856 None settled
-   2026-11-14T23:19:06 DOWN 0.26371308016877637 52.57700421940928 None settled
-   2026-11-14T22:14:04 DOWN 0.1478407707589879 52.982557302343544 None settled
-   2026-11-14T21:53:52 UP 0.25830293251319286 100 None settled
-   2026-11-14T21:33:55 UP 0.37692353503014264 100 None settled
-   2026-11-14T21:06:25 UP 0.22923508378771545 52.697677206742995 None settled
-   2026-11-14T21:03:58 UP 0.17113147770988912 8.001070669828016 None settled
-   2026-11-14T20:55:06 DOWN 0.3406091999907354 52.307867800032426 None settled
-   2026-11-14T20:49:09 UP 0.2606944012488305 100 None settled
-   2026-11-14T19:33:39 DOWN 0.49287694242803015 100 None settled
-   2026-11-14T19:18:37 UP 0.16 100 None settled
-   2026-11-14T18:24:17 UP 0.1936183395291202 100 None settled
-   2026-11-14T18:04:21 UP 0.05835058822611904 100 None settled
-   2026-11-14T17:33:17 UP 0.40387281721887525 100 None settled
-   2026-11-14T17:29:02 UP 0.6 11.725368000000001 None settled
-   2026-11-14T17:11:45 UP 0.4304651162790698 19.24794634883721 None settled
-   2026-11-14T16:58:53 UP 0.43912170389760025 100 None settled
-   2026-11-14T16:34:06 DOWN 0.22118789845617487 100 None settled
-v1 800001 {"cycles": 175, "gain": -161.87, "mise": 17018.66, "rendementPct": -0.95, "cyclesPositifs": 68, "creux": 213.55, "sommeMedianePaire": 0.8788, "cyclesEquilibres": {"cycles": 92, "gain": 582.12}, "cyclesDesequilibres": {"cycles": 83, "gain": -743.99}, "parJour": {"2026-11-14": -28.56, "2026-11-15": -133.31}}
-v2 800002 {"cycles": 162, "gain": 70.38, "mise": 6348.4, "rendementPct": 1.11, "cyclesPositifs": 99, "creux": 54.89, "sommeMedianePaire": 0.9302, "cyclesEquilibres": {"cycles": 121, "gain": 220.79}, "cyclesDesequilibres": {"cycles": 41, "gain": -150.41}, "parJour": {"2026-11-14": 85.75, "2026-11-15": -15.37}}
-v3 800003 {"cycles": 53, "gain": 57.75, "mise": 846.71, "rendementPct": 6.82, "cyclesPositifs": 50, "creux": 3.5, "sommeMedianePaire": 0.9292, "cyclesEquilibres": {"cycles": 51, "gain": 62.36}, "cyclesDesequilibres": {"cycles": 2, "gain": -4.61}, "parJour": {"2026-11-14": 39.08, "2026-11-15": 18.67}}
-v4 800004 {"cycles": 85, "gain": 64.28, "mise": 2225.4, "rendementPct": 2.89, "cyclesPositifs": 78, "creux": 5.59, "sommeMedianePaire": 0.9581, "cyclesEquilibres": {"cycles": 81, "gain": 79.26}, "cyclesDesequilibres": {"cycles": 4, "gain": -14.99}, "parJour": {"2026-11-14": 33.39, "2026-11-15": 30.89}}
+version : 14.11.2026 H : règles A, D, E, F1, F3 retirées (seule C reste) ; remise à zéro 16 h ; teneur de paires 800001 à 800004 (/api/bot/paires)
+actives : [2162] mode : paper depuis : {'2162': '2026-11-13T10:00:00.000Z'}
+paires : {'v1': 800001, 'v2': 800002, 'v3': 800003, 'v4': 800004}
+délai signal → achat (lignes de base, depuis 07 h) : 0 trades ; médiane None
