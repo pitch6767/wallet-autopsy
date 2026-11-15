@@ -7,3 +7,5 @@ for p in d['ouvertes'][:15]:print(' O',p['base'],'achat',p['long'],p['px_l_in'],
 for p in d['fermees'][:25]:print(' F',p['base'],p['long'],p['short'],round((p['ferme']-p['ouvert'])/6e4),'min net',round(p['net'],2),p['raison'])
 sc=d.get('scan') or {}
 for p in (sc.get('top') or [])[:8]:print(' T',p['base'],p['achat'],p['ask'],p['vente'],p['bid'],round(p['ecart']*100,3),'%',round(p['gain'],2),'verif',p['verif'])"
+echo "--- page"; curl -sS -m 20 -D - "$U/" | grep -iE "^cache-control|<h1|<h2|Version|<title" | sed 's/<[^>]*>/ /g' | head -20
+echo "--- etat brut (début)"; curl -sS -m 30 "$U/api/etat" | head -c 1500; echo
