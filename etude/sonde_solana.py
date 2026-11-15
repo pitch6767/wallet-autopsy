@@ -13,3 +13,4 @@ for t in T:
 d.sort(); print("délai 25 dernières min :", len(d), "trades ; médiane", round(d[len(d)//2], 3) if d else None, "; 90 %", round(d[int(len(d)*.9)], 3) if d else None)
 # v1
 # v2
+# v3
