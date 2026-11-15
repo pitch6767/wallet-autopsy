@@ -12,3 +12,4 @@ for t in T:
     except Exception: pass
 d.sort(); print("délai signal → achat (lignes de base, depuis 07 h) :", len(d), "trades ; médiane", d[len(d)//2] if d else None)
 # 1
+# 2
