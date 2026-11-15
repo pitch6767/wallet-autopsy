@@ -1,5 +1,6 @@
 # 15.11.2026 : vérification version I + stratégie active 600005 + délai d'achat (lecture seule)
 import json, urllib.request
+import time; print("lu à", time.strftime("%H:%M:%S"))
 g = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "analyse"}), timeout=200).read())
 e = g("https://72-11-157-70.sslip.io/api/bot/banc/etat"); print("version :", e.get("version")); print("actives :", e.get("actives"), "mode :", e.get("mode"), "depuis :", e.get("activesDepuis"))
 p = g("https://72-11-157-70.sslip.io/api/bot/paires"); print("paires :", p.get("numeros"))
@@ -26,3 +27,4 @@ d.sort(); print("délai signal → achat (lignes de base, depuis 07 h) :", len(d
 # s8
 # s9
 # s10
+# t1
