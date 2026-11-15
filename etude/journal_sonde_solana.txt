@@ -1,5 +1,8 @@
-lu à 09:09:06
-actives : [600013] mode : paper
-/home/runner/work/wallet-autopsy/wallet-autopsy/etude/sonde_solana.py:6: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
-  dep = (datetime.datetime.utcnow() - datetime.timedelta(minutes=25)).strftime("%Y-%m-%dT%H:%M:%SZ")
-délai 25 dernières min : 67 trades ; médiane 0.063 ; 90 % 0.391
+lu à 09:11:57
+version 15.11.2026 I : comme le mercredi 11.11 (aucune règle, achat immédiat) ; variante 5M « avec C » pour chaque ligne ; remise à zéro 8 h ; teneur de paires 800001 à 800006 (25 $ par côté)
+actives [600013] paper {'600013': '2026-11-15T07:38:29.682Z'}
+moteur {"lu": "2026-11-15T09:11:11.848Z", "ok": true, "probleme": null, "ages": {"perp": 0.01, "okx": 0.06, "bn": 0.07, "cb": 0.02, "cl": 0.55}, "erreurLecture": null}
+source {"source": "bot95-signaux", "connecte": true, "depuis": "2026-11-15T08:24:12.876Z", "dernierMessage": "2026-11-15T09:11:52.939Z", "derniereErreur": null, "refuses": 0, "dernierRefus": null, "cle": "QzxCmNFijXwRGpsk"}
+banc 152976
+onglet Trades depuis 8 h : 4
+[{"ouvert": "2026-11-15T08:59:08.767Z", "n": 600013, "cote": "DOWN", "prix": 0.34000005440000874, "parts": 281.12942178411487, "mise": 100, "statut": "settled", "gain": -100, "fin": "2026-11-15T09:00:00.000Z", "signal": "101|1794732900|PORTEFEUILLE 400|V2-F incertitude 0,01 %|2026-11-15T08:59:08.719Z|p600013"}, {"ouvert": "2026-11-15T08:15:28.068Z", "n": 600013, "cote": "UP", "prix": 0.22657444029599233, "parts": 418.6883509478621, "mise": 100, "statut": "settled", "gain": -100, "fin": "2026-11-15T08:20:00.000Z", "signal": "105|1794730500|corrige : desaccord 20 + foule bybit x2|corrige : desaccord 20|2026-11-15T08:15:28.056Z|p600013"}, {"ouvert": "2026-11-15T08:10:13.960Z", "n": 600013, "cote": "UP", "prix": 0.3399999966, "parts": 281.12946848890385, "mise": 100, "statut": "settled", "gain": -100, "fin": "2026-11-15T08:15:00.000Z", "signal": "105|1794730200|corrige : desaccord 20 + foule
