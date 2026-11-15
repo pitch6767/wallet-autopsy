@@ -1,25 +1,18 @@
-# 15.11.2026 : délai signal → achat sur les 20 dernières minutes (lecture seule)
-import json, urllib.request, datetime, time
+# 15.11.2026 10 h (Pitch : « tout est détraqué ») — bilan depuis 8 h, lecture seule
+import json, urllib.request, gzip, subprocess, os, time
 print("lu à", time.strftime("%H:%M:%S"))
-g = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "analyse"}), timeout=200).read())
-e = g("https://72-11-157-70.sslip.io/api/bot/banc/etat"); print("actives :", e.get("actives"), "mode :", e.get("mode"))
-dep = (datetime.datetime.utcnow() - datetime.timedelta(minutes=25)).strftime("%Y-%m-%dT%H:%M:%SZ")
-T = g(f"https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis={dep}&plafond=100")["trades"]
-d = []
-for t in T:
-    if t["num"] >= 1000: continue
-    try: d.append((datetime.datetime.fromisoformat(t["ouvert"].replace("Z", "+00:00")) - datetime.datetime.fromisoformat(t["id"].split("|")[-1].replace("Z", "+00:00"))).total_seconds())
-    except Exception: pass
-d.sort(); print("délai 25 dernières min :", len(d), "trades ; médiane", round(d[len(d)//2], 3) if d else None, "; 90 %", round(d[int(len(d)*.9)], 3) if d else None)
-# v1
-# v2
-# v3
-# v4
-# v5
-# v6
-# v7
-# v8
-# v9
-# v10
-# v11
-# v12
+def get(u, t=280):
+    for k in range(3):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "analyse"}), timeout=t) as r: return json.loads(r.read())
+        except Exception as e: err = str(e); time.sleep(3)
+    return {"erreur": err}
+e = get("https://72-11-157-70.sslip.io/api/bot/banc/etat"); print("version", e.get("version")); print("actives", e.get("actives"), e.get("mode"), e.get("activesDepuis")); print("moteur", json.dumps(e.get("moteur"))[:200]); print("source", json.dumps(e.get("sourceSignaux"))[:250])
+d = get("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=2026-11-12T00:00:00Z&plafond=100")
+print("banc", len(d.get("trades") or []))
+os.makedirs("etude/analyse", exist_ok=True)
+with gzip.open("etude/analyse/banc_15_10h.json.gz", "wt") as f: json.dump(d, f)
+x = get("https://72-11-157-70.sslip.io/api/bot/banc/decisions?depuis=2026-11-15T00:00:00Z")
+tp = [t for t in (x.get("tradesPaper") or []) if t.get("ouvert", "") >= "2026-11-15T07:00"]
+print("onglet Trades depuis 8 h :", len(tp)); print(json.dumps(tp[:3], ensure_ascii=False)[:900])
+subprocess.run(["git", "add", "etude/analyse"])
