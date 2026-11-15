@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        jour: ["2026-11-15", "2026-11-14", "2026-11-13"]
+        jour: ["2026-11-10", "2026-11-11", "2026-11-12"]
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 1 }
