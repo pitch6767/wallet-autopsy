@@ -18,3 +18,4 @@ d.sort(); print("délai signal → achat (lignes de base, depuis 07 h) :", len(d
 # r3
 # s1
 # s2
+# s3
