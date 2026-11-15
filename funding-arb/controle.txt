@@ -1,30 +1,33 @@
-├───────────────┤
-│ 0002_prix.sql │
-└───────────────┘
-? About to apply 1 migration(s)
-Your database may not be available to serve requests during the migration, continue?
-🤖 Using fallback value in non-interactive context: yes
-🌀 Executing on remote database funding-arb (e2ad9364-db37-4e09-a60d-ae95879b46e0):
-🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
-🚣 Executed 4 commands in 0.77ms
-┌───────────────┬────────┐
-│ name          │ status │
-├───────────────┼────────┤
-│ 0002_prix.sql │ ✅     │
-└───────────────┴────────┘
+env.ASSETS                    Assets              
+
+Uploaded funding-arb (2.38 sec)
+Deployed funding-arb triggers (0.67 sec)
+  https://funding-arb.pitch67.workers.dev
+  schedule: * * * * *
+Current Version ID: a2d8f18c-6822-42c4-8fea-71994526e2f3
+code sortie: 0
+
+ ⛅️ wrangler 4.162.0
+────────────────────
+Resource location: remote 
+
+✅ No migrations to apply!
 migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","version":"2.0.0","statut":{"okx":{"ok":true,"n":528,"ms":114},"deribit":{"ok":true,"n":151,"ms":240},"hyperliquid":{"ok":true,"n":329,"ms":473},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\"}"},"bybit":{"ok":true,"n":829,"ms":935,"lieu":"AMS/US"}},"top":[{"base":"SOPH","achat":"hyperliquid","vente":"bybit","ecart":0.020900321543408262,"gain":136.72683607998084},{"base":"GIGADEV","achat":"hyperliquid","vente":"okx","ecart":0.01515125682687457,"gain":80.79639165212353},{"base":"UNITREE","achat":"hyperliquid","vente":"bybit","ecart":0.004462185331741919,"gain":18.047077544330037},{"base":"XLV","achat":"okx","vente":"bybit","ecart":0.0037633838651542906,"gain":15.04881198662589},{"base":"ACT","achat":"okx","vente":"bybit","ecart":0.0030116992934090536,"gain":4.4973824065742285}]}
+{"app":"funding-arb-app","version":"2.0.0","statut":{"deribit":{"ok":true,"n":151,"ms":175},"okx":{"ok":true,"n":528,"ms":200},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":857},"bybit":{"ok":true,"n":829,"ms":1497,"lieu":"AMS/US"}},"top":[{"base":"SOPH","achat":"okx","vente":"bybit","ecart":0.014361300075586003,"gain":111.386266038141},{"base":"GIGADEV","achat":"hyperliquid","vente":"okx","ecart":0.01374448387857563,"gain":62.55684552349646},{"base":"UNITREE","achat":"hyperliquid","vente":"bybit","ecart":0.00435686701653637,"gain":17.208757700813912},{"base":"XLV","achat":"okx","vente":"bybit","ecart":0.0037633838651542906,"gain":15.04881198662589},{"base":"ACT","achat":"okx","vente":"bybit","ecart":0.003012048192771122,"gain":3.9233371753994355}]}
 === controles
 --- version
 {"version":"2.0.0"}
 --- bilan
-Traceback (most recent call last):
-  File "<string>", line 5, in <module>
-    print({k:(v['ok'],v.get('n')) for k,v in d['scan']['statut'].items()})
-                                             ~~~~~~~~~^^^^^^^^^^
-TypeError: 'NoneType' object is not subscriptable
 total {'n': 0, 'net': None, 'g': None, 'fund': None, 'frais': None, 'debut': None}
 ouvertes 0
+ T GIGADEV hyperliquid 35.1918 okx 35.676 1.376 % 61.83 verif profondeur insuffisante pour 10000 $
+ T SOPH hyperliquid 0.001315 bybit 0.001327 0.913 % 17.81 verif None
+ T XLV okx 188.66 bybit 189.37 0.376 % 15.05 verif None
+ T BTW okx 0.6219 bybit 0.62432 0.389 % 9.0 verif None
+ T ACT okx 0.008632 bybit 0.008659 0.313 % 3.34 verif None
+ T AMD hyperliquid 522.416 okx 523.23 0.156 % -4.86 verif None
+ T AMZN hyperliquid 263.434 okx 263.82 0.147 % -5.5 verif None
+ T MELI hyperliquid 1482.436 bybit 1490.99 0.577 % -6.15 verif None
