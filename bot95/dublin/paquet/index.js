@@ -25031,7 +25031,13 @@ var Bot = class {
     this.ws[nom + "_en_cours_t"] = now();
     try {
       const ancien = this.ws[nom];
-      const r = await fetch(url, { headers: { Upgrade: "websocket" }, signal: AbortSignal.timeout(1e4) });
+      const ac = new AbortController(), minuteur = setTimeout(() => ac.abort(), 1e4);
+      let r;
+      try {
+        r = await fetch(url, { headers: { Upgrade: "websocket" }, signal: ac.signal });
+      } finally {
+        clearTimeout(minuteur);
+      }
       const ws = r.webSocket;
       if (!ws) throw new Error("pas de websocket (HTTP " + r.status + ")");
       ws.accept();
