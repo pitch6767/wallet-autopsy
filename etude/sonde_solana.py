@@ -6,5 +6,6 @@ def g(u):
     except Exception as e: return f"ERREUR {e}"
 print("== statut signaux"); print(g("https://bot95-signaux.pitch67.workers.dev/api/statut"))
 print("== bot95 etat"); print(g("https://bot95.pitch67.workers.dev/api/etat")[:2000])
-D = json.loads(g("https://72-11-157-70.sslip.io/api/bot/diag?heures=2") or "{}")
+try: D = json.loads(urllib.request.urlopen(urllib.request.Request("https://72-11-157-70.sslip.io/api/bot/diag?heures=2", headers={"user-agent": "verif"}), timeout=60).read())
+except Exception as e: print("diag", e); D = {}
 for h in D.get("heures", []): print(json.dumps(h, ensure_ascii=False)[:600])
