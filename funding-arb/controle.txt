@@ -1,63 +1,34 @@
-env.ASSETS                    Assets              
-
-Uploaded funding-arb (3.77 sec)
-Deployed funding-arb triggers (2.42 sec)
-  https://funding-arb.pitch67.workers.dev
-  schedule: * * * * *
-Current Version ID: 0908e493-348d-4fca-a7ff-c84164df939d
-code sortie: 0
-
- ⛅️ wrangler 4.163.0
-────────────────────
-Resource location: remote 
-
-✅ No migrations to apply!
+├────────────────────────┤
+│ 0004_remise_a_zero.sql │
+└────────────────────────┘
+? About to apply 1 migration(s)
+Your database may not be available to serve requests during the migration, continue?
+🤖 Using fallback value in non-interactive context: yes
+🌀 Executing on remote database funding-arb (e2ad9364-db37-4e09-a60d-ae95879b46e0):
+🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
+🚣 Executed 3 commands in 0.64ms
+┌────────────────────────┬────────┐
+│ name                   │ status │
+├────────────────────────┼────────┤
+│ 0004_remise_a_zero.sql │ ✅     │
+└────────────────────────┴────────┘
 migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.1.1","statut":{"deribit":{"ok":true,"n":151,"ms":164},"okx":{"ok":false,"err":"HTTP 429 {\"msg\":\"Too Many Requests\",\"code\":\"50011\"}"},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\"}"},"bybit":{"ok":true,"n":829,"ms":535,"lieu":"AMS/US"},"hyperliquid":{"ok":true,"n":329,"ms":788}},"top":[{"base":"ANT","achat":"hyperliquid","vente":"deribit","ecart":0.017620941726478545,"gain":130.18497966569703},{"base":"SKR","achat":"hyperliquid","vente":"bybit","ecart":0.008273635354656417,"gain":48.63516328644678},{"base":"UNITREE","achat":"hyperliquid","vente":"bybit","ecart":0.005407076145200751,"gain":31.106310906585797},{"base":"SKHY","achat":"hyperliquid","vente":"bybit","ecart":0.001453840562151587,"gain":-7.2454454464676825},{"base":"NVDA","achat":"deribit","vente":"bybit","ecart":0.0013373240782017515,"gain":-8.263154985983466}]}
+{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.1.2","statut":{"okx":{"ok":false,"err":"HTTP 429 {\"msg\":\"Too Many Requests\",\"code\":\"50011\"}"},"deribit":{"ok":true,"n":151,"ms":248},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":682},"bybit":{"ok":true,"n":829,"ms":719,"lieu":"AMS/US"}},"top":[{"base":"ANT","achat":"hyperliquid","vente":"deribit","ecart":0.0168438792614225,"gain":131.89260321087568},{"base":"UNITREE","achat":"hyperliquid","vente":"bybit","ecart":0.0052714505242272836,"gain":28.23293412697241},{"base":"SKR","achat":"hyperliquid","vente":"bybit","ecart":0.006541778174249169,"gain":16.633294447134162},{"base":"DRAM","achat":"hyperliquid","vente":"bybit","ecart":0.0012775871139056871,"gain":-8.973444933639009},{"base":"SOXL","achat":"hyperliquid","vente":"bybit","ecart":0.0013745503465623088,"gain":-9.012231213113076}]}
 === controles
 --- version
-{"version":"2.1.1"}
+{"version":"2.1.2"}
 --- bilan
 total {'n': 0, 'net': None, 'g': None, 'fund': None, 'frais': None, 'debut': None}
-anciennes {'n': 18, 'net': -3448.379799243941}
-ouvertes 3
- O ANT regles None qte_l 100.67384241460519 qte_s 99.19338518004164 carnet lu il y a 0 min achat hyperliquid 99.33066782945454 vente deribit 100.8131740019703 attendu 103.65 provisoire -105.0
- O SKR regles None qte_l 874349.1449554118 qte_s 864251.7157202217 carnet lu il y a 0 min achat hyperliquid 0.011437078720434911 vente bybit 0.011570703092751778 attendu 64.5 provisoire -138.59
- O GIGADEV regles None qte_l 283.00668961236823 qte_s 279.6579489049048 carnet lu il y a 0 min achat hyperliquid 35.33485379337468 vente okx 35.757968043312836 attendu 60.59 provisoire -143.31
- F CASHCAT deribit okx 3 min net 172.88 objectif atteint | achat in 0.05117924630383133 out 0.05315 | vente in 0.0517611656486303 out 0.05275595018294226 | fund -0.01 att 85.91
- F ANT bybit hyperliquid 22 min net 51.66 objectif atteint | achat in 99.57301421031751 out 100.84042166760543 | vente in 100.73893156749355 out 101.29919574902785 | fund -0.01 att 91.74
- F UNITREE hyperliquid okx 60 min net -13.97 écart refermé | achat in 103.13504652727015 out 103.45536330988546 | vente in 103.92068275888573 out 103.59980765426289 | fund -56.91 att 52.99
- F INIT hyperliquid bybit 58 min net 56.0 objectif atteint | achat in 0.09640527838572074 out 0.097972 | vente in 0.09738346748222503 out 0.09825 | fund 2.47 att 67.2
- F ANT bybit hyperliquid 19 min net 80.71 objectif atteint | achat in 98.81799543610722 out 99.80988178783988 | vente in 100.95914589582866 out 100.95571936723239 | fund 0 att 111.24
- F CASHCAT bybit deribit 18 min net -684.5 écart refermé | achat in 0.04440299055888777 out 0.044527737528768756 | vente in 0.0448959845806012 out 0.048 | fund -0.21 att 71.09
- F CASHCAT deribit okx 7 min net 55.84 objectif atteint | achat in 0.04352596514303124 out 0.043807840009732785 | vente in 0.04395775169417581 out 0.04390947397783216 | fund 0.09 att 64.26
- F UNITREE hyperliquid bybit 115 min net 56.12 objectif atteint | achat in 104.18818714334168 out 104.3673 | vente in 104.99700593928026 out 104.63 | fund 23.97 att 52.13
- F INIT hyperliquid bybit 549 min net -67.16 écart refermé | achat in 0.1079312746903662 out 0.09888014937842231 | vente in 0.10897080591969088 out 0.09944673728911882 | fund -82.56 att 63.11
- F SOPH okx bybit 698 min net -17.74 écart refermé | achat in 0.0012932314418398752 out 0.000898397934533421 | vente in 0.0013052707565987809 out 0.0009027807903085368 | fund -27.24 att 56.71
- F CASHCAT bybit deribit 3 min net 32.18 écart refermé | achat in 0.0424803953673742 out 0.04224933648058494 | vente in 0.0430112630480004 out 0.042548301623684066 | fund -0.06 att 81.86
- F CASHCAT deribit okx 15 min net -3439.07 écart refermé | achat in 0.04014518458510902 out 0.02685 | vente in 0.04058173989283655 out 0.04101815314225505 | fund 0.24 att 72.54
- F AAOI okx hyperliquid 6 min net 74.13 objectif atteint | achat in 49.26174306265411 out 49.19071281637279 | vente in 49.888 out 49.35148027751951 | fund 0 att 50.83
- F INIT hyperliquid bybit 47 min net 42.39 écart refermé | achat in 0.1115634200665385 out 0.11044089972018521 | vente in 0.11263125643231477 out 0.11079531697474383 | fund 0 att 61.33
- F SOPH okx bybit 355 min net 51.07 objectif atteint | achat in 0.0013461905734784769 out 0.001293207184516918 | vente in 0.0013587934181381496 out 0.0013156429891479635 | fund 148.09 att 61.59
- F INIT bybit okx 18 min net -7.48 écart refermé | achat in 0.12221528638589801 out 0.12365330595759437 | vente in 0.12353922084732116 out 0.12482579013429995 | fund 0 att 83.64
- F INIT bybit hyperliquid 30 min net 92.64 objectif atteint | achat in 0.12578050222449358 out 0.12599 | vente in 0.1272377995513953 out 0.12601654031082293 | fund 0 att 82.07
- F INIT hyperliquid bybit 63 min net 15.93 écart refermé | achat in 0.13050431857716446 out 0.12689985610989038 | vente in 0.13170772944493045 out 0.12719927758538685 | fund -30.18 att 62.23
- T ANT hyperliquid 99.7315 deribit 101.45 1.723 % 120.9 verif None
- T SKR hyperliquid 0.009875 bybit 0.009966 0.922 % 52.41 verif None
- T INIT bybit 0.09525 okx 0.09577 0.546 % 30.98 verif None
- T UNITREE hyperliquid 102.9148 okx 103.43 0.501 % 27.1 verif None
- T JCT bybit 0.002435 okx 0.002445 0.411 % 7.77 verif None
- T SOPH okx 0.000926 bybit 0.00093 0.432 % 6.05 verif None
- T NVDA hyperliquid 157.05 okx 157.29 0.153 % -4.35 verif None
- T AMZN hyperliquid 264.134 okx 264.53 0.15 % -5.26 verif None
+anciennes {'n': 0, 'net': None}
+ouvertes 0
 --- page
 cache-control: no-store, max-age=0
  Arbitrage de prix — fantôme 
   Arbitrage de prix FANTÔME  
- Aucun ordre réel. Version 2.1.1 ·  …   
+ Aucun ordre réel. Version 2.1.2 ·  …   
  Plateformes   
  Positions ouvertes (fantôme, résultat provisoire si on sortait maintenant)   
  Trades fermés (fantôme, résultat après tous les frais)   
@@ -65,7 +36,7 @@ cache-control: no-store, max-age=0
  Règles du fantôme   
 try{if(sessionStorage.getItem("v")!==V){fetch("/api/version",{cache:"no-store"}).then(r=>r.json()).then(d=>{if(d.version!==V&&!sessionStorage.getItem("r"+d.version)){sessionStorage.setItem("r"+d.version,1);location.reload()}else sessionStorage.setItem("v",V)})}}catch(e){}
 --- etat brut (début)
-{"version":"2.1.1","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794832483356,"scan":{"statut":{"deribit":{"ok":true,"n":151,"ms":86},"okx":{"ok":true,"n":529,"ms":183},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":847},"bybit":{"ok":true,"n":829,"ms":1602,"lieu":"AMS/US"}},"top":[{"base":"ANT","stock":true,"achat":"hyperliquid","ask":99.7315,"vente":"deribit","bid":101.45,"ecart":0.017231265949073427,"gain":120.8982557498424,"verif":null},{"base":"SKR","stock":false,"achat":"hyperliquid","ask":0.009875,"vente":"bybit","bid":0.009966,"ecart":0.009215189873417629,"gain":52.40574372536331,"verif":null},{"base":"INIT","stock":false,"achat":"bybit","ask":0.09525,"vente":"okx","bid":0.09577,"ecart":0.005459317585301715,"gain":30.977189648963577,"verif":null},{"base":"UNITREE","stock":true,"achat":"hyperliquid","ask":102.9148,"vente":"okx","bid":103.43,"ecart":0.005006082701419112,"gain":27.097615550483567,"verif":null},{"base":"JCT","stock":false,"achat":"bybit","ask":0.002435,"vente":"okx","bid":0.002445,"ecart":0.004106776180698102,"gain":7.7725925865263825,"verif":null},{"base":"SOPH","stock":false,"achat":"okx","ask":0.000926,"vente":"bybit","bid":0.00093,"ecart":0.0043196544276
+{"version":"2.1.2","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"scan":null,"ouvertes":[],"fermees":[],"total":{"n":0,"net":null,"g":null,"fund":null,"frais":null,"debut":null},"anciennes":{"n":0,"net":null},"reglesId":"2.1"}
 --- deribit CASHCAT
 {'instrument_name': 'CASHCAT_USDC-PERPETUAL', 'contract_size': 10.0, 'tick_size': 1e-05, 'min_trade_amount': 10.0, 'settlement_currency': 'USDC', 'base_currency': 'CASHCAT'}
 {'instrument_name': 'SOL_USDC-PERPETUAL', 'contract_size': 0.001, 'tick_size': 0.001, 'min_trade_amount': 0.001, 'settlement_currency': 'USDC', 'base_currency': 'SOL'}
@@ -75,4 +46,4 @@ try{if(sessionStorage.getItem("v")!==V){fetch("/api/version",{cache:"no-store"})
 {'instrument_name': 'SOL_USDC-27NOV26', 'contract_size': 0.01, 'tick_size': 0.05, 'min_trade_amount': 0.01, 'settlement_currency': 'USDC', 'base_currency': 'SOL'}
 {'instrument_name': 'SOL_USDC-25DEC26', 'contract_size': 0.01, 'tick_size': 0.05, 'min_trade_amount': 0.01, 'settlement_currency': 'USDC', 'base_currency': 'SOL'}
 {'instrument_name': 'SOL_USDC-26MAR27', 'contract_size': 0.01, 'tick_size': 0.05, 'min_trade_amount': 0.01, 'settlement_currency': 'USDC', 'base_currency': 'SOL'}
-{"jsonrpc":"2.0","result":{"timestamp":1794832521607,"state":"open","stats":{"high":0.05608,"low":0.03898,"price_change":32.0921,"volume":14460140.0,"volume_delayed":0.0,"volume_realtime":14460140.0,"volume_delayed_usd":0.0,"volume_realtime_usd":732170.66,"volume_usd":732170.66,"volume_delayed_notional":0.0,"volume_notional":732336.4091,"volume_realtime_notional":732336.4091},"change_id":224990942805,"index_price":0.053899,"instrument_name":"CASHCAT_USDC-PERPETUAL","bids":[[0.05386,18470.0],[0.05382,18470.0],[0.05378,18470.0],[0.05375,149170.0],[0.05362,3990.0]],"asks":[[0.05394,2220.0],[0.054
+{"jsonrpc":"2.0","result":{"timestamp":1794833439967,"state":"open","stats":{"high":0.05608,"low":0.03898,"price_change":29.9118,"volume":14617450.0,"volume_delayed":0.0,"volume_realtime":14617450.0,"volume_delayed_usd":0.0,"volume_realtime_usd":740550.05,"volume_usd":740550.05,"volume_delayed_notional":0.0,"volume_notional":740717.4803,"volume_realtime_notional":740717.4803},"change_id":224997763551,"index_price":0.053466,"instrument_name":"CASHCAT_USDC-PERPETUAL","bids":[[0.05313,197670.0],[0.05312,10.0],[0.0531,18470.0],[0.05306,18470.0],[0.05288,13490.0]],"asks":[[0.05328,18470.0],[0.05332
