@@ -25787,7 +25787,7 @@ var Bot = class {
       for (const x of m) this.surPolyDouble(x);
       return;
     }
-    if (!this.SG) return this.surPoly(m);
+    return this.surPoly(m);
     const pc = m.price_changes && m.price_changes[0];
     const D = this._pdd = this._pdd || /* @__PURE__ */ new Map(), t = now(), k = [m.event_type, m.asset_id || pc && pc.asset_id, m.timestamp, m.hash || pc && pc.hash || "", m.price || pc && pc.price || "", m.size || pc && pc.size || "", (m.price_changes || m.bids || []).length].join("|");
     if (D.has(k)) {
