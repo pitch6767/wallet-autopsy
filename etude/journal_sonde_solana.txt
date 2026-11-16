@@ -1,18 +1,6 @@
-lu à 13:49:25 1794836965.0148206
-banc trades réglés depuis 13:00Z : 566 lignes 566 depuis 2026-11-16T13:00:00.000Z
-[('2026-11-16T13:2', 566)]
-lignes de base avec trade réglé : 151 [1, 2, 3, 10, 11, 12, 13, 14, 15, 31, 32, 101, 102, 103, 110, 111, 112, 113, 114, 115, 201, 202, 203, 210, 211, 212, 213, 214, 215, 301, 302, 303, 310, 311, 312, 313, 314, 315, 1101, 1102, 1112, 1114, 1115, 1301, 1401, 1501, 1601, 1701, 1801, 1901, 2110, 2111, 2112, 2113, 2114, 2115, 2116, 2120, 2121, 2122, 2123, 2124, 2125, 2126, 2140, 2141, 2143, 2144, 2161, 2171, 10001, 10002, 10003, 10010, 10011, 10012, 10013, 10014, 10015, 10031]
-101 [('13:28:22', 'DOWN', 0.2, -1)]
-105 []
-6 []
-2162 []
-600005 []
-600013 []
-900003 [('13:28:22', 'DOWN', 0.1857, -55)]
-900016 [('13:28:22', 'DOWN', 0.1864, -59)]
-900030 [('13:28:22', 'DOWN', 0.1864, -59)]
-800005 []
-depuis 11:00Z, par 10 min : [('2026-11-16T11:0', 699), ('2026-11-16T11:1', 801), ('2026-11-16T11:3', 4), ('2026-11-16T11:4', 8), ('2026-11-16T11:5', 611), ('2026-11-16T12:1', 620), ('2026-11-16T12:3', 1139), ('2026-11-16T12:5', 57), ('2026-11-16T13:2', 566)]
-vitesse {"feu": "orange", "raisons": ["serveur bloqué 409 ms"], "signaux": 112, "issues": {"rempli": 34, "non rempli": 78}, "dernierSignal": "2026-11-16T13:43:31.726Z"}
-{"heure": "16.11 14 h", "signaux": 156, "issues": {"rempli": 77, "non rempli": 79}}
-derniers [{"t": 1794836611726, "num": 1128, "prix": 0.4, "issue": "non rempli", "trajetMs": 121, "delaiMs": 150}, {"t": 1794836611725, "num": 1127, "prix": 0.4, "issue": "non rempli", "trajetMs": 120, "delaiMs": 150}, {"t": 1794836611723, "num": 1028, "prix": 0.4, "issue": "non rempli", "trajetMs": 118, "delaiMs": 151}, {"t": 1794836611722, "num": 1027, "prix": 0.4, "issue": "non rempli", "trajetMs": 117, "delaiMs": 151}, {"t": 1794836611719, "num": 328, "prix": 0.4, "issue": "non rempli", "trajetMs": 114, "delaiMs": 152}, {"t": 1794836611717, "num": 327, "prix": 0.4, "issue": "non rempli", "trajetMs": 112, "delaiMs": 152}, {"t": 1794836611714, "num": 228, "prix": 0.4, "issue": "non rempli", "trajetMs": 109, "delaiMs": 153}, {"t": 1794836611711, "num": 227, "prix": 0.4, "issue": "non rempli", "trajetMs": 106, "delaiMs": 152}, {"t": 1794836611707, "num": 128, "prix": 0.4, "issue": "non rempli", "trajetMs": 102, "delaiMs": 152}, {"t": 1794836611705, "num": 27, "prix": 0.4, "issue": "non rempli", "trajetMs": 100, "delaiMs": 152}]
+lu à 14:06:37 1794837997.01964
+{"heure": "16.11 14 h", "signaux": 156, "issues": {"rempli": 77, "non rempli": 79}, "delaiAchatMs": {"mediane": 159, "p90": 164, "max": 174}, "trajetMs": {"mediane": 300, "p90": 568}}
+{"heure": "16.11 15 h", "signaux": 44, "issues": {"non rempli": 44}, "delaiAchatMs": {"mediane": 159, "p90": 165, "max": 174}, "trajetMs": {"mediane": 358, "p90": 422}}
+vitesse 15 min {"feu": "orange", "raisons": ["moteur de signaux redémarré (1)"], "signaux": 44, "issues": {"non rempli": 44}, "dernierSignal": "2026-11-16T14:00:42.124Z"}
+moteur 2026-11-16T14:05:41.148Z {'perp': True, 'okx': True, 'bn': True, 'cb': True, 'cl': True, 'poly': True, 'act': False, 'polyA': True, 'polyB': False, 'clA': True, 'clB': False} {'cl': 1, 'cl2': 1, 'poly': 5, 'cb': 1, 'perp': 1, 'okx': 1, 'bn': 1} doublons 0
+banc réglés depuis 14 h (par 10 min UTC) : [('2026-11-16T13:2', 566), ('2026-11-16T13:4', 646), ('2026-11-16T13:5', 7)]
