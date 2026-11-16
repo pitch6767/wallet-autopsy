@@ -9,8 +9,3 @@ sc=d.get('scan') or {}
 for p in (sc.get('top') or [])[:8]:print(' T',p['base'],p['achat'],p['ask'],p['vente'],p['bid'],round(p['ecart']*100,3),'%',round(p['gain'],2),'verif',p['verif'])"
 echo "--- page"; curl -sS -m 20 -D - "$U/" | grep -iE "^cache-control|<h1|<h2|Version|<title" | sed 's/<[^>]*>/ /g' | head -20
 echo "--- etat brut (début)"; curl -sS -m 30 "$U/api/etat" | head -c 1500; echo
-echo "--- deribit CASHCAT"; curl -sS -m 20 "https://www.deribit.com/api/v2/public/get_instruments?currency=USDC&kind=future" | python3 -c "
-import json,sys;d=json.load(sys.stdin)['result']
-for i in d:
-  if 'CASHCAT' in i['instrument_name'] or 'GIGA' in i['instrument_name'] or i['instrument_name'].startswith('SOL_'):print({k:i.get(k) for k in ['instrument_name','contract_size','tick_size','min_trade_amount','settlement_currency','base_currency']})"
-curl -sS -m 20 "https://www.deribit.com/api/v2/public/get_order_book?instrument_name=CASHCAT_USDC-PERPETUAL&depth=5" | head -c 600; echo
