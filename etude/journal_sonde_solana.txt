@@ -1,5 +1,7 @@
-lu à 10:38:16 1794825496.1773918
-version l'orpheline après 10 s ; 16.11 : teneurs 800001–800004 et 800006 arrêtés, diagnostic /bot/diag, banc recalculé plus vite
-{"heure": "16.11 11 h", "signaux": 0, "issues": {}, "delaiAchatMs": {"mediane": null, "p90": null, "max": null}, "trajetMs": {"mediane": null, "p90": null}, "blocageServeurMs": {"p99Median": 12.2, "pire": 256.1, "minutesAuDessus100ms": 7, "minutes": 13}, "calculsLourds": {"reconstruction du banc": {"fois": 90, "msTotal": 5154, "msMoyen": 57}}}
+lu à 10:39:35 1794825575.8428037
+version 0006 arrêtés, diagnostic /bot/diag, banc recalculé plus vite
+dernierSignal {'101': None, '105': None, '116': None, '1114': None, '600013': None}
+{'mode': 'paper', 'enMarche': True, 'actives': [600013], 'activesDepuis': {'600013': '2026-11-15T07:38:29.682Z'}, 'dernierSignal': {'101': None, '105': None, '116': None, '1114': None, '600013': None}, 'sourceSignaux': {'source': 'bot95-signaux', 'connecte': True, 'depuis': '2026-11-16T10:24:49.803Z', 'dernierMessage': '2026-11-16T10:39:29.846Z', 'derniereErreur': None, 'refuses': 0, 'dernierRefus': None, 'cle': 'QzxCmNFijXwRGpsk'}, 'moteur': {'lu': '2026-11-16T10:38:48.642Z', 'ok': True, 'probleme': None, 'ages': {'perp': 0.18, 'okx': 1.54, 'bn': 0.69, 'cb': 0.32, 'cl': 0.52}, 'erreurLecture': None}, 'rejeu': {'lance': None, 'recus': 0, 'fini': None, 'resultat': None, 'erreur': None}, 'regles': {'depuis': '2026-11-16T10:24:48.548Z', 'vus': 0, 'doubles': 0, 'doublesF2': 0, 'sansEcart': 0, 'sansMesureF': 0, 'refuses': {}, 'derniers': [], 'acceptes': []}}
+{"heure": "16.11 11 h", "signaux": 0, "issues": {}, "delaiAchatMs": {"mediane": null, "p90": null, "max": null}, "trajetMs": {"mediane": null, "p90": null}, "blocageServeurMs": {"p99Median": 12.2, "pire": 256.1, "minutesAuDessus100ms": 7, "minutes": 14}, "calculsLourds": {"reconstruction du banc": {"fois": 97, "msTotal": 5544, "msMoyen": 57}}}
 derniers []
 {'v3': None, 'v4': None, 'v5': '2026-11-16T10:35:00.000Z', 'v6': None, 'v7': '2026-11-16T10:35:00.000Z', 'v8': '2026-11-16T10:35:00.000Z', 'v1': None, 'v2': None}
