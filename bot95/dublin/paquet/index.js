@@ -25001,7 +25001,15 @@ var Bot = class {
       "cl",
       "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })],
-      (m) => this.surCl(m),
+      (m) => this.surClDouble(m),
+      "PING",
+      5e3
+    );
+    if (this.SG && (!this.ws.clB || muet("clB") > 10 && depuis("clB") > 10) && depuis("cl") > 5) this.connecter(
+      "clB",
+      "https://ws-live-data.polymarket.com",
+      [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })],
+      (m) => this.surClDouble(m),
       "PING",
       5e3
     );
@@ -25309,6 +25317,19 @@ var Bot = class {
         while (L.length > 2e3) L.shift();
       }
     }
+  }
+  surClDouble(m) {
+    if (!this.SG || m.topic !== "crypto_prices_chainlink") return this.surCl(m);
+    const p = m.payload || {}, k = (p.symbol || "") + "|" + p.timestamp + "|" + p.value, D = this._cdd = this._cdd || /* @__PURE__ */ new Map(), t = now();
+    if (D.has(k)) return;
+    D.set(k, t);
+    if (D.size > 2e3) {
+      for (const [k2, t2] of D) {
+        if (t - t2 > 10 || D.size > 1500) D.delete(k2);
+        else break;
+      }
+    }
+    this.surCl(m);
   }
   surCl(m) {
     if (m.topic !== "crypto_prices_chainlink") return;
@@ -26683,7 +26704,7 @@ var Bot = class {
       clients: this.state.getWebSockets("signaux").length,
       ages_s: { perp: age("perp"), okx: age("okx"), bn: age("bn"), cb: age("cb"), cl: age("cl") },
       // 16.11.2026 : Polymarket « ouvert » si l'un des deux flux parallèles l'est (la surveillance ne redémarre plus le moteur pour un seul flux fermé)
-      flux: { ...Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])), poly: !!(this.ws.poly || this.ws.polyB), polyA: !!this.ws.poly, polyB: !!this.ws.polyB },
+      flux: { ...Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])), poly: !!(this.ws.poly || this.ws.polyB), polyA: !!this.ws.poly, polyB: !!this.ws.polyB, cl: !!(this.ws.cl || this.ws.clB), clA: !!this.ws.cl, clB: !!this.ws.clB },
       doublonsPoly: this.diag.doublons || 0,
       secoursPrixABattre: this.diag.secoursK || 0,
       pause429: this._cp429 && now() < this._cp429 ? Math.round(this._cp429 - now()) : 0,
