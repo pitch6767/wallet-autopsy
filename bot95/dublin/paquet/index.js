@@ -24985,7 +24985,7 @@ var Bot = class {
       for (const id of Object.keys(this.pb)) if (!jetons.includes(id)) delete this.pb[id];
       this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPolyDouble(m), "PING", 1e4);
     }
-    if (this.SG && jetons.length && (this.polyCleB !== cle || !this.ws.polyB && depuis("polyB") > 3 || this.ws.polyB && muet("polyB") > 10 && depuis("polyB") > 10) && (this.polyCleB === cle || this.ws.poly && this.polyCle === cle && depuis("poly") > 2)) {
+    if (false) {
       this.polyCleB = cle;
       this.connecter("polyB", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPolyDouble(m), "PING", 1e4);
     }
@@ -25005,7 +25005,7 @@ var Bot = class {
       "PING",
       5e3
     );
-    if (this.SG && (!this.ws.clB || muet("clB") > 10 && depuis("clB") > 10) && depuis("cl") > 5) this.connecter(
+    if (false) this.connecter(
       "clB",
       "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })],
