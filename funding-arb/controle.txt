@@ -1,29 +1,38 @@
-├────────────────────────┤
-│ 0004_remise_a_zero.sql │
-└────────────────────────┘
-? About to apply 1 migration(s)
-Your database may not be available to serve requests during the migration, continue?
-🤖 Using fallback value in non-interactive context: yes
-🌀 Executing on remote database funding-arb (e2ad9364-db37-4e09-a60d-ae95879b46e0):
-🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
-🚣 Executed 3 commands in 0.64ms
-┌────────────────────────┬────────┐
-│ name                   │ status │
-├────────────────────────┼────────┤
-│ 0004_remise_a_zero.sql │ ✅     │
-└────────────────────────┴────────┘
+env.ASSETS                    Assets              
+
+Uploaded funding-arb (2.94 sec)
+Deployed funding-arb triggers (1.07 sec)
+  https://funding-arb.pitch67.workers.dev
+  schedule: * * * * *
+Current Version ID: 915d96d7-b559-4aa3-a15f-b00c0c0cc7ed
+code sortie: 0
+
+ ⛅️ wrangler 4.163.0
+────────────────────
+Resource location: remote 
+
+✅ No migrations to apply!
 migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.1.2","statut":{"okx":{"ok":false,"err":"HTTP 429 {\"msg\":\"Too Many Requests\",\"code\":\"50011\"}"},"deribit":{"ok":true,"n":151,"ms":248},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":682},"bybit":{"ok":true,"n":829,"ms":719,"lieu":"AMS/US"}},"top":[{"base":"ANT","achat":"hyperliquid","vente":"deribit","ecart":0.0168438792614225,"gain":131.89260321087568},{"base":"UNITREE","achat":"hyperliquid","vente":"bybit","ecart":0.0052714505242272836,"gain":28.23293412697241},{"base":"SKR","achat":"hyperliquid","vente":"bybit","ecart":0.006541778174249169,"gain":16.633294447134162},{"base":"DRAM","achat":"hyperliquid","vente":"bybit","ecart":0.0012775871139056871,"gain":-8.973444933639009},{"base":"SOXL","achat":"hyperliquid","vente":"bybit","ecart":0.0013745503465623088,"gain":-9.012231213113076}]}
+{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.1.2","statut":{"deribit":{"ok":true,"n":151,"ms":162},"okx":{"ok":true,"n":529,"ms":190},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":659},"bybit":{"ok":true,"n":829,"ms":721,"lieu":"AMS/US"}},"top":[{"base":"ANT","achat":"hyperliquid","vente":"deribit","ecart":0.013777990478829327,"gain":86.0096535643621},{"base":"UNITREE","achat":"hyperliquid","vente":"okx","ecart":0.0053482386221037626,"gain":31.522327522486066},{"base":"INIT","achat":"bybit","vente":"okx","ecart":0.005021971123666091,"gain":27.65565420602994},{"base":"SOPH","achat":"okx","vente":"bybit","ecart":0.00520291363163361,"gain":15.439163907299676},{"base":"AKE","achat":"okx","vente":"bybit","ecart":0.002771816881258937,"gain":4.039471627621829}]}
 === controles
 --- version
 {"version":"2.1.2"}
 --- bilan
 total {'n': 0, 'net': None, 'g': None, 'fund': None, 'frais': None, 'debut': None}
 anciennes {'n': 0, 'net': None}
-ouvertes 0
+ouvertes 1
+ O ANT regles 2.1 qte_l 100.95483078960812 qte_s 100.95483078960812 carnet lu il y a 0 min achat hyperliquid 99.05503737544359 vente deribit 100.50442712841479 attendu 92.75 provisoire -77.77
+ T ANT hyperliquid 99.2428 deribit 100.62 1.388 % 100.89 verif None
+ T UNITREE hyperliquid 102.8055 okx 103.35 0.53 % 30.95 verif None
+ T INIT bybit 0.09559 okx 0.09606 0.492 % 26.08 verif None
+ T SKR hyperliquid 0.010112 bybit 0.010172 0.593 % 22.02 verif None
+ T SOPH okx 0.00096 bybit 0.000966 0.625 % 20.73 verif None
+ T TSM hyperliquid 378.4 okx 379.09 0.182 % -1.29 verif None
+ T SOXL hyperliquid 51.254 bybit 51.35 0.187 % -3.38 verif None
+ T JCT bybit 0.002415 okx 0.002421 0.248 % -4.42 verif None
 --- page
 cache-control: no-store, max-age=0
  Arbitrage de prix — fantôme 
@@ -36,14 +45,4 @@ cache-control: no-store, max-age=0
  Règles du fantôme   
 try{if(sessionStorage.getItem("v")!==V){fetch("/api/version",{cache:"no-store"}).then(r=>r.json()).then(d=>{if(d.version!==V&&!sessionStorage.getItem("r"+d.version)){sessionStorage.setItem("r"+d.version,1);location.reload()}else sessionStorage.setItem("v",V)})}}catch(e){}
 --- etat brut (début)
-{"version":"2.1.2","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"scan":null,"ouvertes":[],"fermees":[],"total":{"n":0,"net":null,"g":null,"fund":null,"frais":null,"debut":null},"anciennes":{"n":0,"net":null},"reglesId":"2.1"}
---- deribit CASHCAT
-{'instrument_name': 'CASHCAT_USDC-PERPETUAL', 'contract_size': 10.0, 'tick_size': 1e-05, 'min_trade_amount': 10.0, 'settlement_currency': 'USDC', 'base_currency': 'CASHCAT'}
-{'instrument_name': 'SOL_USDC-PERPETUAL', 'contract_size': 0.001, 'tick_size': 0.001, 'min_trade_amount': 0.001, 'settlement_currency': 'USDC', 'base_currency': 'SOL'}
-{'instrument_name': 'SOL_USDC-17NOV26', 'contract_size': 0.01, 'tick_size': 0.05, 'min_trade_amount': 0.01, 'settlement_currency': 'USDC', 'base_currency': 'SOL'}
-{'instrument_name': 'SOL_USDC-18NOV26', 'contract_size': 0.01, 'tick_size': 0.05, 'min_trade_amount': 0.01, 'settlement_currency': 'USDC', 'base_currency': 'SOL'}
-{'instrument_name': 'SOL_USDC-20NOV26', 'contract_size': 0.01, 'tick_size': 0.05, 'min_trade_amount': 0.01, 'settlement_currency': 'USDC', 'base_currency': 'SOL'}
-{'instrument_name': 'SOL_USDC-27NOV26', 'contract_size': 0.01, 'tick_size': 0.05, 'min_trade_amount': 0.01, 'settlement_currency': 'USDC', 'base_currency': 'SOL'}
-{'instrument_name': 'SOL_USDC-25DEC26', 'contract_size': 0.01, 'tick_size': 0.05, 'min_trade_amount': 0.01, 'settlement_currency': 'USDC', 'base_currency': 'SOL'}
-{'instrument_name': 'SOL_USDC-26MAR27', 'contract_size': 0.01, 'tick_size': 0.05, 'min_trade_amount': 0.01, 'settlement_currency': 'USDC', 'base_currency': 'SOL'}
-{"jsonrpc":"2.0","result":{"timestamp":1794833439967,"state":"open","stats":{"high":0.05608,"low":0.03898,"price_change":29.9118,"volume":14617450.0,"volume_delayed":0.0,"volume_realtime":14617450.0,"volume_delayed_usd":0.0,"volume_realtime_usd":740550.05,"volume_usd":740550.05,"volume_delayed_notional":0.0,"volume_notional":740717.4803,"volume_realtime_notional":740717.4803},"change_id":224997763551,"index_price":0.053466,"instrument_name":"CASHCAT_USDC-PERPETUAL","bids":[[0.05313,197670.0],[0.05312,10.0],[0.0531,18470.0],[0.05306,18470.0],[0.05288,13490.0]],"asks":[[0.05328,18470.0],[0.05332
+{"version":"2.1.2","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794833623781,"scan":{"statut":{"deribit":{"ok":true,"n":151,"ms":98},"okx":{"ok":true,"n":529,"ms":168},"hyperliquid":{"ok":true,"n":329,"ms":435},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"bybit":{"ok":true,"n":829,"ms":659,"lieu":"AMS/US"}},"top":[{"base":"ANT","stock":true,"achat":"hyperliquid","ask":99.2428,"vente":"deribit","bid":100.62,"ecart":0.013877077228776402,"gain":100.88723352950888,"verif":null},{"base":"UNITREE","stock":true,"achat":"hyperliquid","ask":102.8055,"vente":"okx","bid":103.35,"ecart":0.005296409238805255,"gain":30.950635515483505,"verif":null},{"base":"INIT","stock":false,"achat":"bybit","ask":0.09559,"vente":"okx","bid":0.09606,"ecart":0.004916832304634466,"gain":26.081171390758843,"verif":null},{"base":"SKR","stock":false,"achat":"hyperliquid","ask":0.010112,"vente":"bybit","bid":0.010172,"ecart":0.0059335443037975555,"gain":22.01779327075208,"verif":null},{"base":"SOPH","stock":false,"achat":"okx","ask":0.00096,"vente":"bybit","bid":0.000966,"ecart":0.006249999999999867,"gain":20.731209690374964,"verif":null},{"base":"TSM","stock":true,"achat":"hyperliquid","ask":378.4,"vente":"okx","bid":379.09,"ecart":0.001823467230
