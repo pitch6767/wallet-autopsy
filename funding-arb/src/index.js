@@ -3,7 +3,7 @@
 // achète (en simulation) là où c'est le moins cher et vend là où c'est le plus cher, seulement si le gain attendu
 // après tous les frais atteint l'objectif, avec des prix pris dans les vrais carnets d'ordres pour la mise complète.
 import { DurableObject } from "cloudflare:workers";
-const VERSION = "2.1.1"
+const VERSION = "2.1.2"
 const REGLES_ID = "2.1";;
 
 // Règles (Pitch décide — modifiables ici)
