@@ -1359,6 +1359,9 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
         if (typeof ev.data !== "string" || ev.data === "PONG" || ev.data === "PING" || ev.data === "pong") return;
         if (this.ws[nom] && this.ws[nom] !== ws && this.ws[nom + "_ouvert"] > (ws._ouvert || 0)) return;   // ancien flux remplacé : ignoré
         this.ws[nom + "_msg"] = now();
+        // 16.11.2026 : flux de secours (polyB / clB) — tant que le flux principal parle (message reçu il y a moins de 1,5 s), on ne lit PAS le secours :
+        // aucune charge en plus ; il prend le relais tout seul dès que le principal se tait ou est fermé.
+        if (nom === "polyB" || nom === "clB") { const p = nom === "polyB" ? "poly" : "cl"; if (this.ws[p] && now() - (this.ws[p + "_msg"] || 0) < 1.5) return; this.diag.relais = (this.diag.relais || 0) + 1; }
         // 29.10.2026 : moteur de signaux seul — temps de traitement de chaque message (lecture JSON + calculs), par flux
         if (this.SG) { const t0 = perfNow(), o0 = this.perfOps(); try { surMsg(JSON.parse(ev.data)); } catch (_) {} this.perfNoter(nom, perfNow() - t0, this.perfOps() - o0); return; }
         try { surMsg(JSON.parse(ev.data)); } catch (_) {}
@@ -1769,7 +1772,8 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
   surPolyDouble(m) {
     if (Array.isArray(m)) { for (const x of m) this.surPolyDouble(x); return; }
     if (!this.SG) return this.surPoly(m);
-    const D = (this._pdd = this._pdd || new Map()), t = now(), k = JSON.stringify(m);
+    const pc = m.price_changes && m.price_changes[0];
+    const D = (this._pdd = this._pdd || new Map()), t = now(), k = [m.event_type, m.asset_id || (pc && pc.asset_id), m.timestamp, m.hash || (pc && pc.hash) || "", m.price || (pc && pc.price) || "", m.size || (pc && pc.size) || "", (m.price_changes || m.bids || []).length].join("|");
     if (D.has(k)) { this.diag.doublons = (this.diag.doublons || 0) + 1; return; }
     D.set(k, t); if (D.size > 4000) { for (const [k2, t2] of D) { if (t - t2 > 5 || D.size > 3000) D.delete(k2); else break; } }
     this.surPoly(m);
@@ -2256,7 +2260,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
       ages_s: { perp: age("perp"), okx: age("okx"), bn: age("bn"), cb: age("cb"), cl: age("cl") },
       // 16.11.2026 : Polymarket « ouvert » si l'un des deux flux parallèles l'est (la surveillance ne redémarre plus le moteur pour un seul flux fermé)
       flux: { ...Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])), poly: !!(this.ws.poly || this.ws.polyB), polyA: !!this.ws.poly, polyB: !!this.ws.polyB, cl: !!(this.ws.cl || this.ws.clB), clA: !!this.ws.cl, clB: !!this.ws.clB },
-      doublonsPoly: this.diag.doublons || 0, secoursPrixABattre: this.diag.secoursK || 0, pause429: this._cp429 && now() < this._cp429 ? Math.round(this._cp429 - now()) : 0,
+      doublonsPoly: this.diag.doublons || 0, relaisSecours: this.diag.relais || 0, secoursPrixABattre: this.diag.secoursK || 0, pause429: this._cp429 && now() < this._cp429 ? Math.round(this._cp429 - now()) : 0,
       cycle: { start: mk.start || null, slug: mk.slug || null, prixABattre: mk.strike ?? null, source: mk.strikeSrc || null },
       ouvertes: (this.N.ouvertes || []).length, strategies: Object.keys(this.N.strats || {}).length, reglements: this.RG ? this.RG.lignes.length : 0, margeMesureeBTC: marge,
       minutesDuo: ((this.duo || {}).min || []).length, reconnexions: this.diag.reconnexions, erreurs: this.diag.erreurs, perf: this.perfVue(), journal: (this._slJ || []).slice(0, 50) };
