@@ -1775,7 +1775,9 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
   // 16.11.2026 : deux flux Polymarket en parallèle → chaque message n'est traité qu'une fois (même contenu reçu par l'autre flux dans les 5 s = ignoré)
   surPolyDouble(m) {
     if (Array.isArray(m)) { for (const x of m) this.surPolyDouble(x); return; }
-    if (!this.SG) return this.surPoly(m);
+    // 16.11.2026 14 h 50 : le flux de secours polyB est désactivé → plus aucun doublon possible. Le dédoublonnage (clé courte) jetait aussi de VRAIS
+    // messages différents (même horodatage et même premier changement) : carnet faux → 70 % de signaux « non remplis ». Retiré : chaque message est traité.
+    return this.surPoly(m);
     const pc = m.price_changes && m.price_changes[0];
     const D = (this._pdd = this._pdd || new Map()), t = now(), k = [m.event_type, m.asset_id || (pc && pc.asset_id), m.timestamp, m.hash || (pc && pc.hash) || "", m.price || (pc && pc.price) || "", m.size || (pc && pc.size) || "", (m.price_changes || m.bids || []).length].join("|");
     if (D.has(k)) { this.diag.doublons = (this.diag.doublons || 0) + 1; return; }
