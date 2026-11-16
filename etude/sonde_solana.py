@@ -7,6 +7,8 @@ def g(u):
 T = g("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=2026-11-16T13:00:00Z&plafond=100")
 L = T.get("trades", []); print("banc trades réglés depuis 13:00Z :", len(L), "lignes", len({t["num"] for t in L}), "depuis", T.get("depuis"))
 c = collections.Counter(t["ouvert"][:15] for t in L); print(sorted(c.items())[-12:])
+base = sorted({t["num"] for t in L if t["num"] < 1000000}); print("lignes de base avec trade réglé :", len(base), base[:80])
+for n in (101, 105, 6, 2162, 600005, 600013, 900003, 900016, 900030, 800005): print(n, [ (t["ouvert"][11:19], t["side"], t["prix"], round(t["pnl"])) for t in L if t["num"] == n])
 T2 = g("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=2026-11-16T11:00:00Z&plafond=100"); L2 = T2.get("trades", [])
 c2 = collections.Counter(t["ouvert"][:15] for t in L2); print("depuis 11:00Z, par 10 min :", sorted(c2.items()))
 V = g("https://72-11-157-70.sslip.io/api/bot/vitesse"); print("vitesse", json.dumps({k: V.get(k) for k in ("feu", "raisons", "signaux", "issues", "dernierSignal")}, ensure_ascii=False))
