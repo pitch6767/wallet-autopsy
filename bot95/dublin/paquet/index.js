@@ -25039,6 +25039,11 @@ var Bot = class {
         if (typeof ev.data !== "string" || ev.data === "PONG" || ev.data === "PING" || ev.data === "pong") return;
         if (this.ws[nom] && this.ws[nom] !== ws && this.ws[nom + "_ouvert"] > (ws._ouvert || 0)) return;
         this.ws[nom + "_msg"] = now();
+        if (nom === "polyB" || nom === "clB") {
+          const p = nom === "polyB" ? "poly" : "cl";
+          if (this.ws[p] && now() - (this.ws[p + "_msg"] || 0) < 1.5) return;
+          this.diag.relais = (this.diag.relais || 0) + 1;
+        }
         if (this.SG) {
           const t0 = perfNow(), o0 = this.perfOps();
           try {
@@ -25777,7 +25782,8 @@ var Bot = class {
       return;
     }
     if (!this.SG) return this.surPoly(m);
-    const D = this._pdd = this._pdd || /* @__PURE__ */ new Map(), t = now(), k = JSON.stringify(m);
+    const pc = m.price_changes && m.price_changes[0];
+    const D = this._pdd = this._pdd || /* @__PURE__ */ new Map(), t = now(), k = [m.event_type, m.asset_id || pc && pc.asset_id, m.timestamp, m.hash || pc && pc.hash || "", m.price || pc && pc.price || "", m.size || pc && pc.size || "", (m.price_changes || m.bids || []).length].join("|");
     if (D.has(k)) {
       this.diag.doublons = (this.diag.doublons || 0) + 1;
       return;
@@ -26706,6 +26712,7 @@ var Bot = class {
       // 16.11.2026 : Polymarket « ouvert » si l'un des deux flux parallèles l'est (la surveillance ne redémarre plus le moteur pour un seul flux fermé)
       flux: { ...Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])), poly: !!(this.ws.poly || this.ws.polyB), polyA: !!this.ws.poly, polyB: !!this.ws.polyB, cl: !!(this.ws.cl || this.ws.clB), clA: !!this.ws.cl, clB: !!this.ws.clB },
       doublonsPoly: this.diag.doublons || 0,
+      relaisSecours: this.diag.relais || 0,
       secoursPrixABattre: this.diag.secoursK || 0,
       pause429: this._cp429 && now() < this._cp429 ? Math.round(this._cp429 - now()) : 0,
       cycle: { start: mk.start || null, slug: mk.slug || null, prixABattre: mk.strike ?? null, source: mk.strikeSrc || null },
