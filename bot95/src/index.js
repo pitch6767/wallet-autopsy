@@ -1326,7 +1326,11 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     if (!this.SG && (!this.ws.act || (muet("act") > 30 && depuis("act") > 30))) this.connecter("act", "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "activity", type: "trades" }] })], (m) => this.surAct(m), "PING", 5000);
     if (!this.ws.cl || (muet("cl") > 10 && depuis("cl") > 10)) this.connecter("cl", "https://ws-live-data.polymarket.com",
-      [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surCl(m), "PING", 5000);
+      [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surClDouble(m), "PING", 5000);
+    // 16.11.2026 (Pitch : « aucune coupure admissible ») : moteur de signaux — SECOND flux Chainlink identique en parallèle, décalé de 5 s ;
+    // si l'un est coupé ou muet, l'autre continue (chaque prix n'est compté qu'une fois).
+    if (this.SG && (!this.ws.clB || (muet("clB") > 10 && depuis("clB") > 10)) && depuis("cl") > 5) this.connecter("clB", "https://ws-live-data.polymarket.com",
+      [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surClDouble(m), "PING", 5000);
     // MIGRATION CHAINLINK (11.10.2026) : nouveau flux PolyBolt en PARALLÈLE (ombre). Il ne nourrit le moteur que si le réglage CHAINLINK_SOURCE
     // vaut "polybolt" ou "auto" (absent = "rtds" : moteur inchangé). L'ancien flux RTDS doit fermer vers le 23.10.2026.
     // 29.10.2026 (Pitch, point 6) : le moteur de signaux seul lit aussi PolyBolt quand CHAINLINK_SOURCE vaut polybolt/auto (moteur local de Dublin)
@@ -1460,6 +1464,13 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     else if (m.channel === "price.crypto.twap") {                        // moyenne 60 s officielle : gardée aux instants de début de cycle (prix à battre / prix final)
       if (obs % 300000 === 0) { const L = (this.twOff = this.twOff || []); const mkS = this.mk[sym]; L.push({ a: sym, t: obs / 1000, twap: v, recu_ms: Date.now() - obs, notre: mkS && mkS.start * 1000 === obs ? mkS.strike : null, notreSrc: mkS && mkS.start * 1000 === obs ? mkS.strikeSrc : null }); while (L.length > 2000) L.shift(); }
     }
+  }
+  surClDouble(m) {
+    if (!this.SG || m.topic !== "crypto_prices_chainlink") return this.surCl(m);
+    const p = m.payload || {}, k = (p.symbol || "") + "|" + p.timestamp + "|" + p.value, D = (this._cdd = this._cdd || new Map()), t = now();
+    if (D.has(k)) return;
+    D.set(k, t); if (D.size > 2000) { for (const [k2, t2] of D) { if (t - t2 > 10 || D.size > 1500) D.delete(k2); else break; } }
+    this.surCl(m);
   }
   surCl(m) {
     if (m.topic !== "crypto_prices_chainlink") return;
@@ -2244,7 +2255,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     return { moteur: "signaux", heure: new Date().toISOString(), nums: this.env.SIGNAL_NUMS || "", clients: this.state.getWebSockets("signaux").length,
       ages_s: { perp: age("perp"), okx: age("okx"), bn: age("bn"), cb: age("cb"), cl: age("cl") },
       // 16.11.2026 : Polymarket « ouvert » si l'un des deux flux parallèles l'est (la surveillance ne redémarre plus le moteur pour un seul flux fermé)
-      flux: { ...Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])), poly: !!(this.ws.poly || this.ws.polyB), polyA: !!this.ws.poly, polyB: !!this.ws.polyB },
+      flux: { ...Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])), poly: !!(this.ws.poly || this.ws.polyB), polyA: !!this.ws.poly, polyB: !!this.ws.polyB, cl: !!(this.ws.cl || this.ws.clB), clA: !!this.ws.cl, clB: !!this.ws.clB },
       doublonsPoly: this.diag.doublons || 0, secoursPrixABattre: this.diag.secoursK || 0, pause429: this._cp429 && now() < this._cp429 ? Math.round(this._cp429 - now()) : 0,
       cycle: { start: mk.start || null, slug: mk.slug || null, prixABattre: mk.strike ?? null, source: mk.strikeSrc || null },
       ouvertes: (this.N.ouvertes || []).length, strategies: Object.keys(this.N.strats || {}).length, reglements: this.RG ? this.RG.lignes.length : 0, margeMesureeBTC: marge,
