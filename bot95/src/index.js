@@ -1314,9 +1314,10 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
       for (const id of Object.keys(this.pb)) if (!jetons.includes(id)) delete this.pb[id];
       this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPolyDouble(m), "PING", 10000);
     }
+    // 16.11.2026 12 h 50 : DÉSACTIVÉ — avec 2 connexions de plus, le moteur local (workerd) fermait TOUS ses flux toutes les 10 s (code 1006, trop de connexions ouvertes).
     // 16.11.2026 (Pitch : « aucune coupure admissible ») : moteur de signaux — SECOND flux Polymarket identique, toujours ouvert en parallèle.
     // Si l'un est fermé par Polymarket (code 1013) ou se tait, l'autre continue : plus aucun trou. Les messages reçus deux fois ne comptent qu'une fois.
-    if (this.SG && jetons.length && (this.polyCleB !== cle || (!this.ws.polyB && depuis("polyB") > 3) || (this.ws.polyB && muet("polyB") > 10 && depuis("polyB") > 10))
+    if (false && this.SG && jetons.length && (this.polyCleB !== cle || (!this.ws.polyB && depuis("polyB") > 3) || (this.ws.polyB && muet("polyB") > 10 && depuis("polyB") > 10))
         && (this.polyCleB === cle || (this.ws.poly && this.polyCle === cle && depuis("poly") > 2))) {
       this.polyCleB = cle;
       this.connecter("polyB", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPolyDouble(m), "PING", 10000);
@@ -1329,7 +1330,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surClDouble(m), "PING", 5000);
     // 16.11.2026 (Pitch : « aucune coupure admissible ») : moteur de signaux — SECOND flux Chainlink identique en parallèle, décalé de 5 s ;
     // si l'un est coupé ou muet, l'autre continue (chaque prix n'est compté qu'une fois).
-    if (this.SG && (!this.ws.clB || (muet("clB") > 10 && depuis("clB") > 10)) && depuis("cl") > 5) this.connecter("clB", "https://ws-live-data.polymarket.com",
+    if (false && this.SG && (!this.ws.clB || (muet("clB") > 10 && depuis("clB") > 10)) && depuis("cl") > 5) this.connecter("clB", "https://ws-live-data.polymarket.com",
       [JSON.stringify({ action: "subscribe", subscriptions: [{ topic: "crypto_prices_chainlink", type: "*", filters: "" }] })], (m) => this.surClDouble(m), "PING", 5000);
     // MIGRATION CHAINLINK (11.10.2026) : nouveau flux PolyBolt en PARALLÈLE (ombre). Il ne nourrit le moteur que si le réglage CHAINLINK_SOURCE
     // vaut "polybolt" ou "auto" (absent = "rtds" : moteur inchangé). L'ancien flux RTDS doit fermer vers le 23.10.2026.
