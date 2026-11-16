@@ -1,7 +1,7 @@
-lu à 11:26:27 1794828387.5977929
+lu à 11:27:54 1794828474.7179453
 version 800001–800004 et 800006 arrêtés, diagnostic /bot/diag, banc recalculé plus vite ; flottes petits tickets 900003 (F3) et 900020 (F20), état du moteur /bot/moteur
-moteur {'lu': '2026-11-16T11:25:51.509Z', 'ok': True, 'probleme': None, 'ages': {'perp': 0.04, 'okx': 0.27, 'bn': 0.81, 'cb': 0.23, 'cl': 0.49}, 'erreurLecture': None}
-lu 2026-11-16T11:25:51.509Z flux {'perp': True, 'okx': True, 'bn': True, 'cb': True, 'cl': True, 'poly': True, 'act': False} reconnexions {'cl': 1, 'cl2': 1, 'poly': 2, 'cb': 1, 'perp': 1, 'okx': 1, 'bn': 1} doublonsPoly None secours None pause429 None cycle {'start': 1794828300, 'slug': 'btc-updown-5m-1794828300', 'prixABattre': 64640.3874451184, 'source': 'crypto-price'}
+moteur {'lu': '2026-11-16T11:27:51.515Z', 'ok': True, 'probleme': None, 'ages': {'perp': 1.67, 'okx': 0.38, 'bn': 0.53, 'cb': 0.1, 'cl': 0.42}, 'erreurLecture': None}
+lu 2026-11-16T11:27:51.515Z flux {'perp': True, 'okx': True, 'bn': True, 'cb': True, 'cl': True, 'poly': True, 'act': False} reconnexions {'cl': 1, 'cl2': 1, 'poly': 3, 'cb': 1, 'perp': 1, 'okx': 1, 'bn': 1} doublonsPoly None secours None pause429 None cycle {'start': 1794828300, 'slug': 'btc-updown-5m-1794828300', 'prixABattre': 64640.3874451184, 'source': 'crypto-price'}
 erreurs []
-{"heure": "16.11 12 h", "signaux": 0, "issues": {}, "delaiAchatMs": {"mediane": null, "p90": null, "max": null}, "trajetMs": {"mediane": null, "p90": null}, "blocageServeurMs": {"p99Median": 11.5, "pire": 539, "minutesAuDessus100ms": 1, "minutes": 1}, "calculsLourds": {"reconstruction du banc": {"fois": 7, "msTotal": 527, "msMoyen": 75}}}
+{"heure": "16.11 12 h", "signaux": 0, "issues": {}, "delaiAchatMs": {"mediane": null, "p90": null, "max": null}, "trajetMs": {"mediane": null, "p90": null}, "blocageServeurMs": {"p99Median": 11.5, "pire": 539, "minutesAuDessus100ms": 3, "minutes": 3}, "calculsLourds": {"reconstruction du banc": {"fois": 22, "msTotal": 1572, "msMoyen": 71}}}
 flottes 61 [(900020, '2026-11-16T09:58', 0.1633, 79, -79), (900003, '2026-11-16T10:18', 0.1765, 100, 436), (900020, '2026-11-16T10:18', 0.1762, 100, 437), (900003, '2026-11-16T10:48', 0.1237, 100, -100), (900003, '2026-11-16T11:13', 0.1549, 100, -100), (900020, '2026-11-16T11:13', 0.1501, 100, -100)]
