@@ -1,7 +1,7 @@
-lu à 11:29:36 1794828576.8443513
+lu à 11:31:22 1794828682.9610555
 version 800001–800004 et 800006 arrêtés, diagnostic /bot/diag, banc recalculé plus vite ; flottes petits tickets 900003 (F3) et 900020 (F20), état du moteur /bot/moteur
-moteur {'lu': '2026-11-16T11:28:51.514Z', 'ok': True, 'probleme': None, 'ages': {'perp': 0.55, 'okx': 0.57, 'bn': 0.78, 'cb': 0.34, 'cl': 0.23}, 'erreurLecture': None}
-lu 2026-11-16T11:28:51.514Z flux {'perp': True, 'okx': True, 'bn': True, 'cb': True, 'cl': True, 'poly': True, 'act': False} reconnexions {'cl': 1, 'poly': 1, 'cl2': 1, 'cb': 1, 'perp': 1, 'okx': 1, 'bn': 1} doublonsPoly None secours None pause429 None cycle {'start': 1794828300, 'slug': 'btc-updown-5m-1794828300', 'prixABattre': None, 'source': None}
+moteur {'lu': '2026-11-16T11:30:51.523Z', 'ok': True, 'probleme': None, 'ages': {'perp': 0.43, 'okx': 2.09, 'bn': 0.37, 'cb': 0.49, 'cl': 0.75}, 'erreurLecture': None}
+lu 2026-11-16T11:30:51.523Z flux {'perp': True, 'okx': True, 'bn': True, 'cb': True, 'cl': True, 'poly': True, 'act': False} reconnexions {'cl': 1, 'poly': 2, 'cl2': 1, 'cb': 1, 'perp': 1, 'okx': 1, 'bn': 1} doublonsPoly None secours None pause429 None cycle {'start': 1794828600, 'slug': 'btc-updown-5m-1794828600', 'prixABattre': 64603.569412637764, 'source': 'moyenne Chainlink 60 s'}
 erreurs []
-{"heure": "16.11 12 h", "signaux": 0, "issues": {}, "delaiAchatMs": {"mediane": null, "p90": null, "max": null}, "trajetMs": {"mediane": null, "p90": null}, "blocageServeurMs": {"p99Median": 11.6, "pire": 539, "minutesAuDessus100ms": 4, "minutes": 4}, "calculsLourds": {"reconstruction du banc": {"fois": 30, "msTotal": 2067, "msMoyen": 69}}}
+{"heure": "16.11 12 h", "signaux": 0, "issues": {}, "delaiAchatMs": {"mediane": null, "p90": null, "max": null}, "trajetMs": {"mediane": null, "p90": null}, "blocageServeurMs": {"p99Median": 11.5, "pire": 539, "minutesAuDessus100ms": 5, "minutes": 6}, "calculsLourds": {"reconstruction du banc": {"fois": 45, "msTotal": 3031, "msMoyen": 67}}}
 flottes 61 [(900020, '2026-11-16T09:58', 0.1633, 79, -79), (900003, '2026-11-16T10:18', 0.1765, 100, 436), (900020, '2026-11-16T10:18', 0.1762, 100, 437), (900003, '2026-11-16T10:48', 0.1237, 100, -100), (900003, '2026-11-16T11:13', 0.1549, 100, -100), (900020, '2026-11-16T11:13', 0.1501, 100, -100)]
