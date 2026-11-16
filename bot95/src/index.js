@@ -1312,7 +1312,14 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     if (jetons.length && (this.polyCle !== cle || (!this.ws.poly && depuis("poly") > 3) || (this.ws.poly && muet("poly") > 10 && depuis("poly") > 10))) {
       this.polyCle = cle; this.polyCycle = mb && mb.start;
       for (const id of Object.keys(this.pb)) if (!jetons.includes(id)) delete this.pb[id];
-      this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPoly(m), "PING", 10000);
+      this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPolyDouble(m), "PING", 10000);
+    }
+    // 16.11.2026 (Pitch : « aucune coupure admissible ») : moteur de signaux — SECOND flux Polymarket identique, toujours ouvert en parallèle.
+    // Si l'un est fermé par Polymarket (code 1013) ou se tait, l'autre continue : plus aucun trou. Les messages reçus deux fois ne comptent qu'une fois.
+    if (this.SG && jetons.length && (this.polyCleB !== cle || (!this.ws.polyB && depuis("polyB") > 3) || (this.ws.polyB && muet("polyB") > 10 && depuis("polyB") > 10))
+        && (this.polyCleB === cle || (this.ws.poly && this.polyCle === cle && depuis("poly") > 2))) {
+      this.polyCleB = cle;
+      this.connecter("polyB", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPolyDouble(m), "PING", 10000);
     }
     // 12.10.2026 22:01 (Pitch) : flux public « activity/trades » (portefeuilles) pour le fantôme « consensus K5 anti-bête » (étude H1054).
     // 29.10.2026 (allègement du moteur de signaux seul) : ce flux ne sert qu'au consensus K5 anti-bête, qui ne produit aucun nom affiché → pas abonné en mode signaux
@@ -1503,6 +1510,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
   async ouvertureOfficielle(a, mk) {
     const iso = (t) => new Date(t * 1000).toISOString().replace(".000", "");
     const r = await fetch(`https://polymarket.com/api/crypto/crypto-price?symbol=${a}&eventStartTime=${iso(mk.start)}&variant=fiveminute&endDate=${iso(mk.end)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
+    if (r.status === 429) this._cp429 = now() + 60;   // 16.11.2026 : trop de demandes → plus aucun appel pendant 60 s (avant : un appel toutes les 5 s, refusé)
     if (!r.ok) throw new Error(a + " prix d'ouverture HTTP " + r.status);
     const d = await r.json();
     if (d && +d.openPrice > 0) { mk.strikeSite = +d.openPrice; if (!mk.twapK) mk.strike = +d.openPrice; }
@@ -1537,17 +1545,27 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
         // sur 710 cycles ; le chiffre affiché par le site est le prix instantané, faux de 10 $ en médiane). Calculé dès la 2e seconde du cycle.
         if (!mk.twapK && t >= start + 2) {
           const v = []; for (let s2 = start - 60; s2 <= start - 1; s2++) { const o2 = this.sec[a].get(s2); if (o2 && o2.cl != null) v.push(o2.cl); }
-          if (v.length >= 40) { if (mk.strike) mk.strikeSite = mk.strike; mk.strike = v.reduce((x, y) => x + y, 0) / v.length; mk.twapK = true; mk.strikeSrc = "moyenne Chainlink 60 s"; mk.ptbVu = +(t - start).toFixed(1); }
+          // 16.11.2026 : 20 secondes de Chainlink suffisent (avant 40) : un flux Chainlink relancé pendant la minute d'avant ne prive plus le cycle de prix à battre
+          if (v.length >= (this.SG ? 20 : 40)) { if (mk.strike) mk.strikeSite = mk.strike; mk.strike = v.reduce((x, y) => x + y, 0) / v.length; mk.twapK = true; mk.strikeSrc = "moyenne Chainlink 60 s" + (v.length < 40 ? ` (${v.length} s)` : ""); mk.ptbVu = +(t - start).toFixed(1); }
+          // secours (moteur de signaux) : après 8 s sans prix à battre, moyenne de ce qu'on a (Chainlink ≥ 5 s, sinon Coinbase ≥ 20 s), notée « secours »
+          else if (this.SG && !mk.strike && t >= start + 8) {
+            const cb = []; for (let s2 = start - 60; s2 <= start - 1; s2++) { const o2 = this.sec[a].get(s2); if (o2 && o2.cb != null) cb.push(o2.cb); }
+            const src = v.length >= 5 ? v : cb.length >= 20 ? cb : null;
+            if (src) { mk.strike = src.reduce((x, y) => x + y, 0) / src.length; mk.twapK = true; mk.strikeSrc = "secours : moyenne " + (src === v ? `Chainlink ${v.length} s` : `Coinbase ${cb.length} s`); mk.ptbVu = +(t - start).toFixed(1); this.diag.secoursK = (this.diag.secoursK || 0) + 1; }
+          }
         }
         // prix à battre OFFICIEL : priceToBeat de la fiche du marché (API Polymarket), relu toutes les 3 s tant qu'il manque (09.10.2026)
-        if (!mk.ptbOff && ["BTC", "ETH"].includes(a) && t - (mk.essaiPtb || 0) > (t - start < 60 ? 5 : 15)) { mk.essaiPtb = t; await this.prixABattreOfficiel(a, mk); }
+        // 16.11.2026 : moteur de signaux — la moyenne Chainlink 60 s EST le prix à battre ; les lectures officielles ne servaient qu'à le noter
+        // et déclenchaient des refus « trop de demandes » (429). On ne les fait plus que si la moyenne manque.
+        const lireOfficiel = !(this.SG && mk.twapK) && !(this._cp429 && t < this._cp429);
+        if (lireOfficiel && !mk.ptbOff && ["BTC", "ETH"].includes(a) && t - (mk.essaiPtb || 0) > (t - start < 60 ? 5 : 15)) { mk.essaiPtb = t; await this.prixABattreOfficiel(a, mk); }
         // secours seulement si la fiche ne le donne pas encore après 20 s
         // prix d'ouverture Polymarket (celui affiché sur le site) : relu toutes les 5 s pendant les 2 premières minutes (BTC, ETH), chaque valeur notée (09.10.2026)
-        if (["BTC", "ETH"].includes(a) && !mk.ptbOff && t - start < 120 && t - (mk.essaiOff || 0) > 5) {
+        if (lireOfficiel && ["BTC", "ETH"].includes(a) && !mk.ptbOff && t - start < 120 && t - (mk.essaiOff || 0) > 5) {
           mk.essaiOff = t; const avant = mk.strike;
           try { await this.ouvertureOfficielle(a, mk); } catch (err) { (mk.kSerie = mk.kSerie || []).push([+(t - start).toFixed(1), "err " + String(err.message || err).slice(-3)]); throw err; }
           if (mk.strike) { if (!mk.twapK) mk.strikeSrc = "crypto-price"; const L2 = (mk.kSerie = mk.kSerie || []); if (!L2.length || L2[L2.length - 1][1] !== mk.strike) L2.push([+(t - start).toFixed(1), mk.strike]); if (avant && avant !== mk.strike) mk.strikeAvant = avant; }
-        } else if (!mk.strike && !["BTC", "ETH"].includes(a) && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); if (mk.strike) mk.strikeSrc = "crypto-price"; }
+        } else if (lireOfficiel && !mk.strike && !["BTC", "ETH"].includes(a) && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); if (mk.strike) mk.strikeSrc = "crypto-price"; }
       } catch (err) { if (tleft < 200) this.erreur(a, err); }
     }));
     // V1 : préchargement du cycle BTC suivant (carnet en direct prêt dès la première seconde)
@@ -1736,6 +1754,15 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
   }
 
   // ------------------------------------------------------------------ V1 temps réel
+  // 16.11.2026 : deux flux Polymarket en parallèle → chaque message n'est traité qu'une fois (même contenu reçu par l'autre flux dans les 5 s = ignoré)
+  surPolyDouble(m) {
+    if (Array.isArray(m)) { for (const x of m) this.surPolyDouble(x); return; }
+    if (!this.SG) return this.surPoly(m);
+    const D = (this._pdd = this._pdd || new Map()), t = now(), k = JSON.stringify(m);
+    if (D.has(k)) { this.diag.doublons = (this.diag.doublons || 0) + 1; return; }
+    D.set(k, t); if (D.size > 4000) { for (const [k2, t2] of D) { if (t - t2 > 5 || D.size > 3000) D.delete(k2); else break; } }
+    this.surPoly(m);
+  }
   surPoly(m) {
     if (Array.isArray(m)) { for (const x of m) this.surPoly(x); return; }
     if (!this.SG) { (this.polyRaw = this.polyRaw || []).unshift(JSON.stringify(m).slice(0, 300)); this.polyRaw.length = Math.min(this.polyRaw.length, 6); }   // 29.10.2026 : page de diagnostic seulement
@@ -2216,7 +2243,9 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     let marge = null; try { marge = this.margeMesuree("BTC"); } catch (_) {}
     return { moteur: "signaux", heure: new Date().toISOString(), nums: this.env.SIGNAL_NUMS || "", clients: this.state.getWebSockets("signaux").length,
       ages_s: { perp: age("perp"), okx: age("okx"), bn: age("bn"), cb: age("cb"), cl: age("cl") },
-      flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])),
+      // 16.11.2026 : Polymarket « ouvert » si l'un des deux flux parallèles l'est (la surveillance ne redémarre plus le moteur pour un seul flux fermé)
+      flux: { ...Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])), poly: !!(this.ws.poly || this.ws.polyB), polyA: !!this.ws.poly, polyB: !!this.ws.polyB },
+      doublonsPoly: this.diag.doublons || 0, secoursPrixABattre: this.diag.secoursK || 0, pause429: this._cp429 && now() < this._cp429 ? Math.round(this._cp429 - now()) : 0,
       cycle: { start: mk.start || null, slug: mk.slug || null, prixABattre: mk.strike ?? null, source: mk.strikeSrc || null },
       ouvertes: (this.N.ouvertes || []).length, strategies: Object.keys(this.N.strats || {}).length, reglements: this.RG ? this.RG.lignes.length : 0, margeMesureeBTC: marge,
       minutesDuo: ((this.duo || {}).min || []).length, reconnexions: this.diag.reconnexions, erreurs: this.diag.erreurs, perf: this.perfVue(), journal: (this._slJ || []).slice(0, 50) };
