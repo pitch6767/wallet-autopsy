@@ -1,13 +1,13 @@
 env.ASSETS                    Assets              
 
-Uploaded funding-arb (3.10 sec)
-Deployed funding-arb triggers (0.56 sec)
+Uploaded funding-arb (3.68 sec)
+Deployed funding-arb triggers (0.65 sec)
   https://funding-arb.pitch67.workers.dev
   schedule: * * * * *
-Current Version ID: 3911d19f-2519-4e80-99ac-5d7695b533d6
+Current Version ID: 4d905429-b12c-440b-80c0-9673aaf766ec
 code sortie: 0
 
- ⛅️ wrangler 4.162.0
+ ⛅️ wrangler 4.163.0
 ────────────────────
 Resource location: remote 
 
@@ -16,21 +16,41 @@ migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.0.1","statut":{"deribit":{"ok":true,"n":151,"ms":177},"okx":{"ok":true,"n":528,"ms":206},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":755},"bybit":{"ok":true,"n":829,"ms":1078,"lieu":"AMS/US"}},"top":[{"base":"SOPH","achat":"okx","vente":"bybit","ecart":0.020014825796886626,"gain":168.17827033635615},{"base":"GIGADEV","achat":"hyperliquid","vente":"okx","ecart":0.012856855050380256,"gain":62.77070030628154},{"base":"INIT","achat":"bybit","vente":"okx","ecart":0.00682456844640722,"gain":43.64642271688132},{"base":"UNITREE","achat":"hyperliquid","vente":"bybit","ecart":0.004734866311113972,"gain":20.41066176462853},{"base":"XLV","achat":"okx","vente":"bybit","ecart":0.003975405491360107,"gain":18.22505021026112}]}
+{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.0.1","statut":{"okx":{"ok":true,"n":529,"ms":116},"deribit":{"ok":true,"n":152,"ms":247},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":485},"bybit":{"ok":true,"n":829,"ms":1657,"lieu":"AMS/US"}},"top":[{"base":"GIGADEV","achat":"hyperliquid","vente":"okx","ecart":0.022908913521689556,"gain":170.50014532111163},{"base":"SOPH","achat":"okx","vente":"bybit","ecart":0.007583965330444364,"gain":44.04614397225231},{"base":"INIT","achat":"bybit","vente":"okx","ecart":0.006628090478695503,"gain":43.179990977973716},{"base":"SKR","achat":"hyperliquid","vente":"bybit","ecart":0.009046135289978885,"gain":41.79209707095478},{"base":"ANT","achat":"hyperliquid","vente":"deribit","ecart":0.011030330909927333,"gain":40.89467684506236}]}
 === controles
 --- version
 {"version":"2.0.1"}
 --- bilan
-total {'n': 0, 'net': None, 'g': None, 'fund': None, 'frais': None, 'debut': None}
-ouvertes 0
- T GIGADEV hyperliquid 35.2248 okx 35.695 1.335 % 70.13 verif 22.26
- T SOPH hyperliquid 0.001344 bybit 0.001365 1.562 % 50.19 verif -37.49
- T XLV okx 188.66 bybit 189.41 0.398 % 18.23 verif None
- T INIT bybit 0.12475 okx 0.12523 0.385 % 13.08 verif None
- T ACT okx 0.00858 bybit 0.008604 0.28 % 0.58 verif None
- T BARD okx 0.1094 bybit 0.1097 0.274 % 0.03 verif None
- T MSTR hyperliquid 100.456 okx 100.62 0.163 % -3.97 verif None
- T SOXL hyperliquid 54.948 okx 55.04 0.167 % -4.73 verif None
+total {'n': 18, 'net': -3448.379799243941, 'g': 12, 'fund': -22.31239276269331, 'frais': 363, 'debut': 1794736903521}
+ouvertes 2
+ O SKR achat hyperliquid 0.011437078720434911 vente bybit 0.011570703092751778 attendu 64.5 provisoire -119.71
+ O GIGADEV achat hyperliquid 35.33485379337468 vente okx 35.757968043312836 attendu 60.59 provisoire -174.65
+ F CASHCAT deribit okx 3 min net 172.88 objectif atteint
+ F ANT bybit hyperliquid 22 min net 51.66 objectif atteint
+ F UNITREE hyperliquid okx 60 min net -13.97 écart refermé
+ F INIT hyperliquid bybit 58 min net 56.0 objectif atteint
+ F ANT bybit hyperliquid 19 min net 80.71 objectif atteint
+ F CASHCAT bybit deribit 18 min net -684.5 écart refermé
+ F CASHCAT deribit okx 7 min net 55.84 objectif atteint
+ F UNITREE hyperliquid bybit 115 min net 56.12 objectif atteint
+ F INIT hyperliquid bybit 549 min net -67.16 écart refermé
+ F SOPH okx bybit 698 min net -17.74 écart refermé
+ F CASHCAT bybit deribit 3 min net 32.18 écart refermé
+ F CASHCAT deribit okx 15 min net -3439.07 écart refermé
+ F AAOI okx hyperliquid 6 min net 74.13 objectif atteint
+ F INIT hyperliquid bybit 47 min net 42.39 écart refermé
+ F SOPH okx bybit 355 min net 51.07 objectif atteint
+ F INIT bybit okx 18 min net -7.48 écart refermé
+ F INIT bybit hyperliquid 30 min net 92.64 objectif atteint
+ F INIT hyperliquid bybit 63 min net 15.93 écart refermé
+ T GIGADEV hyperliquid 32.5943 okx 33.341 2.291 % 170.47 verif None
+ T SKR hyperliquid 0.00995 bybit 0.01004 0.905 % 54.9 verif None
+ T INIT bybit 0.09507 okx 0.09571 0.673 % 44.22 verif None
+ T ANT hyperliquid 100.1047 deribit 101.1 0.994 % 24.25 verif None
+ T SOPH okx 0.000928 bybit 0.000933 0.539 % 11.39 verif None
+ T JCT bybit 0.002448 okx 0.002457 0.368 % 7.61 verif None
+ T SAGA bybit 0.013941 hyperliquid 0.014 0.423 % 1.24 verif None
+ T OPENAI deribit 1270.38 bybit 1274.88 0.354 % -1.98 verif None
 --- page
 cache-control: no-store, max-age=0
  Arbitrage de prix — fantôme 
@@ -43,4 +63,4 @@ cache-control: no-store, max-age=0
  Règles du fantôme   
 try{if(sessionStorage.getItem("v")!==V){fetch("/api/version",{cache:"no-store"}).then(r=>r.json()).then(d=>{if(d.version!==V&&!sessionStorage.getItem("r"+d.version)){sessionStorage.setItem("r"+d.version,1);location.reload()}else sessionStorage.setItem("v",V)})}}catch(e){}
 --- etat brut (début)
-{"version":"2.0.1","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"maxDonneesManquantesMin":30},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794736783509,"scan":{"statut":{"deribit":{"ok":true,"n":151,"ms":93},"okx":{"ok":true,"n":528,"ms":192},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":801},"bybit":{"ok":true,"n":829,"ms":1539,"lieu":"AMS/US"}},"top":[{"base":"GIGADEV","stock":true,"achat":"hyperliquid","ask":35.2248,"vente":"okx","bid":35.695,"ecart":0.013348549885308092,"gain":70.12859333470976,"verif":22.26},{"base":"SOPH","stock":false,"achat":"hyperliquid","ask":0.001344,"vente":"bybit","bid":0.001365,"ecart":0.015625,"gain":50.189198302993915,"verif":-37.49},{"base":"XLV","stock":false,"achat":"okx","ask":188.66,"vente":"bybit","bid":189.41,"ecart":0.003975405491360107,"gain":18.22505021026112,"verif":null},{"base":"INIT","stock":false,"achat":"bybit","ask":0.12475,"vente":"okx","bid":0.12523,"ecart":0.003847695390781558,"gain":13.075637532285203,"verif":null},{"base":"ACT","stock":false,"achat":"okx","ask":0.00858,"vente":"bybit","bid":0.008604,"ecart":0.002797202797202747,"gain":0.576630383216326,"verif":null},{"base":"BARD","stock":false,"achat":"okx","ask":0.1094,"vente":"bybit","bid":0.1097,"ecart":0.002742230347349217,"gain":0.027008037180934252
+{"version":"2.0.1","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"maxDonneesManquantesMin":30},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794831643404,"scan":{"statut":{"deribit":{"ok":true,"n":152,"ms":136},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"okx":{"ok":true,"n":529,"ms":172},"hyperliquid":{"ok":true,"n":329,"ms":340},"bybit":{"ok":true,"n":829,"ms":1649,"lieu":"AMS/US"}},"top":[{"base":"GIGADEV","stock":true,"achat":"hyperliquid","ask":32.5943,"vente":"okx","bid":33.341,"ecart":0.022908913521689556,"gain":170.4692474656548,"verif":null},{"base":"SKR","stock":false,"achat":"hyperliquid","ask":0.00995,"vente":"bybit","bid":0.01004,"ecart":0.009045226130653283,"gain":54.90468576795543,"verif":null},{"base":"INIT","stock":false,"achat":"bybit","ask":0.09507,"vente":"okx","bid":0.09571,"ecart":0.006731881771326442,"gain":44.22213678620754,"verif":null},{"base":"ANT","stock":true,"achat":"hyperliquid","ask":100.1047,"vente":"deribit","bid":101.1,"ecart":0.00994259010815668,"gain":24.25260549514247,"verif":null},{"base":"SOPH","stock":false,"achat":"okx","ask":0.000928,"vente":"bybit","bid":0.000933,"ecart":0.0053879310344828735,"gain":11.385185713555241,"verif":null},{"base":"JCT","stock":false,"achat":"bybit","ask":0.002448,"vente":"okx","bid":0.002457,"ecart":0.003676470588235281,"gain"
