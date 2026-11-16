@@ -1,11 +1,8 @@
-# 16.11.2026 : santé du moteur de signaux bot95-signaux et de bot95 (lecture seule)
-import json, urllib.request, time
+# 16.11.2026 : TOUS les trades du banc sur petits tickets (signal ≤ 0,15), toutes les lignes, depuis 96 h (lecture seule)
+import json, urllib.request, time, gzip, subprocess
 print("lu à", time.strftime("%H:%M:%S"), time.time())
-def g(u):
-    try: return urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "verif"}), timeout=60).read().decode()[:3000]
-    except Exception as e: return f"ERREUR {e}"
-print("== statut signaux"); print(g("https://bot95-signaux.pitch67.workers.dev/api/statut"))
-print("== bot95 etat"); print(g("https://bot95.pitch67.workers.dev/api/etat")[:2000])
-try: D = json.loads(urllib.request.urlopen(urllib.request.Request("https://72-11-157-70.sslip.io/api/bot/diag?heures=2", headers={"user-agent": "verif"}), timeout=60).read())
-except Exception as e: print("diag", e); D = {}
-for h in D.get("heures", []): print(json.dumps(h, ensure_ascii=False)[:600])
+g = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "verif"}), timeout=280).read())
+T = g("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=2026-11-12T00:00:00Z&plafond=100")["trades"]
+K = [t for t in T if t["prixSignal"] <= 0.15]
+json.dump(K, gzip.open("etude/analyse/banc_petits_16.json.gz", "wt")); subprocess.run(["git", "add", "etude/analyse/banc_petits_16.json.gz"])
+print("trades", len(T), "petits", len(K), "lignes", len({t["num"] for t in K}))
