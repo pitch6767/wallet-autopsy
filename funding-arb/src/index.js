@@ -3,7 +3,7 @@
 // achète (en simulation) là où c'est le moins cher et vend là où c'est le plus cher, seulement si le gain attendu
 // après tous les frais atteint l'objectif, avec des prix pris dans les vrais carnets d'ordres pour la mise complète.
 import { DurableObject } from "cloudflare:workers";
-const VERSION = "2.1.0"
+const VERSION = "2.1.1"
 const REGLES_ID = "2.1";;
 
 // Règles (Pitch décide — modifiables ici)
@@ -258,9 +258,9 @@ async function tick(env) {
       if (gain < REGLES.gainMin) continue;
       const fraisIn = Q * (vA * FRAIS[c.a.ex] + vB * FRAIS[c.b.ex]);
       st.push(db.prepare(`INSERT INTO positions (base,short,long,notional,ouvert,px_s_in,px_l_in,fund,frais,rate_s,rate_l,next_s,next_l,cont_s,cont_l,dernier,cout_est,spread_in,statut,last_l_bid,last_s_ask,vu,net,qte_l,qte_s,regles)
-        VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,'ouvert',?,?,?,?,?,?,?)`).bind(
+        SELECT ?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,'ouvert',?,?,?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM positions WHERE base=? AND statut='ouvert')`).bind(
         c.base, c.b.ex, c.a.ex, Q * vA, now, vB, vA, fraisIn, c.b.rate, c.a.rate, c.b.next, c.a.next,
-        c.b.cont ? 1 : 0, c.a.cont ? 1 : 0, now, gain, vB / vA - 1, sA, sB, now, Q * (sA - vA) + Q * (vB - sB) - fraisIn - Q * (sA * FRAIS[c.a.ex] + sB * FRAIS[c.b.ex]), Q, Q, REGLES_ID));
+        c.b.cont ? 1 : 0, c.a.cont ? 1 : 0, now, gain, vB / vA - 1, sA, sB, now, Q * (sA - vA) + Q * (vB - sB) - fraisIn - Q * (sA * FRAIS[c.a.ex] + sB * FRAIS[c.b.ex]), Q, Q, REGLES_ID, c.base));
       actifsOuverts.add(c.base);
     } catch (e) { verifies[c.base] = "carnet illisible : " + String(e.message || e).slice(0, 60); }
   }

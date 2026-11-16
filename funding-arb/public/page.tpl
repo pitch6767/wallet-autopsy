@@ -51,10 +51,10 @@ async function go(){
  const s=d.scan?.statut||{};
  document.getElementById("plat").innerHTML=Object.entries(s).map(([k,v])=>'<div><span class="'+(v.ok?"ok":"ko")+'">'+(v.ok?"●":"✕")+"</span> "+k+" — "+(v.ok?v.n+" perps"+(v.lieu?" (lu depuis "+v.lieu+")":""):v.err)+"</div>").join("")||"—";
  const px=x=>x==null?"—":(x>=100?x.toFixed(2):x.toPrecision(5));
- document.getElementById("ouv").innerHTML=table(["Actif","Achat","Vente","Ouvert","Durée","Écart entrée","Gain attendu","Provisoire"],
-  d.ouvertes.map(p=>[p.base,p.long+" "+px(p.px_l_in),p.short+" "+px(p.px_s_in),hh(p.ouvert),dur(now-p.ouvert),pc(p.spread_in,3),usd(p.cout_est),'<span class="'+cl(p.net)+'">'+usd(p.net)+"</span>"]));
- document.getElementById("fer").innerHTML=table(["Actif","Achat","Vente","Durée","Écart entrée","Prix","Funding","Frais","Net","Sortie"],
-  d.fermees.map(p=>[p.base,p.long,p.short,dur(p.ferme-p.ouvert),pc(p.spread_in,3),usd(p.net-p.fund+p.frais),usd(p.fund),usd(p.frais),'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>",p.raison]));
+ document.getElementById("ouv").innerHTML=table(["Actif","Règles","Achat","Vente","Ouvert","Durée","Écart entrée","Gain attendu","Provisoire","Carnet lu"],
+  d.ouvertes.map(p=>[p.base,p.regles||"anciennes",p.long+" "+px(p.px_l_in),p.short+" "+px(p.px_s_in),hh(p.ouvert),dur(now-p.ouvert),pc(p.spread_in,3),usd(p.cout_est),'<span class="'+cl(p.net)+'">'+usd(p.net)+"</span>",p.vu?"il y a "+dur(now-p.vu):"—"]));
+ document.getElementById("fer").innerHTML=table(["Actif","Règles","Achat","Vente","Durée","Écart entrée","Prix","Funding","Frais","Net","Sortie"],
+  d.fermees.map(p=>[p.base,p.regles||"anciennes",p.long,p.short,dur(p.ferme-p.ouvert),pc(p.spread_in,3),usd(p.net-p.fund+p.frais),usd(p.fund),usd(p.frais),'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>",p.raison]));
  document.getElementById("top").innerHTML=table(["Actif","Achat (vendeur)","Vente (acheteur)","Écart","Gain attendu","Vérifié carnet"],
   (d.scan?.top||[]).map(p=>[p.base+(p.stock?'<span class="st">STOCK</span>':""),p.achat+" "+px(p.ask),p.vente+" "+px(p.bid),pc(p.ecart,3),'<span class="'+cl(p.gain)+'">'+usd(p.gain)+"</span>",p.verif==null?"—":(typeof p.verif==="number"?usd(p.verif):p.verif)]));
  const r=d.regles;
