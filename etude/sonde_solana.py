@@ -1,10 +1,14 @@
-# 16.11.2026 : trades du banc d'essai (plafond 100 $) depuis le 11.11 pour les lignes principales, pour l'étude des heures (lecture seule)
+# 16.11.2026 : signaux reçus et « non remplis » par jour pour les lignes principales (différence entre deux « depuis ») — lecture seule
 import json, urllib.request, time, gzip, subprocess
 print("lu à", time.strftime("%H:%M:%S"))
 g = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "verif"}), timeout=280).read())
-T = g("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=2026-11-11T00:00:00Z&plafond=100")["trades"]
-G = {600013, 600005, 2162, 101, 105, 6, 5600013, 5002162, 700001, 800005, 800007, 800008, 2165, 106, 206}
-K = [t for t in T if t["num"] in G]
-json.dump(K, gzip.open("etude/analyse/banc_heures_16.json.gz", "wt"))
-subprocess.run(["git", "add", "etude/analyse/banc_heures_16.json.gz"])
-print("trades", len(T), "gardés", len(K))
+L = [101, 105, 6, 600013, 2162]
+J = ["2026-11-08T23:00:00Z", "2026-11-09T23:00:00Z", "2026-11-10T23:00:00Z", "2026-11-11T23:00:00Z", "2026-11-12T23:00:00Z", "2026-11-13T23:00:00Z", "2026-11-14T23:00:00Z", "2026-11-15T23:00:00Z"]
+out = {}
+for d in J:
+    R = g(f"https://72-11-157-70.sslip.io/api/bot/banc?depuis={d}&plafond=100")
+    out[d] = {s["num"]: {k: s.get(k) for k in ("signaux", "nonRemplis", "enCours", "trades", "gain")} for s in R["strategies"] if s["num"] in L}
+    print(d, json.dumps(out[d]))
+try: print("etat", json.dumps(g("https://72-11-157-70.sslip.io/api/bot/banc/etat"))[:1500])
+except Exception as e: print("etat", e)
+json.dump(out, open("etude/analyse/signaux_jours.json", "w")); subprocess.run(["git", "add", "etude/analyse/signaux_jours.json"])
