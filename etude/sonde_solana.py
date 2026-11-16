@@ -11,3 +11,5 @@ print("minutes non vertes (70 min) :", len(H), "dont rouges :", sum(1 for h in H
 for h in H[-70:]: print(h.get("t", "")[11:16], h.get("feu"), "; ".join(h.get("raisons", []))[:160])
 M = g("https://72-11-157-70.sslip.io/api/bot/moteur")
 print("MOTEUR", json.dumps(M, ensure_ascii=False)[:4000])
+
+J = g("https://72-11-157-70.sslip.io/api/bot/maj"); print("MAJ-AUTO", json.dumps(J, ensure_ascii=False)[:3000])
