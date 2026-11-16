@@ -1,7 +1,7 @@
-lu à 11:31:22 1794828682.9610555
+lu à 11:33:37 1794828817.9999754
 version 800001–800004 et 800006 arrêtés, diagnostic /bot/diag, banc recalculé plus vite ; flottes petits tickets 900003 (F3) et 900020 (F20), état du moteur /bot/moteur
-moteur {'lu': '2026-11-16T11:30:51.523Z', 'ok': True, 'probleme': None, 'ages': {'perp': 0.43, 'okx': 2.09, 'bn': 0.37, 'cb': 0.49, 'cl': 0.75}, 'erreurLecture': None}
-lu 2026-11-16T11:30:51.523Z flux {'perp': True, 'okx': True, 'bn': True, 'cb': True, 'cl': True, 'poly': True, 'act': False} reconnexions {'cl': 1, 'poly': 2, 'cl2': 1, 'cb': 1, 'perp': 1, 'okx': 1, 'bn': 1} doublonsPoly None secours None pause429 None cycle {'start': 1794828600, 'slug': 'btc-updown-5m-1794828600', 'prixABattre': 64603.569412637764, 'source': 'moyenne Chainlink 60 s'}
-erreurs []
-{"heure": "16.11 12 h", "signaux": 0, "issues": {}, "delaiAchatMs": {"mediane": null, "p90": null, "max": null}, "trajetMs": {"mediane": null, "p90": null}, "blocageServeurMs": {"p99Median": 11.5, "pire": 539, "minutesAuDessus100ms": 5, "minutes": 6}, "calculsLourds": {"reconstruction du banc": {"fois": 45, "msTotal": 3031, "msMoyen": 67}}}
+moteur {'lu': '2026-11-16T11:32:51.516Z', 'ok': True, 'probleme': None, 'ages': {'perp': 0.39, 'okx': 0.37, 'bn': 0.12, 'cb': 0.1, 'cl': 0.05}, 'erreurLecture': None}
+lu 2026-11-16T11:32:51.516Z flux {'perp': True, 'okx': True, 'bn': True, 'cb': True, 'cl': True, 'poly': True, 'act': False} reconnexions {'cl': 1, 'poly': 3, 'cl2': 1, 'cb': 1, 'perp': 1, 'okx': 1, 'bn': 1} doublonsPoly None secours None pause429 None cycle {'start': 1794828600, 'slug': 'btc-updown-5m-1794828600', 'prixABattre': 64603.569412637764, 'source': 'moyenne Chainlink 60 s'}
+erreurs ["11:31:58 BTC: BTC prix d'ouverture HTTP 429", "11:31:53 BTC: BTC prix d'ouverture HTTP 429"]
+{"heure": "16.11 12 h", "signaux": 0, "issues": {}, "delaiAchatMs": {"mediane": null, "p90": null, "max": null}, "trajetMs": {"mediane": null, "p90": null}, "blocageServeurMs": {"p99Median": 11.5, "pire": 539, "minutesAuDessus100ms": 6, "minutes": 8}, "calculsLourds": {"reconstruction du banc": {"fois": 60, "msTotal": 4037, "msMoyen": 67}}}
 flottes 61 [(900020, '2026-11-16T09:58', 0.1633, 79, -79), (900003, '2026-11-16T10:18', 0.1765, 100, 436), (900020, '2026-11-16T10:18', 0.1762, 100, 437), (900003, '2026-11-16T10:48', 0.1237, 100, -100), (900003, '2026-11-16T11:13', 0.1549, 100, -100), (900020, '2026-11-16T11:13', 0.1501, 100, -100)]
