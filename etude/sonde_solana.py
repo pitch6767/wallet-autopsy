@@ -1,4 +1,4 @@
-# 16.11.2026 19 h : état de la mise à jour automatique + vitesse (lecture seule)
+# 16.11.2026 18:06 : état de la mise à jour automatique + vitesse (lecture seule)
 import json, urllib.request, time
 print("lu à", time.strftime("%H:%M:%S"), time.time())
 def g(u):
