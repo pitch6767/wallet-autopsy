@@ -1,8 +1,12 @@
-# 16.11.2026 : journal des décisions des portefeuilles (2162 = 101 + 105) sur 7 jours — pris / refusé + raison (lecture seule)
-import json, urllib.request, time, gzip, subprocess, collections
+# 16.11.2026 : page de diagnostic /bot/diag (lecture seule)
+import json, urllib.request, time
 print("lu à", time.strftime("%H:%M:%S"))
-g = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "verif"}), timeout=280).read())
-D = g("https://72-11-157-70.sslip.io/api/bot/banc/decisions?depuis=2026-11-09T00:00:00Z")
-json.dump(D, gzip.open("etude/analyse/decisions_16.json.gz", "wt")); subprocess.run(["git", "add", "etude/analyse/decisions_16.json.gz"])
-dec = D.get("decisions", []); print("décisions", len(dec), "exemple", json.dumps(dec[:2])[:600] if dec else "")
-print("tradesPaper", len(D.get("tradesPaper", [])))
+g = lambda u: json.loads(urllib.request.urlopen(urllib.request.Request(u, headers={"user-agent": "verif"}), timeout=200).read())
+try: print("version", g("https://72-11-157-70.sslip.io/api/bot/banc/etat").get("version", "")[-120:])
+except Exception as e: print("etat", e)
+try:
+    D = g("https://72-11-157-70.sslip.io/api/bot/diag?heures=6")
+    for h in D["heures"]: print(json.dumps(h, ensure_ascii=False))
+    print("derniers", json.dumps(D["derniersSignaux"][:8], ensure_ascii=False))
+except Exception as e: print("diag", e)
+P = g("https://72-11-157-70.sslip.io/api/bot/paires"); print({k: (v.get("enCours") or {}).get("start") if isinstance(v, dict) else None for k, v in P.items() if k.startswith("v")})
