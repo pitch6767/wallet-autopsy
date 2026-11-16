@@ -1352,7 +1352,10 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     try {
       // 28.10.2026 : l'ancien flux reste ouvert jusqu'à ce que le nouveau soit prêt (avant : coupure à chaque changement de jetons, 2 fois par cycle)
       const ancien = this.ws[nom];
-      const r = await fetch(url, { headers: { Upgrade: "websocket" }, signal: AbortSignal.timeout(10000) });
+      // 16.11.2026 (cause trouvée) : AbortSignal.timeout(10000) restait attaché au websocket une fois ouvert → chaque flux était COUPÉ 10 s après
+      // son ouverture (code 1006), en boucle, tous ensemble. La limite de 10 s ne vaut plus que pour l'ouverture : le minuteur est annulé dès la réponse.
+      const ac = new AbortController(), minuteur = setTimeout(() => ac.abort(), 10000);
+      let r; try { r = await fetch(url, { headers: { Upgrade: "websocket" }, signal: ac.signal }); } finally { clearTimeout(minuteur); }
       const ws = r.webSocket;
       if (!ws) throw new Error("pas de websocket (HTTP " + r.status + ")");
       ws.accept();
