@@ -24983,7 +24983,11 @@ var Bot = class {
       this.polyCle = cle;
       this.polyCycle = mb && mb.start;
       for (const id of Object.keys(this.pb)) if (!jetons.includes(id)) delete this.pb[id];
-      this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPoly(m), "PING", 1e4);
+      this.connecter("poly", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPolyDouble(m), "PING", 1e4);
+    }
+    if (this.SG && jetons.length && (this.polyCleB !== cle || !this.ws.polyB && depuis("polyB") > 3 || this.ws.polyB && muet("polyB") > 10 && depuis("polyB") > 10) && (this.polyCleB === cle || this.ws.poly && this.polyCle === cle && depuis("poly") > 2)) {
+      this.polyCleB = cle;
+      this.connecter("polyB", "https://ws-subscriptions-clob.polymarket.com/ws/market", [JSON.stringify({ assets_ids: jetons, type: "market" })], (m) => this.surPolyDouble(m), "PING", 1e4);
     }
     if (!this.SG && (!this.ws.act || muet("act") > 30 && depuis("act") > 30)) this.connecter(
       "act",
@@ -25389,6 +25393,7 @@ var Bot = class {
   async ouvertureOfficielle(a, mk) {
     const iso = /* @__PURE__ */ __name((t) => new Date(t * 1e3).toISOString().replace(".000", ""), "iso");
     const r = await fetch(`https://polymarket.com/api/crypto/crypto-price?symbol=${a}&eventStartTime=${iso(mk.start)}&variant=fiveminute&endDate=${iso(mk.end)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
+    if (r.status === 429) this._cp429 = now() + 60;
     if (!r.ok) throw new Error(a + " prix d'ouverture HTTP " + r.status);
     const d = await r.json();
     if (d && +d.openPrice > 0) {
@@ -25448,19 +25453,34 @@ var Bot = class {
             const o2 = this.sec[a].get(s2);
             if (o2 && o2.cl != null) v.push(o2.cl);
           }
-          if (v.length >= 40) {
+          if (v.length >= (this.SG ? 20 : 40)) {
             if (mk.strike) mk.strikeSite = mk.strike;
             mk.strike = v.reduce((x, y) => x + y, 0) / v.length;
             mk.twapK = true;
-            mk.strikeSrc = "moyenne Chainlink 60 s";
+            mk.strikeSrc = "moyenne Chainlink 60 s" + (v.length < 40 ? ` (${v.length} s)` : "");
             mk.ptbVu = +(t - start).toFixed(1);
+          } else if (this.SG && !mk.strike && t >= start + 8) {
+            const cb = [];
+            for (let s2 = start - 60; s2 <= start - 1; s2++) {
+              const o2 = this.sec[a].get(s2);
+              if (o2 && o2.cb != null) cb.push(o2.cb);
+            }
+            const src = v.length >= 5 ? v : cb.length >= 20 ? cb : null;
+            if (src) {
+              mk.strike = src.reduce((x, y) => x + y, 0) / src.length;
+              mk.twapK = true;
+              mk.strikeSrc = "secours : moyenne " + (src === v ? `Chainlink ${v.length} s` : `Coinbase ${cb.length} s`);
+              mk.ptbVu = +(t - start).toFixed(1);
+              this.diag.secoursK = (this.diag.secoursK || 0) + 1;
+            }
           }
         }
-        if (!mk.ptbOff && ["BTC", "ETH"].includes(a) && t - (mk.essaiPtb || 0) > (t - start < 60 ? 5 : 15)) {
+        const lireOfficiel = !(this.SG && mk.twapK) && !(this._cp429 && t < this._cp429);
+        if (lireOfficiel && !mk.ptbOff && ["BTC", "ETH"].includes(a) && t - (mk.essaiPtb || 0) > (t - start < 60 ? 5 : 15)) {
           mk.essaiPtb = t;
           await this.prixABattreOfficiel(a, mk);
         }
-        if (["BTC", "ETH"].includes(a) && !mk.ptbOff && t - start < 120 && t - (mk.essaiOff || 0) > 5) {
+        if (lireOfficiel && ["BTC", "ETH"].includes(a) && !mk.ptbOff && t - start < 120 && t - (mk.essaiOff || 0) > 5) {
           mk.essaiOff = t;
           const avant = mk.strike;
           try {
@@ -25475,7 +25495,7 @@ var Bot = class {
             if (!L2.length || L2[L2.length - 1][1] !== mk.strike) L2.push([+(t - start).toFixed(1), mk.strike]);
             if (avant && avant !== mk.strike) mk.strikeAvant = avant;
           }
-        } else if (!mk.strike && !["BTC", "ETH"].includes(a) && t - (mk.essaiOff || 0) > 15) {
+        } else if (lireOfficiel && !mk.strike && !["BTC", "ETH"].includes(a) && t - (mk.essaiOff || 0) > 15) {
           mk.essaiOff = t;
           await this.ouvertureOfficielle(a, mk);
           if (mk.strike) mk.strikeSrc = "crypto-price";
@@ -25729,6 +25749,27 @@ var Bot = class {
     e.trades.length = Math.min(e.trades.length, 400);
   }
   // ------------------------------------------------------------------ V1 temps réel
+  // 16.11.2026 : deux flux Polymarket en parallèle → chaque message n'est traité qu'une fois (même contenu reçu par l'autre flux dans les 5 s = ignoré)
+  surPolyDouble(m) {
+    if (Array.isArray(m)) {
+      for (const x of m) this.surPolyDouble(x);
+      return;
+    }
+    if (!this.SG) return this.surPoly(m);
+    const D = this._pdd = this._pdd || /* @__PURE__ */ new Map(), t = now(), k = JSON.stringify(m);
+    if (D.has(k)) {
+      this.diag.doublons = (this.diag.doublons || 0) + 1;
+      return;
+    }
+    D.set(k, t);
+    if (D.size > 4e3) {
+      for (const [k2, t2] of D) {
+        if (t - t2 > 5 || D.size > 3e3) D.delete(k2);
+        else break;
+      }
+    }
+    this.surPoly(m);
+  }
   surPoly(m) {
     if (Array.isArray(m)) {
       for (const x of m) this.surPoly(x);
@@ -26641,7 +26682,11 @@ var Bot = class {
       nums: this.env.SIGNAL_NUMS || "",
       clients: this.state.getWebSockets("signaux").length,
       ages_s: { perp: age("perp"), okx: age("okx"), bn: age("bn"), cb: age("cb"), cl: age("cl") },
-      flux: Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])),
+      // 16.11.2026 : Polymarket « ouvert » si l'un des deux flux parallèles l'est (la surveillance ne redémarre plus le moteur pour un seul flux fermé)
+      flux: { ...Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])), poly: !!(this.ws.poly || this.ws.polyB), polyA: !!this.ws.poly, polyB: !!this.ws.polyB },
+      doublonsPoly: this.diag.doublons || 0,
+      secoursPrixABattre: this.diag.secoursK || 0,
+      pause429: this._cp429 && now() < this._cp429 ? Math.round(this._cp429 - now()) : 0,
       cycle: { start: mk.start || null, slug: mk.slug || null, prixABattre: mk.strike ?? null, source: mk.strikeSrc || null },
       ouvertes: (this.N.ouvertes || []).length,
       strategies: Object.keys(this.N.strats || {}).length,
