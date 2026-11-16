@@ -1,4 +1,4 @@
-# 16.11.2026 (5) : contrôle après déploiement — moteur de signaux (deux flux), flottes F3/F20, diagnostic (lecture seule)
+# 16.11.2026 (6) : contrôle après déploiement — moteur de signaux (deux flux), flottes F3/F20, diagnostic (lecture seule)
 import json, urllib.request, time
 print("lu à", time.strftime("%H:%M:%S"), time.time())
 def g(u):
