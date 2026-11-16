@@ -1,39 +1,6 @@
-lu à 15:45:56 1794843956.0232828
-vitesse {"feu": "rouge", "raisons": ["signaux en retard : 2199 ms (90 %)", "serveur bloqué 971 ms", "moteur de signaux redémarré (2)"], "achatMs": {"mediane": 151, "p90": 164, "max": 171}, "trajetSignalMs": {"mediane": 797, "p90": 2199}, "blocageServeurMs": {"pire": 970.5, "minutesAuDessus100ms": 8, "minutes": 15}, "moteur": {"lu": "2026-11-16T15:45:41.236Z", "flux": {"perp": true, "okx": true, "bn": true, "cb": true, "cl": true, "poly": true, "act": false, "polyA": true, "polyB": false, "clA": true, "clB": false}, "reconnexions": 0, "redemarrages": 2, "erreurs": []}, "signaux": 90, "issues": {"rempli": 47, "non rempli": 43}, "dernierSignal": "2026-11-16T15:39:04.346Z"}
-minutes non vertes (3 h) : 32
-13:20 orange état du moteur de signaux non lu depuis plus de 3 min
-13:46 orange serveur bloqué 409 ms
-13:47 orange serveur bloqué 409 ms
-13:48 orange serveur bloqué 409 ms
-13:49 orange serveur bloqué 409 ms
-13:50 orange serveur bloqué 409 ms
-13:56 orange moteur de signaux redémarré (1)
-13:57 orange moteur de signaux redémarré (1)
-13:58 orange moteur de signaux redémarré (1)
-13:59 orange moteur de signaux redémarré (1)
-14:12 orange serveur bloqué 384 ms
-14:13 orange serveur bloqué 384 ms
-14:14 orange serveur bloqué 384 ms
-14:15 orange serveur bloqué 384 ms
-14:16 orange serveur bloqué 384 ms
-14:17 orange serveur bloqué 372 ms
-14:35 orange serveur bloqué 390 ms
-14:36 orange serveur bloqué 390 ms
-14:37 orange serveur bloqué 390 ms
-14:38 orange serveur bloqué 390 ms
-14:39 orange serveur bloqué 390 ms
-14:57 orange moteur de signaux : 8 reconnexions en 5 min
-14:58 orange moteur de signaux : 8 reconnexions en 5 min
-14:59 orange moteur de signaux : 8 reconnexions en 5 min
-15:00 orange moteur de signaux : 8 reconnexions en 5 min
-15:39 rouge signaux en retard : 2199 ms (90 %)
-15:40 rouge signaux en retard : 2199 ms (90 %)
-15:41 rouge signaux en retard : 2199 ms (90 %); moteur de signaux redémarré (2)
-15:42 rouge signaux en retard : 2199 ms (90 %); serveur bloqué 971 ms; moteur de signaux redémarré (2)
-15:43 rouge signaux en retard : 2199 ms (90 %); serveur bloqué 971 ms; moteur de signaux redémarré (2)
-15:44 orange serveur bloqué 971 ms; moteur de signaux redémarré (2)
-15:45 orange serveur bloqué 971 ms
-{"heure": "16.11 14 h", "signaux": 156, "issues": {"rempli": 77, "non rempli": 79}, "delaiAchatMs": {"mediane": 159, "p90": 164, "max": 174}, "trajetMs": {"mediane": 300, "p90": 568}, "blocageServeurMs": {"p99Median": 11.5, "pire": 408.7, "minutesAuDessus100ms": 32, "minutes": 40}, "calculsLourds": {"reconstruction du banc": {"fois": 44, "msTotal": 1272, "msMoyen": 29}, "résumé du banc (onglet)": {"fois": 26, "msTotal": 6567, "msMoyen": 253}}}
-{"heure": "16.11 15 h", "signaux": 114, "issues": {"non rempli": 75, "rempli": 39}, "delaiAchatMs": {"mediane": 160, "p90": 165, "max": 174}, "trajetMs": {"mediane": 334, "p90": 655}, "blocageServeurMs": {"p99Median": 11.6, "pire": 389.5, "minutesAuDessus100ms": 33, "minutes": 60}, "calculsLourds": {"reconstruction du banc": {"fois": 61, "msTotal": 1648, "msMoyen": 27}, "résumé du banc (onglet)": {"fois": 9, "msTotal": 2974, "msMoyen": 330}}}
-{"heure": "16.11 16 h", "signaux": 155, "issues": {"rempli": 112, "non rempli": 43}, "delaiAchatMs": {"mediane": 159, "p90": 165, "max": 172}, "trajetMs": {"mediane": 316, "p90": 960}, "blocageServeurMs": {"p99Median": 11.7, "pire": 970.5, "minutesAuDessus100ms": 24, "minutes": 46}, "calculsLourds": {"reconstruction du banc": {"fois": 45, "msTotal": 1163, "msMoyen": 26}, "résumé du banc (onglet)": {"fois": 6, "msTotal": 2555, "msMoyen": 426}}}
-moteur 2026-11-16T15:45:41.236Z {'perp': True, 'okx': True, 'bn': True, 'cb': True, 'cl': True, 'poly': True, 'act': False, 'polyA': True, 'polyB': False, 'clA': True, 'clB': False} {'cl': 1, 'cl2': 1, 'poly': 3, 'cb': 1, 'perp': 1, 'okx': 1, 'bn': 1} erreurs [] perf {"depuis": "2026-11-16T15:41:14.312Z", "horloge": "performance.now", "tous_flux": {"n": 231693, "msg_s_60s": 943.47, "msg_s_moy": 868.02, "moy_ms": 0.0372, "ops_moy": 2.53}, "flux": {"cl": {"n": 2045, "msg_s_60s": 7.8, "msg_s_moy": 7.66, "moy_ms": 0.0308, "p99_ms": 1, "max_ms": 1, "ops_moy": 0, "ops_p99": 0, "horloge_figee": false}, "cl2": {"n": 550, "msg_s_60s": 2.02, "msg_s_moy": 2.06, "moy_ms": 0.02, "p99_ms": 1, "max_ms": 1, "ops_moy": 0.76, "ops_p99": 5, "horloge_figee": false}, "poly": {"n": 185503, "msg_s_60s": 749.57, "msg_s_moy": 694.98, "moy_ms": 0.0438, "p99_ms": 1, "max_ms": 2, "op
+lu à 15:58:58 1794844738.1155567
+vitesse {"feu": "vert", "raisons": [], "achatMs": {"mediane": 160, "p90": 166, "max": 176}, "trajetSignalMs": {"mediane": 437, "p90": 588}, "blocageServeurMs": {"pire": 251.3, "minutesAuDessus100ms": 4, "minutes": 7}, "moteur": {"lu": "2026-11-16T15:58:32.168Z", "flux": {"perp": true, "okx": true, "bn": true, "cb": true, "cl": true, "poly": true, "act": false, "polyA": true, "polyB": false, "clA": true, "clB": false}, "reconnexions": 0, "redemarrages": 0, "erreurs": []}, "signaux": 111, "issues": {"rempli": 111}, "dernierSignal": "2026-11-16T15:54:15.042Z"}
+minutes non vertes (3 h) : 1
+15:52 orange état du moteur de signaux non lu depuis plus de 3 min
+{"heure": "16.11 16 h", "signaux": 111, "issues": {"rempli": 111}, "delaiAchatMs": {"mediane": 160, "p90": 166, "max": 176}, "trajetMs": {"mediane": 437, "p90": 588}, "blocageServeurMs": {"p99Median": 12.1, "pire": 251.3, "minutesAuDessus100ms": 4, "minutes": 7}, "calculsLourds": {"banc (fil séparé)": {"fois": 9, "msTotal": 8528, "msMoyen": 948}}}
+moteur 2026-11-16T15:58:32.168Z {'perp': True, 'okx': True, 'bn': True, 'cb': True, 'cl': True, 'poly': True, 'act': False, 'polyA': True, 'polyB': False, 'clA': True, 'clB': False} {'cl': 1, 'cl2': 1, 'poly': 8, 'cb': 1, 'perp': 1, 'okx': 1, 'bn': 1} erreurs [] perf {"depuis": "2026-11-16T15:41:14.312Z", "horloge": "performance.now", "tous_flux": {"n": 1165128, "msg_s_60s": 1599.98, "msg_s_moy": 1122.64, "moy_ms": 0.0388, "ops_moy": 3.97}, "flux": {"cl": {"n": 8145, "msg_s_60s": 7.87, "msg_s_moy": 7.85, "moy_ms": 0.0335, "p99_ms": 1, "max_ms": 1, "ops_moy": 0, "ops_p99": 0, "horloge_figee": false}, "cl2": {"n": 2131, "msg_s_60s": 2.03, "msg_s_moy": 2.05, "moy_ms": 0.0253, "p99_ms": 1, "max_ms": 1, "ops_moy": 1.11, "ops_p99": 6, "horloge_figee": false}, "poly": {"n": 1005506, "msg_s_60s": 1452.22, "msg_s_moy": 968.84, "moy_ms": 0.0433, "p99_ms": 1, "max_ms
