@@ -2,56 +2,36 @@
 "moteurNourriPar": "auto",
 "reglage": "secret ou variable CHAINLINK_SOURCE : rtds (défaut) | polybolt | auto",
 "polyboltConnecte": true,
-"authentifie": 1794799202.721,
+"authentifie": 1794829829.228,
 "erreur": null,
 "parActif": {
 "BTC": {
 "messages": {
-"rtds": 27,
-"pb": 27
+"rtds": 21,
+"pb": 21
 },
 "retard_ms": {
-"rtds": 1360,
-"polybolt": 1134
+"rtds": 1204,
+"polybolt": 833
 },
 "avancePolybolt_ms": {
-"med": 268,
-"p10": 155,
-"p90": 398,
-"n": 26
+"med": 349,
+"p10": 94,
+"p90": 391,
+"n": 18
 },
 "ecartValeurRelatif": {
-"med": 2.2360582734199467e-16,
-"max": 7.823162595058848e-16
+"med": 4.516623501551822e-16,
+"max": 7.903916689971601e-16
 }
 },
-"BNB": {
+"HYPE": {
 "messages": {
-"rtds": 27,
+"rtds": 22,
 "pb": 0
 },
 "retard_ms": {
-"rtds": 1357,
-"polybolt": null
-},
-"avancePolybolt_ms": {
-"med": null,
-"p10": null,
-"p90": null,
-"n": 0
-},
-"ecartValeurRelatif": {
-"med": null,
-"max": null
-}
-},
-"ETH": {
-"messages": {
-"rtds": 26,
-"pb": 0
-},
-"retard_ms": {
-"rtds": 1395,
+"rtds": 1114,
 "polybolt": null
 },
 "avancePolybolt_ms": {
@@ -67,11 +47,11 @@
 },
 "DOGE": {
 "messages": {
-"rtds": 27,
+"rtds": 22,
 "pb": 0
 },
 "retard_ms": {
-"rtds": 1379,
+"rtds": 1124,
 "polybolt": null
 },
 "avancePolybolt_ms": {
@@ -87,11 +67,11 @@
 },
 "XRP": {
 "messages": {
-"rtds": 27,
+"rtds": 22,
 "pb": 0
 },
 "retard_ms": {
-"rtds": 1382,
+"rtds": 1157,
 "polybolt": null
 },
 "avancePolybolt_ms": {
@@ -107,11 +87,11 @@
 },
 "SOL": {
 "messages": {
-"rtds": 27,
+"rtds": 20,
 "pb": 0
 },
 "retard_ms": {
-"rtds": 1418,
+"rtds": 1180,
 "polybolt": null
 },
 "avancePolybolt_ms": {
@@ -125,13 +105,33 @@
 "max": null
 }
 },
-"HYPE": {
+"ETH": {
 "messages": {
-"rtds": 27,
+"rtds": 21,
 "pb": 0
 },
 "retard_ms": {
-"rtds": 1343,
+"rtds": 1119,
+"polybolt": null
+},
+"avancePolybolt_ms": {
+"med": null,
+"p10": null,
+"p90": null,
+"n": 0
+},
+"ecartValeurRelatif": {
+"med": null,
+"max": null
+}
+},
+"BNB": {
+"messages": {
+"rtds": 21,
+"pb": 0
+},
+"retard_ms": {
+"rtds": 1213,
 "polybolt": null
 },
 "avancePolybolt_ms": {
@@ -192,7 +192,7 @@
 "recu_ms": 847
 }
 ],
-"lu": 1794799210.7244942,
+"lu": 1794829832.1284425,
 "historique": [
 {
 "lu": 1793280319.7185638,
@@ -11057,6 +11057,153 @@
 },
 "retard_ms": {
 "rtds": 1343,
+"polybolt": null
+},
+"avancePolybolt_ms": {
+"med": null,
+"p10": null,
+"p90": null,
+"n": 0
+},
+"ecartValeurRelatif": {
+"med": null,
+"max": null
+}
+}
+}
+},
+{
+"lu": 1794829832.1284425,
+"moteurNourriPar": "auto",
+"polyboltConnecte": true,
+"parActif": {
+"BTC": {
+"messages": {
+"rtds": 21,
+"pb": 21
+},
+"retard_ms": {
+"rtds": 1204,
+"polybolt": 833
+},
+"avancePolybolt_ms": {
+"med": 349,
+"p10": 94,
+"p90": 391,
+"n": 18
+},
+"ecartValeurRelatif": {
+"med": 4.516623501551822e-16,
+"max": 7.903916689971601e-16
+}
+},
+"HYPE": {
+"messages": {
+"rtds": 22,
+"pb": 0
+},
+"retard_ms": {
+"rtds": 1114,
+"polybolt": null
+},
+"avancePolybolt_ms": {
+"med": null,
+"p10": null,
+"p90": null,
+"n": 0
+},
+"ecartValeurRelatif": {
+"med": null,
+"max": null
+}
+},
+"DOGE": {
+"messages": {
+"rtds": 22,
+"pb": 0
+},
+"retard_ms": {
+"rtds": 1124,
+"polybolt": null
+},
+"avancePolybolt_ms": {
+"med": null,
+"p10": null,
+"p90": null,
+"n": 0
+},
+"ecartValeurRelatif": {
+"med": null,
+"max": null
+}
+},
+"XRP": {
+"messages": {
+"rtds": 22,
+"pb": 0
+},
+"retard_ms": {
+"rtds": 1157,
+"polybolt": null
+},
+"avancePolybolt_ms": {
+"med": null,
+"p10": null,
+"p90": null,
+"n": 0
+},
+"ecartValeurRelatif": {
+"med": null,
+"max": null
+}
+},
+"SOL": {
+"messages": {
+"rtds": 20,
+"pb": 0
+},
+"retard_ms": {
+"rtds": 1180,
+"polybolt": null
+},
+"avancePolybolt_ms": {
+"med": null,
+"p10": null,
+"p90": null,
+"n": 0
+},
+"ecartValeurRelatif": {
+"med": null,
+"max": null
+}
+},
+"ETH": {
+"messages": {
+"rtds": 21,
+"pb": 0
+},
+"retard_ms": {
+"rtds": 1119,
+"polybolt": null
+},
+"avancePolybolt_ms": {
+"med": null,
+"p10": null,
+"p90": null,
+"n": 0
+},
+"ecartValeurRelatif": {
+"med": null,
+"max": null
+}
+},
+"BNB": {
+"messages": {
+"rtds": 21,
+"pb": 0
+},
+"retard_ms": {
+"rtds": 1213,
 "polybolt": null
 },
 "avancePolybolt_ms": {
