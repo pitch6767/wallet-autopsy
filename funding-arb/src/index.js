@@ -3,14 +3,16 @@
 // achète (en simulation) là où c'est le moins cher et vend là où c'est le plus cher, seulement si le gain attendu
 // après tous les frais atteint l'objectif, avec des prix pris dans les vrais carnets d'ordres pour la mise complète.
 import { DurableObject } from "cloudflare:workers";
-const VERSION = "2.0.1";
+const VERSION = "2.1.0"
+const REGLES_ID = "2.1";;
 
 // Règles (Pitch décide — modifiables ici)
 const REGLES = {
   notional: 10000,         // $ par jambe (choix de Pitch)
   gainMin: 50,             // $ net après tous les frais (choix de Pitch : « 50 $ de gain »)
   ecartMaxPrix: 0.10,      // au-delà de 10 % d'écart, ce ne sont pas les mêmes contrats (ex. 1000PEPE) → ignoré
-  maxDonneesManquantesMin: 30,
+  volumeMin: 1e6,          // E : volume échangé sur 24 h ≥ 1 M$ sur chacune des 2 plateformes
+  heuresFunding: 8,        // D : funding défavorable compté sur 8 h de tenue à l'entrée
 };
 // Frais taker de base (estimés, palier standard)
 const FRAIS = { binance: 0.0005, bybit: 0.00055, okx: 0.0005, hyperliquid: 0.00045, deribit: 0.0005 };
@@ -48,7 +50,7 @@ async function bybit() {
   return (tk.result?.list || []).filter((x) => x.symbol.endsWith("USDT") && x.fundingRate !== "").map((x) => ({
     ex: "bybit", sym: x.symbol, base: x.symbol.slice(0, -4), rate: num(x.fundingRate),
     intH: num(x.fundingIntervalHour) || iv[x.symbol] || 8, next: +x.nextFundingTime,
-    mark: num(x.markPrice), bid: num(x.bid1Price), ask: num(x.ask1Price),
+    mark: num(x.markPrice), bid: num(x.bid1Price), ask: num(x.ask1Price), vol: num(x.turnover24h),
   }));
 }
 async function okx() {
@@ -62,7 +64,7 @@ async function okx() {
     const b = bk[x.instId] || {}, nt = +x.fundingTime, nn = +x.nextFundingTime;
     const bid = num(b.bidPx), ask = num(b.askPx);
     return { ex: "okx", sym: x.instId, base: x.instId.split("-")[0], rate: num(x.fundingRate),
-      intH: nn > nt ? (nn - nt) / H : 8, next: nt, mark: bid && ask ? (bid + ask) / 2 : num(b.last), bid, ask };
+      intH: nn > nt ? (nn - nt) / H : 8, next: nt, mark: bid && ask ? (bid + ask) / 2 : num(b.last), bid, ask, vol: num(b.volCcy24h) * num(b.last) || null };
   });
 }
 async function hyperliquid() {
@@ -78,7 +80,7 @@ async function hyperliquid() {
       const c = ctx[i]; if (!c || u.isDelisted) return;
       const nom = u.name.includes(":") ? u.name.split(":")[1] : u.name;
       out.push({ ex: "hyperliquid", sym: u.name, base: nom, rate: num(c.funding), intH: 1, next: prochaineHeure(now),
-        mark: num(c.markPx), bid: num(c.impactPxs?.[0]), ask: num(c.impactPxs?.[1]), stock: !!dex });
+        mark: num(c.markPx), bid: num(c.impactPxs?.[0]), ask: num(c.impactPxs?.[1]), vol: num(c.dayNtlVlm), stock: !!dex });
     });
   }));
   if (!out.length) throw new Error("aucune donnée Hyperliquid");
@@ -96,7 +98,7 @@ async function deribit() {
     const base = x.instrument_name.split(/[-_]/)[0];
     if (vu.has(base) && x.instrument_name.includes("_")) continue; // préférer le perp principal
     vu.set(base, { ex: "deribit", sym: x.instrument_name, base, rate: num(x.funding_8h), intH: 8, cont: true,
-      next: null, mark: num(x.mark_price), bid: num(x.bid_price), ask: num(x.ask_price) });
+      next: null, mark: num(x.mark_price), bid: num(x.bid_price), ask: num(x.ask_price), vol: num(x.volume_usd) ?? (num(x.volume) * num(x.mark_price) || null) });
   }
   return [...vu.values()];
 }
@@ -167,13 +169,13 @@ async function carnet(env, x) {
   }
   throw new Error("carnet indisponible");
 }
-// prix moyen pour exécuter `notional` $ en traversant le carnet ; null si pas assez de profondeur
-function prixMoyen(niveaux, notional) {
-  let reste = notional, qte = 0;
+// prix moyen pour exécuter une QUANTITÉ de pièces ; null si le carnet n'est pas assez profond
+function prixMoyenQ(niveaux, qte) {
+  let reste = qte, cout = 0;
   for (const [px, q] of niveaux) {
     if (!(px > 0) || !(q > 0)) continue;
-    const v = Math.min(reste, px * q); qte += v / px; reste -= v;
-    if (reste <= 1e-6) return notional / qte;
+    const pris = Math.min(reste, q); cout += pris * px; reste -= pris;
+    if (reste <= qte * 1e-9) return cout / qte;
   }
   return null;
 }
@@ -183,7 +185,7 @@ const fraisAR = (a, b, N) => 2 * N * (FRAIS[a.ex] + FRAIS[b.ex]);
 // pour chaque actif : acheter au meilleur prix vendeur (A), vendre au meilleur prix acheteur (B)
 function ecarts(lignes) {
   const par = new Map();
-  for (const x of lignes) { if (!(x.bid > 0 && x.ask > 0 && x.ask >= x.bid)) continue; if (!par.has(x.base)) par.set(x.base, []); par.get(x.base).push(x); }
+  for (const x of lignes) { if (!(x.bid > 0 && x.ask > 0 && x.ask >= x.bid)) continue; if (!(x.vol >= REGLES.volumeMin)) continue; if (!par.has(x.base)) par.set(x.base, []); par.get(x.base).push(x); }
   const N = REGLES.notional, res = [];
   for (const [base, l] of par) {
     if (l.length < 2) continue;
@@ -208,47 +210,57 @@ async function tick(env) {
   const liste = ecarts(lignes);
   const db = env.DB, st = [];
 
-  // positions ouvertes : valeur de sortie au vrai carnet, sortie si objectif atteint ou écart refermé
+  // positions ouvertes (B, C) : jamais de sortie forcée ni de prix inventé — on ferme seulement si la sortie
+  // au vrai carnet, pour toute la quantité des 2 jambes, donne un résultat net ≥ objectif
   const ouvertes = (await db.prepare("SELECT * FROM positions WHERE statut='ouvert'").all()).results;
   const actifsOuverts = new Set(ouvertes.map((p) => p.base));
   for (const p of ouvertes) {
     const s = idx.get(p.short + "|" + p.base), l = idx.get(p.long + "|" + p.base); // short = jambe vendue (B), long = jambe achetée (A)
+    const qL = p.qte_l ?? N / p.px_l_in, qS = p.qte_s ?? N / p.px_s_in;
     let fund = p.fund, ns = p.next_s, nl = p.next_l;
     const dtH = (now - p.dernier) / H;
-    if (p.cont_s) fund += p.rate_s / 8 * dtH * N; else if (ns && now >= ns) { fund += p.rate_s * N; ns = s?.next || ns + H; }
-    if (p.cont_l) fund -= p.rate_l / 8 * dtH * N; else if (nl && now >= nl) { fund -= p.rate_l * N; nl = l?.next || nl + H; }
+    const nS = qS * (s?.mark || p.px_s_in), nL = qL * (l?.mark || p.px_l_in);
+    if (p.cont_s) fund += p.rate_s / 8 * dtH * nS; else if (ns && now >= ns) { fund += p.rate_s * nS; ns = s?.next || ns + H; }
+    if (p.cont_l) fund -= p.rate_l / 8 * dtH * nL; else if (nl && now >= nl) { fund -= p.rate_l * nL; nl = l?.next || nl + H; }
     let vL = null, vS = null;
     if (s && l) {
       try { const [cl, cs] = await Promise.all([carnet(env, l), carnet(env, s)]);
-        vL = prixMoyen(cl.bids, N / p.px_l_in * l.bid); vS = prixMoyen(cs.asks, N / p.px_s_in * s.ask); } catch (e) {}
-      vL = vL ?? l.bid; vS = vS ?? s.ask;
-    } else { vL = p.last_l_bid; vS = p.last_s_ask; }
-    const pnl = N / p.px_l_in * (vL - p.px_l_in) + N / p.px_s_in * (p.px_s_in - vS);
-    const frais = p.frais + N * (FRAIS[p.short] + FRAIS[p.long]);
-    const net = pnl + fund - frais;
-    let raison = null;
-    if (net >= REGLES.gainMin) raison = "objectif atteint";
-    else if (s && l && (l.bid + l.ask) >= (s.bid + s.ask)) raison = "écart refermé";
-    else if (!(s && l) && now - p.vu > REGLES.maxDonneesManquantesMin * 60e3) raison = "données manquantes";
+        vL = prixMoyenQ(cl.bids, qL); vS = prixMoyenQ(cs.asks, qS); } catch (e) {}
+    }
+    let net = p.net, raison = null, frais = p.frais;
+    if (vL && vS) {
+      const pnl = qL * (vL - p.px_l_in) + qS * (p.px_s_in - vS);
+      frais = p.frais + qL * vL * FRAIS[p.long] + qS * vS * FRAIS[p.short];
+      net = pnl + fund - frais;
+      if (net >= REGLES.gainMin) raison = "objectif atteint";
+    }
     if (raison) st.push(db.prepare("UPDATE positions SET statut='fermé', ferme=?, px_s_out=?, px_l_out=?, fund=?, frais=?, net=?, raison=?, dernier=? WHERE id=?").bind(now, vS, vL, fund, frais, net, raison, now, p.id));
     else st.push(db.prepare("UPDATE positions SET fund=?, next_s=?, next_l=?, rate_s=?, rate_l=?, dernier=?, last_l_bid=?, last_s_ask=?, net=?, vu=? WHERE id=?")
-      .bind(fund, ns, nl, s?.rate ?? p.rate_s, l?.rate ?? p.rate_l, now, vL, vS, net, s && l ? now : p.vu, p.id));
+      .bind(fund, ns, nl, s?.rate ?? p.rate_s, l?.rate ?? p.rate_l, now, vL ?? p.last_l_bid, vS ?? p.last_s_ask, net, vL && vS ? now : p.vu, p.id));
   }
 
-  // entrées : candidats au sommet du carnet, puis vérification avec les vrais carnets pour 10 000 $ par jambe
+  // entrées (A, C, D) : même quantité de pièces sur les 2 jambes, prix moyens réels du carnet pour toute la quantité,
+  // coût de sortie réel (profondeur des carnets) et funding défavorable sur 8 h déduits
   const verifies = {};
   for (const c of liste.filter((c) => c.gain >= REGLES.gainMin && !actifsOuverts.has(c.base)).slice(0, 8)) {
     try {
       const [ca, cb] = await Promise.all([carnet(env, c.a), carnet(env, c.b)]);
-      const vA = prixMoyen(ca.asks, N), vB = prixMoyen(cb.bids, N);
-      if (!vA || !vB) { verifies[c.base] = "profondeur insuffisante pour " + N + " $"; continue; }
-      const gain = N * (vB / vA - 1) - N * (demiSpread(c.a) + demiSpread(c.b)) - fraisAR(c.a, c.b, N);
+      const Q = N / c.a.ask;
+      const vA = prixMoyenQ(ca.asks, Q), vB = prixMoyenQ(cb.bids, Q);           // entrée : achat sur A, vente sur B
+      const sA = prixMoyenQ(ca.bids, Q), sB = prixMoyenQ(cb.asks, Q);           // sortie : revente sur A, rachat sur B
+      if (!vA || !vB || !sA || !sB) { verifies[c.base] = "carnet trop mince pour " + N + " $"; continue; }
+      const coutSortie = Q * ((vA - sA) / 2 + (sB - vB) / 2) ; // à prix rejoints : demi-écart de profondeur de chaque carnet
+      const fraisTot = 2 * Q * (vA * FRAIS[c.a.ex] + vB * FRAIS[c.b.ex]);
+      const fundH = Q * vB * (c.b.rate ?? 0) / (c.b.intH || 8) - Q * vA * (c.a.rate ?? 0) / (c.a.intH || 8); // par heure, + = reçu
+      const fundTenue = Math.min(0, fundH * REGLES.heuresFunding);
+      const gain = Q * (vB - vA) - coutSortie - fraisTot + fundTenue;
       verifies[c.base] = Math.round(gain * 100) / 100;
       if (gain < REGLES.gainMin) continue;
-      st.push(db.prepare(`INSERT INTO positions (base,short,long,notional,ouvert,px_s_in,px_l_in,fund,frais,rate_s,rate_l,next_s,next_l,cont_s,cont_l,dernier,cout_est,spread_in,statut,last_l_bid,last_s_ask,vu,net)
-        VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,'ouvert',?,?,?,?)`).bind(
-        c.base, c.b.ex, c.a.ex, N, now, vB, vA, N * (FRAIS[c.a.ex] + FRAIS[c.b.ex]), c.b.rate, c.a.rate, c.b.next, c.a.next,
-        c.b.cont ? 1 : 0, c.a.cont ? 1 : 0, now, gain, vB / vA - 1, c.a.bid, c.b.ask, now, -N * (FRAIS[c.a.ex] + FRAIS[c.b.ex])));
+      const fraisIn = Q * (vA * FRAIS[c.a.ex] + vB * FRAIS[c.b.ex]);
+      st.push(db.prepare(`INSERT INTO positions (base,short,long,notional,ouvert,px_s_in,px_l_in,fund,frais,rate_s,rate_l,next_s,next_l,cont_s,cont_l,dernier,cout_est,spread_in,statut,last_l_bid,last_s_ask,vu,net,qte_l,qte_s,regles)
+        VALUES (?,?,?,?,?,?,?,0,?,?,?,?,?,?,?,?,?,?,'ouvert',?,?,?,?,?,?,?)`).bind(
+        c.base, c.b.ex, c.a.ex, Q * vA, now, vB, vA, fraisIn, c.b.rate, c.a.rate, c.b.next, c.a.next,
+        c.b.cont ? 1 : 0, c.a.cont ? 1 : 0, now, gain, vB / vA - 1, sA, sB, now, Q * (sA - vA) + Q * (vB - sB) - fraisIn - Q * (sA * FRAIS[c.a.ex] + sB * FRAIS[c.b.ex]), Q, Q, REGLES_ID));
       actifsOuverts.add(c.base);
     } catch (e) { verifies[c.base] = "carnet illisible : " + String(e.message || e).slice(0, 60); }
   }
@@ -276,8 +288,9 @@ export default {
       const e = await env.DB.prepare("SELECT * FROM etat WHERE id=1").first();
       const ouv = (await env.DB.prepare("SELECT * FROM positions WHERE statut='ouvert' ORDER BY ouvert DESC").all()).results;
       const fer = (await env.DB.prepare("SELECT * FROM positions WHERE statut='fermé' ORDER BY ferme DESC LIMIT 300").all()).results;
-      const tot = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net, SUM(CASE WHEN net>0 THEN 1 ELSE 0 END) g, SUM(fund) fund, SUM(frais) frais, MIN(ouvert) debut FROM positions WHERE statut='fermé'").first();
-      return new Response(JSON.stringify({ version: VERSION, regles: REGLES, frais: FRAIS, t: e?.t, scan: e ? JSON.parse(e.json) : null, ouvertes: ouv, fermees: fer, total: tot }), { headers: JSONH });
+      const tot = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net, SUM(CASE WHEN net>0 THEN 1 ELSE 0 END) g, SUM(fund) fund, SUM(frais) frais, MIN(ouvert) debut FROM positions WHERE statut='fermé' AND regles=?").bind(REGLES_ID).first();
+      const anc = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net FROM positions WHERE statut='fermé' AND (regles IS NULL OR regles<>?)").bind(REGLES_ID).first();
+      return new Response(JSON.stringify({ version: VERSION, regles: REGLES, frais: FRAIS, t: e?.t, scan: e ? JSON.parse(e.json) : null, ouvertes: ouv, fermees: fer, total: tot, anciennes: anc, reglesId: REGLES_ID }), { headers: JSONH });
     }
     if (u.pathname === "/" || u.pathname === "/index.html") {
       const r = await env.ASSETS.fetch(new Request(new URL("/page.tpl", u)));
