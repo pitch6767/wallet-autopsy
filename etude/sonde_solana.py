@@ -1,4 +1,4 @@
-# 17.11.2026 02:42 : garde horaire — vérification après redémarrage moteur (lecture seule)
+# 17.11.2026 02:45 : garde horaire — vérification commande garde-20261117T0237 (lecture seule)
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
@@ -12,4 +12,5 @@ for h in H[-70:]: print(h.get("t", "")[11:16], h.get("feu"), "; ".join(h.get("ra
 M = g("https://72-11-157-70.sslip.io/api/bot/moteur")
 print("MOTEUR", json.dumps(M, ensure_ascii=False)[:4000])
 
-J = g("https://72-11-157-70.sslip.io/api/bot/maj"); print("MAJ-AUTO", json.dumps(J, ensure_ascii=False)[:3000])
+J = g("https://72-11-157-70.sslip.io/api/bot/maj"); print("MAJ-AUTO", json.dumps({k: v for k, v in J.items() if k != "journal"}, ensure_ascii=False)[:3000])
+for l in (J.get("journal") or [])[-12:]: print("  maj|", str(l)[:300])
