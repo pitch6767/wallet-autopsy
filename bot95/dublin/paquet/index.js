@@ -22745,6 +22745,17 @@ var CFG = {
 };
 var V1 = { ACTIFS: ["BTC"], REEL: ["BTC"], OKX: { BTC: "BTC-USDT-SWAP", ETH: "ETH-USDT-SWAP" }, ACTIF: "BTC", MARGE: 0.08, PMIN: 0.55, PMAX: 0.56, OPP_MAX: 0.43, STOP_REL: 0.15, ELAN_S: 5, TP: 0.9, CAPITAL: 200, MISE: 50 };
 var G2 = "https://gamma-api.polymarket.com";
+async function fetchT(u, o = {}, ms = 8e3) {
+  const ac = new AbortController(), m = setTimeout(() => ac.abort(), ms);
+  try {
+    const r = await fetch(u, { ...o, signal: ac.signal });
+    const txt = await r.text();
+    return { ok: r.ok, status: r.status, text: /* @__PURE__ */ __name(() => txt, "text"), json: /* @__PURE__ */ __name(() => JSON.parse(txt), "json") };
+  } finally {
+    clearTimeout(m);
+  }
+}
+__name(fetchT, "fetchT");
 var C = "https://clob.polymarket.com";
 var index_default = {
   async fetch(req, env) {
@@ -24842,10 +24853,21 @@ var Bot = class {
   }
   async alarm() {
     await this.ready;
-    try {
-      await this.tick();
-    } catch (err) {
-      this.erreur("tick", err);
+    const t0 = Date.now();
+    if (!this._tickEnCours || t0 - this._tickEnCours > 3e4) {
+      if (this._tickEnCours) {
+        this.diag.rondesBloquees = (this.diag.rondesBloquees || 0) + 1;
+        this.erreur("ronde bloqu\xE9e", `depuis ${Math.round((t0 - this._tickEnCours) / 1e3)} s, \xE9tape ${this._tickEtape || "?"}`);
+      }
+      const moi = this._tickEnCours = t0;
+      const p = this.tick().catch((err) => this.erreur("tick", err)).finally(() => {
+        if (this._tickEnCours === moi) this._tickEnCours = 0;
+      });
+      let fin;
+      await Promise.race([p, new Promise((r) => {
+        fin = setTimeout(r, 1e4);
+      })]);
+      clearTimeout(fin);
     }
     if (!this.SG && (!this._b5T || Date.now() - this._b5T > 6e4)) {
       this._b5T = Date.now();
@@ -24863,7 +24885,11 @@ var Bot = class {
       this._prT = Date.now();
       this.prixReelMaj().catch((err) => this.erreur("prix r\xE9el", err));
     }
-    this.ouvrirFlux();
+    try {
+      this.ouvrirFlux();
+    } catch (err) {
+      this.erreur("ouvrir flux", err);
+    }
     await this.state.storage.setAlarm(Date.now() + 1e3);
   }
   // 29.10.2026 17:19 (Pitch : « l'onglet 6 reflète à 100 % l'onglet Stratégies du bot ») : lecture des 15 cases du bot de trading
@@ -25384,7 +25410,7 @@ var Bot = class {
   }
   // ------------------------------------------------------------------ marchés
   async chargerMarche(a, start) {
-    const ev = await (await fetch(`${G2}/events?slug=${a.toLowerCase()}-updown-5m-${start}`)).json();
+    const ev = (await fetchT(`${G2}/events?slug=${a.toLowerCase()}-updown-5m-${start}`)).json();
     const e = ev && ev[0], m = e && e.markets && e.markets[0];
     if (!m) throw new Error(a + " march\xE9 introuvable " + start);
     const outs = JSON.parse(m.outcomes || "[]"), toks = JSON.parse(m.clobTokenIds || "[]");
@@ -25393,7 +25419,7 @@ var Bot = class {
   }
   async prixABattreOfficiel(a, mk) {
     const meta = /* @__PURE__ */ __name(async (st) => {
-      const ev = await (await fetch(`${G2}/events?slug=${a.toLowerCase()}-updown-5m-${st}`)).json();
+      const ev = (await fetchT(`${G2}/events?slug=${a.toLowerCase()}-updown-5m-${st}`)).json();
       const e = ev && ev[0], m = e && e.markets && e.markets[0];
       if (!e) return {};
       let x = e.eventMetadata || m && m.eventMetadata || {};
@@ -25424,7 +25450,7 @@ var Bot = class {
   }
   async ouvertureOfficielle(a, mk) {
     const iso = /* @__PURE__ */ __name((t) => new Date(t * 1e3).toISOString().replace(".000", ""), "iso");
-    const r = await fetch(`https://polymarket.com/api/crypto/crypto-price?symbol=${a}&eventStartTime=${iso(mk.start)}&variant=fiveminute&endDate=${iso(mk.end)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
+    const r = await fetchT(`https://polymarket.com/api/crypto/crypto-price?symbol=${a}&eventStartTime=${iso(mk.start)}&variant=fiveminute&endDate=${iso(mk.end)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
     if (r.status === 429) this._cp429 = now() + 60;
     if (!r.ok) throw new Error(a + " prix d'ouverture HTTP " + r.status);
     const d = await r.json();
@@ -25434,7 +25460,7 @@ var Bot = class {
     }
   }
   async carnets(tokens) {
-    const r = await fetch(`${C}/books`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(tokens.map((t) => ({ token_id: t }))) });
+    const r = await fetchT(`${C}/books`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(tokens.map((t) => ({ token_id: t }))) });
     if (!r.ok) throw new Error("carnets HTTP " + r.status);
     const out = {};
     for (const b of await r.json()) out[b.asset_id] = {
@@ -25477,6 +25503,7 @@ var Bot = class {
       try {
         if (!mk.slug && t - (mk.essai || 0) > 10) {
           mk.essai = t;
+          this._tickEtape = "march\xE9 " + a;
           Object.assign(mk, await this.chargerMarche(a, start));
         }
         if (!mk.twapK && t >= start + 2) {
@@ -25510,12 +25537,14 @@ var Bot = class {
         const lireOfficiel = !(this.SG && mk.twapK) && !(this._cp429 && t < this._cp429);
         if (lireOfficiel && !mk.ptbOff && ["BTC", "ETH"].includes(a) && t - (mk.essaiPtb || 0) > (t - start < 60 ? 5 : 15)) {
           mk.essaiPtb = t;
+          this._tickEtape = "prix \xE0 battre officiel " + a;
           await this.prixABattreOfficiel(a, mk);
         }
         if (lireOfficiel && ["BTC", "ETH"].includes(a) && !mk.ptbOff && t - start < 120 && t - (mk.essaiOff || 0) > 5) {
           mk.essaiOff = t;
           const avant = mk.strike;
           try {
+            this._tickEtape = "prix ouverture " + a;
             await this.ouvertureOfficielle(a, mk);
           } catch (err) {
             (mk.kSerie = mk.kSerie || []).push([+(t - start).toFixed(1), "err " + String(err.message || err).slice(-3)]);
@@ -25539,6 +25568,7 @@ var Bot = class {
     const nx = start + 300;
     if (tleft < 150 && t - (this._nxEssai || 0) > 10) {
       this._nxEssai = t;
+      this._tickEtape = "cycle suivant";
       for (const a of V1.ACTIFS) if (!this.mkNx[a] || this.mkNx[a].start !== nx) {
         try {
           this.mkNx[a] = { start: nx, end: nx + 300, ...await this.chargerMarche(a, nx) };
@@ -25548,6 +25578,7 @@ var Bot = class {
     }
     for (const p of this.e.positions.filter((x) => x.end <= t)) this.e.attente.push(p);
     this.e.positions = this.e.positions.filter((x) => x.end > t);
+    this._tickEtape = "r\xE9solution";
     await this.resoudre();
     if (this.enReel()) {
       if (t - (this._chaud || 0) > 20) {
@@ -25559,6 +25590,7 @@ var Bot = class {
     }
     if (t - (this._nr || 0) > 15) {
       this._nr = t;
+      this._tickEtape = "r\xE8glements";
       await this.nRegler();
     }
     if (t - (this._v1r || 0) > 15 || V1.ACTIFS.some((a) => {
@@ -25720,7 +25752,7 @@ var Bot = class {
     if (this.dernierCheck && t - this.dernierCheck < 15) return;
     this.dernierCheck = t;
     const lire = /* @__PURE__ */ __name(async (slug) => {
-      const ev = await (await fetch(`${G2}/events?slug=${slug}`)).json();
+      const ev = (await fetchT(`${G2}/events?slug=${slug}`)).json();
       const e0 = ev[0], m = e0.markets[0];
       let meta = e0.eventMetadata || m.eventMetadata || {};
       if (typeof meta === "string") meta = JSON.parse(meta);
@@ -26721,6 +26753,8 @@ var Bot = class {
       relaisSecours: this.diag.relais || 0,
       secoursPrixABattre: this.diag.secoursK || 0,
       pause429: this._cp429 && now() < this._cp429 ? Math.round(this._cp429 - now()) : 0,
+      rondesBloquees: this.diag.rondesBloquees || 0,
+      rondeEnCoursS: this._tickEnCours ? Math.round((Date.now() - this._tickEnCours) / 1e3) : 0,
       cycle: { start: mk.start || null, slug: mk.slug || null, prixABattre: mk.strike ?? null, source: mk.strikeSrc || null },
       ouvertes: (this.N.ouvertes || []).length,
       strategies: Object.keys(this.N.strats || {}).length,
