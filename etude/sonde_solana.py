@@ -1,4 +1,4 @@
-# Contrôle signaux + blocages (lecture seule) — 12:22
+# Contrôle blocages (lecture seule) — 12:31
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
