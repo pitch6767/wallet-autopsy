@@ -1,4 +1,4 @@
-# Enquête arrêt des signaux (lecture seule) — 11:46
+# Enquête arrêt des signaux + non remplis (lecture seule) — 11:48
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
@@ -18,3 +18,5 @@ MC = g("https://72-11-157-70.sslip.io/api/bot/moteur"); st = (MC or {}).get("sta
 print("MOTEUR-COMPLET", json.dumps({k: st.get(k) for k in ("heure", "clients", "cycle", "pause429", "secoursPrixABattre", "relaisSecours", "doublonsPoly", "ouvertes", "strategies", "nums", "ages_s")}, ensure_ascii=False)[:2500])
 print("MOTEUR-PERF", json.dumps(st.get("perf"), ensure_ascii=False)[:1500])
 BE = g("https://72-11-157-70.sslip.io/api/bot/banc/etat"); print("SOURCE", json.dumps((BE or {}).get("sourceSignaux"), ensure_ascii=False)[:800], json.dumps((BE or {}).get("moteur"), ensure_ascii=False)[:800])
+
+DG = g("https://72-11-157-70.sslip.io/api/bot/diag?heures=14"); print("DIAG-HEURES", json.dumps(DG, ensure_ascii=False)[:6000])
