@@ -1,4 +1,4 @@
-# Garde vitesse horaire (lecture seule) : vitesse 70 min, moteur, maj-auto
+# Garde vitesse horaire (lecture seule) : vitesse 70 min, moteur, maj-auto — 06:35
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
