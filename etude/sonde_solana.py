@@ -1,4 +1,4 @@
-# Contrôle vitesse demandé par Pitch (lecture seule) — 07:55
+# Contrôle vitesse + blocages (lecture seule) — 08:10
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
@@ -11,3 +11,5 @@ for h in H[-70:]: print(h.get("t", "")[11:16], h.get("feu"), "; ".join(h.get("ra
 M = g("https://72-11-157-70.sslip.io/api/bot/moteur"); s = M.get("statut") or {}
 print("moteur", M.get("ERREUR"), "lu", M.get("lu"), "flux", json.dumps(s.get("flux"), ensure_ascii=False)[:800], "reconnexions", s.get("reconnexions"), "erreurs", json.dumps((s.get("erreurs") or [])[:10], ensure_ascii=False)[:800])
 J = g("https://72-11-157-70.sslip.io/api/bot/maj"); print("MAJ-AUTO", json.dumps({k: v for k, v in J.items() if k != "journal"}, ensure_ascii=False)[:2000]); print("MAJ-JOURNAL", json.dumps((J.get("journal") or [])[-15:], ensure_ascii=False)[:3000])
+
+print("BLOCAGES", json.dumps(V.get("blocages"), ensure_ascii=False)[:4000])
