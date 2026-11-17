@@ -1,4 +1,4 @@
-# 17.11.2026 03:35 : garde horaire — vérification vitesse/moteur/maj (lecture seule)
+# 17.11.2026 04:35 : garde horaire — vérification vitesse/moteur/maj (lecture seule)
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
