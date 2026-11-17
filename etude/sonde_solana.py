@@ -1,4 +1,4 @@
-# Enquête arrêt des signaux + non remplis (lecture seule) — 11:48
+# Contrôle après corrections vitesse + moteur (lecture seule) — 12:11
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
