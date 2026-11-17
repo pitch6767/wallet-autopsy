@@ -136,6 +136,14 @@ const V1 = { ACTIFS: ["BTC"], REEL: ["BTC"], OKX: { BTC: "BTC-USDT-SWAP", ETH: "
 const WMAX = (a) => Math.max(...ACTIFS[a].regles.map((r) => r.W));
 
 const G = "https://gamma-api.polymarket.com";
+// 17.11.2026 (cause des arrêts de signaux 02:37 / 09:37 / 11:38 UTC) : la ronde du moteur attendait SANS LIMITE les réponses de Polymarket ;
+// une seule demande sans réponse figeait la ronde → plus de nouveau cycle, plus de signaux, flux toujours « connectés ». Désormais 8 s au plus,
+// lecture du corps comprise (minuteur annulé ensuite — jamais attaché à un websocket).
+async function fetchT(u, o = {}, ms = 8000) {
+  const ac = new AbortController(), m = setTimeout(() => ac.abort(), ms);
+  try { const r = await fetch(u, { ...o, signal: ac.signal }); const txt = await r.text(); return { ok: r.ok, status: r.status, text: () => txt, json: () => JSON.parse(txt) }; }
+  finally { clearTimeout(m); }
+}
 const C = "https://clob.polymarket.com";
 
 export default {
@@ -1230,11 +1238,19 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
 
   async alarm() {
     await this.ready;
-    try { await this.tick(); } catch (err) { this.erreur("tick", err); }
+    // 17.11.2026 : une ronde ne peut plus figer le moteur. On l'attend 10 s au plus ; la ronde suivante est TOUJOURS programmée.
+    // Si une ronde dure plus de 30 s, elle est notée « ronde bloquée » (avec l'étape en cours) et une nouvelle repart.
+    const t0 = Date.now();
+    if (!this._tickEnCours || t0 - this._tickEnCours > 30000) {
+      if (this._tickEnCours) { this.diag.rondesBloquees = (this.diag.rondesBloquees || 0) + 1; this.erreur("ronde bloquée", `depuis ${Math.round((t0 - this._tickEnCours) / 1000)} s, étape ${this._tickEtape || "?"}`); }
+      const moi = (this._tickEnCours = t0);
+      const p = this.tick().catch((err) => this.erreur("tick", err)).finally(() => { if (this._tickEnCours === moi) this._tickEnCours = 0; });
+      let fin; await Promise.race([p, new Promise((r) => { fin = setTimeout(r, 10000); })]); clearTimeout(fin);
+    }
     if (!this.SG && (!this._b5T || Date.now() - this._b5T > 60000)) { this._b5T = Date.now(); this.botStratsMaj().catch((err) => this.erreur("strategies du bot", err)); }
     if (!this.SG && (!this._idT || Date.now() - this._idT > 60000)) { this._idT = Date.now(); try { this.idTraiter(); } catch (err) { this.erreur("idées (minute)", err); } }
     if (!this.SG && (!this._prT || Date.now() - this._prT > 60000)) { this._prT = Date.now(); this.prixReelMaj().catch((err) => this.erreur("prix réel", err)); }
-    this.ouvrirFlux();
+    try { this.ouvrirFlux(); } catch (err) { this.erreur("ouvrir flux", err); }
     await this.state.storage.setAlarm(Date.now() + 1000);
   }
   // 29.10.2026 17:19 (Pitch : « l'onglet 6 reflète à 100 % l'onglet Stratégies du bot ») : lecture des 15 cases du bot de trading
@@ -1502,7 +1518,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
 
   // ------------------------------------------------------------------ marchés
   async chargerMarche(a, start) {
-    const ev = await (await fetch(`${G}/events?slug=${a.toLowerCase()}-updown-5m-${start}`)).json();
+    const ev = (await fetchT(`${G}/events?slug=${a.toLowerCase()}-updown-5m-${start}`)).json();
     const e = ev && ev[0], m = e && e.markets && e.markets[0];
     if (!m) throw new Error(a + " marché introuvable " + start);
     const outs = JSON.parse(m.outcomes || "[]"), toks = JSON.parse(m.clobTokenIds || "[]");
@@ -1512,7 +1528,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
   async prixABattreOfficiel(a, mk) {
     // 1) priceToBeat officiel du cycle (publié tard) ; 2) sinon finalPrice officiel du cycle précédent (= prix à battre de celui-ci)
     const meta = async (st) => {
-      const ev = await (await fetch(`${G}/events?slug=${a.toLowerCase()}-updown-5m-${st}`)).json();
+      const ev = (await fetchT(`${G}/events?slug=${a.toLowerCase()}-updown-5m-${st}`)).json();
       const e = ev && ev[0], m = e && e.markets && e.markets[0]; if (!e) return {};
       let x = e.eventMetadata || (m && m.eventMetadata) || {}; if (typeof x === "string") x = JSON.parse(x); return x || {};
     };
@@ -1527,14 +1543,14 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
   }
   async ouvertureOfficielle(a, mk) {
     const iso = (t) => new Date(t * 1000).toISOString().replace(".000", "");
-    const r = await fetch(`https://polymarket.com/api/crypto/crypto-price?symbol=${a}&eventStartTime=${iso(mk.start)}&variant=fiveminute&endDate=${iso(mk.end)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
+    const r = await fetchT(`https://polymarket.com/api/crypto/crypto-price?symbol=${a}&eventStartTime=${iso(mk.start)}&variant=fiveminute&endDate=${iso(mk.end)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" } });
     if (r.status === 429) this._cp429 = now() + 60;   // 16.11.2026 : trop de demandes → plus aucun appel pendant 60 s (avant : un appel toutes les 5 s, refusé)
     if (!r.ok) throw new Error(a + " prix d'ouverture HTTP " + r.status);
     const d = await r.json();
     if (d && +d.openPrice > 0) { mk.strikeSite = +d.openPrice; if (!mk.twapK) mk.strike = +d.openPrice; }
   }
   async carnets(tokens) {
-    const r = await fetch(`${C}/books`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(tokens.map((t) => ({ token_id: t }))) });
+    const r = await fetchT(`${C}/books`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(tokens.map((t) => ({ token_id: t }))) });
     if (!r.ok) throw new Error("carnets HTTP " + r.status);
     const out = {};
     for (const b of await r.json()) out[b.asset_id] = {
@@ -1558,7 +1574,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
         mk = this.mk[a] = (V1.ACTIFS.includes(a) && this.mkNx[a] && this.mkNx[a].start === start) ? { ...this.mkNx[a] } : { start, end: start + 300 };
       }
       try {
-        if (!mk.slug && t - (mk.essai || 0) > 10) { mk.essai = t; Object.assign(mk, await this.chargerMarche(a, start)); }
+        if (!mk.slug && t - (mk.essai || 0) > 10) { mk.essai = t; this._tickEtape = "marché " + a; Object.assign(mk, await this.chargerMarche(a, start)); }
         // PRIX À BATTRE = MOYENNE CHAINLINK DES 60 SECONDES AVANT LE DÉBUT (découvert le 09.10.2026 : colle au prix officiel à 0,19 $ près en médiane,
         // sur 710 cycles ; le chiffre affiché par le site est le prix instantané, faux de 10 $ en médiane). Calculé dès la 2e seconde du cycle.
         if (!mk.twapK && t >= start + 2) {
@@ -1576,12 +1592,12 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
         // 16.11.2026 : moteur de signaux — la moyenne Chainlink 60 s EST le prix à battre ; les lectures officielles ne servaient qu'à le noter
         // et déclenchaient des refus « trop de demandes » (429). On ne les fait plus que si la moyenne manque.
         const lireOfficiel = !(this.SG && mk.twapK) && !(this._cp429 && t < this._cp429);
-        if (lireOfficiel && !mk.ptbOff && ["BTC", "ETH"].includes(a) && t - (mk.essaiPtb || 0) > (t - start < 60 ? 5 : 15)) { mk.essaiPtb = t; await this.prixABattreOfficiel(a, mk); }
+        if (lireOfficiel && !mk.ptbOff && ["BTC", "ETH"].includes(a) && t - (mk.essaiPtb || 0) > (t - start < 60 ? 5 : 15)) { mk.essaiPtb = t; this._tickEtape = "prix à battre officiel " + a; await this.prixABattreOfficiel(a, mk); }
         // secours seulement si la fiche ne le donne pas encore après 20 s
         // prix d'ouverture Polymarket (celui affiché sur le site) : relu toutes les 5 s pendant les 2 premières minutes (BTC, ETH), chaque valeur notée (09.10.2026)
         if (lireOfficiel && ["BTC", "ETH"].includes(a) && !mk.ptbOff && t - start < 120 && t - (mk.essaiOff || 0) > 5) {
           mk.essaiOff = t; const avant = mk.strike;
-          try { await this.ouvertureOfficielle(a, mk); } catch (err) { (mk.kSerie = mk.kSerie || []).push([+(t - start).toFixed(1), "err " + String(err.message || err).slice(-3)]); throw err; }
+          try { this._tickEtape = "prix ouverture " + a; await this.ouvertureOfficielle(a, mk); } catch (err) { (mk.kSerie = mk.kSerie || []).push([+(t - start).toFixed(1), "err " + String(err.message || err).slice(-3)]); throw err; }
           if (mk.strike) { if (!mk.twapK) mk.strikeSrc = "crypto-price"; const L2 = (mk.kSerie = mk.kSerie || []); if (!L2.length || L2[L2.length - 1][1] !== mk.strike) L2.push([+(t - start).toFixed(1), mk.strike]); if (avant && avant !== mk.strike) mk.strikeAvant = avant; }
         } else if (lireOfficiel && !mk.strike && !["BTC", "ETH"].includes(a) && t - (mk.essaiOff || 0) > 15) { mk.essaiOff = t; await this.ouvertureOfficielle(a, mk); if (mk.strike) mk.strikeSrc = "crypto-price"; }
       } catch (err) { if (tleft < 200) this.erreur(a, err); }
@@ -1590,16 +1606,16 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     const nx = start + 300;
     if (tleft < 150 && t - (this._nxEssai || 0) > 10) {
       this._nxEssai = t;
-      for (const a of V1.ACTIFS) if (!this.mkNx[a] || this.mkNx[a].start !== nx) { try { this.mkNx[a] = { start: nx, end: nx + 300, ...(await this.chargerMarche(a, nx)) }; } catch (_) {} }
+      this._tickEtape = "cycle suivant"; for (const a of V1.ACTIFS) if (!this.mkNx[a] || this.mkNx[a].start !== nx) { try { this.mkNx[a] = { start: nx, end: nx + 300, ...(await this.chargerMarche(a, nx)) }; } catch (_) {} }
     }
     for (const p of this.e.positions.filter((x) => x.end <= t)) this.e.attente.push(p);
     this.e.positions = this.e.positions.filter((x) => x.end > t);
-    await this.resoudre();
+    this._tickEtape = "résolution"; await this.resoudre();
     if (this.enReel()) {
       if (t - (this._chaud || 0) > 20) { this._chaud = t; this.reel.rechauffer(); }
       const pv = this.e.V1.pos; if (pv && pv.reel && pv.offreId) this.v1SuivreOffre(pv);
     }
-    if (t - (this._nr || 0) > 15) { this._nr = t; await this.nRegler(); }
+    if (t - (this._nr || 0) > 15) { this._nr = t; this._tickEtape = "règlements"; await this.nRegler(); }
     if (t - (this._v1r || 0) > 15 || V1.ACTIFS.some((a) => { const P = this.v1Etat(a).pos; return P && t >= P.end; })) { this._v1r = t; for (const a of V1.ACTIFS) await this.v1Regler(a); }
     // 28.10.2026 (Pitch : « oui si pas utilisée dans les 25 meilleures ») : l'ancien « Bot 95 » (decider / surveiller, carnets REST chaque seconde,
     // sauvegarde etat2 ~1 Mo chaque seconde en fin de cycle) est arrêté. Il n'apparaît dans aucun onglet ni classement, et aucune stratégie ne l'utilise.
@@ -1730,7 +1746,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     if (this.dernierCheck && t - this.dernierCheck < 15) return;
     this.dernierCheck = t;
     const lire = async (slug) => {
-      const ev = await (await fetch(`${G}/events?slug=${slug}`)).json();
+      const ev = (await fetchT(`${G}/events?slug=${slug}`)).json();
       const e0 = ev[0], m = e0.markets[0];
       let meta = e0.eventMetadata || m.eventMetadata || {}; if (typeof meta === "string") meta = JSON.parse(meta);
       const px = JSON.parse(m.outcomePrices || "[]").map(Number), outs = JSON.parse(m.outcomes || "[]");
@@ -2266,7 +2282,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
       ages_s: { perp: age("perp"), okx: age("okx"), bn: age("bn"), cb: age("cb"), cl: age("cl") },
       // 16.11.2026 : Polymarket « ouvert » si l'un des deux flux parallèles l'est (la surveillance ne redémarre plus le moteur pour un seul flux fermé)
       flux: { ...Object.fromEntries(["perp", "okx", "bn", "cb", "cl", "poly", "act"].map((k) => [k, !!this.ws[k]])), poly: !!(this.ws.poly || this.ws.polyB), polyA: !!this.ws.poly, polyB: !!this.ws.polyB, cl: !!(this.ws.cl || this.ws.clB), clA: !!this.ws.cl, clB: !!this.ws.clB },
-      doublonsPoly: this.diag.doublons || 0, relaisSecours: this.diag.relais || 0, secoursPrixABattre: this.diag.secoursK || 0, pause429: this._cp429 && now() < this._cp429 ? Math.round(this._cp429 - now()) : 0,
+      doublonsPoly: this.diag.doublons || 0, relaisSecours: this.diag.relais || 0, secoursPrixABattre: this.diag.secoursK || 0, pause429: this._cp429 && now() < this._cp429 ? Math.round(this._cp429 - now()) : 0, rondesBloquees: this.diag.rondesBloquees || 0, rondeEnCoursS: this._tickEnCours ? Math.round((Date.now() - this._tickEnCours) / 1000) : 0,
       cycle: { start: mk.start || null, slug: mk.slug || null, prixABattre: mk.strike ?? null, source: mk.strikeSrc || null },
       ouvertes: (this.N.ouvertes || []).length, strategies: Object.keys(this.N.strats || {}).length, reglements: this.RG ? this.RG.lignes.length : 0, margeMesureeBTC: marge,
       minutesDuo: ((this.duo || {}).min || []).length, reconnexions: this.diag.reconnexions, erreurs: this.diag.erreurs, perf: this.perfVue(), journal: (this._slJ || []).slice(0, 50) };
