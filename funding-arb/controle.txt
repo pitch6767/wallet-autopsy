@@ -1,10 +1,10 @@
 env.ASSETS                    Assets              
 
-Uploaded funding-arb (4.82 sec)
-Deployed funding-arb triggers (1.35 sec)
+Uploaded funding-arb (6.38 sec)
+Deployed funding-arb triggers (1.06 sec)
   https://funding-arb.pitch67.workers.dev
   schedule: * * * * *
-Current Version ID: 40dd7b67-7954-4089-91f0-0563bc09b905
+Current Version ID: 8c95be02-b21d-4bef-9691-8e2db9d446dc
 code sortie: 0
 
  ⛅️ wrangler 4.164.0
@@ -16,34 +16,34 @@ migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.2.0","statut":{"okx":{"ok":true,"n":529,"ms":164},"deribit":{"ok":true,"n":151,"ms":299},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":680},"bybit":{"ok":true,"n":832,"ms":817,"lieu":"AMS/US"}},"top":[{"base":"BREV","achat":"okx","vente":"bybit","ecart":0.04416135881104033,"gain":414.424954340438},{"base":"INIT","achat":"hyperliquid","vente":"bybit","ecart":0.0195584117701757,"gain":155.51183261173543},{"base":"AXIS","achat":"okx","vente":"bybit","ecart":0.00438153016514975,"gain":4.896754730716989},{"base":"LIT","achat":"hyperliquid","vente":"bybit","ecart":0.0028442368077903346,"gain":3.119605453545688},{"base":"DRAM","achat":"hyperliquid","vente":"okx","ecart":0.002103049421661396,"gain":0.587576490238142}]}
+{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.2.1","statut":{"okx":{"ok":true,"n":529,"ms":134},"deribit":{"ok":true,"n":151,"ms":263},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":691},"bybit":{"ok":true,"n":832,"ms":907,"lieu":"AMS/US"}},"top":[{"base":"BREV","achat":"okx","vente":"bybit","ecart":0.052504768597530393,"gain":499.7318206106984},{"base":"INIT","achat":"hyperliquid","vente":"bybit","ecart":0.017645460057285067,"gain":143.01429039307828},{"base":"AXIS","achat":"okx","vente":"bybit","ecart":0.007307476110174127,"gain":44.248556404626115},{"base":"ANT","achat":"hyperliquid","vente":"bybit","ecart":0.0037134652772692345,"gain":7.650596568547186},{"base":"LIT","achat":"hyperliquid","vente":"bybit","ecart":0.0025681398060990457,"gain":2.9275300444702843}]}
 === controles
 --- version
-{"version":"2.2.0"}
+{"version":"2.2.1"}
 --- bilan
 total {'n': 5, 'net': 305.1593853643731, 'g': 5, 'fund': -64.95182388557882, 'frais': 99.13768810294658, 'debut': 1794833503447}
 anciennes {'n': 0, 'net': None}
 ouvertes 2
- O BREV regles 2.1 qte_l 127518.49018107625 qte_s 127518.49018107625 carnet lu il y a 0 min achat okx 0.07868437743668001 vente bybit 0.08163862792524 attendu 89.87 provisoire -366.92
- O INIT regles 2.1 qte_l 103981.44970937184 qte_s 103981.44970937184 carnet lu il y a 1 min achat hyperliquid 0.09627949736938349 vente bybit 0.09736250518284098 attendu 52.02 provisoire -250.75
+ O BREV regles 2.1 qte_l 127518.49018107625 qte_s 127518.49018107625 carnet lu il y a 0 min achat okx 0.07868437743668001 vente bybit 0.08163862792524 attendu 89.87 provisoire -459.27
+ O INIT regles 2.1 qte_l 103981.44970937184 qte_s 103981.44970937184 carnet lu il y a 0 min achat hyperliquid 0.09627949736938349 vente bybit 0.09736250518284098 attendu 52.02 provisoire -223.84
  F INIT hyperliquid bybit 781 min net 64.77 objectif atteint | achat in 0.10018016294813001 out 0.0910955223641405 | vente in 0.10172666194272498 out 0.09114760306215498 | fund -65.26 att 83.16
  F ANT hyperliquid deribit 279 min net 52.96 objectif atteint | achat in 99.05503737544359 out 98.87148378071281 | vente in 100.50442712841479 out 99.610178213755 | fund 0.3 att 92.75
  F KORU deribit okx 19 min net 52.34 objectif atteint | achat in 6.84 out 6.94 | vente in 6.89741661713 out 6.947884996460001 | fund 0.04 att 53.06
  F SOXL deribit bybit 5 min net 52.58 objectif atteint | achat in 48.8549785868 out 50.9272188522 | vente in 49.5297394148 out 51.24000000000001 | fund -0.04 att 102.23
  F NEAR deribit hyperliquid 3 min net 82.52 objectif atteint | achat in 3.223905417789201 out 3.2355057815296 | vente in 3.2495 out 3.2283331036006997 | fund 0.0 att 53.63
- T BREV okx 0.096 bybit 0.10087 5.073 % 477.77 verif None
- T INIT hyperliquid 0.096465 bybit 0.09824 1.84 % 139.8 verif None
- T ANT hyperliquid 99.071 bybit 99.54 0.473 % 23.68 verif None
- T SOXL deribit 47.28 bybit 47.5 0.465 % 22.37 verif None
- T AXIS okx 0.08933 bybit 0.0898 0.526 % 17.69 verif None
- T MU deribit 689.28 bybit 691.66 0.345 % 9.54 verif None
- T SKHY hyperliquid 120.63 bybit 120.99 0.298 % 8.19 verif None
- T LIT deribit 2.9413 bybit 2.9514 0.343 % 7.68 verif None
+ T BREV okx 0.09956 bybit 0.10465 5.112 % 479.12 verif None
+ T INIT hyperliquid 0.095662 bybit 0.09738 1.796 % 146.15 verif None
+ T AXIS okx 0.08906 bybit 0.0896 0.606 % 31.81 verif None
+ T ANT hyperliquid 98.3448 bybit 98.7 0.361 % 6.13 verif None
+ T SOXL hyperliquid 46.501 deribit 46.62 0.256 % 5.41 verif None
+ T UNITREE hyperliquid 91.0397 bybit 91.31 0.297 % 4.6 verif None
+ T LIT hyperliquid 2.948827 bybit 2.9564 0.257 % 2.93 verif None
+ T SOXS deribit 61.71 okx 61.89 0.292 % 2.69 verif None
 --- page
 cache-control: no-store, max-age=0
  Arbitrage de prix — fantôme 
   Arbitrage de prix FANTÔME  
- Aucun ordre réel. Version 2.2.0 ·  …   
+ Aucun ordre réel. Version 2.2.1 ·  …   
  Plateformes   
  Positions ouvertes (fantôme, résultat provisoire si on sortait maintenant)   
  Trades fermés (fantôme, résultat après tous les frais)   
@@ -51,11 +51,11 @@ cache-control: no-store, max-age=0
  Règles du fantôme   
 try{if(sessionStorage.getItem("v")!==V){fetch("/api/version",{cache:"no-store"}).then(r=>r.json()).then(d=>{if(d.version!==V&&!sessionStorage.getItem("r"+d.version)){sessionStorage.setItem("r"+d.version,1);location.reload()}else sessionStorage.setItem("v",V)})}}catch(e){}
 --- etat brut (début)
-{"version":"2.2.0","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794929563561,"scan":{"statut":{"deribit":{"ok":true,"n":151,"ms":82},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"okx":{"ok":true,"n":529,"ms":184},"hyperliquid":{"ok":true,"n":329,"ms":450},"bybit":{"ok":true,"n":832,"ms":712,"lieu":"AMS/US"}},"top":[{"base":"BREV","stock":false,"achat":"okx","ask":0.096,"vente":"bybit","bid":0.10087,"ecart":0.050729166666666714,"gain":477.7681112327497,"verif":null},{"base":"INIT","stock":false,"achat":"hyperliquid","ask":0.096465,"vente":"bybit","bid":0.09824,"ecart":0.018400456123982778,"gain":139.8041179067904,"verif":null},{"base":"ANT","stock":true,"achat":"hyperliquid","ask":99.071,"vente":"bybit","bid":99.54,"ecart":0.004733978661767946,"gain":23.680343741789343,"verif":null},{"base":"SOXL","stock":false,"achat":"deribit","ask":47.28,"vente":"bybit","bid":47.5,"ecart":0.004653130287648022,"gain":22.368841379048124,"verif":null},{"base":"AXIS","stock":false,"achat":"okx","ask":0.08933,"vente":"bybit","bid":0.0898,"ecart":0.005261390350386197,"gain":17.69103765045025,"verif":null},{"base":"MU","stock":false,"achat":"deribit","ask":689.28,"vente":"bybit","bid":691.66,"ecart":0.003452878365830969,"gain":9.54336
+{"version":"2.2.1","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794929905776,"scan":{"statut":{"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\"}"},"deribit":{"ok":true,"n":151,"ms":78},"okx":{"ok":true,"n":529,"ms":245},"bybit":{"ok":true,"n":832,"ms":639,"lieu":"AMS/US"},"hyperliquid":{"ok":true,"n":329,"ms":1146}},"top":[{"base":"BREV","stock":false,"achat":"okx","ask":0.09956,"vente":"bybit","bid":0.10465,"ecart":0.05112494977902782,"gain":479.11961057908707,"verif":null},{"base":"INIT","stock":false,"achat":"hyperliquid","ask":0.095662,"vente":"bybit","bid":0.09738,"ecart":0.01795906420522253,"gain":146.15049008500185,"verif":null},{"base":"AXIS","stock":false,"achat":"okx","ask":0.08906,"vente":"bybit","bid":0.0896,"ecart":0.0060633280934201395,"gain":31.80985460168829,"verif":null},{"base":"ANT","stock":true,"achat":"hyperliquid","ask":98.3448,"vente":"bybit","bid":98.7,"ecart":0.003611782219293813,"gain":6.127206091980867,"verif":null},{"base":"SOXL","stock":true,"achat":"hyperliquid","ask":46.501,"vente":"deribit","bid":46.62,"ecart":0.0025590847508656367,"gain":5.410935724145002,"verif":null},{"base":"UNITREE","stock":true,"achat":"hyperliquid","ask":91.0397,"vente":"bybit","bid":91.31,"ecart":0.002969034388294
 --- statut plateformes x6 (toutes les 20 s)
-59 s {'deribit': (True, 151, None, ''), 'binance': (False, None, None, 'relais Dublin : {"premiumIndex":"Binance HTTP 451","fundingI'), 'okx': (True, 529, None, ''), 'hyperliquid': (True, 329, None, ''), 'bybit': (True, 832, 'AMS/US', '')}
-6 s {'binance': (False, None, None, 'relais Dublin : {"premiumIndex":"Binance HTTP 451","bookTick'), 'deribit': (True, 151, None, ''), 'okx': (True, 529, None, ''), 'bybit': (True, 832, 'AMS/US', ''), 'hyperliquid': (True, 329, None, '')}
-3 s {'binance': (False, None, None, 'relais Dublin : {"premiumIndex":"Binance HTTP 451","bookTick'), 'deribit': (True, 151, None, ''), 'okx': (True, 529, None, ''), 'bybit': (True, 832, 'AMS/US', ''), 'hyperliquid': (True, 329, None, '')}
-13 s {'binance': (False, None, None, 'relais Dublin : {"premiumIndex":"Binance HTTP 451","bookTick'), 'deribit': (True, 151, None, ''), 'hyperliquid': (True, 329, None, ''), 'bybit': (True, 832, 'AMS/US', ''), 'okx': (True, 529, 'relais WAW/US', '')}
-10 s {'binance': (False, None, None, 'relais Dublin : {"fundingInfo":"Binance HTTP 451","bookTicke'), 'deribit': (True, 151, None, ''), 'okx': (True, 529, None, ''), 'bybit': (True, 832, 'AMS/US', ''), 'hyperliquid': (True, 329, None, '')}
-8 s {'binance': (False, None, None, 'relais Dublin : {"fundingInfo":"Binance HTTP 451","bookTicke'), 'deribit': (True, 151, None, ''), 'okx': (True, 529, None, ''), 'hyperliquid': (True, 329, None, ''), 'bybit': (True, 832, 'AMS/US', '')}
+5 s {'binance': (False, None, None, 'relais Dublin : {"premiumIndex":"Binance HTTP 451","bookTick'), 'deribit': (True, 151, None, ''), 'okx': (True, 529, None, ''), 'bybit': (True, 832, 'AMS/US', ''), 'hyperliquid': (True, 329, None, '')}
+14 s {'binance': (False, None, None, 'relais Dublin : {"premiumIndex":"Binance HTTP 451","bookTick'), 'deribit': (True, 151, None, ''), 'okx': (True, 529, None, ''), 'hyperliquid': (True, 329, None, ''), 'bybit': (True, 832, 'AMS/US', '')}
+11 s {'binance': (False, None, None, 'relais Dublin : {"premiumIndex":"Binance HTTP 451","bookTick'), 'deribit': (True, 151, None, ''), 'okx': (True, 529, None, ''), 'hyperliquid': (True, 329, None, ''), 'bybit': (True, 832, 'AMS/US', '')}
+8 s {'binance': (False, None, None, 'relais Dublin : {"bookTicker":"Binance HTTP 451","premiumInd'), 'deribit': (True, 151, None, ''), 'okx': (True, 529, None, ''), 'hyperliquid': (True, 329, None, ''), 'bybit': (True, 832, 'AMS/US', '')}
+6 s {'binance': (False, None, None, 'relais Dublin : {"bookTicker":"Binance HTTP 451","premiumInd'), 'deribit': (True, 151, None, ''), 'bybit': (True, 832, 'AMS/US', ''), 'hyperliquid': (True, 329, None, ''), 'okx': (True, 529, 'relais WAW/US', '')}
+3 s {'binance': (False, None, None, 'relais Dublin : {"bookTicker":"Binance HTTP 451","premiumInd'), 'deribit': (True, 151, None, ''), 'okx': (True, 529, 'relais AMS/US', ''), 'bybit': (True, 832, 'AMS/US', ''), 'hyperliquid': (True, 329, None, '')}
