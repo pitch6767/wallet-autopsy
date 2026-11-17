@@ -10,4 +10,4 @@ H = V.get("minutesNonVertes", []) or []; print("minutes non vertes :", len(H))
 for h in H[-70:]: print(h.get("t", "")[11:16], h.get("feu"), "; ".join(h.get("raisons") or [])[:200])
 M = g("https://72-11-157-70.sslip.io/api/bot/moteur"); s = M.get("statut") or {}
 print("moteur", M.get("ERREUR"), "lu", M.get("lu"), "flux", json.dumps(s.get("flux"), ensure_ascii=False)[:800], "reconnexions", s.get("reconnexions"), "erreurs", json.dumps((s.get("erreurs") or [])[:10], ensure_ascii=False)[:800])
-J = g("https://72-11-157-70.sslip.io/api/bot/maj"); print("MAJ-AUTO", json.dumps(J, ensure_ascii=False)[:3000])
+J = g("https://72-11-157-70.sslip.io/api/bot/maj"); print("MAJ-AUTO", json.dumps({k: v for k, v in J.items() if k != "journal"}, ensure_ascii=False)[:2000]); print("MAJ-JOURNAL", json.dumps((J.get("journal") or [])[-15:], ensure_ascii=False)[:3000])
