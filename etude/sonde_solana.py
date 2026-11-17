@@ -1,4 +1,4 @@
-# Contrôle après pause du scanner (lecture seule) — 08:46
+# Contrôle après pause du scanner (lecture seule) — 08:53
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
