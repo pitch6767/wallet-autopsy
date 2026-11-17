@@ -1,4 +1,4 @@
-# Garde vitesse horaire (lecture seule) — 18:36
+# Contrôle exécuteur + mémoire (lecture seule) — 18:43
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
@@ -20,3 +20,5 @@ print("MOTEUR-PERF", json.dumps(st.get("perf"), ensure_ascii=False)[:1500])
 BE = g("https://72-11-157-70.sslip.io/api/bot/banc/etat"); print("SOURCE", json.dumps((BE or {}).get("sourceSignaux"), ensure_ascii=False)[:800], json.dumps((BE or {}).get("moteur"), ensure_ascii=False)[:800])
 
 DG = g("https://72-11-157-70.sslip.io/api/bot/diag?heures=14"); print("DIAG-HEURES", json.dumps(DG, ensure_ascii=False)[:6000])
+
+print("EXECUTEUR", json.dumps((V or {}).get("executeur"), ensure_ascii=False)[:1200]); print("MEMOIRE", json.dumps((V or {}).get("memoire"), ensure_ascii=False)[:1200])
