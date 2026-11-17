@@ -1,4 +1,4 @@
-# Contrôle après corrections vitesse + moteur (lecture seule) — 12:11
+# Contrôle après corrections vitesse + moteur (lecture seule) — 12:17
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
