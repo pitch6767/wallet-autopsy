@@ -1,4 +1,4 @@
-# Garde vitesse horaire (lecture seule) — 17:43 UTC, contrôle après redémarrage moteur
+# Contrôle vitesse 19 h (lecture seule) — 18:20
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
