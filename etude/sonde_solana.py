@@ -1,4 +1,4 @@
-# Garde vitesse — vérification après redémarrage moteur 11:43
+# Enquête arrêt des signaux (lecture seule) — 11:46
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
@@ -13,3 +13,8 @@ print("moteur", M.get("ERREUR"), "lu", M.get("lu"), "flux", json.dumps(s.get("fl
 J = g("https://72-11-157-70.sslip.io/api/bot/maj"); print("MAJ-AUTO", json.dumps({k: v for k, v in J.items() if k != "journal"}, ensure_ascii=False)[:2000]); print("MAJ-JOURNAL", json.dumps((J.get("journal") or [])[-15:], ensure_ascii=False)[:3000])
 
 print("BLOCAGES", json.dumps(V.get("blocages"), ensure_ascii=False)[:4000])
+
+MC = g("https://72-11-157-70.sslip.io/api/bot/moteur"); st = (MC or {}).get("statut") or {}
+print("MOTEUR-COMPLET", json.dumps({k: st.get(k) for k in ("heure", "clients", "cycle", "pause429", "secoursPrixABattre", "relaisSecours", "doublonsPoly", "ouvertes", "strategies", "nums", "ages_s")}, ensure_ascii=False)[:2500])
+print("MOTEUR-PERF", json.dumps(st.get("perf"), ensure_ascii=False)[:1500])
+BE = g("https://72-11-157-70.sslip.io/api/bot/banc/etat"); print("SOURCE", json.dumps((BE or {}).get("sourceSignaux"), ensure_ascii=False)[:800], json.dumps((BE or {}).get("moteur"), ensure_ascii=False)[:800])
