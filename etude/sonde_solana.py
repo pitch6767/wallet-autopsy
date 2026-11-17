@@ -1,4 +1,4 @@
-# 16.11.2026 22:48 : état maj-auto + vitesse (lecture seule)
+# 17.11.2026 00:36 : garde horaire — vitesse + moteur + maj (lecture seule)
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
