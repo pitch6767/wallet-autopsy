@@ -60,5 +60,5 @@ async function go(){
  const r=d.regles;
  document.getElementById("regles").innerHTML="Règles "+d.reglesId+" · même quantité de pièces sur les 2 jambes (environ "+r.notional.toLocaleString("fr-CH")+" $ par jambe) · scan toutes les 10 s · entrée si : écart entre le prix moyen réel d'achat et de vente (vrais carnets, toute la quantité) − coût de sortie réel (profondeur des carnets) − frais taker d'entrée et de sortie des 2 jambes − funding défavorable sur "+r.heuresFunding+" h ≥ "+r.gainMin+" $ · marchés avec au moins "+(r.volumeMin/1e6)+" M$ échangés sur 24 h sur les 2 plateformes · une position par actif · sortie UNIQUEMENT quand la sortie réelle au carnet donne ≥ "+r.gainMin+" $ net, sinon on attend (jamais de sortie forcée, jamais de prix inventé) · écart > "+(r.ecartMaxPrix*100)+" % ignoré (contrats différents). Frais : "+Object.entries(d.frais).map(([k,v])=>k+" "+(v*100).toFixed(3)+"%").join(", ")+" (paliers standard, estimés).";
 }
-go();setInterval(go,60e3);
+go();setInterval(go,10e3);
 </script></body></html>
