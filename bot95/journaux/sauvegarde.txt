@@ -1,37 +1,29 @@
-PORTEFEUILLE 400 BTC 3459
-PORTEFEUILLE 400 corrige BTC 2767
-PORTEFEUILLE 600 BTC 2443
-TWAP fin + carnet BTC 1154
-TWAP fin + carnet ecart serre BTC 936
-TWAP fin anti-saut + carnet BTC 1143
-TWAP fin anti-saut + carnet ecart serre BTC 921
-TWAP fin billets 40-90 s BTC 231
-TWAP fin prevision Chainlink + carnet BTC 788
-TWAP fin prevision Chainlink + carnet ecart serre BTC 589
-TWAP fin quantiles + carnet BTC 1104
-TWAP fin quantiles + carnet ecart serre BTC 872
-TWAP fin quantiles + ecart serre BTC 1521
-TWAP fin quantiles + foule bybit x2 BTC 720
-TWAP fin quantiles BTC 2181
-TWAP fin sauts + carnet BTC 1134
-TWAP fin sauts + carnet ecart serre BTC 896
-TWAP fin sauts + foule bybit x2 BTC 721
-TWAP fin sauts BTC 2216
-V2-F incertitude 0,01 % + foule bybit x2 BTC 1590
-contrarien 5 min + 1 h + ecart carnet calme BTC 29
-corrige : V2-F + pas les deux baissent + carnet BTC 2559
-corrige : V2-F + pas les deux baissent + carnet ecart serre BTC 2031
-corrige : V2-F ecart qui grandit + carnet BTC 2544
-corrige : V2-F ecart qui grandit + carnet ecart serre BTC 1992
-corrige : desaccord 20 + carnet BTC 2596
-corrige : desaccord 20 + carnet ecart serre BTC 2030
-corrige : desaccord 20 + foule bybit x2 BTC 1781
-corrige marge mesuree : V2-F + foule bybit x2 BTC 1995
-reglements 16478
-twap_confirme 2300
-twap_carnets 12724
-v2f_variantes 29060
-vitesse 16371 {'med': -0.28099989891052246, 'p90': -0.27500009536743164} {'med': None, 'p90': None}
-rapide HTTP Error 500: Internal Server Error
-maker 239154
-chainlink True None
+PORTEFEUILLE 400 BTC 3494
+PORTEFEUILLE 400 corrige BTC 2798
+Traceback (most recent call last):
+  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/bot5min/sauvegarde.py", line 33, in <module>
+    main()
+    ~~~~^^
+  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/bot5min/sauvegarde.py", line 31, in main
+    h = get(U + "/api/hist?s=" + urllib.parse.quote(nom))
+  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/bot5min/sauvegarde.py", line 11, in get
+    raise err
+  File "/home/runner/work/wallet-autopsy/wallet-autopsy/etude/bot5min/sauvegarde.py", line 9, in get
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "sauvegarde"}), timeout=90) as r: return json.loads(r.read())
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/urllib/request.py", line 493, in open
+    response = meth(req, response)
+  File "/usr/lib/python3.14/urllib/request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "/usr/lib/python3.14/urllib/request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/usr/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.14/urllib/request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 500: Internal Server Error
