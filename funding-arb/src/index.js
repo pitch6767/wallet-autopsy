@@ -3,7 +3,7 @@
 // achète (en simulation) là où c'est le moins cher et vend là où c'est le plus cher, seulement si le gain attendu
 // après tous les frais atteint l'objectif, avec des prix pris dans les vrais carnets d'ordres pour la mise complète.
 import { DurableObject } from "cloudflare:workers";
-const VERSION = "2.1.2"
+const VERSION = "2.2.0"
 const REGLES_ID = "2.1";;
 
 // Règles (Pitch décide — modifiables ici)
@@ -120,6 +120,7 @@ Relais.prototype.carnetBybit = async function (sym) {
   const f = (l) => (l || []).map((v) => [num(v[0]), num(v[1])]);
   return { bids: f(r.result?.b), asks: f(r.result?.a) };
 };
+Relais.prototype.carnetOkx = async function (sym) { return carnetOkxDirect(sym); };
 async function lireEurope(env, nom) {
   let dernier = null;
   for (const hint of ["weur", "eeur"]) {
@@ -138,7 +139,13 @@ async function toutLire(env) {
     try {
       let lieu = null, l;
       if (VIA_EUROPE.includes(nom) && env.RELAIS) { const r = await lireEurope(env, nom); l = r.lignes; lieu = r.lieu; }
-      else l = await f(env);
+      else {
+        try { l = await f(env); }
+        catch (e) { // OKX limite les demandes par adresse (429) : on réessaie depuis le module Europe, autre adresse
+          if (nom === "okx" && env.RELAIS && /429/.test(String(e.message))) { const r = await lireEurope(env, nom); l = r.lignes; lieu = "relais " + r.lieu; }
+          else throw e;
+        }
+      }
       l = l.filter((x) => x.mark > 0 || (x.bid > 0 && x.ask > 0));
       lignes.push(...l); statut[nom] = { ok: true, n: l.length, ms: Date.now() - t0, ...(lieu ? { lieu } : {}) };
     } catch (e) { statut[nom] = { ok: false, err: String(e.message || e).slice(0, 200) }; }
@@ -148,13 +155,17 @@ async function toutLire(env) {
 
 // ---------- Carnets d'ordres : {bids:[[px, qté base]], asks:[[px, qté base]]}
 let ctValOkx = null;
+async function carnetOkxDirect(sym) {
+  if (!ctValOkx) { const r = await j("https://www.okx.com/api/v5/public/instruments?instType=SWAP"); ctValOkx = Object.fromEntries((r.data || []).map((i) => [i.instId, num(i.ctVal)])); }
+  const r = await j(`https://www.okx.com/api/v5/market/books?instId=${sym}&sz=100`); const b = r.data?.[0]; const cv = ctValOkx[sym] || 1;
+  const f = (l) => (l || []).map((v) => [num(v[0]), num(v[1]) * cv]);
+  return { bids: f(b?.bids), asks: f(b?.asks) };
+}
 async function carnet(env, x) {
   if (x.ex === "bybit") return env.RELAIS.get(env.RELAIS.idFromName("relais-weur"), { locationHint: "weur" }).carnetBybit(x.sym);
   if (x.ex === "okx") {
-    if (!ctValOkx) { const r = await j("https://www.okx.com/api/v5/public/instruments?instType=SWAP"); ctValOkx = Object.fromEntries((r.data || []).map((i) => [i.instId, num(i.ctVal)])); }
-    const r = await j(`https://www.okx.com/api/v5/market/books?instId=${x.sym}&sz=100`); const b = r.data?.[0]; const cv = ctValOkx[x.sym] || 1;
-    const f = (l) => (l || []).map((v) => [num(v[0]), num(v[1]) * cv]);
-    return { bids: f(b?.bids), asks: f(b?.asks) };
+    try { return await carnetOkxDirect(x.sym); }
+    catch (e) { if (env.RELAIS && /429/.test(String(e.message))) return env.RELAIS.get(env.RELAIS.idFromName("relais-weur"), { locationHint: "weur" }).carnetOkx(x.sym); throw e; }
   }
   if (x.ex === "hyperliquid") {
     const r = await j("https://api.hyperliquid.xyz/info", { method: "POST", body: JSON.stringify({ type: "l2Book", coin: x.sym }) });
@@ -274,8 +285,17 @@ async function tick(env) {
 
 // ---------- HTTP
 const JSONH = { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" };
+// Moteur : un Durable Object en Europe qui scanne toutes les 10 s (alarme) ; la tâche Cloudflare de chaque minute ne fait que le réveiller
+const PAS_MS = 10000;
+export class Moteur extends DurableObject {
+  async armer() { if (!(await this.ctx.storage.getAlarm())) await this.ctx.storage.setAlarm(Date.now() + 1000); return true; }
+  async alarm() {
+    try { await tick(this.env); } catch (e) { console.log("tick", e.message); }
+    await this.ctx.storage.setAlarm(Date.now() + PAS_MS);
+  }
+}
 export default {
-  async scheduled(ev, env, ctx) { ctx.waitUntil(tick(env)); },
+  async scheduled(ev, env, ctx) { ctx.waitUntil(env.MOTEUR.get(env.MOTEUR.idFromName("moteur"), { locationHint: "weur" }).armer()); },
   async fetch(req, env) {
     const u = new URL(req.url);
     if (u.pathname === "/api/version") return new Response(JSON.stringify({ version: VERSION }), { headers: JSONH });
