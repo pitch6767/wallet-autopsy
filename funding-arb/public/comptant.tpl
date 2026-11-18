@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="app" content="funding-arb-app">
-<title>Arbitrage au comptant — fantôme</title>
+<title>Arbitrage — fantôme</title>
 <link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#12161f">
 <style>
@@ -16,8 +16,7 @@ th:first-child,td:first-child{text-align:left}th{color:#94a3b8;font-weight:600}
 .v{color:#4ade80}.r{color:#f87171}.o{color:#fbbf24}.ok{color:#4ade80}.ko{color:#f87171}
 .st{background:#4b2b0b;color:#fbbf24;font-size:10px;border-radius:4px;padding:0 4px;margin-left:4px}
 </style></head><body>
-<header><div style="display:flex;align-items:center;gap:10px"><a href="/" style="color:#e5e7eb;font-size:22px;text-decoration:none" aria-label="Accueil">←</a>
-<h1>Arbitrage au comptant<span class="badge">FANTÔME</span></h1></div>
+<header><div style="display:flex;align-items:center;gap:10px"><h1>Arbitrage<span class="badge">FANTÔME</span></h1></div>
 <div class="mu">Aucun ordre réel. Version __VERSION__ · <span id="maj">…</span></div></header>
 <main>
 <div class="mu">Pièces et dollars supposés déjà déposés sur chaque plateforme : on achète là où c'est le moins cher et on vend là où c'est le plus cher dans la même seconde. Le gain est acquis tout de suite, il n'y a pas de position à fermer.</div>

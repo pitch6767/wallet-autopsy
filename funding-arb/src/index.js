@@ -4,7 +4,7 @@
 // après tous les frais atteint l'objectif, avec des prix pris dans les vrais carnets d'ordres pour la mise complète.
 import { DurableObject } from "cloudflare:workers";
 import { tickComptant, etatComptant } from "./comptant.js";
-const VERSION = "2.3.2"
+const VERSION = "2.4.0"
 const REGLES_ID = "2.1";;
 
 // Règles (Pitch décide — modifiables ici)
@@ -291,7 +291,7 @@ const PAS_MS = 10000;
 export class Moteur extends DurableObject {
   async armer() { if (!(await this.ctx.storage.getAlarm())) await this.ctx.storage.setAlarm(Date.now() + 1000); return true; }
   async alarm() {
-    try { await tick(this.env); } catch (e) { console.log("tick", e.message); }
+    // 18.11.2026 : Pitch « Que arbitrage » — les perpétuels ne tournent plus, seul l'arbitrage au comptant
     try { await tickComptant(this.env); } catch (e) {
       try { await this.env.DB.prepare("INSERT OR REPLACE INTO etat (id,t,json) VALUES (3,?,?)").bind(Date.now(), JSON.stringify({ err: String(e.stack || e).slice(0, 600) })).run(); } catch (e2) {}
     }
@@ -322,7 +322,7 @@ export default {
       return new Response(JSON.stringify({ version: VERSION, regles: REGLES, frais: FRAIS, t: e?.t, scan: e ? JSON.parse(e.json) : null, ouvertes: ouv, fermees: fer, total: tot, anciennes: anc, reglesId: REGLES_ID }), { headers: JSONH });
     }
     if (u.pathname === "/" || u.pathname === "/index.html") {
-      const r = await env.ASSETS.fetch(new Request(new URL("/page.tpl", u)));
+      const r = await env.ASSETS.fetch(new Request(new URL("/comptant.tpl", u)));
       return new Response((await r.text()).replaceAll("__VERSION__", VERSION), { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store, max-age=0" } });
     }
     return env.ASSETS.fetch(req);
