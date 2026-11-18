@@ -144,8 +144,9 @@ export async function tickComptant(env) {
   // A : suivi des écarts > 1 % (depuis quand ils durent)
   const suivis = new Map((await db.prepare("SELECT cle, depuis FROM ecarts_suspects").all()).results.map((r) => [r.cle, r.depuis]));
   const suspectsMaintenant = new Set();
-  for (const c of cands) if (c.ecart > REGLES_C.ecartSuspect) {
-    const k = c.k + "|" + c.a.ex + ">" + c.b.ex; suspectsMaintenant.add(k);
+  for (const [k0, l] of par) for (const a of l) for (const b of l) { // toutes les paires de plateformes, pas seulement la meilleure
+    if (a.ex === b.ex || !(b.bid / a.ask - 1 > REGLES_C.ecartSuspect)) continue;
+    const k = k0 + "|" + a.ex + ">" + b.ex; suspectsMaintenant.add(k);
     if (!suivis.has(k)) { suivis.set(k, now); st.push(db.prepare("INSERT OR REPLACE INTO ecarts_suspects (cle, depuis) VALUES (?,?)").bind(k, now)); }
   }
   for (const k of suivis.keys()) if (!suspectsMaintenant.has(k)) { suivis.delete(k); st.push(db.prepare("DELETE FROM ecarts_suspects WHERE cle=?").bind(k)); }
