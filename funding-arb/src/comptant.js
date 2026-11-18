@@ -142,14 +142,22 @@ export async function tickComptant(env) {
   const st = [], verifies = {};
 
   // A : suivi des écarts > 1 % (depuis quand ils durent)
-  const suivis = new Map((await db.prepare("SELECT cle, depuis FROM ecarts_suspects").all()).results.map((r) => [r.cle, r.depuis]));
+  const lignesS = (await db.prepare("SELECT cle, depuis, vu FROM ecarts_suspects").all()).results;
+  const suivis = new Map(lignesS.map((r) => [r.cle, r.depuis])), vus = new Map(lignesS.map((r) => [r.cle, r.vu || r.depuis]));
   const suspectsMaintenant = new Set();
   for (const [k0, l] of par) for (const a of l) for (const b of l) { // toutes les paires de plateformes, pas seulement la meilleure
     if (a.ex === b.ex || !(b.bid / a.ask - 1 > REGLES_C.ecartSuspect)) continue;
     const k = k0 + "|" + a.ex + ">" + b.ex; suspectsMaintenant.add(k);
-    if (!suivis.has(k)) { suivis.set(k, now); st.push(db.prepare("INSERT OR REPLACE INTO ecarts_suspects (cle, depuis) VALUES (?,?)").bind(k, now)); }
+    if (!suivis.has(k)) { suivis.set(k, now); st.push(db.prepare("INSERT OR REPLACE INTO ecarts_suspects (cle, depuis, vu) VALUES (?,?,?)").bind(k, now, now)); }
+    else st.push(db.prepare("UPDATE ecarts_suspects SET vu=? WHERE cle=?").bind(now, k));
   }
-  for (const k of suivis.keys()) if (!suspectsMaintenant.has(k)) { suivis.delete(k); st.push(db.prepare("DELETE FROM ecarts_suspects WHERE cle=?").bind(k)); }
+  // l'écart n'est considéré comme disparu que si les 2 plateformes ont bien été lues et qu'on ne l'a plus vu depuis 60 s
+  for (const k of [...suivis.keys()]) {
+    if (suspectsMaintenant.has(k)) continue;
+    const [, exs] = k.split("|"), [exA, exB] = exs.split(">");
+    if (!(statut[exA]?.ok && statut[exB]?.ok) || now - (vus.get(k) || 0) < 60000) continue;
+    suivis.delete(k); st.push(db.prepare("DELETE FROM ecarts_suspects WHERE cle=?").bind(k));
+  }
   const permanent = (c) => { const d = suivis.get(c.k + "|" + c.a.ex + ">" + c.b.ex); return d != null && now - d > REGLES_C.dureeSuspectS * 1000; };
   // trades en attente de validation : annulés si leur écart a duré plus de 5 min, validés sinon
   const attente = (await db.prepare("SELECT id, cle, achat_ex, vente_ex, t FROM comptant WHERE statut='attente'").all()).results;
