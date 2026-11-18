@@ -50,10 +50,10 @@ async function go(){
   .map(([a,b])=>'<div class="c"><span class="mu">'+a+"</span><b>"+b+"</b></div>").join("");
  const dur=ms=>{if(!ms)return"—";const m=Math.round(ms/60e3);return m<60?m+" min":m<1440?(m/60).toFixed(1)+" h":(m/1440).toFixed(1)+" j"};
  const c2=[];for(const v of d.regles.sorties){const f=(d.total2||[]).find(x=>x.variante==v)||{},o=(d.ouvertes2||[]).find(x=>x.variante==v)||{};
-  c2.push(["Variante "+v+" $ — fermés",(f.n||0)+" · "+'<span class="'+cl(f.net)+'">'+usd(f.net||0)+"</span>"],["Variante "+v+" $ — ouvertes",(o.n||0)+" · durée moy. "+dur(f.duree)]);}
+  c2.push(["Clôture ≥ "+v+" $ dans le sens contraire — fermés",(f.n||0)+" · "+'<span class="'+cl(f.net)+'">'+usd(f.net||0)+"</span> · durée moy. "+dur(f.duree)],["Clôture ≥ "+v+" $ dans le sens contraire — ouvertes",(o.n||0)]);}
  document.getElementById("cartes2").innerHTML=c2.map(([a,b])=>'<div class="c"><span class="mu">'+a+"</span><b>"+b+"</b></div>").join("");
- document.getElementById("pos2").innerHTML=table(["Var.","Actif","Achat","Vente","Ouvert","Statut","Entrée","Net"],
-  (d.positions||[]).map(p=>[p.variante+" $",p.cle,p.achat_ex+" "+px(p.px_achat),p.vente_ex+" "+px(p.px_vente),hh(p.ouvert),p.statut+(p.ferme?" ("+dur(p.ferme-p.ouvert)+")":""),usd(p.entree),p.net==null?"—":'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>"]));
+ document.getElementById("pos2").innerHTML=table(["Clôture","Actif","Achat","Vente","Ouvert","Statut","Entrée","Net"],
+  (d.positions||[]).map(p=>["≥ "+p.variante+" $ sens contraire",p.cle,p.achat_ex+" "+px(p.px_achat),p.vente_ex+" "+px(p.px_vente),hh(p.ouvert),p.statut+(p.ferme?" ("+dur(p.ferme-p.ouvert)+")":""),usd(p.entree),p.net==null?"—":'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>"]));
  const s=d.scan?.statut||{};
  document.getElementById("plat").innerHTML=Object.entries(s).map(([k,v])=>'<div><span class="'+(v.ok?"ok":"ko")+'">'+(v.ok?"●":"✕")+"</span> "+k+" — "+(v.ok?v.n+" marchés":v.err)+"</div>").join("")||"—";
  document.getElementById("tr").innerHTML=table(["Heure","Actif","Achat","Vente","Quantité","Frais","Net","Statut"],
