@@ -18,3 +18,4 @@ for p in d['trades'][:10]:print(' C',p['base'],p['quote'],p['achat_ex'],p['px_ac
 for p in d.get('positions',[])[:12]:print(' P2',p['variante'],p['cle'],p['achat_ex'],p['vente_ex'],p['statut'],round(p['entree'],2),p['net'])
 for p in (sc.get('top') or [])[:12]:print(' T',p['cle'],p['achat'],p['ask'],p['vente'],p['bid'],round(p['ecart']*100,3),'%',round(p['gain'],2),'verif',p['verif'])"
 echo "--- page comptant"; curl -sS -m 20 -D - "$U/comptant" | grep -iE "^cache-control|<h1|Version|href=\"/\"" | head -5
+echo "--- regles comptant"; curl -sS -m 20 "$U/api/comptant" | python3 -c "import json,sys;print(json.load(sys.stdin)['regles'])"
