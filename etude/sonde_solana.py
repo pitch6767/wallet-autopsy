@@ -1,4 +1,4 @@
-# Garde vitesse (lecture seule) — 11:36 UTC
+# Garde vitesse (lecture seule) — 11:38 UTC
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
