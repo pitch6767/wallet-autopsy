@@ -1,78 +1,90 @@
-├────────────────────────┤
-│ 0006_remise_a_zero.sql │
-└────────────────────────┘
-? About to apply 1 migration(s)
-Your database may not be available to serve requests during the migration, continue?
-🤖 Using fallback value in non-interactive context: yes
-🌀 Executing on remote database funding-arb (e2ad9364-db37-4e09-a60d-ae95879b46e0):
-🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
-🚣 Executed 4 commands in 0.40ms
-┌────────────────────────┬────────┐
-│ name                   │ status │
-├────────────────────────┼────────┤
-│ 0006_remise_a_zero.sql │ ✅     │
-└────────────────────────┴────────┘
+env.ASSETS                    Assets              
+
+Uploaded funding-arb (4.60 sec)
+Deployed funding-arb triggers (0.80 sec)
+  https://funding-arb.pitch67.workers.dev
+  schedule: * * * * *
+Current Version ID: ccf6dd61-b5b8-4521-aa90-9dcf64f2a0ca
+code sortie: 0
+
+ ⛅️ wrangler 4.164.0
+────────────────────
+Resource location: remote 
+
+✅ No migrations to apply!
 migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.3.2","statut":{"okx":{"ok":true,"n":532,"ms":117},"deribit":{"ok":true,"n":151,"ms":245},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":547},"bybit":{"ok":true,"n":832,"ms":1711,"lieu":"AMS/US"}},"top":[{"base":"BREV","achat":"okx","vente":"bybit","ecart":0.024042926426581346,"gain":216.38236218525788},{"base":"ZKP","achat":"okx","vente":"bybit","ecart":0.019356597600872494,"gain":163.1287168317121},{"base":"INIT","achat":"okx","vente":"bybit","ecart":0.014456836018174268,"gain":121.51024175249546},{"base":"AXIS","achat":"okx","vente":"bybit","ecart":0.006002667852378796,"gain":31.837181561735367},{"base":"IRYS","achat":"okx","vente":"bybit","ecart":0.004727272727272691,"gain":14.179991585753822}]}
+{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.4.0","statut":{"okx":{"ok":true,"n":532,"ms":170},"deribit":{"ok":true,"n":151,"ms":190},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":1090},"bybit":{"ok":true,"n":832,"ms":1659,"lieu":"AMS/CA"}},"top":[{"base":"INIT","achat":"okx","vente":"bybit","ecart":0.023984286157345158,"gain":217.8211620570906},{"base":"BREV","achat":"okx","vente":"bybit","ecart":0.02042822809700695,"gain":180.58417704237465},{"base":"ZKP","achat":"okx","vente":"bybit","ecart":0.011725293132328396,"gain":86.54785249378205},{"base":"IRYS","achat":"okx","vente":"bybit","ecart":0.008748551564310425,"gain":54.94821558295642},{"base":"CRCL","achat":"hyperliquid","vente":"okx","ecart":0.0018835770024219212,"gain":-1.328494652142016}]}
 === controles
 --- version
-{"version":"2.3.2"}
+{"version":"2.4.0"}
 --- bilan
 total {'n': 0, 'net': None, 'g': None, 'fund': None, 'frais': None, 'debut': None}
 anciennes {'n': 0, 'net': None}
 ouvertes 1
- O BREV regles 2.1 qte_l 103145.95152140279 qte_s 103145.95152140279 carnet lu il y a 0 min achat okx 0.09704038974195 vente bybit 0.09879466296535003 attendu 59.44 provisoire -144.58
- T BREV okx 0.09695 bybit 0.09923 2.352 % 211.63 verif 59.44
- T ZKP okx 0.03654 bybit 0.03727 1.998 % 165.23 verif -154.2
- T INIT okx 0.09684 bybit 0.09824 1.446 % 122.54 verif -111.17
- T IRYS okx 0.01648 bybit 0.016563 0.504 % 26.03 verif None
- T AXIS okx 0.08999 bybit 0.0904 0.456 % 10.18 verif None
- T SPY deribit 736.61 okx 737.91 0.176 % -2.49 verif None
- T AAPL hyperliquid 350.23 okx 350.88 0.186 % -3.3 verif None
- T SKHY hyperliquid 127.4504 bybit 127.68 0.18 % -3.57 verif None
+ O BREV regles 2.1 qte_l 103145.95152140279 qte_s 103145.95152140279 carnet lu il y a 0 min achat okx 0.09704038974195 vente bybit 0.09879466296535003 attendu 59.44 provisoire -78.18
+ T INIT okx 0.09667 bybit 0.09899 2.4 % 217.97 verif carnet trop mince pour 10000 $
+ T BREV okx 0.09196 bybit 0.09373 1.925 % 169.33 verif None
+ T ZKP okx 0.0358 bybit 0.03624 1.229 % 97.75 verif -229.77
+ T IRYS okx 0.01734 bybit 0.017502 0.934 % 66.97 verif -263.29
+ T AXIS okx 0.08917 bybit 0.0895 0.37 % 6.5 verif None
+ T MSTR hyperliquid 98.088 okx 98.29 0.206 % 0.12 verif None
+ T CRCL hyperliquid 55.735 okx 55.84 0.188 % -1.33 verif None
+ T MU deribit 734.95 okx 736.23 0.174 % -2.72 verif None
 --- page
 cache-control: no-store, max-age=0
- Arbitrage de prix — fantôme 
-  Arbitrage de prix FANTÔME  
-  Arbitrage au comptant →   Perpétuels · Aucun ordre réel. Version 2.3.2 ·  …   
+ Arbitrage — fantôme 
+   Arbitrage FANTÔME   
+ Aucun ordre réel. Version 2.4.0 ·  …   
  Plateformes   
- Positions ouvertes (fantôme, résultat provisoire si on sortait maintenant)   
- Trades fermés (fantôme, résultat après tous les frais)   
- Plus gros écarts de prix maintenant 
- Règles du fantôme   
-try{if(sessionStorage.getItem("v")!==V){fetch("/api/version",{cache:"no-store"}).then(r=>r.json()).then(d=>{if(d.version!==V&&!sessionStorage.getItem("r"+d.version)){sessionStorage.setItem("r"+d.version,1);location.reload()}else sessionStorage.setItem("v",V)})}}catch(e){}
+ Trades (fantôme, gain net après frais)   
+ À rééquilibrer en réel (pièces et dollars déplacés)  En réel, chaque trade vide un peu une plateforme et en remplit une autre : il faudra virer de temps en temps, avec des frais de retrait non comptés ici.   
+ Plus gros écarts maintenant  « Gain attendu » au meilleur prix affiché, après frais. « Vérifié carnet » = gain réel pour 10 000 $ avec les vrais carnets d'ordres. Coinbase : dernier prix seulement (~), le carnet tranche.   
+ Règles   
 --- etat brut (début)
-{"version":"2.3.2","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794995278134,"scan":{"statut":{"deribit":{"ok":true,"n":151,"ms":80},"okx":{"ok":true,"n":532,"ms":247},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":917},"bybit":{"ok":true,"n":832,"ms":987,"lieu":"AMS/US"}},"top":[{"base":"BREV","stock":false,"achat":"okx","ask":0.09695,"vente":"bybit","bid":0.09923,"ecart":0.023517276946879884,"gain":211.6297923975227,"verif":59.44},{"base":"ZKP","stock":false,"achat":"okx","ask":0.03654,"vente":"bybit","bid":0.03727,"ecart":0.01997810618500262,"gain":165.2312489764112,"verif":-154.2},{"base":"INIT","stock":false,"achat":"okx","ask":0.09684,"vente":"bybit","bid":0.09824,"ecart":0.014456836018174268,"gain":122.54308619785922,"verif":-111.17},{"base":"IRYS","stock":false,"achat":"okx","ask":0.01648,"vente":"bybit","bid":0.016563,"ecart":0.005036407766990214,"gain":26.027307737770162,"verif":null},{"base":"AXIS","stock":false,"achat":"okx","ask":0.08999,"vente":"bybit","bid":0.0904,"ecart":0.00455606178464274,"gain":10.176078615976952,"verif":null},{"base":"SPY","stock":false,"achat":"deribit","ask":736.61,"vente":"okx","bid":737.91,"ecart":0.0017648416394020483,"gain":-2.48722107
+{"version":"2.4.0","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794998460580,"scan":{"statut":{"deribit":{"ok":true,"n":151,"ms":82},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"okx":{"ok":true,"n":532,"ms":253},"bybit":{"ok":true,"n":832,"ms":1412,"lieu":"AMS/US"},"hyperliquid":{"ok":true,"n":329,"ms":1611}},"top":[{"base":"INIT","stock":false,"achat":"okx","ask":0.09667,"vente":"bybit","bid":0.09899,"ecart":0.02399917244232941,"gain":217.96939811193403,"verif":"carnet trop mince pour 10000 $"},{"base":"BREV","stock":false,"achat":"okx","ask":0.09196,"vente":"bybit","bid":0.09373,"ecart":0.019247498912570604,"gain":169.3311595651038,"verif":null},{"base":"ZKP","stock":false,"achat":"okx","ask":0.0358,"vente":"bybit","bid":0.03624,"ecart":0.012290502793296243,"gain":97.74956410879192,"verif":-229.77},{"base":"IRYS","stock":false,"achat":"okx","ask":0.01734,"vente":"bybit","bid":0.017502,"ecart":0.00934256055363325,"gain":66.97079366790598,"verif":-263.29},{"base":"AXIS","stock":false,"achat":"okx","ask":0.08917,"vente":"bybit","bid":0.0895,"ecart":0.0037007962319164367,"gain":6.497861250693472,"verif":null},{"base":"MSTR","stock":true,"achat":"hyperliquid","ask":98.088,"vente":"okx","bid":98.29,"ecart":0.0020593
 --- comptant
-total {'n': 1, 'net': 795.2194844358528, 'frais': 31.68427215312937, 'debut': 1794995280022}
+total {'n': 46, 'net': 30896.720000135887, 'frais': 1446.3544618838605, 'debut': 1794995280022}
 erreur None
 age scan s 10
- P mexc {'ok': True, 'n': 1604, 'ms': 41}
- P kraken {'ok': True, 'n': 94, 'ms': 48}
  P bitget {'ok': False, 'err': 'HTTP 403 {"cloudflare":"block"}'}
- P coinbase {'ok': True, 'n': 426, 'ms': 191}
- P bybit {'ok': True, 'n': 458, 'ms': 196}
- P okx {'ok': True, 'n': 796, 'ms': 218}
+ P mexc {'ok': True, 'n': 1604, 'ms': 39}
+ P kraken {'ok': True, 'n': 94, 'ms': 45}
+ P coinbase {'ok': True, 'n': 426, 'ms': 173}
+ P bybit {'ok': True, 'n': 458, 'ms': 194}
  P kucoin {'ok': False, 'err': 'HTTP 429 {"code":"429000","msg":"Too many requests. User-level rate limit exceeded, please retry later."}'}
- P gate {'ok': True, 'n': 2073, 'ms': 1590}
- C LIT USDT bybit 2.8433844936593995 gate 3.0782665057184997 net 795.22
- T LIT/USDT bybit 2.844 gate 3.104 9.142 % 884.21 verif déjà pris il y a moins d'une minute
- T ICNT/USDT bybit 0.3003 gate 0.30134 0.346 % 4.63 verif None
- T FIL/USDT okx 0.5996 mexc 0.6007 0.183 % 3.35 verif None
- T SOL/USDT mexc 74.98 bybit 75.04 0.08 % -7.0 verif None
- T XRP/USDT mexc 0.998 bybit 0.9983 0.03 % -11.99 verif None
- T BNB/USDT mexc 591.81 bybit 591.94 0.022 % -12.8 verif None
- T ASTER/USDT okx 0.5536 mexc 0.5537 0.018 % -13.19 verif None
- T BTC/USDT mexc 64617.27 bybit 64628.1 0.017 % -13.32 verif None
- T ETH/USDT mexc 1812.42 bybit 1812.69 0.015 % -13.51 verif None
- T USDC/USDT mexc 1.00101 okx 1.00103 0.002 % -14.8 verif None
- T DATA/USDT bybit 0.093 okx 0.09304 0.043 % -15.7 verif None
- T VVV/USDT bybit 21.451 okx 21.46 0.042 % -15.8 verif None
+ P okx {'ok': True, 'n': 797, 'ms': 215}
+ P gate {'ok': True, 'n': 2073, 'ms': 2608}
+ C LIT USDT bybit 2.852742914488021 gate 2.9616733636083996 net 351.49
+ C LIT USDT bybit 2.848302326288239 gate 2.954822198110399 net 343.55
+ C LIT USDT bybit 2.8476672935875 gate 2.9727282621781987 net 408.9
+ C LIT USDT bybit 2.85109158532976 gate 2.962112220815099 net 358.99
+ C LIT USDT bybit 2.853936393417231 gate 2.996192774350299 net 467.99
+ C LIT USDT bybit 2.858028405444479 gate 3.010260567021 net 502.33
+ C LIT USDT bybit 2.852960313088801 gate 2.99579010224 net 470.19
+ C LIT USDT bybit 2.8639861117359597 gate 3.0733580630370003 net 700.64
+ C LIT USDT bybit 2.86246682635036 gate 3.0731131884683993 net 705.32
+ C LIT USDT bybit 2.8600691040459596 gate 3.0730702534712004 net 714.37
+ C LIT USDT bybit 2.8566033147829697 gate 3.0730896700799004 net 727.22
+ C LIT USDT bybit 2.8670780728536394 gate 3.0732476645097995 net 688.35
+ C LIT USDT bybit 2.862600898031901 gate 3.0737555727758 net 706.87
+ C LIT USDT bybit 2.8656903636843802 gate 3.0740407315961993 net 696.91
+ C LIT USDT bybit 2.86848095291004 gate 3.0734578562186 net 683.6
+ T LIT/USDT bybit 2.8504 gate 3.029 6.266 % 596.58 verif déjà pris il y a moins d'une minute
+ T ICNT/USDT bybit 0.3195 gate 0.32115 0.516 % 21.64 verif None
+ T FIL/USDT okx 0.5952 mexc 0.5965 0.218 % 6.84 verif None
+ T MMT/USDT okx 0.2521 gate 0.2527 0.238 % -6.2 verif None
+ T TRX/USDT mexc 0.3089 okx 0.30906 0.052 % -9.82 verif None
+ T XRP/USDT mexc 0.9978 bybit 0.998 0.02 % -13.0 verif None
+ T ASTER/USDT mexc 0.5463 bybit 0.5464 0.018 % -13.17 verif None
+ T BNB/USDT bybit 589.44 mexc 589.52 0.014 % -13.64 verif None
+ T BTC/USDT mexc 64295.17 bybit 64297.8 0.004 % -14.59 verif None
+ T ETH/USDT bybit 1803.66 mexc 1803.67 0.001 % -14.94 verif None
+ T VVV/USDT bybit 21.403 okx 21.41 0.033 % -16.73 verif None
+ T ARB/USDT okx 0.12958 bybit 0.12961 0.023 % -17.68 verif None
 --- page comptant
 cache-control: no-store, max-age=0
-<header><div style="display:flex;align-items:center;gap:10px"><a href="/" style="color:#e5e7eb;font-size:22px;text-decoration:none" aria-label="Accueil">←</a>
-<h1>Arbitrage au comptant<span class="badge">FANTÔME</span></h1></div>
-<div class="mu">Aucun ordre réel. Version 2.3.2 · <span id="maj">…</span></div></header>
+<header><div style="display:flex;align-items:center;gap:10px"><h1>Arbitrage<span class="badge">FANTÔME</span></h1></div>
+<div class="mu">Aucun ordre réel. Version 2.4.0 · <span id="maj">…</span></div></header>
