@@ -3,8 +3,8 @@
 // achète (en simulation) là où c'est le moins cher et vend là où c'est le plus cher, seulement si le gain attendu
 // après tous les frais atteint l'objectif, avec des prix pris dans les vrais carnets d'ordres pour la mise complète.
 import { DurableObject } from "cloudflare:workers";
-import { tickComptant, etatComptant } from "./comptant.js";
-const VERSION = "2.4.0"
+import { tickComptant, etatComptant, lireComptant, carnetC } from "./comptant.js";
+const VERSION = "2.5.0"
 const REGLES_ID = "2.1";;
 
 // Règles (Pitch décide — modifiables ici)
@@ -122,6 +122,8 @@ Relais.prototype.carnetBybit = async function (sym) {
   return { bids: f(r.result?.b), asks: f(r.result?.a) };
 };
 Relais.prototype.carnetOkx = async function (sym) { return carnetOkxDirect(sym); };
+Relais.prototype.lireComptant = async function (ex) { return lireComptant(ex); };
+Relais.prototype.carnetComptant = async function (x) { return carnetC(x); };
 async function lireEurope(env, nom) {
   let dernier = null;
   for (const hint of ["weur", "eeur"]) {

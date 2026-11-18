@@ -9,9 +9,13 @@ export const REGLES_C = {
   gainMin: 50,          // $ net après frais des 2 achats/ventes
   ecartMaxPrix: 0.10,   // au-delà de 10 % ce n'est probablement pas le même jeton → ignoré
   volumeMin: 1e6,       // $ échangés sur 24 h sur chacune des 2 plateformes
-  pauseMemeActifS: 60,  // un même actif ne compte qu'une fois par minute (le carnet doit se reconstituer)
+  pauseMemeActifS: 60,  // stratégie 1 : un même actif ne compte qu'une fois par minute (le carnet doit se reconstituer)
+  ecartSuspect: 0.01,   // A : un écart > 1 %…
+  dureeSuspectS: 300,   // …qui dure plus de 5 min = jeton différent ou retraits bloqués → trades annulés, actif ignoré
+  sorties: [5, 10],     // stratégie 2 : clôture quand l'écart inverse rapporte au moins 5 $ (variante 5) ou 10 $ (variante 10)
 };
 // Frais « preneur » au comptant, palier de base (estimés, prudents)
+export const LECT_EXPORT = () => LECT;
 export const FRAIS_C = { bybit: 0.001, okx: 0.001, kucoin: 0.001, gate: 0.002, mexc: 0.0005, bitget: 0.001, kraken: 0.008, coinbase: 0.012 };
 
 const num = (x) => { const v = parseFloat(x); return Number.isFinite(v) ? v : null; };
@@ -94,13 +98,28 @@ function prixMoyenQ(niveaux, qte) {
   return null;
 }
 
+export async function lireComptant(ex) { return (await LECT[ex]()).filter(Boolean); }
+export { carnetC };
+// B : OKX / KuCoin refusent parfois (429, trop de demandes) → nouvel essai par le module Europe (autre adresse)
+const relais = (env, hint) => env.RELAIS.get(env.RELAIS.idFromName("relais-" + hint), { locationHint: hint });
+async function avecRelais(env, f, viaRelais) {
+  try { return await f(); }
+  catch (e) {
+    if (!env.RELAIS || !/429/.test(String(e.message))) throw e;
+    let der = e;
+    for (const h of ["eeur", "weur"]) { try { return await viaRelais(relais(env, h)); } catch (e2) { der = e2; } }
+    throw der;
+  }
+}
+const carnetR = (env, x) => avecRelais(env, () => carnetC(x), (st) => st.carnetComptant(x));
+
 // ---------- Scan
 export async function tickComptant(env) {
   const now = Date.now(), N = REGLES_C.mise, db = env.DB;
   const statut = {}, lignes = [];
   await Promise.all(Object.entries(LECT).map(async ([ex, f]) => {
     const t0 = Date.now();
-    try { const l = (await f()).filter((x) => x && x.bid > 0 && x.ask > 0 && x.ask >= x.bid).map((x) => ({ ...x, ex }));
+    try { const l = (await avecRelais(env, f, (st) => st.lireComptant(ex))).filter((x) => x && x.bid > 0 && x.ask > 0 && x.ask >= x.bid).map((x) => ({ ...x, ex }));
       lignes.push(...l); statut[ex] = { ok: true, n: l.length, ms: Date.now() - t0 }; }
     catch (e) { statut[ex] = { ok: false, err: String(e.message || e).slice(0, 160) }; }
   }));
@@ -120,33 +139,96 @@ export async function tickComptant(env) {
     if (best) cands.push(best);
   }
   cands.sort((x, y) => y.gain - x.gain);
+  const st = [], verifies = {};
+
+  // A : suivi des écarts > 1 % (depuis quand ils durent)
+  const suivis = new Map((await db.prepare("SELECT cle, depuis FROM ecarts_suspects").all()).results.map((r) => [r.cle, r.depuis]));
+  const suspectsMaintenant = new Set();
+  for (const c of cands) if (c.ecart > REGLES_C.ecartSuspect) {
+    const k = c.k + "|" + c.a.ex + ">" + c.b.ex; suspectsMaintenant.add(k);
+    if (!suivis.has(k)) { suivis.set(k, now); st.push(db.prepare("INSERT OR REPLACE INTO ecarts_suspects (cle, depuis) VALUES (?,?)").bind(k, now)); }
+  }
+  for (const k of suivis.keys()) if (!suspectsMaintenant.has(k)) { suivis.delete(k); st.push(db.prepare("DELETE FROM ecarts_suspects WHERE cle=?").bind(k)); }
+  const permanent = (c) => { const d = suivis.get(c.k + "|" + c.a.ex + ">" + c.b.ex); return d != null && now - d > REGLES_C.dureeSuspectS * 1000; };
+  // trades en attente de validation : annulés si leur écart a duré plus de 5 min, validés sinon
+  const attente = (await db.prepare("SELECT id, cle, achat_ex, vente_ex, t FROM comptant WHERE statut='attente'").all()).results;
+  for (const r of attente) {
+    const k = r.cle + "|" + r.achat_ex + ">" + r.vente_ex, d = suivis.get(k);
+    if (d != null && now - d > REGLES_C.dureeSuspectS * 1000) st.push(db.prepare("UPDATE comptant SET statut='annulé' WHERE id=?").bind(r.id));
+    else if (d == null || now - r.t > REGLES_C.dureeSuspectS * 1000) st.push(db.prepare("UPDATE comptant SET statut='validé' WHERE id=?").bind(r.id));
+  }
+
+  // ---------- Stratégie 1 : achat sur A et vente sur B dans la même seconde, gain acquis
   const recents = new Set((await db.prepare("SELECT cle FROM comptant WHERE t > ?").bind(now - REGLES_C.pauseMemeActifS * 1000).all()).results.map((r) => r.cle));
-  const verifies = {}, st = [];
-  for (const c of cands.filter((c) => c.gain >= REGLES_C.gainMin).slice(0, 8)) {
+  for (const c of cands.filter((c) => c.gain >= REGLES_C.gainMin && !permanent(c)).slice(0, 8)) {
     if (recents.has(c.k)) { verifies[c.k] = "déjà pris il y a moins d'une minute"; continue; }
     try {
-      const [ca, cb] = await Promise.all([carnetC(c.a), carnetC(c.b)]);
+      const [ca, cb] = await Promise.all([carnetR(env, c.a), carnetR(env, c.b)]);
       const Q = N / c.a.ask;
       const vA = prixMoyenQ(ca.asks, Q), vB = prixMoyenQ(cb.bids, Q);
       if (!vA || !vB) { verifies[c.k] = "carnet trop mince pour " + N + " $"; continue; }
-      const achat = Q * vA * (1 + FRAIS_C[c.a.ex]), vente = Q * vB * (1 - FRAIS_C[c.b.ex]);
-      const net = vente - achat;
+      const net = Q * vB * (1 - FRAIS_C[c.b.ex]) - Q * vA * (1 + FRAIS_C[c.a.ex]);
       verifies[c.k] = Math.round(net * 100) / 100;
       if (net < REGLES_C.gainMin) continue;
-      st.push(db.prepare("INSERT INTO comptant (t, cle, base, quote, achat_ex, vente_ex, qte, px_achat, px_vente, frais, net) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
-        .bind(now, c.k, c.a.base, c.a.quote, c.a.ex, c.b.ex, Q, vA, vB, Q * vA * FRAIS_C[c.a.ex] + Q * vB * FRAIS_C[c.b.ex], net));
+      st.push(db.prepare("INSERT INTO comptant (t, cle, base, quote, achat_ex, vente_ex, qte, px_achat, px_vente, frais, net, statut) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
+        .bind(now, c.k, c.a.base, c.a.quote, c.a.ex, c.b.ex, Q, vA, vB, Q * vA * FRAIS_C[c.a.ex] + Q * vB * FRAIS_C[c.b.ex], net, c.ecart > REGLES_C.ecartSuspect ? "attente" : "validé"));
     } catch (e) { verifies[c.k] = "carnet illisible : " + String(e.message || e).slice(0, 60); }
   }
-  const top = cands.slice(0, 40).map((c) => ({ cle: c.k, achat: c.a.ex, ask: c.a.ask, vente: c.b.ex, bid: c.b.bid, ecart: c.ecart, gain: c.gain, approx: !!(c.a.approx || c.b.approx), verif: verifies[c.k] ?? null }));
+
+  // ---------- Stratégie 2 : achat sur A + vente sur B, puis clôture quand l'écart s'inverse (vente sur A + achat sur B)
+  const idx = new Map(lignes.map((x) => [x.ex + "|" + x.base + "/" + x.quote, x]));
+  const ouvertes = (await db.prepare("SELECT * FROM comptant_pos WHERE statut='ouvert'").all()).results;
+  for (const p of ouvertes) {
+    const dS = suivis.get(p.cle + "|" + p.achat_ex + ">" + p.vente_ex);
+    if (dS != null && now - dS > REGLES_C.dureeSuspectS * 1000) { st.push(db.prepare("UPDATE comptant_pos SET statut='annulé', ferme=? WHERE id=?").bind(now, p.id)); continue; }
+    const a = idx.get(p.achat_ex + "|" + p.cle), b = idx.get(p.vente_ex + "|" + p.cle);
+    if (!a || !b) continue;
+    const fA = FRAIS_C[p.achat_ex], fB = FRAIS_C[p.vente_ex];
+    const sortieHaut = p.qte * a.bid * (1 - fA) - p.qte * b.ask * (1 + fB); // au meilleur prix affiché
+    if (sortieHaut < p.variante) continue;
+    try {
+      const [ca, cb] = await Promise.all([carnetR(env, a), carnetR(env, b)]);
+      const sA = prixMoyenQ(ca.bids, p.qte), sB = prixMoyenQ(cb.asks, p.qte);
+      if (!sA || !sB) continue;
+      const sortie = p.qte * sA * (1 - fA) - p.qte * sB * (1 + fB);
+      if (sortie < p.variante) continue;
+      const fraisS = p.qte * sA * fA + p.qte * sB * fB;
+      st.push(db.prepare("UPDATE comptant_pos SET statut='fermé', ferme=?, px_sortie_vente=?, px_sortie_achat=?, frais=frais+?, net=entree+? WHERE id=?").bind(now, sA, sB, fraisS, sortie, p.id));
+    } catch (e) {}
+  }
+  const dejaOuv = new Set(ouvertes.map((p) => p.variante + "|" + p.cle));
+  for (const c of cands.filter((c) => c.gain >= 0 && !permanent(c)).slice(0, 6)) {
+    const libres = REGLES_C.sorties.filter((v) => !dejaOuv.has(v + "|" + c.k));
+    if (!libres.length) continue;
+    try {
+      const [ca, cb] = await Promise.all([carnetR(env, c.a), carnetR(env, c.b)]);
+      const Q = N / c.a.ask;
+      const vA = prixMoyenQ(ca.asks, Q), vB = prixMoyenQ(cb.bids, Q);
+      if (!vA || !vB) continue;
+      const entree = Q * vB * (1 - FRAIS_C[c.b.ex]) - Q * vA * (1 + FRAIS_C[c.a.ex]);
+      if (entree < 0) continue;
+      for (const v of libres) {
+        st.push(db.prepare("INSERT INTO comptant_pos (variante, cle, base, quote, achat_ex, vente_ex, qte, px_achat, px_vente, ouvert, entree, frais, statut) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'ouvert')")
+          .bind(v, c.k, c.a.base, c.a.quote, c.a.ex, c.b.ex, Q, vA, vB, now, entree, Q * vA * FRAIS_C[c.a.ex] + Q * vB * FRAIS_C[c.b.ex]));
+        dejaOuv.add(v + "|" + c.k);
+      }
+    } catch (e) {}
+  }
+
+  const top = cands.slice(0, 40).map((c) => ({ cle: c.k, achat: c.a.ex, ask: c.a.ask, vente: c.b.ex, bid: c.b.bid, ecart: c.ecart, gain: c.gain, approx: !!(c.a.approx || c.b.approx),
+    permanent: permanent(c), verif: verifies[c.k] ?? null }));
   st.push(db.prepare("INSERT OR REPLACE INTO etat (id,t,json) VALUES (2,?,?)").bind(now, JSON.stringify({ statut, top, nActifs: par.size })));
   for (let i = 0; i < st.length; i += 90) await db.batch(st.slice(i, i + 90));
 }
 
 export async function etatComptant(env) {
   const e = await env.DB.prepare("SELECT * FROM etat WHERE id=2").first();
-  const trades = (await env.DB.prepare("SELECT * FROM comptant ORDER BY t DESC LIMIT 300").all()).results;
-  const tot = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net, SUM(frais) frais, MIN(t) debut FROM comptant").first();
-  // pièces et dollars déplacés par plateforme (à rééquilibrer en réel)
-  const mouv = (await env.DB.prepare("SELECT achat_ex ex, base, quote, SUM(qte) q, SUM(qte*px_achat) d FROM comptant GROUP BY achat_ex, base, quote UNION ALL SELECT vente_ex, base, quote, -SUM(qte), -SUM(qte*px_vente) FROM comptant GROUP BY vente_ex, base, quote").all()).results;
-  return { regles: REGLES_C, frais: FRAIS_C, t: e?.t, scan: e ? JSON.parse(e.json) : null, trades, total: tot, mouvements: mouv };
+  const trades = (await env.DB.prepare("SELECT * FROM comptant ORDER BY t DESC LIMIT 200").all()).results;
+  const tot = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net, SUM(frais) frais, MIN(t) debut FROM comptant WHERE statut='validé'").first();
+  const att = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net FROM comptant WHERE statut='attente'").first();
+  const ann = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net FROM comptant WHERE statut='annulé'").first();
+  const pos = (await env.DB.prepare("SELECT * FROM comptant_pos ORDER BY COALESCE(ferme, ouvert) DESC LIMIT 300").all()).results;
+  const tot2 = (await env.DB.prepare("SELECT variante, COUNT(*) n, SUM(net) net, SUM(frais) frais, AVG(ferme-ouvert) duree FROM comptant_pos WHERE statut='fermé' GROUP BY variante").all()).results;
+  const ouv2 = (await env.DB.prepare("SELECT variante, COUNT(*) n FROM comptant_pos WHERE statut='ouvert' GROUP BY variante").all()).results;
+  return { regles: REGLES_C, frais: FRAIS_C, t: e?.t, scan: e ? JSON.parse(e.json) : null, trades, total: tot, attente: att, annules: ann, positions: pos, total2: tot2, ouvertes2: ouv2 };
 }
