@@ -10,7 +10,7 @@ for p in (sc.get('top') or [])[:8]:print(' T',p['base'],p['achat'],p['ask'],p['v
 echo "--- page"; curl -sS -m 20 -D - "$U/" | grep -iE "^cache-control|<h1|<h2|Version|<title" | sed 's/<[^>]*>/ /g' | head -20
 echo "--- etat brut (début)"; curl -sS -m 30 "$U/api/etat" | head -c 1500; echo
 echo "--- comptant"; sleep 40; curl -sS -m 30 "$U/api/comptant" | python3 -c "
-import json,sys,time;d=json.load(sys.stdin);print('total',d['total']);sc=d.get('scan') or {}
+import json,sys,time;d=json.load(sys.stdin);print('total',d['total']);print('erreur',d.get('erreur'));sc=d.get('scan') or {}
 print('age scan s',round((time.time()*1000-(d.get('t') or 0))/1000))
 for k,v in (sc.get('statut') or {}).items():print(' P',k,v)
 for p in d['trades'][:15]:print(' C',p['base'],p['quote'],p['achat_ex'],p['px_achat'],p['vente_ex'],p['px_vente'],'net',round(p['net'],2))
