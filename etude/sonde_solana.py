@@ -1,4 +1,4 @@
-# Contrôle vitesse 06 h demandé par Pitch (lecture seule) — 05:00
+# Contrôle après correction fausse alerte (lecture seule) — 05:11
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
