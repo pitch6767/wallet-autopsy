@@ -1,4 +1,4 @@
-# Contrôle après correction fausse alerte (lecture seule) — 05:11
+# Contrôle exécuteur étape 2 (lecture seule) — 05:16
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
