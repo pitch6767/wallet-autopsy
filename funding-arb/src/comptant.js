@@ -156,7 +156,7 @@ export async function tickComptant(env) {
   for (const r of attente) {
     const k = r.cle + "|" + r.achat_ex + ">" + r.vente_ex, d = suivis.get(k);
     if (d != null && now - d > REGLES_C.dureeSuspectS * 1000) st.push(db.prepare("UPDATE comptant SET statut='annulé' WHERE id=?").bind(r.id));
-    else if (d == null || now - r.t > REGLES_C.dureeSuspectS * 1000) st.push(db.prepare("UPDATE comptant SET statut='validé' WHERE id=?").bind(r.id));
+    else if (d == null && now - r.t > REGLES_C.dureeSuspectS * 1000) st.push(db.prepare("UPDATE comptant SET statut='validé' WHERE id=?").bind(r.id));
   }
 
   // ---------- Stratégie 1 : achat sur A et vente sur B dans la même seconde, gain acquis
