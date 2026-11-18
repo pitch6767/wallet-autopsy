@@ -5,7 +5,7 @@
 // Tourne dans le Moteur (Durable Object en Europe), après le scan des perpétuels.
 
 export const REGLES_C = {
-  mise: 10000,          // $ par trade (même mise que les perpétuels)
+  mise: 5000,           // $ de chaque côté : 5 000 $ achetés sur A, 5 000 $ vendus sur B (choix de Pitch, 18.11.2026)
   gainMin: 50,          // $ net après frais des 2 achats/ventes
   ecartMaxPrix: 0.10,   // au-delà de 10 % ce n'est probablement pas le même jeton → ignoré
   volumeMin: 1e6,       // $ échangés sur 24 h sur chacune des 2 plateformes

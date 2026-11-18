@@ -19,7 +19,7 @@ th:first-child,td:first-child{text-align:left}th{color:#94a3b8;font-weight:600}
 <header><div style="display:flex;align-items:center;gap:10px"><h1>Arbitrage<span class="badge">FANTÔME</span></h1></div>
 <div class="mu">Aucun ordre réel. Version __VERSION__ · <span id="maj">…</span></div></header>
 <main>
-<div class="mu">Pièces et dollars supposés déjà déposés sur chaque plateforme (10 000 $ par trade).</div>
+<div class="mu">Pièces et dollars supposés déjà déposés sur chaque plateforme (5 000 $ de chaque côté : achat sur une plateforme, vente sur l'autre).</div>
 <h2>Stratégie 1 — achat et vente dans la même seconde</h2>
 <div class="mu">Achat là où c'est le moins cher, vente là où c'est le plus cher, au même moment : gain acquis tout de suite.</div>
 <div id="cartes" class="cartes" style="margin-top:8px"></div>
@@ -30,7 +30,7 @@ th:first-child,td:first-child{text-align:left}th{color:#94a3b8;font-weight:600}
 <h2>Plateformes</h2><div id="plat" class="mu"></div>
 <h2>Stratégie 1 — trades (fantôme, gain net après frais)</h2><div class="tab" id="tr"></div>
 <h2>À rééquilibrer en réel (pièces et dollars déplacés)</h2><div class="mu">En réel, chaque trade vide un peu une plateforme et en remplit une autre : il faudra virer de temps en temps, avec des frais de retrait non comptés ici.</div><div class="tab" id="mv"></div>
-<h2>Plus gros écarts maintenant</h2><div class="mu">« Gain attendu » au meilleur prix affiché, après frais. « Vérifié carnet » = gain réel pour 10 000 $ avec les vrais carnets d'ordres. Coinbase : dernier prix seulement (~), le carnet tranche.</div><div class="tab" id="top"></div>
+<h2>Plus gros écarts maintenant</h2><div class="mu">« Gain attendu » au meilleur prix affiché, après frais. « Vérifié carnet » = gain réel pour 5 000 $ de chaque côté avec les vrais carnets d'ordres. Coinbase : dernier prix seulement (~), le carnet tranche.</div><div class="tab" id="top"></div>
 <h2>Règles</h2><div id="regles" class="mu"></div>
 </main>
 <script>
@@ -63,7 +63,7 @@ async function go(){
  document.getElementById("top").innerHTML=table(["Actif","Achat (vendeur)","Vente (acheteur)","Écart","Gain attendu","Vérifié carnet"],
   (d.scan?.top||[]).map(p=>[p.cle,p.achat+" "+px(p.ask),p.vente+" "+px(p.bid),pc(p.ecart)+(p.approx?" ~":""),'<span class="'+cl(p.gain)+'">'+usd(p.gain)+"</span>",p.permanent?"écart permanent → ignoré":(p.verif==null?"—":(typeof p.verif==="number"?usd(p.verif):p.verif))]));
  const r=d.regles;
- document.getElementById("regles").innerHTML="Mise "+r.mise.toLocaleString("fr-CH")+" $ par trade · scan toutes les 10 s · trade si le gain net (prix moyens réels des carnets pour toute la quantité, frais d'achat et de vente) ≥ "+r.gainMin+" $ · même jeton et même monnaie (USDT ou USDC) · au moins "+(r.volumeMin/1e6)+" M$ échangés sur 24 h sur les 2 plateformes · écart > "+(r.ecartMaxPrix*100)+" % ignoré (jeton probablement différent) · un même actif au plus une fois par "+r.pauseMemeActifS+" s. Frais preneur (palier de base, estimés, prudents) : "+Object.entries(d.frais).map(([k,v])=>k+" "+(v*100).toFixed(2)+"%").join(", ")+".";
+ document.getElementById("regles").innerHTML="Mise "+r.mise.toLocaleString("fr-CH")+" $ de chaque côté · scan toutes les 10 s · trade si le gain net (prix moyens réels des carnets pour toute la quantité, frais d'achat et de vente) ≥ "+r.gainMin+" $ · même jeton et même monnaie (USDT ou USDC) · au moins "+(r.volumeMin/1e6)+" M$ échangés sur 24 h sur les 2 plateformes · écart > "+(r.ecartMaxPrix*100)+" % ignoré (jeton probablement différent) · un même actif au plus une fois par "+r.pauseMemeActifS+" s. Frais preneur (palier de base, estimés, prudents) : "+Object.entries(d.frais).map(([k,v])=>k+" "+(v*100).toFixed(2)+"%").join(", ")+".";
 }
 go();setInterval(go,10e3);
 </script></body></html>
