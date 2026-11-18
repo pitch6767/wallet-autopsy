@@ -1,10 +1,10 @@
 env.ASSETS                    Assets              
 
-Uploaded funding-arb (3.71 sec)
-Deployed funding-arb triggers (0.54 sec)
+Uploaded funding-arb (3.52 sec)
+Deployed funding-arb triggers (1.18 sec)
   https://funding-arb.pitch67.workers.dev
   schedule: * * * * *
-Current Version ID: ee9569d4-cc42-4df3-8f41-e181876e99a1
+Current Version ID: 4ded5f62-0129-429e-847b-89fc0121ce51
 code sortie: 0
 
  ⛅️ wrangler 4.164.0
@@ -16,7 +16,7 @@ migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.5.5","statut":{"okx":{"ok":true,"n":532,"ms":122},"deribit":{"ok":true,"n":151,"ms":251},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":329,"ms":660},"bybit":{"ok":true,"n":832,"ms":968,"lieu":"AMS/US"}},"top":[{"base":"BREV","achat":"okx","vente":"bybit","ecart":0.016127174288676382,"gain":137.9767357064253},{"base":"INIT","achat":"okx","vente":"bybit","ecart":0.015151515151515138,"gain":128.99488033370798},{"base":"ZKP","achat":"okx","vente":"bybit","ecart":0.009400705052879044,"gain":64.21864164986371},{"base":"IRYS","achat":"okx","vente":"bybit","ecart":0.0035651665692577605,"gain":9.108532736125209},{"base":"CXMT","achat":"hyperliquid","vente":"okx","ecart":0.0024310840131842593,"gain":-0.22839047989155503}]}
+{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.5.5","statut":{"deribit":{"ok":true,"n":151,"ms":300},"hyperliquid":{"ok":true,"n":329,"ms":702},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\"}"},"bybit":{"ok":true,"n":832,"ms":1206,"lieu":"AMS/US"},"okx":{"ok":true,"n":532,"ms":1360,"lieu":"relais WAW/US"}},"top":[{"base":"INIT","achat":"okx","vente":"bybit","ecart":0.014980504822491136,"gain":127.78655750726062},{"base":"BREV","achat":"okx","vente":"bybit","ecart":0.009329239489844099,"gain":70.53203754099263},{"base":"ZKP","achat":"okx","vente":"bybit","ecart":0.009661835748792313,"gain":68.11448717632408},{"base":"IRYS","achat":"okx","vente":"bybit","ecart":0.005808383233532943,"gain":30.815601257784767},{"base":"ANT","achat":"hyperliquid","vente":"bybit","ecart":0.0023938376132248695,"gain":-1.4089030111539458}]}
 === controles
 --- version
 {"version":"2.5.5"}
@@ -37,7 +37,7 @@ ouvertes 1
 cache-control: no-store, max-age=0
  Arbitrage — fantôme 
    Arbitrage FANTÔME   
- Aucun ordre réel. Version 2.5.4 ·  …   
+ Aucun ordre réel. Version 2.5.5 ·  …   
  Stratégie 1 — achat et vente dans la même seconde 
  Stratégie 2 — achat/vente puis clôture quand l'écart s'inverse 
  Plateformes   
@@ -50,17 +50,17 @@ cache-control: no-store, max-age=0
 --- comptant
 total {'n': 3, 'net': 341.4122090238625, 'frais': 45.48163811755114, 'debut': 1795001846544}
 erreur None
-age scan s 8
+age scan s 11
  P bitget {'ok': False, 'err': 'HTTP 403 {"cloudflare":"block"}'}
- P mexc {'ok': True, 'n': 1604, 'ms': 46}
- P kraken {'ok': True, 'n': 94, 'ms': 48}
- P coinbase {'ok': True, 'n': 426, 'ms': 180}
- P bybit {'ok': True, 'n': 458, 'ms': 206}
- P okx {'ok': True, 'n': 797, 'ms': 216}
- P gate {'ok': True, 'n': 2072, 'ms': 1134}
- P kucoin {'ok': True, 'n': 866, 'ms': 1545}
+ P mexc {'ok': True, 'n': 1604, 'ms': 40}
+ P kraken {'ok': True, 'n': 94, 'ms': 46}
+ P coinbase {'ok': True, 'n': 426, 'ms': 395}
+ P okx {'ok': True, 'n': 797, 'ms': 427}
+ P kucoin {'ok': True, 'n': 866, 'ms': 648}
+ P bybit {'ok': True, 'n': 458, 'ms': 785}
+ P gate {'ok': True, 'n': 2072, 'ms': 2480}
 attente {'n': 0, 'net': None} annules {'n': 5, 'net': 1634.18111121503}
-strat2 [{'variante': 5, 'n': 2, 'net': 231.13479290657233, 'frais': 124.49797095403261, 'duree': 6449720.5}, {'variante': 10, 'n': 3, 'net': 326.03829542825224, 'frais': 153.0909327552149, 'duree': 5077805.666666667}] [{'variante': 5, 'n': 3}, {'variante': 10, 'n': 2}]
+strat2 [{'variante': 5, 'n': 6, 'net': 472.7153011022492, 'frais': 245.75926743861666, 'duree': 4265593.166666667}, {'variante': 10, 'n': 5, 'net': 468.37337698649935, 'frais': 213.76043204101444, 'duree': 4210277.4}] [{'variante': 5, 'n': 4}, {'variante': 10, 'n': 4}]
  C MMT USDT gate 0.24851168795200002 kucoin 0.25174607661456 net 50.09 validé
  C PIEVERSE USDT gate 2.5742165585999994 bybit 2.7015725152000005 net 232.05 validé
  C IRYS USDT okx 0.018 gate 0.018267903224 net 59.27 validé
@@ -69,30 +69,30 @@ strat2 [{'variante': 5, 'n': 2, 'net': 231.13479290657233, 'frais': 124.49797095
  C LIT USDT bybit 2.8592933891327497 gate 2.9614052680780003 net 326.96 annulé
  C LIT USDT bybit 2.862382773523641 gate 2.9602839790432016 net 312.08 annulé
  C LIT USDT bybit 2.8582318599205103 gate 2.9592750045916003 net 323.37 annulé
- P2 10 EVAA/USDT kucoin gate fermé 20.09 85.86284359398087
- P2 5 MMT/USDT gate kucoin ouvert 9.13 None
- P2 10 MMT/USDT gate kucoin ouvert 9.13 None
- P2 5 PIEVERSE/USDT bybit gate ouvert 0.54 None
- P2 10 PIEVERSE/USDT bybit gate ouvert 0.54 None
- P2 5 PIEVERSE/USDT bybit gate fermé 32.23 66.83103704336281
- P2 10 PIEVERSE/USDT bybit gate fermé 32.23 76.98083647405838
- P2 5 MMT/USDT okx gate fermé 129.44 164.30375586320952
- P2 10 MMT/USDT okx gate fermé 129.44 163.194615360213
- P2 5 EVAA/USDT kucoin gate ouvert 20.09 None
- P2 5 IRYS/USDT okx gate annulé 5.92 None
- P2 10 IRYS/USDT okx gate annulé 5.92 None
- T LIT/USDT bybit 2.8177 gate 3.048 8.173 % 393.67 verif None
- T MMT/USDT bybit 0.2401 kucoin 0.2409 0.333 % 6.66 verif None
- T KII/USDT kucoin 0.08432 mexc 0.08438 0.071 % -3.94 verif None
- T ETH/USDT bybit 1796.04 mexc 1796.96 0.051 % -4.94 verif None
- T USDC/USDT kucoin 1.0008 mexc 1.00097 0.017 % -6.65 verif None
- T TRX/USDT mexc 0.3101 okx 0.31013 0.01 % -7.02 verif None
- T BTC/USDT mexc 64147.44 kucoin 64153.5 0.009 % -7.03 verif None
- T ENA/USDT kucoin 0.113 mexc 0.11301 0.009 % -7.06 verif None
- T EVAA/USDT gate 3.6249 kucoin 3.6302 0.146 % -7.69 verif None
- T ONDO/USDT kucoin 0.30709 okx 0.3072 0.036 % -8.21 verif None
- T VVV/USDT bybit 21.407 gate 21.435 0.131 % -8.46 verif None
- T HYPE/USDT bybit 68.539 okx 68.555 0.023 % -8.83 verif None
+ P2 5 EVAA/USDT kucoin gate fermé 68.15 79.75163991583486
+ P2 10 EVAA/USDT gate kucoin fermé 17.96 89.55323361658884
+ P2 5 EVAA/USDT kucoin gate fermé 20.09 73.09515510843448
+ P2 5 NIGHT/USDT okx gate ouvert 6.76 None
+ P2 10 NIGHT/USDT okx gate ouvert 6.76 None
+ P2 5 PEPE/USDT kucoin gate ouvert 4.61 None
+ P2 10 PEPE/USDT kucoin gate ouvert 4.61 None
+ P2 5 PIEVERSE/USDT kucoin gate ouvert 4.25 None
+ P2 5 PIEVERSE/USDT gate bybit fermé 12.58 20.0527089844245
+ P2 10 PIEVERSE/USDT gate bybit ouvert 12.58 None
+ P2 5 PIEVERSE/USDT bybit gate fermé 0.54 68.68100418698305
+ P2 10 PIEVERSE/USDT bybit gate fermé 0.54 52.78184794165827
+ T LIT/USDT bybit 2.7798 gate 3.048 9.648 % 467.41 verif None
+ T FIL/USDT gate 0.5834 mexc 0.5856 0.377 % 6.35 verif None
+ T ICNT/USDT bybit 0.3347 kucoin 0.33527 0.17 % -1.48 verif None
+ T ENA/USDT mexc 0.11035 bybit 0.11043 0.072 % -3.88 verif None
+ T IRYS/USDT kucoin 0.01681 okx 0.01683 0.119 % -4.05 verif None
+ T SOL/USDT mexc 73.78 kucoin 73.83 0.068 % -4.11 verif None
+ T NVDAX/USDT gate 153.24 bybit 153.56 0.209 % -4.56 verif None
+ T XRP/USDT mexc 0.9794 kucoin 0.97991 0.052 % -4.9 verif None
+ T ETH/USDT mexc 1768.91 kucoin 1769.58 0.038 % -5.61 verif None
+ T KII/USDT kucoin 0.08425 mexc 0.08428 0.036 % -5.72 verif None
+ T BNB/USDT mexc 585.43 bybit 585.57 0.024 % -6.3 verif None
+ T ASTER/USDT okx 0.5558 mexc 0.5559 0.018 % -6.6 verif None
 --- page comptant
 cache-control: no-store, max-age=0
 <header><div style="display:flex;align-items:center;gap:10px"><h1>Arbitrage<span class="badge">FANTÔME</span></h1></div>
