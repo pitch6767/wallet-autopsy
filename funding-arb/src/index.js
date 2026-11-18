@@ -3,7 +3,8 @@
 // achète (en simulation) là où c'est le moins cher et vend là où c'est le plus cher, seulement si le gain attendu
 // après tous les frais atteint l'objectif, avec des prix pris dans les vrais carnets d'ordres pour la mise complète.
 import { DurableObject } from "cloudflare:workers";
-const VERSION = "2.2.1"
+import { tickComptant, etatComptant } from "./comptant.js";
+const VERSION = "2.3.0"
 const REGLES_ID = "2.1";;
 
 // Règles (Pitch décide — modifiables ici)
@@ -291,6 +292,7 @@ export class Moteur extends DurableObject {
   async armer() { if (!(await this.ctx.storage.getAlarm())) await this.ctx.storage.setAlarm(Date.now() + 1000); return true; }
   async alarm() {
     try { await tick(this.env); } catch (e) { console.log("tick", e.message); }
+    try { await tickComptant(this.env); } catch (e) { console.log("comptant", e.message); }
     await this.ctx.storage.setAlarm(Date.now() + PAS_MS);
   }
 }
@@ -303,6 +305,11 @@ export default {
       const { statut, lignes } = await toutLire(env);
       const p = ecarts(lignes).slice(0, 5).map((x) => ({ base: x.base, achat: x.a.ex, vente: x.b.ex, ecart: x.ecart, gain: x.gain }));
       return new Response(JSON.stringify({ app: "funding-arb-app", type: "arbitrage-prix", version: VERSION, statut, top: p }), { headers: JSONH });
+    }
+    if (u.pathname === "/api/comptant") return new Response(JSON.stringify({ version: VERSION, ...(await etatComptant(env)) }), { headers: JSONH });
+    if (u.pathname === "/comptant") {
+      const r = await env.ASSETS.fetch(new Request(new URL("/comptant.tpl", u)));
+      return new Response((await r.text()).replaceAll("__VERSION__", VERSION), { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store, max-age=0" } });
     }
     if (u.pathname === "/api/etat") {
       const e = await env.DB.prepare("SELECT * FROM etat WHERE id=1").first();

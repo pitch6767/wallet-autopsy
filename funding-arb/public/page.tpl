@@ -17,7 +17,7 @@ th:first-child,td:first-child{text-align:left}th{color:#94a3b8;font-weight:600}
 .st{background:#4b2b0b;color:#fbbf24;font-size:10px;border-radius:4px;padding:0 4px;margin-left:4px}
 </style></head><body>
 <header><h1>Arbitrage de prix<span class="badge">FANTÔME</span></h1>
-<div class="mu">Aucun ordre réel. Version __VERSION__ · <span id="maj">…</span></div></header>
+<div style="margin:6px 0"><a href="/comptant" style="color:#4ade80;font-weight:600">Arbitrage au comptant →</a></div><div class="mu">Perpétuels · Aucun ordre réel. Version __VERSION__ · <span id="maj">…</span></div></header>
 <main>
 <div id="cartes" class="cartes"></div>
 <h2>Plateformes</h2><div id="plat" class="mu"></div>
