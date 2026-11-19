@@ -24,3 +24,4 @@ for u in U:
         if isinstance(lst, list) and lst: print("   EX", json.dumps(lst[0])[:700]); print("   DERNIER ts", lst[-1].get("timestamp"), "PREMIER ts", lst[0].get("timestamp"), "tc", tc, "next", (d or {}).get("next"))
     except Exception as e: print("ERR", u.split("gmgn.ai")[1][:90], str(e)[:80])
     time.sleep(2)
+# v2

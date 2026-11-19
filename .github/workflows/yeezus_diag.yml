@@ -9,4 +9,4 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - run: python3 -u $(ls -t etude/yeezus/diag*.py | head -1)
+      - run: python3 -u etude/yeezus/diag9.py
