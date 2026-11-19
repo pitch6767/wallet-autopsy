@@ -2,11 +2,11 @@ name: Yeezus diag
 on:
   push:
     branches: [main]
-    paths: [etude/yeezus/diag8.py]
+    paths: [etude/yeezus/diag*.py]
 jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - run: python3 -u etude/yeezus/diag8.py
+      - run: python3 -u $(ls -t etude/yeezus/diag*.py | head -1)
