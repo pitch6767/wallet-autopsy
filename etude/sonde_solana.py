@@ -1,4 +1,4 @@
-# reel >10k aujourd'hui 2026-11-19T19:40Z
+# reel >10k aujourd hui bis 2026-11-19T19:45Z
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
