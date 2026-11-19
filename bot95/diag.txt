@@ -1,196 +1,41 @@
-/ 200 0.443611s
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title><style> :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708} @media (prefers-color-
-/ 200 0.270293s
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bot 95</title><style> :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708} @media (prefers-color-
-/api/etat 200 0.330519s
-{"mode":"fantôme","reste":63,"e":{"capital":182.61999999999998,"mise":58.64333333333333,"reserve":17.286666666666665,"pnl":-17.380000000000003,"gains":16,"pertes":1,"pause":false,"positions":[],"attente":[],"trades":[{"actif":"XRP","start":1791473700,"end":1791474000,"slug":"xrp-updown-5m-179147370
-/api/etat 200 0.868893s
-{"mode":"fantôme","reste":59,"e":{"capital":182.61999999999998,"mise":58.64333333333333,"reserve":17.286666666666665,"pnl":-17.380000000000003,"gains":16,"pertes":1,"pause":false,"positions":[],"attente":[],"trades":[{"actif":"XRP","start":1791473700,"end":1791474000,"slug":"xrp-updown-5m-179147370
-/nouveaux 200 0.217137s
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes</title><style> :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708} @media (prefers-col
-/nouveaux 200 0.318268s
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fantômes</title><style> :root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#667085;--bd:#e4e7ec;--ok:#12805c;--ko:#c0362c;--ac:#2f5bea;--wa:#b54708} @media (prefers-col
-/api/nouveaux 200 0.570479s
-{"depuis":1791633049.024,"typesDesaccord":{"milieu | bon marché (<0,30) | perp contre nous | marché stable | autre crypto d'accord":{"simple":{"n":4,"g":0,"pnl":-154.41,"etats":{}}},"milieu | bon marché (<0,30) | perp avec nous | marché vers nous | autre crypto d'accord":{"simple":{"n":2,"g":1,"
-/api/nouveaux 200 0.264486s
-{"depuis":1791633049.024,"typesDesaccord":{"milieu | bon marché (<0,30) | perp contre nous | marché stable | autre crypto d'accord":{"simple":{"n":4,"g":0,"pnl":-154.41,"etats":{}}},"milieu | bon marché (<0,30) | perp avec nous | marché vers nous | autre crypto d'accord":{"simple":{"n":2,"g":1,"
-/api/reveil 200 0.223455s
-{"ok":true}
-/api/reveil 200 0.164050s
-{"ok":true}
+/excel-reel 500 5.530142s
+error code: 1101 
+/excel-reel 500 3.984705s
+error code: 1101 
+/api/reel 200 0.551643s
+{"depuis":"2026-11-04T16:28:44.159Z","strats":[{"nom":"PORTEFEUILLE 101 + 105 + x2 prix monté 5 c + pas de retard + mise selon prix","num":12116,"estimee":false,"variante":false,"n":1379,"gains":475,"pertes":904,"pnl":55960.91,"mise":114827.12,"miseMaxCycle":600,"pire":-200,"creux":6374.7,"serie":2
+/api/reel 200 0.670316s
+{"depuis":"2026-11-04T16:28:44.159Z","strats":[{"nom":"PORTEFEUILLE 101 + 105 + x2 prix monté 5 c + pas de retard + mise selon prix","num":12116,"estimee":false,"variante":false,"n":1379,"gains":475,"pertes":904,"pnl":55960.91,"mise":114827.12,"miseMaxCycle":600,"pire":-200,"creux":6374.7,"serie":2
 === tail err
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mTail connection lost. Reconnecting (attempt 1 of 5) in 1s...[0m
+
+
 === tail
---- ok bot95 None GET https://bot95.pitch67.workers.dev/ 200
---- ok bot95 None None * * * * * None
---- ok bot95 None GET https://bot95.pitch67.workers.dev/ 200
---- ok bot95 None GET https://bot95.pitch67.workers.dev/api/etat 200
---- ok bot95 None GET https://bot95.pitch67.workers.dev/api/etat 200
---- ok bot95 None GET https://bot95.pitch67.workers.dev/nouveaux 200
---- ok bot95 None GET https://bot95.pitch67.workers.dev/nouveaux 200
---- ok bot95 None GET https://bot95.pitch67.workers.dev/api/nouveaux 200
---- ok bot95 None GET https://bot95.pitch67.workers.dev/api/nouveaux 200
---- ok bot95 None GET https://bot95.pitch67.workers.dev/api/reveil 200
---- ok bot95 None GET https://bot95.pitch67.workers.dev/api/reveil 200
---- ok bot95 None GET https://bot95.pitch67.workers.dev/api/nouveaux 200
---- ok bot95 None None * * * * * None
---- ok bot95 None POST https://bot95.pitch67.workers.dev/api/rapide/cycle?start=1791804000 200
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- canceled bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 None GET https://bot95.pitch67.workers.dev/api/nouveaux 200
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 None None * * * * * None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 None GET https://bot95.pitch67.workers.dev/api/nouveaux 200
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 None None * * * * * None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 None GET https://bot95.pitch67.workers.dev/api/nouveaux 200
---- ok bot95 Bot None  None
---- ok bot95 Bot GET https://bot95.pitch67.workers.dev/api/nouveaux 200
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
---- ok bot95 Bot None  None
-events 173
+--- exception bot95 None GET https://bot95.pitch67.workers.dev/excel-reel 503
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+--- internalError bot95 default None * * * * * None
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+--- exception bot95 None GET https://bot95.pitch67.workers.dev/api/reel 503
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+--- ok bot95 Bot None  None
+--- exceededMemory bot95 Bot None  None
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+--- responseStreamDisconnected bot95 Bot GET https://bot95.pitch67.workers.dev/api/flux_signaux None
+--- exceededMemory bot95 Bot None  None
+--- ok bot95 Bot None  None
+--- exceededMemory bot95 Bot GET https://bot95.pitch67.workers.dev/excel-reel None
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+EXC Error Durable Object's isolate exceeded its memory limit and was reset. 
+--- ok bot95 None GET https://bot95.pitch67.workers.dev/api/reel 200
+--- ok bot95 None GET https://bot95.pitch67.workers.dev/api/reel 200
+--- ok bot95 None GET https://bot95.pitch67.workers.dev/api/reel 200
+events 12
