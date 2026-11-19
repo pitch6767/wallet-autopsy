@@ -1,4 +1,4 @@
-# reel >10k aujourd hui bis 2026-11-19T19:45Z
+# garde vitesse 2026-11-19T20:35Z
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
