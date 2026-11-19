@@ -205,6 +205,8 @@ export async function tickComptant(env) {
     const fA = FRAIS_C[p.achat_ex], fB = FRAIS_C[p.vente_ex];
     const interet = p.taux ? p.qte * p.px_vente * p.taux * (now - p.ouvert) / 3600e3 : 0; // intérêts d'emprunt courus
     const sortieHaut = p.qte * a.bid * (1 - fA) - p.qte * b.ask * (1 + fB) - interet; // au meilleur prix affiché
+    // pour l'affichage : résultat si on fermait maintenant (meilleurs prix affichés, frais et intérêts compris)
+    st.push(db.prepare("UPDATE comptant_pos SET interet=?, sortie_now=?, maj=? WHERE id=?").bind(interet, sortieHaut, now, p.id));
     if (sortieHaut < p.variante) continue;
     try {
       const [ca, cb] = await Promise.all([carnetR(env, a), carnetR(env, b)]);

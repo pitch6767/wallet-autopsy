@@ -57,8 +57,16 @@ async function go(){
  const av=d.avant||{};document.getElementById("avant").textContent="Avant l'emprunt obligatoire (règles précédentes, non comptés ici) : stratégie 1 "+(av.n1||0)+" trades · "+usd(av.net1||0)+" ; stratégie 2 "+(av.n2||0)+" fermées · "+usd(av.net2||0)+".";
  const es=d.empruntStatut||{};document.getElementById("emp").innerHTML=Object.entries(es).map(([k,v])=>'<div><span class="'+(v.ok?"ok":"ko")+'">'+(v.ok?"●":"✕")+"</span> "+k+" — "+(v.ok?v.n+" cryptos empruntables"+(v.sansPlafond?" · "+v.sansPlafond+" sans plafond publié (quantité non vérifiée)":"")+(v.sansTaux?" · "+v.sansTaux+" sans taux publié (taux estimé)":"")+(v.tauxMax?" · taux = plafond du marché de prêt (prudent, le vrai taux est plus bas)":""):v.err)+"</div>").join("")||"—";
  document.getElementById("cartes2").innerHTML=c2.map(([a,b])=>'<div class="c"><span class="mu">'+a+"</span><b>"+b+"</b></div>").join("");
- document.getElementById("pos2").innerHTML=table(["Clôture","Actif","Achat","Vente","Ouvert","Statut","Entrée","Intérêts","Net","Règles"],
-  (d.positions||[]).map(p=>["≥ "+p.variante+" $ sens contraire",p.cle,p.achat_ex+" "+px(p.px_achat),p.vente_ex+" "+px(p.px_vente),hh(p.ouvert),p.statut+(p.ferme?" ("+dur(p.ferme-p.ouvert)+")":""),usd(p.entree),usd(p.interet||0),p.net==null?"—":'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>",p.regles==d.reglesId?"emprunt":"avant"]));
+ const pos=d.positions||[], o2=pos.filter(p=>p.statut==="ouvert"), f2=pos.filter(p=>p.statut!=="ouvert");
+ const ligne=(a,b)=>'<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0"><span class="mu">'+a+'</span><span>'+b+'</span></div>';
+ const carte=p=>{const enCours=p.statut==="ouvert";const maint=enCours&&p.sortie_now!=null?p.entree+p.sortie_now:null;
+  return '<div class="c" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-weight:600;font-size:16px"><span>'+p.cle+'</span><span class="mu" style="font-weight:400">clôture ≥ '+p.variante+' $</span></div>'
+  +ligne("Achat",p.achat_ex+" à "+px(p.px_achat))+ligne("Vente à découvert",p.vente_ex+" à "+px(p.px_vente))+ligne("Gain à l'entrée",'<span class="'+cl(p.entree)+'">'+usd(p.entree)+"</span>")
+  +ligne("Intérêts d'emprunt",usd(-(p.interet||0)))+ligne(enCours?"Ouverte depuis":"Durée",dur((enCours?Date.now():p.ferme)-p.ouvert))
+  +(enCours?ligne("Si on fermait maintenant",maint==null?"—":'<b class="'+cl(maint)+'">'+usd(maint)+"</b>")
+     :ligne(p.statut==="fermé"?"Résultat net":"Statut",p.statut==="fermé"?'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>":p.statut))+"</div>";};
+ document.getElementById("pos2").innerHTML=(o2.length?'<div class="mu" style="margin:6px 0">Positions ouvertes</div>'+o2.map(carte).join(""):'<div class="mu">Aucune position ouverte.</div>')
+  +(f2.length?'<div class="mu" style="margin:10px 0 6px">Positions fermées</div>'+f2.slice(0,30).map(carte).join(""):"");
  const s=d.scan?.statut||{};
  document.getElementById("plat").innerHTML=Object.entries(s).map(([k,v])=>'<div><span class="'+(v.ok?"ok":"ko")+'">'+(v.ok?"●":"✕")+"</span> "+k+" — "+(v.ok?v.n+" marchés":v.err)+"</div>").join("")||"—";
  document.getElementById("tr").innerHTML=table(["Heure","Actif","Achat","Vente","Quantité","Frais","Intérêts","Net","Statut","Règles"],
