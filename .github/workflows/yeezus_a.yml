@@ -1,0 +1,18 @@
+name: Yeezus option A
+on:
+  push:
+    branches: [main]
+    paths: [etude/yeezus/etape8.py]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          timeout 330m python3 -u etude/yeezus/etape8.py > etude/yeezus/journal_a.txt 2>&1 || true
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          git add etude/yeezus; git commit -m "Yeezus option A [skip ci]"; for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push && break; sleep 5; done
