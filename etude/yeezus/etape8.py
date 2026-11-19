@@ -1,6 +1,6 @@
 # Étape 8 (option A) : tous les acheteurs on-chain dans l'heure avant chaque post (RPC publics)
 import json, urllib.request, time, datetime as dt, threading, queue, os
-RPC = ["https://api.mainnet-beta.solana.com", "https://solana-rpc.publicnode.com", "https://api.mainnet.solana.com"]
+RPC = ["https://api.mainnet-beta.solana.com", "https://api.mainnet.solana.com"]
 def call(url, method, params):
     for essai in range(10):
         try:
