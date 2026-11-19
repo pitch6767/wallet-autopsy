@@ -1,4 +1,4 @@
-# Contrôle blocage 301 ms (lecture seule) — 13:46
+# Contrôle après correction banc en texte (lecture seule) — 14:08
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
