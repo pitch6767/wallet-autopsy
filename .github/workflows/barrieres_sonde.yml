@@ -1,0 +1,17 @@
+name: Sonde barrieres
+on:
+  push:
+    branches: [main]
+    paths: [barrieres/sonde.py]
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 barrieres/sonde.py
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          git add barrieres/sonde.txt; git commit -m "Sonde barrieres [skip ci]"; for k in $(seq 1 10); do git pull --rebase -q origin main && git push && break; sleep 5; done
