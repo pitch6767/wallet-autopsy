@@ -15,18 +15,20 @@ def work():
         try: m, tc = q.get_nowait()
         except queue.Empty: return
         tr = []; cur = None; pages = 0; fin = False
-        while pages < 600:
+        while pages < 1500:
             j = get(f"https://gmgn.ai/vas/api/v1/token_trades/sol/{m}?limit=50&revert=true" + (f"&cursor={cur}" if cur else ""))
             d = (j or {}).get("data") or {}; h = d.get("history") or []; pages += 1
             for x in h:
                 if x["timestamp"] > tc + 600: fin = True; break
-                tr.append({k: x.get(k) for k in ("maker", "event", "amount_usd", "quote_amount", "price_usd", "timestamp", "tx_hash", "maker_tags", "maker_token_tags")})
+                tr.append([x.get("maker"), x.get("event"), round(float(x.get("amount_usd") or 0), 2), round(float(x.get("quote_amount") or 0), 4), float(x.get("price_usd") or 0), x.get("timestamp"), (x.get("tx_hash") or "")[:16], ",".join((x.get("maker_tags") or []) + (x.get("maker_token_tags") or []))])
             cur = d.get("next")
             if fin or not h or not cur: break
             time.sleep(0.4)
         with lock:
-            OUT[m] = {"tc": tc, "pages": pages, "complet": fin, "premier": tr[0]["timestamp"] if tr else None, "trades": tr}
+            OUT[m] = {"tc": tc, "pages": pages, "complet": fin, "premier": tr[0][5] if tr else None, "trades": tr}
             print(len(OUT), m, "pages", pages, "trades", len(tr), "jusqu'au post" if fin else "INCOMPLET", time.strftime("%H:%M:%S"), flush=True)
-            if len(OUT) % 10 == 0: json.dump(OUT, open("etude/yeezus/trades_gmgn.json", "w"))
-th = [threading.Thread(target=work) for _ in range(4)]; [t.start() for t in th]; [t.join() for t in th]
-json.dump(OUT, open("etude/yeezus/trades_gmgn.json", "w")); print("FIN")
+            if len(OUT) % 10 == 0: json.dump(OUT, open("/tmp/trades_gmgn.json", "w"), separators=(",", ":"))
+th = [threading.Thread(target=work) for _ in range(8)]; [t.start() for t in th]; [t.join() for t in th]
+json.dump(OUT, open("/tmp/trades_gmgn.json", "w"), separators=(",", ":")); print("FIN")
+
+# v2 : format compact, artefact
