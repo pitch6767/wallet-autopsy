@@ -124,6 +124,28 @@ Relais.prototype.carnetBybit = async function (sym) {
 Relais.prototype.carnetOkx = async function (sym) { return carnetOkxDirect(sym); };
 Relais.prototype.lireComptant = async function (ex) { return lireComptant(ex); };
 Relais.prototype.carnetComptant = async function (x) { return carnetC(x); };
+// Sonde temporaire : données publiques de marge (empruntable, taux, plafonds)
+Relais.prototype.sondeMarge = async function () {
+  const urls = {
+    bybit: "https://api.bybit.com/v5/spot-margin-trade/data",
+    bybit_tiered: "https://api.bybit.com/v5/spot-margin-trade/collateral",
+    okx_quota: "https://www.okx.com/api/v5/public/interest-rate-loan-quota",
+    okx_margin: "https://www.okx.com/api/v5/public/instruments?instType=MARGIN",
+    gate_pairs: "https://api.gateio.ws/api/v4/margin/uni/currency_pairs",
+    gate_lend: "https://api.gateio.ws/api/v4/earn/uni/currencies",
+    gate_cross: "https://api.gateio.ws/api/v4/margin/cross/currencies",
+    kucoin_symbols: "https://api.kucoin.com/api/v3/margin/symbols",
+    kucoin_rate: "https://api.kucoin.com/api/v3/project/marketInterestRate?currency=MMT",
+    kucoin_lend: "https://api.kucoin.com/api/v3/project/list",
+    kucoin_cfg: "https://api.kucoin.com/api/v1/margin/config",
+  };
+  const out = {};
+  for (const [k, u] of Object.entries(urls)) {
+    try { const r = await fetch(u, { headers: { "user-agent": "price-arb/1" } }); const t = await r.text(); out[k] = r.status + " " + t.length + " " + t.slice(0, 700); }
+    catch (e) { out[k] = "erreur " + e.message; }
+  }
+  return out;
+};
 async function lireEurope(env, nom) {
   let dernier = null;
   for (const hint of ["weur", "eeur"]) {
@@ -310,6 +332,7 @@ export default {
       const p = ecarts(lignes).slice(0, 5).map((x) => ({ base: x.base, achat: x.a.ex, vente: x.b.ex, ecart: x.ecart, gain: x.gain }));
       return new Response(JSON.stringify({ app: "funding-arb-app", type: "arbitrage-prix", version: VERSION, statut, top: p }), { headers: JSONH });
     }
+    if (u.pathname === "/api/sonde-marge") return new Response(JSON.stringify(await env.RELAIS.get(env.RELAIS.idFromName("relais-weur"), { locationHint: "weur" }).sondeMarge(), null, 1), { headers: JSONH });
     if (u.pathname === "/api/comptant") { const er = await env.DB.prepare("SELECT * FROM etat WHERE id=3").first(); return new Response(JSON.stringify({ version: VERSION, erreur: er ? { t: er.t, ...JSON.parse(er.json) } : null, ...(await etatComptant(env)) }), { headers: JSONH }); }
     if (u.pathname === "/comptant") {
       const r = await env.ASSETS.fetch(new Request(new URL("/comptant.tpl", u)));
