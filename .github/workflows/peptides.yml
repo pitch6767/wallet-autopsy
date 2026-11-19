@@ -2,7 +2,7 @@ name: Deploy Peptides
 on:
   push:
     branches: [main]
-    paths: [peptides/**, .github/workflows/peptides.yml]
+    paths: [peptides/**, '!peptides/qa/**', .github/workflows/peptides.yml]
   workflow_dispatch:
 permissions:
   contents: write
