@@ -15,7 +15,7 @@ def ok(nom, cond, detail=""):
 
 
 def http(path, tete=False):
-    req = urllib.request.Request(URL.rstrip("/") + path, method="HEAD" if tete else "GET")
+    req = urllib.request.Request(URL.rstrip("/") + path, method="HEAD" if tete else "GET", headers={"User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/604.1"})
     with urllib.request.urlopen(req, timeout=20) as r:
         return r.status, dict(r.headers), (b"" if tete else r.read())
 
