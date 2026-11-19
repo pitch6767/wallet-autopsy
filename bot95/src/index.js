@@ -1060,12 +1060,17 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
       const z9 = (N.zero4 || {})["TENEUR DE MARCHÉ file d'attente estimée BTC"] || {};
       const L = [...noms].filter((nom) => nom !== "__tv").map((nom) => { const z = Z[nom] || vide(); return { nom: nom.replace(/ BTC$/, ""), num: numDe(nom), estimee: NOMS_ESTIMES.has(nom), variante: numDe(nom) >= 8000000, n: z.n, gains: z.gains, pertes: z.pertes, pnl: +(+z.pnl).toFixed(2), mise: +(+(z.mise || 0)).toFixed(2), miseMaxCycle: Math.round(z.miseMaxCycle || 0), pire: +(+z.pire).toFixed(2), creux: +(+z.creux).toFixed(2), serie: z.serie, serieMax: z.serieMax, capital: z.capital, palier: z.palier,
         parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +(+v).toFixed(2)])) }; }).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
-      return json({ depuis: this._reelDepuis || null, strats: L, total: +L.filter((x) => !x.estimee && !x.variante).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } }); }
+      // 19.11.2026 20 h 55 (Pitch : « enlève les stratégies qui sont pas terrible » → « sous 10 000 $ cachées ») : lignes sous 10 000 $ depuis le 04.11
+      // cachées de la page (toujours comptées, rien d'effacé) ; ?tout=1 les montre toutes
+      const tout = u.searchParams.get("tout") === "1", visibles = tout ? L : L.filter((x) => (+x.pnl || 0) >= SEUIL_REEL);
+      return json({ depuis: this._reelDepuis || null, strats: visibles, cachees: L.length - visibles.length, seuil: SEUIL_REEL, total: +L.filter((x) => !x.estimee && !x.variante).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } }); }
     if (u.pathname === "/excel-reel") { const Q = {};
       for (const [kk, v] of await this.state.storage.list({ prefix: "xreel:" })) { const k = kk.slice(6, kk.lastIndexOf("|")); (Q[k] = Q[k] || []).push(...v); }
       for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => (a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0));
       if (!Object.keys(Q).length) return new Response("Aucun vrai trade réglé pour l'instant.", { headers: { "content-type": "text/plain; charset=utf-8" } });
-      const corps = await xlClasseur(Q, this._reelDepuis || new Date().toISOString(), { deux: true, titre: "Bot95 — VRAIS TRADES (signaux reçus par le bot, joués sur le vrai carnet Polymarket, frais compris, réglés par Polymarket ; teneurs de marché = estimés) depuis le " });
+      // 19.11.2026 (Pitch : « oui » — l'export plantait, erreur 1101, fichier trop gros) : résumé sur tout l'historique, lignes de trades des N derniers jours (3 par défaut, 14 au plus)
+      const jours = Math.min(14, Math.max(1, Number(u.searchParams.get("jours")) || 3));
+      const corps = await xlClasseur(Q, this._reelDepuis || new Date().toISOString(), { lignesDepuis: new Date(Date.now() - jours * 864e5).toISOString(), deux: true, titre: "Bot95 — VRAIS TRADES (signaux reçus par le bot, joués sur le vrai carnet Polymarket, frais compris, réglés par Polymarket ; teneurs de marché = estimés) depuis le " });
       return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_vrais_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:T]/g, "") + '.xlsx"', "cache-control": "no-store" } }); }
     if (["/zero6", "/zero5", "/zero2", "/zero", "/zero3-ancien", "/onglet1-archive", "/", "/index.html"].includes(u.pathname)) return Response.redirect(new URL("/reel", req.url).toString(), 302);
     if (u.pathname === "/zero6") return new Response(PAGE_ZERO5, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -4534,6 +4539,7 @@ async function xlClasseur(Q, depuis, opt = {}) {
     const lignes = [[{ v: avecNum(k), s: 4 }, "", "", "", "", { v: "← Résumé", s: 5 }], ["Date (heure suisse)", "Côté", "Prix", "Parts", "Mise $", "Résultat $", "Cumul $", "Issue"].map((v) => ({ v, s: 3 }))];
     for (const l of L) { const net = +l[4] || 0, mise = l[3] != null && l[2] != null ? l[2] * l[3] : null; cum += net; pic = Math.max(pic, cum); creux = Math.max(creux, pic - cum); pire = Math.min(pire, net);
       if (net >= 0) g++; else { p++; pertes += net; } if (mise != null) { mises += mise; nm++; }
+      if (opt.lignesDepuis && l[0] < opt.lignesDepuis) continue;
       lignes.push([{ v: serie(l[0]), s: 1 }, l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: mise ?? "", s: 2 }, { v: net, s: 2 }, { v: cum, s: 2 }, l[5] || ""]);
       tous.push([l[0], k, l]); }
     const f = court(k); feuilleDe[k] = f; lignes[0].push("", { v: "← Tous les trades", s: 5 }); feuilles.push([f, xlFeuille(lignes, { fige: 2, largeurs: [18, 8, 8, 9, 10, 11, 11, 18], filtre: "A2:H" + lignes.length, liens: [["F1", "'Résumé'!A1"], ["H1", "'Tous les trades'!A1"]] })]);
@@ -4595,13 +4601,14 @@ const PAGE_REEL = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><m
 <div class="mu">Seulement des trades réels : chaque signal réellement reçu par le bot (moteur de Dublin) est joué sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix du signal + 5 c, frais compris) et réglé par le résultat officiel de Polymarket. 200 $ au plus par cycle et par stratégie, frais compris (trade réduit au reste, sinon ignoré). Aucun argent réel engagé. <b>Exception : les teneurs de marché (n° 3304 à 3309) sont ESTIMÉS</b> — ordres posés dans le carnet, impossibles à jouer sans vrais ordres.</div>
 <div class="mu" id="dep"></div>
 <div class="mu"><a href="/lecons" style="font-weight:600">📘 Leçons du projet (erreurs, corrections, vitesse)</a></div>
-<div class="mu"><a href="/excel-reel" style="font-weight:600">📥 Fichier Excel des vrais trades (une ligne par trade, N° et stratégie en deux colonnes, filtres)</a></div>
+<div class="mu"><a href="/excel-reel" style="font-weight:600">📥 Fichier Excel des vrais trades (résumé complet + trades des 3 derniers jours, une ligne par trade, filtres)</a> · <a href="/excel-reel?jours=7">7 jours</a></div>
+<div class="mu" id="caches"></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom" style="font-size:1.05em;padding:8px 10px;width:min(360px,90%);border-radius:8px;border:1px solid #8886"> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur résultat</option><option value="creux">Trier : plus petit creux</option><option value="n">Trier : plus de trades</option><option value="cycle">Trier : moins de mise par cycle</option></select></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 const t=document.getElementById("tri"),q=document.getElementById("cherche");try{t.value=sessionStorage.getItem("triR")||"pnl";q.value=sessionStorage.getItem("chR")||""}catch(e){}
-async function maj(){try{const d=await (await fetch("/api/reel",{cache:"no-store"})).json();try{sessionStorage.setItem("triR",t.value);sessionStorage.setItem("chR",q.value)}catch(e){}
+async function maj(){try{const d=await (await fetch("/api/reel"+(location.search.indexOf("tout=1")>=0?"?tout=1":""),{cache:"no-store"})).json();try{var ec=document.getElementById("caches");if(ec)ec.innerHTML=d.cachees?(d.cachees+" lignes sous "+(d.seuil||10000).toLocaleString("fr-CH")+" $ cachées (toujours comptées) — <a href=\"/reel?tout=1\">tout voir</a>"):(location.search.indexOf("tout=1")>=0?"<a href=\"/reel\">cacher les lignes sous 10 000 $</a>":"")}catch(e){}try{sessionStorage.setItem("triR",t.value);sessionStorage.setItem("chR",q.value)}catch(e){}
 document.getElementById("dep").textContent="Départ à zéro : "+(d.depuis?new Date(d.depuis).toLocaleString("fr-CH",{timeZone:"Europe/Paris"}):"—")+" (heure de Paris) · total des vrais trades : "+f(d.total)+" · teneur 3309 : servi seul à un prix plus cher "+d.file3309.servisSeuls+" fois, servi dans la file "+d.file3309.servisFile+" fois, en moyenne "+(d.file3309.fileMoyenne??"—")+" parts devant nous";
 const k=t.value,v={pnl:(x)=>-x.pnl,creux:(x)=>x.n?x.creux:1e18,n:(x)=>-x.n,cycle:(x)=>x.n?x.miseMaxCycle:1e18}[k];const qq=q.value.trim().toLowerCase();
 const S=d.strats.filter(x=>!qq||(/^[0-9]+$/.test(qq)?String(x.num)===qq:x.nom.toLowerCase().includes(qq))).sort((a,b)=>v(a)-v(b)||b.pnl-a.pnl);
@@ -4837,6 +4844,7 @@ const PAGE_LECONS = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
 <li>Ce qu'on ne peut pas mesurer sans vrais ordres (place dans la file d'attente, concurrence) : seulement par un <strong>petit test LIVE</strong> plafonné.</li>
 </ul>
 </body></html>`;
+const SEUIL_REEL = 10000;   // 19.11.2026 : lignes des vrais trades sous ce gain cachées de la page (toujours comptées)
 const PLAFOND_REEL = 200;   // 05.11.2026 (Pitch : « tout le reste à 200 $ ») : vrais trades, au plus 200 $ par cycle et par stratégie, frais compris (avant : 250)
 const NOM_3304 = "TENEUR DE MARCHÉ modèle BTC";   // 04.11.2026 : lignes de l'onglet 5 encore comptées en fantôme (estimées) : 3304 et ses variantes 3305-3308
 const NOMS_ESTIMES = new Set([NOM_3304, "TENEUR DE MARCHÉ retrait si les bourses bougent BTC", "TENEUR DE MARCHÉ prix penchés selon le stock BTC", "TENEUR DE MARCHÉ écart variable BTC", "TENEUR DE MARCHÉ arrêt 60 s avant la fin BTC", "TENEUR DE MARCHÉ file d'attente estimée BTC"]);
