@@ -14,7 +14,7 @@ def call(url, method, params):
 T = json.load(open("etude/yeezus/traders_complet.json"))
 OUTF = "etude/yeezus/acheteurs.json"
 OUT = json.load(open(OUTF)) if os.path.exists(OUTF) else {}
-FEN = 3600; CAP_PAGES = 400; CAP_TX = 2500
+FEN = 3 * 3600; CAP_PAGES = 400; CAP_TX = 2500
 for n, (mint, v) in enumerate(T.items()):
     if mint in OUT and OUT[mint].get("fini"): continue
     tc = int(dt.datetime.fromisoformat(v["appel"]["date"]).timestamp())
@@ -42,10 +42,10 @@ for n, (mint, v) in enumerate(T.items()):
                 pre = {(b.get("owner")): float(b["uiTokenAmount"]["uiAmount"] or 0) for b in meta.get("preTokenBalances", []) if b.get("mint") == mint}
                 post = {(b.get("owner")): float(b["uiTokenAmount"]["uiAmount"] or 0) for b in meta.get("postTokenBalances", []) if b.get("mint") == mint}
                 payer = keys[0]; dsol = (meta["postBalances"][0] - meta["preBalances"][0]) / 1e9
-                for o in set(pre) | set(post):
-                    d = post.get(o, 0) - pre.get(o, 0)
-                    if d > 0 and o == payer: 
-                        with lock: res.append({"w": o, "t": bt, "qte": round(d), "sol": round(-dsol, 3)})
+                rec = [(o, round(post.get(o, 0) - pre.get(o, 0))) for o in set(pre) | set(post) if post.get(o, 0) - pre.get(o, 0) > 0]
+                vend = [o for o in set(pre) | set(post) if post.get(o, 0) - pre.get(o, 0) < 0]
+                if rec:
+                    with lock: res.append({"sig": s, "slot": tx.get("slot"), "t": bt, "payeur": payer, "sol_payeur": round(-dsol, 4), "recoit": rec, "envoie": vend})
             time.sleep(0.12)
     th = [threading.Thread(target=worker, args=(u,)) for u in RPC for _ in range(2)]
     [t.start() for t in th]; [t.join() for t in th]
