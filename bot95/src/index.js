@@ -6,6 +6,11 @@ import CATALOGUE from "./catalogue.json";
 import { PAGE_MOTIFS } from "./motifs.js";
 // 26.10.2026 : numéro fixe de chaque stratégie (même numéro sur les onglets, dans les Excel et dans le bot de trading de Dublin)
 const NUMS = new Map(CATALOGUE.map((c) => [c.nom, c.n]));
+// 19.11.2026 19 h 58 (Pitch : « tu les mets dans les vrais trades ») : version « sans les tickets ≤ 0,15 » de chaque stratégie (n° 8 000 000 + n),
+// trades venus de la ligne 8M du banc de Dublin ; l'historique d'avant VAR8_DEPUIS est rejoué depuis les vrais trades de la stratégie de base.
+const SUF8 = " — sans les tickets ≤ 0,15", VAR8_DEPUIS = Date.parse("2026-11-19T19:30:00Z");
+const VAR8 = new Map(CATALOGUE.map((c) => [8000000 + c.n, { n: 8000000 + c.n, nom: c.nom + SUF8, base: c }]));
+for (const v of VAR8.values()) NUMS.set(v.nom, v.n);
 function numDe(nom) { return NUMS.get(String(nom).replace(/ BTC$/, "")) || null; }
 function avecNum(nom) { const n = numDe(nom); return (n ? "n° " + n + " — " : "") + String(nom).replace(/ BTC$/, ""); }
 // 13.10.2026 13:27 (Pitch : « Tu peux enlever les stratégies à moins 1000 $ ») : résultat affiché par le bot < −1 000 $ (depuis le 10.10 11:50 UTC).
@@ -1049,12 +1054,13 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     if (u.pathname === "/lecons") return new Response(PAGE_LECONS, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/reel") return new Response(PAGE_REEL, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/api/reel") { const N = this.N || {}, Z = N.reelZ || {}, R5 = new Set(this._z5r || (await this.state.storage.get("z5retires")) || []);
-      const noms = new Set([...CATALOGUE.map((c) => c.nom + " BTC").filter((nom) => this.onglet5Garde(nom) && !R5.has(nom)), ...NOMS_ESTIMES]);
+      const noms = new Set([...CATALOGUE.map((c) => c.nom + " BTC").filter((nom) => this.onglet5Garde(nom) && !R5.has(nom)), ...NOMS_ESTIMES,
+        ...[...VAR8.values()].map((v) => v.nom + " BTC").filter((nom) => this.onglet5Garde(nom) && !R5.has(nom) && Z[nom])]);
       const vide = () => ({ n: 0, gains: 0, pertes: 0, pnl: 0, pertesTot: 0, pire: 0, cum: 0, pic: 0, creux: 0, serie: 0, serieMax: 0, parJour: {} });
       const z9 = (N.zero4 || {})["TENEUR DE MARCHÉ file d'attente estimée BTC"] || {};
-      const L = [...noms].filter((nom) => nom !== "__tv").map((nom) => { const z = Z[nom] || vide(); return { nom: nom.replace(/ BTC$/, ""), num: numDe(nom), estimee: NOMS_ESTIMES.has(nom), n: z.n, gains: z.gains, pertes: z.pertes, pnl: +(+z.pnl).toFixed(2), mise: +(+(z.mise || 0)).toFixed(2), miseMaxCycle: Math.round(z.miseMaxCycle || 0), pire: +(+z.pire).toFixed(2), creux: +(+z.creux).toFixed(2), serie: z.serie, serieMax: z.serieMax, capital: z.capital, palier: z.palier,
+      const L = [...noms].filter((nom) => nom !== "__tv").map((nom) => { const z = Z[nom] || vide(); return { nom: nom.replace(/ BTC$/, ""), num: numDe(nom), estimee: NOMS_ESTIMES.has(nom), variante: numDe(nom) >= 8000000, n: z.n, gains: z.gains, pertes: z.pertes, pnl: +(+z.pnl).toFixed(2), mise: +(+(z.mise || 0)).toFixed(2), miseMaxCycle: Math.round(z.miseMaxCycle || 0), pire: +(+z.pire).toFixed(2), creux: +(+z.creux).toFixed(2), serie: z.serie, serieMax: z.serieMax, capital: z.capital, palier: z.palier,
         parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +(+v).toFixed(2)])) }; }).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
-      return json({ depuis: this._reelDepuis || null, strats: L, total: +L.filter((x) => !x.estimee).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } }); }
+      return json({ depuis: this._reelDepuis || null, strats: L, total: +L.filter((x) => !x.estimee && !x.variante).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } }); }
     if (u.pathname === "/excel-reel") { const Q = {};
       for (const [kk, v] of await this.state.storage.list({ prefix: "xreel:" })) { const k = kk.slice(6, kk.lastIndexOf("|")); (Q[k] = Q[k] || []).push(...v); }
       for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => (a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0));
@@ -1273,7 +1279,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     return 0;
   }
   /** 31.10.2026 17:46 (Pitch : « onglet 5 = stratégies de l'onglet 6 plus les nouvelles, rien d'autre ») */
-  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130) || n === 2140 || n === 2141 || n === 2142 || (n >= 3304 && n <= 3309); }
+  onglet5Garde(nom) { let n = numDe(nom); if (!n) return false; if (n >= 8000000) { const v = VAR8.get(n); return !!v && this.onglet5Garde(v.base.nom + " BTC"); } if (n >= 10000) n -= 10000; return this.nums5().includes(n) || n === 1301 || n === 1305 || (n >= 1400 && n < 2000) || (n >= 2110 && n <= 2130) || n === 2140 || n === 2141 || n === 2142 || (n >= 3304 && n <= 3309); }
   nums5() { return this.B5 && this.B5.choisies ? this.B5.choisies.map((c) => c.n) : ZERO5_NUMS; }
   /** Facteur de mise de l'onglet 6 pour le n° et l'heure du trade (0 = pas compté : stratégie pas encore dans le bot). */
   f5(n, heure) {
@@ -2596,6 +2602,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     }
     try { await this.reconstruireReel200(); } catch (err) { this.erreur("reconstruction vrais trades 200 $", err); }
     try { await this.reconstruireTeneurs(); } catch (err) { this.erreur("reconstruction teneurs", err); }
+    try { await this.rejouerVar8(); } catch (err) { this.erreur("rejeu sans ≤ 0,15", err); }
     const dep = new Date(Math.floor(Math.max(this._prixReelMs, Date.now() - 6 * 3600000) / 300000) * 300000).toISOString();
     const r = await fetch("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=" + encodeURIComponent(dep), { headers: { "cache-control": "no-store" } });
     if (!r.ok) throw new Error("HTTP " + r.status);
@@ -2610,6 +2617,7 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     try {
       for (const t of nouv) {
         vus[t.num + "|" + t.id] = t.endTs;
+        if (t.num >= 8000000) { const v = VAR8.get(t.num); if (v && Date.parse(t.ouvert) >= VAR8_DEPUIS) await this.alimenterReel(t, v.nom + " BTC", Math.floor(t.endTs / 1000) - 300, t.side === "UP" ? "Up" : "Down", R5); continue; }
         const c = CATALOGUE.find((x) => x.n === t.num); if (!c) continue;
         const nom = c.nom + " BTC", st = Math.floor(t.endTs / 1000) - 300, cote = t.side === "UP" ? "Up" : "Down";
         this._zx = { cote, prix: t.prix };
@@ -2679,6 +2687,25 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
     await this.state.storage.put("reel:palier", this._palR);
     await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
     await this.state.storage.put("reel:rebuild200b", { at: new Date().toISOString(), trades: utiles.length });
+  }
+  /** 19.11.2026 : historique des versions « sans les tickets ≤ 0,15 » = vrais trades déjà comptés de leur stratégie de base, payés > 0,15,
+   * ouverts avant VAR8_DEPUIS (après : la ligne 8M du banc). Une seule fois ; rien d'effacé chez les autres stratégies. */
+  async rejouerVar8() {
+    if (this._rv8 || !this._reelMs || !this.N) return; this._rv8 = true;
+    if (await this.state.storage.get("reel:var8")) return;
+    await this.state.storage.put("reel:var8", { debut: new Date().toISOString() });
+    const N = this.N; N.reelZ = N.reelZ || {}; const maj = {}; let nb = 0;
+    for (const v of VAR8.values()) {
+      const base = v.base.nom + " BTC", nom = v.nom + " BTC"; if (!N.reelZ[base]) continue;
+      const L = [], vus = new Set();
+      for (const [, x] of await this.state.storage.list({ prefix: "xreel:" + base + "|" })) for (const l of x) { if (vus.has(l[0] + "|" + l[1] + "|" + l[4])) continue; vus.add(l[0] + "|" + l[1] + "|" + l[4]); if (Date.parse(l[0]) < VAR8_DEPUIS && +l[2] > 0.15) L.push(l); }
+      if (!L.length) continue;
+      L.sort((a, b) => (a[0] < b[0] ? -1 : 1)); delete N.reelZ[nom];
+      for (const l of L) { const st = Math.floor(Date.parse(l[0]) / 1000); zCompte(N.reelZ, nom, l[0], +l[4] || 0, false, (+l[2] || 0) * (+l[3] || 0), st); (maj["xreel:" + nom + "|" + l[0].slice(0, 10)] = maj["xreel:" + nom + "|" + l[0].slice(0, 10)] || []).push(l); nb++; }
+    }
+    const E = Object.entries(maj); for (let i = 0; i < E.length; i += 64) await this.state.storage.put(Object.fromEntries(E.slice(i, i + 64)));
+    await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
+    await this.state.storage.put("reel:var8", { at: new Date().toISOString(), trades: nb });
   }
   /** 05.11.2026 : teneurs de marché du tableau des vrais trades recomptés depuis leurs lignes, un seul résultat par cycle (doublons retirés). */
   async reconstruireTeneurs() {
