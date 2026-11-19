@@ -24495,14 +24495,19 @@ var Bot = class {
     }
     if (u.pathname === "/excel-reel") {
       const Q = {};
-      for (const [kk, v] of await this.state.storage.list({ prefix: "xreel:" })) {
+      const jours = Math.min(14, Math.max(1, Number(u.searchParams.get("jours")) || 3)), Zx = this.N && this.N.reelZ || {}, cles = [];
+      for (const k of Object.keys(Zx)) {
+        if (k === "__tv") continue;
+        Q[k] = [];
+        for (let d = 0; d <= jours; d++) cles.push("xreel:" + k + "|" + new Date(Date.now() - d * 864e5).toISOString().slice(0, 10));
+      }
+      for (let i = 0; i < cles.length; i += 128) for (const [kk, v] of await this.state.storage.get(cles.slice(i, i + 128))) {
         const k = kk.slice(6, kk.lastIndexOf("|"));
         (Q[k] = Q[k] || []).push(...v);
       }
       for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0);
       if (!Object.keys(Q).length) return new Response("Aucun vrai trade r\xE9gl\xE9 pour l'instant.", { headers: { "content-type": "text/plain; charset=utf-8" } });
-      const jours = Math.min(14, Math.max(1, Number(u.searchParams.get("jours")) || 3));
-      const corps = await xlClasseur(Q, this._reelDepuis || (/* @__PURE__ */ new Date()).toISOString(), { lignesDepuis: new Date(Date.now() - jours * 864e5).toISOString(), deux: true, titre: "Bot95 \u2014 VRAIS TRADES (signaux re\xE7us par le bot, jou\xE9s sur le vrai carnet Polymarket, frais compris, r\xE9gl\xE9s par Polymarket ; teneurs de march\xE9 = estim\xE9s) depuis le " });
+      const corps = await xlClasseur(Q, this._reelDepuis || (/* @__PURE__ */ new Date()).toISOString(), { stats: Zx, lignesDepuis: new Date(Date.now() - jours * 864e5).toISOString(), deux: true, titre: "Bot95 \u2014 VRAIS TRADES (signaux re\xE7us par le bot, jou\xE9s sur le vrai carnet Polymarket, frais compris, r\xE9gl\xE9s par Polymarket ; teneurs de march\xE9 = estim\xE9s) depuis le " });
       return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_vrais_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:T]/g, "") + '.xlsx"', "cache-control": "no-store" } });
     }
     if (["/zero6", "/zero5", "/zero2", "/zero", "/zero3-ancien", "/onglet1-archive", "/", "/index.html"].includes(u.pathname)) return Response.redirect(new URL("/reel", req.url).toString(), 302);
@@ -30715,7 +30720,17 @@ async function xlClasseur(Q, depuis, opt = {}) {
     feuilleDe[k] = f;
     lignes[0].push("", { v: "\u2190 Tous les trades", s: 5 });
     feuilles.push([f, xlFeuille(lignes, { fige: 2, largeurs: [18, 8, 8, 9, 10, 11, 11, 18], filtre: "A2:H" + lignes.length, liens: [["F1", "'R\xE9sum\xE9'!A1"], ["H1", "'Tous les trades'!A1"]] })]);
-    R.push({ k, f, n: L.length, g, p, pnl: cum, pertes, pire, creux, cap: Math.round((2 * creux + 2 * 50) / 50) * 50, moy: cum / nJours, mise: nm ? mises / nm : null, der: L[L.length - 1][0] });
+    const z = opt.stats && opt.stats[k];
+    if (z) {
+      g = z.gains || 0;
+      p = z.pertes || 0;
+      cum = +z.pnl || 0;
+      pertes = +z.pertesTot || 0;
+      pire = +z.pire || 0;
+      creux = +z.creux || 0;
+    }
+    if (!L.length && !z) continue;
+    R.push({ k, f, n: z ? z.n || 0 : L.length, g, p, pnl: cum, pertes, pire, creux, cap: Math.round((2 * creux + 2 * 50) / 50) * 50, moy: cum / nJours, mise: z && z.n ? (+z.mise || 0) / z.n : nm ? mises / nm : null, der: L.length ? L[L.length - 1][0] : "" });
   }
   R.sort((a, b) => b.pnl - a.pnl);
   const res = [
@@ -30724,7 +30739,7 @@ async function xlClasseur(Q, depuis, opt = {}) {
   ];
   const liens = [];
   R.forEach((x, i) => {
-    res.push([...opt.deux ? [{ v: numDe(x.k) ?? "", s: 5 }, String(x.k).replace(/ BTC$/, "")] : [{ v: avecNum(x.k), s: 5 }], x.n, x.g, x.p, { v: x.n ? x.g / x.n : 0, s: 6 }, { v: x.pnl, s: 2 }, { v: x.pertes, s: 2 }, { v: x.pire, s: 2 }, { v: -x.creux, s: 2 }, { v: x.cap, s: 2 }, { v: x.moy, s: 2 }, { v: x.mise ?? "", s: 2 }, { v: serie(x.der), s: 1 }]);
+    res.push([...opt.deux ? [{ v: numDe(x.k) ?? "", s: 5 }, String(x.k).replace(/ BTC$/, "")] : [{ v: avecNum(x.k), s: 5 }], x.n, x.g, x.p, { v: x.n ? x.g / x.n : 0, s: 6 }, { v: x.pnl, s: 2 }, { v: x.pertes, s: 2 }, { v: x.pire, s: 2 }, { v: -x.creux, s: 2 }, { v: x.cap, s: 2 }, { v: x.moy, s: 2 }, { v: x.mise ?? "", s: 2 }, x.der ? { v: serie(x.der), s: 1 } : ""]);
     liens.push(["A" + (i + 3), "'" + x.f + "'!A1"]);
   });
   res.push([...opt.deux ? [""] : [], "Total", R.reduce((a, x) => a + x.n, 0), R.reduce((a, x) => a + x.g, 0), R.reduce((a, x) => a + x.p, 0), "", { v: R.reduce((a, x) => a + x.pnl, 0), s: 2 }, { v: R.reduce((a, x) => a + x.pertes, 0), s: 2 }]);
