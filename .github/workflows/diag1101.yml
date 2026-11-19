@@ -24,7 +24,7 @@ jobs:
           (timeout ${{ inputs.duree || 75 }} npx -y wrangler@4 tail bot95 --format json > /tmp/tail.json 2>/tmp/tail.err &)
           sleep 20
           U=https://bot95.pitch67.workers.dev
-          for p in /excel-reel /api/reel; do for k in 1 2; do curl -sS -m 25 -o /tmp/b -w "$p %{http_code} %{time_total}s\n" "$U$p" >> /tmp/c.log; head -c 300 /tmp/b | tr '\n' ' ' >> /tmp/c.log; echo >> /tmp/c.log; sleep 3; done; done
+          for p in "/excel-reel?jours=1" "/api/reel/xl-donnees?stats=1"; do for k in 1; do curl -sS -m 25 -o /tmp/b -w "$p %{http_code} %{time_total}s\n" "$U$p" >> /tmp/c.log; head -c 300 /tmp/b | tr '\n' ' ' >> /tmp/c.log; echo >> /tmp/c.log; sleep 3; done; done
           sleep $(( ${{ inputs.duree || 75 }} - 40 ))
           { cat /tmp/c.log; echo "=== tail err"; tail -20 /tmp/tail.err; echo "=== tail"; python3 - <<'P'
           import json
