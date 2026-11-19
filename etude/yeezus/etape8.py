@@ -14,11 +14,11 @@ def call(url, method, params):
 T = json.load(open("etude/yeezus/traders_complet.json"))
 OUTF = "etude/yeezus/acheteurs.json"
 OUT = json.load(open(OUTF)) if os.path.exists(OUTF) else {}
-FEN = 3 * 3600; CAP_PAGES = 400; CAP_TX = 2500
+FEN = 3 * 3600; CAP_PAGES = 300; CAP_TX = 2500
 for n, (mint, v) in enumerate(T.items()):
     if mint in OUT and OUT[mint].get("fini"): continue
     tc = int(dt.datetime.fromisoformat(v["appel"]["date"]).timestamp())
-    sigs = []; before = None; pages = 0; atteint = False; k = 0
+    sigs = []; before = None; pages = 0; atteint = False; k = 0; derniers = []; debut_atteint = False
     while pages < CAP_PAGES:
         r = call(RPC[k % 2], "getSignaturesForAddress", [mint, {"limit": 1000, **({"before": before} if before else {})}]); k += 1
         if r == "ECHEC" or not r: break
@@ -27,10 +27,13 @@ for n, (mint, v) in enumerate(T.items()):
             bt = x.get("blockTime") or 0
             if tc - FEN <= bt <= tc + 5 and not x.get("err"): sigs.append((x["signature"], bt))
         before = r[-1]["signature"]
-        if (r[-1].get("blockTime") or 0) < tc - FEN: atteint = True; break
-        if len(r) < 1000: atteint = True; break
+        if (r[-1].get("blockTime") or 0) < tc - FEN: atteint = True
+        derniers = (derniers + [(x["signature"], x.get("blockTime") or 0) for x in r if not x.get("err")])[-600:]
+        if len(r) < 1000: debut_atteint = True; break
         time.sleep(0.25)
-    sigs = sorted(sigs, key=lambda x: x[1])[:CAP_TX]
+    sigs = sorted(sigs, key=lambda x: -x[1])[:CAP_TX]   # les plus proches du post
+    deb = derniers if debut_atteint else []          # 600 premières tx du token (création + bundle)
+    vus = {x[0] for x in sigs}; sigs += [x for x in deb if x[0] not in vus]
     q = queue.Queue(); [q.put(s) for s in sigs]; res = []; lock = threading.Lock()
     def worker(url):
         while True:
@@ -49,7 +52,7 @@ for n, (mint, v) in enumerate(T.items()):
             time.sleep(0.12)
     th = [threading.Thread(target=worker, args=(u,)) for u in RPC for _ in range(2)]
     [t.start() for t in th]; [t.join() for t in th]
-    OUT[mint] = {"appel": v["appel"]["date"], "pages": pages, "fenetre_atteinte": atteint, "tx_fenetre": len(sigs), "achats": res, "fini": True}
+    OUT[mint] = {"appel": v["appel"]["date"], "pages": pages, "fenetre_atteinte": atteint, "tx_fenetre": len(sigs), "debut_atteint": debut_atteint, "creation": min([x[1] for x in deb]) if deb else None, "achats": res, "fini": True}
     json.dump(OUT, open(OUTF, "w"))
     print(n, mint, "pages", pages, "atteint", atteint, "tx", len(sigs), "achats", len(res), time.strftime("%H:%M:%S"), flush=True)
 print("FIN")
