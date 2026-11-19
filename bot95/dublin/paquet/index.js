@@ -24512,7 +24512,7 @@ var Bot = class {
         };
       }).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
       const tout = u.searchParams.get("tout") === "1", visibles = tout ? L : L.filter((x) => (+x.pnl || 0) >= SEUIL_REEL);
-      return json({ depuis: this._reelDepuis || null, strats: visibles, cachees: L.length - visibles.length, seuil: SEUIL_REEL, total: +L.filter((x) => !x.estimee && !x.variante).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } });
+      return json({ depuis: this._reelDepuis || null, strats: visibles, cachees: L.length - visibles.length, seuil: SEUIL_REEL, total: +L.filter((x) => !x.estimee && !x.variante).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { dedup19: await this.state.storage.get("reel:dedup19"), r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } });
     }
     if (u.pathname === "/api/reel/xl-donnees") {
       const Zx = this.N && this.N.reelZ || {};
@@ -26476,6 +26476,7 @@ var Bot = class {
       if (N.zero5) zSauver(this.state.storage, "nv:zero5", N.zero5).catch((err) => this.erreur("sauvegarde zero5", err));
       if (N.zero4) zSauver(this.state.storage, "nv:zero4", N.zero4).catch((err) => this.erreur("sauvegarde zero4", err));
       if (N.reel6) zSauver(this.state.storage, "nv:reel6", N.reel6).catch((err) => this.erreur("sauvegarde reel6", err));
+      if (this._prVus) this.state.storage.put("prixreel:vus", this._prVus).catch((e) => this.erreur("sauvegarde vus", e));
       if (N.reelZ) zSauver(this.state.storage, "nv:reelZ", N.reelZ).catch((err) => this.erreur("sauvegarde reelZ", err));
       if (N.idq) put("nv:idq", { idq: N.idq, idfait: N.idfait || {}, consPris: N.consPris || {}, slDec: N.slDec || {}, mmDernier: N.mmDernier || 0, dbg5: N.dbg5 || null });
       const O = N.ordres || [], nonRegles = O.filter((x) => x.gagne == null), regles = O.filter((x) => x.gagne != null);
@@ -27334,7 +27335,19 @@ var Bot = class {
   // 04.11.2026 (Pitch : « je veux le prix possible maintenant ») : trades RÉELS des onglets 5 et 6. Lus chaque minute sur le banc d'essai du bot
   // (route publique en lecture seule, trades réglés seulement) : chaque signal rejoué sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix + 5 c,
   // prix moyen obtenu, frais compris), résultat officiel Polymarket. Même numéro de ligne que l'onglet 5. Aucun trade fantôme après la bascule.
+  // 19.11.2026 (Pitch : « go ») : trades comptés plusieurs fois le 19.11 (redémarrages de l'objet, mémoire) — une seule mise à jour à la fois,
+  // et lecture depuis la dernière lecture réussie (− 30 min) au lieu de 6 h à chaque fois (beaucoup moins de mémoire)
   async prixReelMaj() {
+    if (this._prEnCours) return;
+    this._prEnCours = true;
+    try {
+      await this.prixReelMaj0();
+      this._prDernier = Date.now();
+    } finally {
+      this._prEnCours = false;
+    }
+  }
+  async prixReelMaj0() {
     if (this.SG || !this._prixReelMs || !this.N) return;
     const N = this.N;
     N.zero4 = N.zero4 || {};
@@ -27395,7 +27408,12 @@ var Bot = class {
     } catch (err) {
       this.erreur("rejeu sans \u2264 0,15", err);
     }
-    const dep = new Date(Math.floor(Math.max(this._prixReelMs, Date.now() - 6 * 36e5) / 3e5) * 3e5).toISOString();
+    try {
+      await this.dedoublonnerReel();
+    } catch (err) {
+      this.erreur("doublons vrais trades", err);
+    }
+    const dep = new Date(Math.floor(Math.max(this._prixReelMs, this._prDernier ? Math.max(Date.now() - 6 * 36e5, this._prDernier - 18e5) : Date.now() - 6 * 36e5) / 3e5) * 3e5).toISOString();
     const r = await fetch("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=" + encodeURIComponent(dep), { headers: { "cache-control": "no-store" } });
     if (!r.ok) throw new Error("HTTP " + r.status);
     const d = await r.json();
@@ -27569,6 +27587,69 @@ var Bot = class {
     await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
     await this.state.storage.put("reel:var8", { at: (/* @__PURE__ */ new Date()).toISOString(), trades: nb });
   }
+  /** 19.11.2026 (Pitch : « go ») : doublons exacts des vrais trades enlevés (même heure, côté, prix, parts, résultat), plafond de 200 $ par cycle
+   * réappliqué, compteurs recalculés. Une seule fois, stratégie par stratégie ; copie de chaque jour d'origine gardée sous « bak19:xreel:… ».
+   * Teneurs de marché (estimés) non touchés (déjà dédoublonnés à part). */
+  async dedoublonnerReel() {
+    if (this._ddR || !this._reelMs || !this.N) return;
+    this._ddR = true;
+    if (await this.state.storage.get("reel:dedup19")) return;
+    await this.state.storage.put("reel:dedup19", { debut: (/* @__PURE__ */ new Date()).toISOString() });
+    const N = this.N;
+    N.reelZ = N.reelZ || {};
+    let enleves = 0, reduits = 0, strats = 0;
+    for (const nom of Object.keys(N.reelZ)) {
+      if (nom === "__tv" || NOMS_ESTIMES.has(nom) || nom.includes(" palier x2")) continue;
+      const brut = await this.state.storage.list({ prefix: "xreel:" + nom + "|" });
+      if (!brut.size) continue;
+      const L = [], vus = /* @__PURE__ */ new Set(), sauve = {};
+      for (const [k, v] of brut) {
+        sauve["bak19:" + k] = v;
+        for (const l of v) {
+          const c = JSON.stringify(l.slice(0, 5));
+          if (vus.has(c)) {
+            enleves++;
+            continue;
+          }
+          vus.add(c);
+          L.push(l);
+        }
+      }
+      for (const [k, v] of Object.entries(sauve)) await this.state.storage.put(k, v);
+      L.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+      const z0 = N.reelZ[nom];
+      delete N.reelZ[nom];
+      const cap = {}, maj = {};
+      for (const k of brut.keys()) maj[k] = [];
+      for (const l0 of L) {
+        const l = [...l0], ms = Date.parse(l[0]), st = Math.floor(ms / 3e5) * 300;
+        let net = +l[4] || 0, mise = (+l[2] || 0) * (+l[3] || 0);
+        if (mise > 0) {
+          const deja = cap[st] || 0, reste = (ms < Date.parse("2026-11-05T12:00:00Z") ? 250 : PLAFOND_REEL) - deja;
+          if (mise > reste + 0.01) {
+            const f = reste / mise;
+            net *= f;
+            mise = reste;
+            l[3] = +((+l[3] || 0) * f).toFixed(4);
+            l[4] = +net.toFixed(4);
+            reduits++;
+          }
+          cap[st] = deja + mise;
+        }
+        zCompte(N.reelZ, nom, l[0], net, false, mise, st);
+        (maj["xreel:" + nom + "|" + l[0].slice(0, 10)] = maj["xreel:" + nom + "|" + l[0].slice(0, 10)] || []).push(l);
+      }
+      if (z0 && N.reelZ[nom]) {
+        for (const x of ["capital", "palier", "reserve", "plafondCycle"]) if (z0[x] != null) N.reelZ[nom][x] = z0[x];
+      }
+      const E = Object.entries(maj);
+      for (let i = 0; i < E.length; i += 64) await this.state.storage.put(Object.fromEntries(E.slice(i, i + 64)));
+      strats++;
+    }
+    this._capR = {};
+    await zSauver(this.state.storage, "nv:reelZ", N.reelZ);
+    await this.state.storage.put("reel:dedup19", { at: (/* @__PURE__ */ new Date()).toISOString(), strategies: strats, doublonsEnleves: enleves, tradesReduitsAuPlafond: reduits });
+  }
   /** 05.11.2026 : teneurs de marché du tableau des vrais trades recomptés depuis leurs lignes, un seul résultat par cycle (doublons retirés). */
   async reconstruireTeneurs() {
     if (this._recTen || !this._reelMs || !this.N) return;
@@ -27621,7 +27702,7 @@ var Bot = class {
     }
     let parts = ctx.parts ?? null;
     if (start && mise > 0) {
-      const C2 = this._capR = this._capR || {}, ck = nom + "|" + start, deja = C2[ck] || 0, reste = PLAFOND_REEL - deja;
+      const C2 = this._capR = this._capR || {}, ck = nom + "|" + start, zc = N.reelZ[nom], deja = Math.max(C2[ck] || 0, zc && zc.cy && zc.cy[start] || 0), reste = PLAFOND_REEL - deja;
       if (reste <= 0.01) return;
       if (mise > reste) {
         const f = reste / mise;
