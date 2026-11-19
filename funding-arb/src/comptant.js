@@ -130,7 +130,7 @@ export async function tickComptant(env) {
   // candidats : même jeton, même monnaie de cotation, toutes les paires de plateformes
   const par = new Map();
   for (const x of lignes) { if (!(x.vol >= REGLES_C.volumeMin)) continue; const k = x.base + "/" + x.quote; if (!par.has(k)) par.set(k, []); par.get(k).push(x); }
-  let marge = null; try { marge = await lireMarge(db); } catch (e) {}
+  let marge = null; try { marge = await lireMarge(db); } catch (e) { try { await db.prepare("INSERT OR REPLACE INTO etat (id,t,json) VALUES (5,?,?)").bind(now, JSON.stringify({ err: String(e.stack || e).slice(0, 500) })).run(); } catch (e2) {} }
   const cands = [];
   for (const [k, l] of par) {
     let best = null;
