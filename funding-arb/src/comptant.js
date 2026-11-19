@@ -15,6 +15,7 @@ export const REGLES_C = {
   ecartSuspect: 0.01,   // A : un écart > 1 %…
   dureeSuspectS: 300,   // …qui dure plus de 5 min = jeton différent ou retraits bloqués → trades annulés, actif ignoré
   sorties: [5, 10],
+  entreeMin2: 25,       // stratégie 2 : gain à l'entrée ≥ 25 $ après frais d'entrée (Pitch, 19.11.2026)
   empruntObligatoire: true, // la crypto vendue doit être empruntable sur la plateforme de vente (vente à découvert au comptant)
   heuresEmpruntS1: 1,
   plateformes: ["gate", "bybit", "okx", "kucoin"], // 19.11.2026 : seulement les plateformes prévues pour le réel
@@ -220,7 +221,7 @@ export async function tickComptant(env) {
   }
   const dejaOuv = new Set(ouvertes.map((p) => p.variante + "|" + p.cle));
   const nOuv = {}; for (const p of ouvertes) if (p.regles === REGLES_ID_C) nOuv[p.variante] = (nOuv[p.variante] || 0) + 1;
-  for (const c of cands.filter((c) => c.gain >= 0 && !permanent(c)).slice(0, 6)) {
+  for (const c of cands.filter((c) => c.gain >= REGLES_C.entreeMin2 && !permanent(c)).slice(0, 6)) {
     const libres = REGLES_C.sorties.filter((v) => !dejaOuv.has(v + "|" + c.k) && (nOuv[v] || 0) < REGLES_C.maxOuvertes);
     if (!libres.length) continue;
     try {
@@ -231,7 +232,7 @@ export async function tickComptant(env) {
       const vA = prixMoyenQ(ca.asks, Q), vB = prixMoyenQ(cb.bids, Q);
       if (!vA || !vB) continue;
       const entree = Q * vB * (1 - FRAIS_C[c.b.ex]) - Q * vA * (1 + FRAIS_C[c.a.ex]);
-      if (entree < 0) continue;
+      if (entree < REGLES_C.entreeMin2) continue;
       for (const v of libres) {
         st.push(db.prepare("INSERT INTO comptant_pos (variante, cle, base, quote, achat_ex, vente_ex, qte, px_achat, px_vente, ouvert, entree, frais, statut, taux, regles) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'ouvert',?,?)")
           .bind(v, c.k, c.a.base, c.a.quote, c.a.ex, c.b.ex, Q, vA, vB, now, entree, Q * vA * FRAIS_C[c.a.ex] + Q * vB * FRAIS_C[c.b.ex], em.taux, REGLES_ID_C));
