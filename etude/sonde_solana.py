@@ -1,4 +1,4 @@
-# garde vitesse 2026-11-19T19:35Z
+# reel >10k aujourd'hui 2026-11-19T19:40Z
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
@@ -31,12 +31,8 @@ for x in (R.get("strats") or []):
 
 
 
-import gzip, base64
-try:
-    raw = urllib.request.urlopen(urllib.request.Request("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=2026-11-18T13:30:00Z", headers={"user-agent": "verif"}), timeout=280).read()
-    T = json.loads(raw)["trades"]; print("BANC-N", len(T), len(raw))
-    K = ("num","id","ouvert","endTs","side","prix","prixSignal","mise","pnl","gagne")
-    rows = [[t.get(k) for k in K] for t in T if t["num"] < 1000000]
-    print("BANC-GZ", base64.b64encode(gzip.compress(json.dumps([K, rows]).encode())).decode())
-except Exception as e:
-    print("BANC-ERREUR", e)
+
+R = g("https://bot95.pitch67.workers.dev/api/reel")
+for x in (R.get("strats") or []):
+    j = (x.get("parJour") or {}).get("2026-11-19") or 0
+    if j >= 10000: print("J19", x["num"], j, x["nom"][:80])
