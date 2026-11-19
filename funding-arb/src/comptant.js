@@ -175,7 +175,8 @@ export async function tickComptant(env) {
     else if (d == null && now - r.t > REGLES_C.dureeSuspectS * 1000) st.push(db.prepare("UPDATE comptant SET statut='validé' WHERE id=?").bind(r.id));
   }
 
-  // ---------- Stratégie 1 : achat sur A et vente sur B dans la même seconde, gain acquis
+  // ---------- Stratégie 1 : retirée par Pitch le 19.11.2026 (ancien code laissé désactivé)
+  if (false) {
   const recents = new Set((await db.prepare("SELECT cle FROM comptant WHERE t > ?").bind(now - REGLES_C.pauseMemeActifS * 1000).all()).results.map((r) => r.cle));
   for (const c of cands.filter((c) => c.gain >= REGLES_C.gainMin && !permanent(c)).slice(0, 8)) {
     if (recents.has(c.k)) { verifies[c.k] = "déjà pris il y a moins d'une minute"; continue; }
@@ -193,6 +194,8 @@ export async function tickComptant(env) {
       st.push(db.prepare("INSERT INTO comptant (t, cle, base, quote, achat_ex, vente_ex, qte, px_achat, px_vente, frais, net, statut, interet, taux, regles) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
         .bind(now, c.k, c.a.base, c.a.quote, c.a.ex, c.b.ex, Q, vA, vB, Q * vA * FRAIS_C[c.a.ex] + Q * vB * FRAIS_C[c.b.ex], net, c.ecart > REGLES_C.ecartSuspect ? "attente" : "validé", interet, em.taux, REGLES_ID_C));
     } catch (e) { verifies[c.k] = "carnet illisible : " + String(e.message || e).slice(0, 60); }
+  }
+
   }
 
   // ---------- Stratégie 2 : achat sur A + vente sur B, puis clôture quand l'écart s'inverse (vente sur A + achat sur B)
