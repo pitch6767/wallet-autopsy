@@ -1,25 +1,25 @@
-env.ASSETS                    Assets              
-
-Uploaded funding-arb (2.90 sec)
-Deployed funding-arb triggers (0.53 sec)
-  https://funding-arb.pitch67.workers.dev
-  schedule: * * * * *
-Current Version ID: b3396dc8-6a83-49b9-9082-f2ebaec097ed
-code sortie: 0
-
- ⛅️ wrangler 4.165.0
-────────────────────
-Resource location: remote 
-
-✅ No migrations to apply!
+├──────────────────┤
+│ 0011_emprunt.sql │
+└──────────────────┘
+? About to apply 1 migration(s)
+Your database may not be available to serve requests during the migration, continue?
+🤖 Using fallback value in non-interactive context: yes
+🌀 Executing on remote database funding-arb (e2ad9364-db37-4e09-a60d-ae95879b46e0):
+🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
+🚣 Executed 7 commands in 1.47ms
+┌──────────────────┬────────┐
+│ name             │ status │
+├──────────────────┼────────┤
+│ 0011_emprunt.sql │ ✅     │
+└──────────────────┴────────┘
 migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.5.5","statut":{"deribit":{"ok":true,"n":151,"ms":281},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":330,"ms":555},"bybit":{"ok":true,"n":832,"ms":980,"lieu":"AMS/US"},"okx":{"ok":true,"n":531,"ms":1293,"lieu":"relais WAW/US"}},"top":[{"base":"INIT","achat":"okx","vente":"bybit","ecart":0.03506444275966647,"gain":327.76492337263437},{"base":"BREV","achat":"okx","vente":"bybit","ecart":0.007642338555598149,"gain":54.15449204291912},{"base":"IRYS","achat":"okx","vente":"bybit","ecart":0.006451612903225934,"gain":38.588122430044905},{"base":"ZKP","achat":"okx","vente":"bybit","ecart":0.003185727938833871,"gain":4.503012632973061},{"base":"SKHY","achat":"hyperliquid","vente":"bybit","ecart":0.0016240043306783303,"gain":-4.532665206498379}]}
+{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.6.0","statut":{"deribit":{"ok":true,"n":151,"ms":277},"binance":{"ok":false,"err":"relais Dublin : {\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"premiumIndex\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":330,"ms":612},"okx":{"ok":true,"n":531,"ms":704,"lieu":"relais AMS/US"},"bybit":{"ok":true,"n":832,"ms":1660,"lieu":"AMS/US"}},"top":[{"base":"INIT","achat":"okx","vente":"bybit","ecart":0.04165092557612393,"gain":393.2048352921811},{"base":"BREV","achat":"okx","vente":"bybit","ecart":0.0074882599314634035,"gain":51.35867300277995},{"base":"IRYS","achat":"okx","vente":"bybit","ecart":0.006047516198704139,"gain":36.670856423136556},{"base":"ZKP","achat":"okx","vente":"bybit","ecart":0.002858958068614914,"gain":-0.3441820811105103},{"base":"SKHY","achat":"hyperliquid","vente":"bybit","ecart":0.0017580676113184701,"gain":-3.3007834921500887}]}
 === controles
 --- version
-{"version":"2.5.5"}
+{"version":"2.6.0"}
 --- bilan
 total {'n': 0, 'net': None, 'g': None, 'fund': None, 'frais': None, 'debut': None}
 anciennes {'n': 0, 'net': None}
@@ -37,30 +37,33 @@ ouvertes 1
 cache-control: no-store, max-age=0
  Arbitrage — fantôme 
    Arbitrage FANTÔME   
- Aucun ordre réel. Version 2.5.5 ·  …   
+ Aucun ordre réel. Version 2.6.0 ·  …   
  Stratégie 1 — achat et vente dans la même seconde 
  Stratégie 2 — achat/vente puis clôture quand l'écart s'inverse 
+ Emprunt (vente à découvert)   
  Plateformes   
  Stratégie 1 — trades (fantôme, gain net après frais)   
  À rééquilibrer en réel (pièces et dollars déplacés)  En réel, chaque trade vide un peu une plateforme et en remplit une autre : il faudra virer de temps en temps, avec des frais de retrait non comptés ici.   
  Plus gros écarts maintenant  « Gain attendu » au meilleur prix affiché, après frais. « Vérifié carnet » = gain réel pour 5 000 $ de chaque côté avec les vrais carnets d'ordres. Coinbase : dernier prix seulement (~), le carnet tranche.   
  Règles   
 --- etat brut (début)
-{"version":"2.5.5","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794998753994,"scan":{"statut":{"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"deribit":{"ok":true,"n":151,"ms":81},"okx":{"ok":true,"n":532,"ms":250},"bybit":{"ok":true,"n":832,"ms":787,"lieu":"AMS/US"},"hyperliquid":{"ok":true,"n":329,"ms":875}},"top":[{"base":"INIT","stock":false,"achat":"okx","ask":0.097,"vente":"bybit","bid":0.09947,"ecart":0.02546391752577315,"gain":232.11845758718863,"verif":"carnet trop mince pour 10000 $"},{"base":"BREV","stock":false,"achat":"okx","ask":0.09243,"vente":"bybit","bid":0.09445,"ecart":0.02185437628475606,"gain":195.93239336632988,"verif":null},{"base":"ZKP","stock":false,"achat":"okx","ask":0.03574,"vente":"bybit","bid":0.03618,"ecart":0.01231113598209288,"gain":93.74906142503517,"verif":-229.48},{"base":"IRYS","stock":false,"achat":"okx","ask":0.01709,"vente":"bybit","bid":0.017249,"ecart":0.009303686366296082,"gain":63.60578591339214,"verif":-269.52},{"base":"MSFT","stock":true,"achat":"hyperliquid","ask":508.15,"vente":"bybit","bid":509.08,"ecart":0.00183016825740423,"gain":-2.751066542283205,"verif":null},{"base":"SPY","stock":false,"achat":"deribit","ask":736.92,"vente":"okx","bid":738.18,"ecart":0.00170981
+{"version":"2.6.0","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794998753994,"scan":{"statut":{"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"deribit":{"ok":true,"n":151,"ms":81},"okx":{"ok":true,"n":532,"ms":250},"bybit":{"ok":true,"n":832,"ms":787,"lieu":"AMS/US"},"hyperliquid":{"ok":true,"n":329,"ms":875}},"top":[{"base":"INIT","stock":false,"achat":"okx","ask":0.097,"vente":"bybit","bid":0.09947,"ecart":0.02546391752577315,"gain":232.11845758718863,"verif":"carnet trop mince pour 10000 $"},{"base":"BREV","stock":false,"achat":"okx","ask":0.09243,"vente":"bybit","bid":0.09445,"ecart":0.02185437628475606,"gain":195.93239336632988,"verif":null},{"base":"ZKP","stock":false,"achat":"okx","ask":0.03574,"vente":"bybit","bid":0.03618,"ecart":0.01231113598209288,"gain":93.74906142503517,"verif":-229.48},{"base":"IRYS","stock":false,"achat":"okx","ask":0.01709,"vente":"bybit","bid":0.017249,"ecart":0.009303686366296082,"gain":63.60578591339214,"verif":-269.52},{"base":"MSFT","stock":true,"achat":"hyperliquid","ask":508.15,"vente":"bybit","bid":509.08,"ecart":0.00183016825740423,"gain":-2.751066542283205,"verif":null},{"base":"SPY","stock":false,"achat":"deribit","ask":736.92,"vente":"okx","bid":738.18,"ecart":0.00170981
 --- comptant
-total {'n': 10, 'net': 1029.6415462974674, 'frais': 136.5701707415552, 'debut': 1795001846544}
+total {'n': 0, 'net': None, 'frais': None, 'interet': None, 'debut': None}
+emprunt None
+avant {'n1': 10, 'net1': 1029.6415462974674, 'n2': 45, 'net2': 3855.4368974015524}
 erreur None
-age scan s 10
- P mexc {'ok': True, 'n': 1605, 'ms': 32}
+age scan s 5
  P bitget {'ok': False, 'err': 'HTTP 403 {"cloudflare":"block"}'}
- P kraken {'ok': True, 'n': 94, 'ms': 36}
- P bybit {'ok': True, 'n': 458, 'ms': 188}
- P coinbase {'ok': True, 'n': 426, 'ms': 194}
- P okx {'ok': True, 'n': 803, 'ms': 195}
+ P mexc {'ok': True, 'n': 1605, 'ms': 56}
+ P kraken {'ok': True, 'n': 94, 'ms': 73}
+ P coinbase {'ok': True, 'n': 426, 'ms': 195}
+ P bybit {'ok': True, 'n': 458, 'ms': 197}
+ P okx {'ok': True, 'n': 803, 'ms': 560}
  P kucoin {'ok': False, 'err': 'HTTP 429 {"code":"429000","msg":"Too many requests. User-level rate limit exceeded, please retry later."}'}
- P gate {'ok': True, 'n': 2072, 'ms': 1619}
-attente {'n': 0, 'net': None} annules {'n': 9, 'net': 2183.421257526761}
-strat2 [{'variante': 5, 'n': 24, 'net': 2218.1499470991444, 'frais': 780.0576562688728, 'duree': 9913652.291666666}, {'variante': 10, 'n': 21, 'net': 1637.286950302408, 'frais': 691.4882063400022, 'duree': 11617520.333333334}] [{'variante': 5, 'n': 19}, {'variante': 10, 'n': 19}]
+ P gate {'ok': True, 'n': 2072, 'ms': 1637}
+attente {'n': 0, 'net': None} annules {'n': 0, 'net': None}
+strat2 [] []
  C PIEVERSE USDT gate 2.5289545361144 kucoin 2.5686386938119194 net 63.45 validé
  C PIEVERSE USDT bybit 2.6059449907732004 gate 2.6829221313259994 net 132.51 validé
  C IRYS USDT gate 0.023683706055800006 okx 0.024671502473156002 net 195.51 annulé
@@ -83,35 +86,21 @@ strat2 [{'variante': 5, 'n': 24, 'net': 2218.1499470991444, 'frais': 780.0576562
  P2 10 PIEVERSE/USDT kucoin gate fermé 34.71 80.61954510207534
  P2 5 PIEVERSE/USDT bybit gate fermé 10.49 32.44049240054028
  P2 5 EVAA/USDT kucoin gate ouvert 41.88 None
- T LIT/USDT bybit 2.9227 gate 3.193 9.248 % 447.41 verif None
- T FIL/USDT okx 0.5778 mexc 0.5789 0.19 % 2.02 verif None
- T IRYS/USDT okx 0.02362 gate 0.02367 0.212 % -4.42 verif None
- T KII/USDT mexc 0.08501 bybit 0.08504 0.035 % -5.74 verif None
- T PIEVERSE/USDT gate 2.6931 bybit 2.698 0.182 % -5.9 verif None
- T ENA/USDT bybit 0.11014 mexc 0.11017 0.027 % -6.14 verif None
- T SOL/USDT mexc 74.5 bybit 74.51 0.013 % -6.83 verif None
- T BTC/USDT mexc 63840.87 bybit 63846.6 0.009 % -7.05 verif None
- T ZRO/USDT mexc 1.4146 okx 1.4147 0.007 % -7.15 verif None
- T BNB/USDT bybit 590.5 mexc 590.54 0.007 % -7.16 verif None
- T ETH/USDT mexc 1805.87 okx 1805.88 0.001 % -7.47 verif None
- T NIGHT/USDT okx 0.044311 bybit 0.04433 0.043 % -7.86 verif None
+ T LIT/USDT bybit 2.9228 gate 3.208 9.758 % 472.89 verif None
+ T FIL/USDT okx 0.5785 mexc 0.5794 0.156 % 0.28 verif None
+ T ENA/USDT bybit 0.11016 mexc 0.1102 0.036 % -5.68 verif None
+ T BTC/USDT mexc 63807.84 bybit 63813.6 0.009 % -7.05 verif None
+ T ZRO/USDT mexc 1.4176 okx 1.4177 0.007 % -7.15 verif None
+ T ETH/USDT bybit 1804.76 mexc 1804.85 0.005 % -7.25 verif None
+ T TRX/USDT mexc 0.3126 okx 0.31261 0.003 % -7.34 verif None
+ T ARB/USDT okx 0.12697 bybit 0.127 0.024 % -8.82 verif None
+ T SUI/USDT bybit 0.728 okx 0.7281 0.014 % -9.31 verif None
+ T LINK/USDT okx 9.179 bybit 9.18 0.011 % -9.46 verif None
+ T VVV/USDT bybit 23.099 okx 23.1 0.004 % -9.78 verif None
+ T ETH/USDC bybit 1802.98 okx 1803.03 0.003 % -9.86 verif None
 --- page comptant
 cache-control: no-store, max-age=0
 <header><div style="display:flex;align-items:center;gap:10px"><h1>Arbitrage<span class="badge">FANTÔME</span></h1></div>
-<div class="mu">Aucun ordre réel. Version 2.5.5 · <span id="maj">…</span></div></header>
+<div class="mu">Aucun ordre réel. Version 2.6.0 · <span id="maj">…</span></div></header>
 --- regles comptant
-{'mise': 5000, 'gainMin': 50, 'ecartMaxPrix': 0.1, 'volumeMin': 1000000, 'pauseMemeActifS': 60, 'ecartSuspect': 0.01, 'dureeSuspectS': 300, 'sorties': [5, 10]}
---- sonde marge
-{
- "bybit": "200 635030 {\"retCode\":0,\"retMsg\":\"success\",\"result\":{\"vipCoinList\":[{\"list\":[{\"borrowable\":true,\"collateralRatio\":\"1\",\"currency\":\"USDT\",\"hourlyBorrowRate\":\"0.0000044810150000\",\"liquidationOrder\":\"1\",\"marginCollateral\":true,\"maxBorrowingAmount\":\"8000000\"},{\"borrowable\":false,\"collateralRatio\":\"0.999\",\"currency\":\"BYUSDT\",\"hourlyBorrowRate\":\"\",\"liquidationOrder\":\"2\",\"marginCollateral\":true,\"maxBorrowingAmount\":\"\"},{\"borrowable\":true,\"collateralRatio\":\"0.98\",\"currency\":\"BTC\",\"hourlyBorrowRate\":\"0.0000005564210000\",\"liquidationOrder\":\"3\",\"marginCollateral\":true,\"maxBorrowingAmount\":\"300\"},{\"borrowable\":true,\"collateralRatio\":\"0.95\",\"currency\":\"ETH\",\"hourlyBorrowRate\":\"0.0000018719360000\",\"liquidationOrder\":",
- "bybit_tiered": "200 133084 {\"retCode\":0,\"retMsg\":\"OK\",\"result\":{\"list\":[{\"currency\":\"AGLD\",\"collateralRatioList\":[{\"minQty\":\"0\",\"maxQty\":\"18500\",\"collateralRatio\":\"0.7\"},{\"minQty\":\"18500\",\"maxQty\":\"34400\",\"collateralRatio\":\"0.6\"},{\"minQty\":\"34400\",\"maxQty\":\"55100\",\"collateralRatio\":\"0.5\"},{\"minQty\":\"55100\",\"maxQty\":\"85700\",\"collateralRatio\":\"0.4\"},{\"minQty\":\"85700\",\"maxQty\":\"137000\",\"collateralRatio\":\"0.3\"},{\"minQty\":\"137000\",\"maxQty\":\"999999999\",\"collateralRatio\":\"0.2\"},{\"minQty\":\"999999999\",\"maxQty\":\"\",\"collateralRatio\":\"0\"}]},{\"currency\":\"SCR\",\"collateralRatioList\":[{\"minQty\":\"0\",\"maxQty\":\"380000\",\"collateralRatio\":\"0.7\"},{\"minQty\":\"380000\",\"maxQty\":\"770000\",\"collateralRatio\":\"0.6\"},{\"minQty\":\"770000\",\"maxQty\":\"120",
- "okx_quota": "200 12774 {\"code\":\"0\",\"data\":[{\"configCcyList\":[{\"ccy\":\"USDT\",\"rate\":\"0.00010416\"},{\"ccy\":\"USDC\",\"rate\":\"0.00012336\"}],\"basic\":[{\"ccy\":\"USDT\",\"quota\":\"5000000\",\"rate\":\"0.00010416\"},{\"ccy\":\"BTC\",\"quota\":\"175\",\"rate\":\"0.00001392\"},{\"ccy\":\"ETH\",\"quota\":\"7000\",\"rate\":\"0.00004944\"},{\"ccy\":\"OKB\",\"quota\":\"1200\",\"rate\":\"0.0000276\"},{\"ccy\":\"USDC\",\"quota\":\"1000000\",\"rate\":\"0.00012336\"},{\"ccy\":\"LTC\",\"quota\":\"5000\",\"rate\":\"0.0000276\"},{\"ccy\":\"DOT\",\"quota\":\"38000\",\"rate\":\"0.00007416\"},{\"ccy\":\"ADA\",\"quota\":\"200000\",\"rate\":\"0.0000276\"},{\"ccy\":\"BCH\",\"quota\":\"300\",\"rate\":\"0.0000276\"},{\"ccy\":\"TRX\",\"quota\":\"1500000\",\"rate\":\"0.000444\"},{\"ccy\":\"XRP\",\"quota\":\"2500000\",\"rate\":\"0.0000276\"},{\"ccy\":\"LINK\",\"quota\":\"20000\",\"rate",
- "okx_margin": "200 300297 {\"code\":\"0\",\"data\":[{\"alias\":\"\",\"auctionEndTime\":\"\",\"baseCcy\":\"BTC\",\"category\":\"1\",\"contTdSwTime\":\"\",\"ctMult\":\"\",\"ctType\":\"\",\"ctVal\":\"\",\"ctValCcy\":\"\",\"expTime\":\"\",\"floatPxLmtPct\":\"0.005\",\"freq\":\"\",\"futureSettlement\":false,\"groupId\":\"12\",\"initPxLmtPct\":\"\",\"instCategory\":\"1\",\"instFamily\":\"BTC-USDT\",\"instId\":\"BTC-USDT\",\"instIdCode\":3,\"instType\":\"MARGIN\",\"lever\":\"10\",\"listTime\":\"1611907686000\",\"longPosRemainingQuota\":\"\",\"lotSz\":\"0.00000001\",\"maxIcebergSz\":\"9999999999.0000000000000000\",\"maxLmtAmt\":\"20000000\",\"maxLmtSz\":\"9999999999\",\"maxMktAmt\":\"1000000\",\"maxMktSz\":\"1000000\",\"maxPlatOICoinLmt\":\"\",\"maxPlatOILmt\":\"\",\"maxPxLmtPct\":\"0.01\",\"maxStopSz\":\"1000000\",\"maxTriggerSz\":\"9999999999.00000000000000",
- "gate_pairs": "200 184892 [{\"currency_pair\":\"0G_USDT\",\"base_min_borrow_amount\":\"1\",\"quote_min_borrow_amount\":\"1\",\"leverage\":\"3\",\"status\":\"enabled\",\"delisted_time\":0},{\"currency_pair\":\"1CAT_USDT\",\"base_min_borrow_amount\":\"7100\",\"quote_min_borrow_amount\":\"1\",\"leverage\":\"3\",\"status\":\"disabled\",\"delisted_time\":0},{\"currency_pair\":\"1DOLLAR_USDT\",\"base_min_borrow_amount\":\"750\",\"quote_min_borrow_amount\":\"1\",\"leverage\":\"3\",\"status\":\"disabled\",\"delisted_time\":0},{\"currency_pair\":\"1INCH_USDT\",\"base_min_borrow_amount\":\"8\",\"quote_min_borrow_amount\":\"1\",\"leverage\":\"3\",\"status\":\"enabled\",\"delisted_time\":0},{\"currency_pair\":\"2Z_USDT\",\"base_min_borrow_amount\":\"10\",\"quote_min_borrow_amount\":\"1\",\"leverage\":\"3\",\"status\":\"enabled\",\"deli",
- "gate_lend": "200 148011 [{\"currency\":\"USDT\",\"min_lend_amount\":\"1\",\"max_lend_amount\":\"100000000\",\"max_rate\":\"0.0000114\",\"min_rate\":\"0.00000011\"},{\"currency\":\"BTC\",\"min_lend_amount\":\"0.00001\",\"max_lend_amount\":\"120000000\",\"max_rate\":\"0.00057\",\"min_rate\":\"0.00000011\"},{\"currency\":\"ETH\",\"min_lend_amount\":\"0.001\",\"max_lend_amount\":\"500000000\",\"max_rate\":\"0.00057\",\"min_rate\":\"0.00000011\"},{\"currency\":\"GT\",\"min_lend_amount\":\"0.1\",\"max_lend_amount\":\"6000000\",\"max_rate\":\"0.00000684\",\"min_rate\":\"0.00000011\"},{\"currency\":\"POINT\",\"min_lend_amount\":\"1\",\"max_lend_amount\":\"500000\",\"max_rate\":\"0.00057\",\"min_rate\":\"0.00000011\"},{\"currency\":\"DOGE\",\"min_lend_amount\":\"10\",\"max_lend_amount\":\"10000000\",\"max_rate\":\"0.00057\",\"min_rate\":\"0",
- "gate_cross": "200 206994 [{\"name\":\"NOT\",\"rate\":\"0\",\"prec\":\"0.000001\",\"discount\":\"0\",\"min_borrow_amount\":\"2000\",\"user_max_borrow_amount\":\"10000\",\"total_max_borrow_amount\":\"250000\",\"price\":\"0.000312\",\"loanable\":true,\"status\":1},{\"name\":\"SOL\",\"rate\":\"0\",\"prec\":\"0.000001\",\"discount\":\"0.8\",\"min_borrow_amount\":\"0.01\",\"user_max_borrow_amount\":\"5000000\",\"total_max_borrow_amount\":\"50000000\",\"price\":\"74.474\",\"loanable\":true,\"status\":1},{\"name\":\"GFT\",\"rate\":\"0\",\"prec\":\"0.000001\",\"discount\":\"0\",\"min_borrow_amount\":\"3000\",\"user_max_borrow_amount\":\"0\",\"total_max_borrow_amount\":\"0\",\"price\":\"0\",\"loanable\":false,\"status\":1},{\"name\":\"MAPS\",\"rate\":\"0\",\"prec\":\"0.000001\",\"discount\":\"0\",\"min_borrow_amount\":\"200\",\"user_max_borrow_amount\":",
- "kucoin_symbols": "200 29282 {\"code\":\"200000\",\"data\":{\"timestamp\":1795084110387,\"items\":[{\"symbol\":\"ATOM-USDT\",\"name\":\"ATOM-USDT\",\"enableTrading\":true,\"market\":\"USDS\",\"baseCurrency\":\"ATOM\",\"quoteCurrency\":\"USDT\",\"baseIncrement\":\"0.0001\",\"baseMinSize\":\"0.1\",\"quoteIncrement\":\"0.0001\",\"quoteMinSize\":\"0.1\",\"baseMaxSize\":\"10000000000\",\"quoteMaxSize\":\"99999999\",\"priceIncrement\":\"0.0001\",\"feeCurrency\":\"USDT\",\"priceLimitRate\":\"0.05\",\"minFunds\":\"0.1\"},{\"symbol\":\"BNB-USDT\",\"name\":\"BNB-USDT\",\"enableTrading\":true,\"market\":\"USDS\",\"baseCurrency\":\"BNB\",\"quoteCurrency\":\"USDT\",\"baseIncrement\":\"0.0001\",\"baseMinSize\":\"0.001\",\"quoteIncrement\":\"0.001\",\"quoteMinSize\":\"0.1\",\"baseMaxSize\":\"10000000000\",\"quoteMaxSize\":\"99999999\",\"priceIncrement",
- "kucoin_rate": "200 27 {\"code\":\"200000\",\"data\":[]}",
- "kucoin_lend": "400 131 {\"code\":\"400001\",\"msg\":\"Please check the header of your request for KC-API-KEY, KC-API-SIGN, KC-API-TIMESTAMP, KC-API-PASSPHRASE.\"}",
- "kucoin_cfg": "200 527 {\"code\":\"200000\",\"data\":{\"currencyList\":[\"TAO\",\"PAXG\",\"APT\",\"SHIB\",\"USDT\",\"DOGE\",\"HBAR\",\"NEAR\",\"ORDI\",\"DASH\",\"WLD\",\"PEPE\",\"ONDO\",\"CHZ\",\"ZRO\",\"XRP\",\"PYTH\",\"TRX\",\"PENGU\",\"SUI\",\"BCH\",\"CAKE\",\"DOT\",\"POL\",\"BTC\",\"ARB\",\"AVAX\",\"WIF\",\"ASTER\",\"SEI\",\"ENA\",\"LTC\",\"USDC\",\"TRUMP\",\"INJ\",\"CRV\",\"PUMP\",\"ALGO\",\"ATOM\",\"UNI\",\"AAVE\",\"S\",\"BONK\",\"XPL\",\"XLM\",\"LINK\",\"LUNC\",\"XAUT\",\"OP\",\"EIGEN\",\"JUP\",\"HYPE\",\"FIL\",\"TIA\",\"SOL\",\"FET\",\"ETC\",\"GRAM\",\"BNB\",\"ICP\",\"ETH\",\"ZEC\",\"KCS\",\"STRK\",\"ADA\"],\"maxLeverage\":5,\"warningDebtRatio\":\"0.92\",\"liqDebtRatio\":\"0.95\"}}"
-}
+{'mise': 5000, 'gainMin': 50, 'ecartMaxPrix': 0.1, 'volumeMin': 1000000, 'pauseMemeActifS': 60, 'ecartSuspect': 0.01, 'dureeSuspectS': 300, 'sorties': [5, 10], 'empruntObligatoire': True, 'heuresEmpruntS1': 1}
