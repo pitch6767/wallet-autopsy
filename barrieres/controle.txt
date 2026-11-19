@@ -1,0 +1,28 @@
+├───────────────┤
+│ 0001_init.sql │
+└───────────────┘
+? About to apply 1 migration(s)
+Your database may not be available to serve requests during the migration, continue?
+🤖 Using fallback value in non-interactive context: yes
+🌀 Executing on remote database barrieres (dea40366-9a15-498a-b8b1-bcf1093f97dc):
+🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
+🚣 Executed 5 commands in 0.70ms
+┌───────────────┬────────┐
+│ name          │ status │
+├───────────────┼────────┤
+│ 0001_init.sql │ ✅     │
+└───────────────┴────────┘
+migrations: 0
+=== sonde (un relevé)
+error code: 1042
+
+=== controles
+--- version
+{"version":"1.0.0"}
+--- page
+cache-control: private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+--- etat
+journal None
+lignes 0
+positions 0
+bilan {'OUI': {'n': 0, 'net': 0, 'jour': 0, 'creux': 0, 'miseMax': 0, 'ic': None, 'ouvertes': 0}, 'NON': {'n': 0, 'net': 0, 'jour': 0, 'creux': 0, 'miseMax': 0, 'ic': None, 'ouvertes': 0}}
