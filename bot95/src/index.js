@@ -1065,12 +1065,14 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
       const tout = u.searchParams.get("tout") === "1", visibles = tout ? L : L.filter((x) => (+x.pnl || 0) >= SEUIL_REEL);
       return json({ depuis: this._reelDepuis || null, strats: visibles, cachees: L.length - visibles.length, seuil: SEUIL_REEL, total: +L.filter((x) => !x.estimee && !x.variante).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } }); }
     if (u.pathname === "/excel-reel") { const Q = {};
-      for (const [kk, v] of await this.state.storage.list({ prefix: "xreel:" })) { const k = kk.slice(6, kk.lastIndexOf("|")); (Q[k] = Q[k] || []).push(...v); }
+      // 19.11.2026 : plus de lecture de TOUT l'historique (erreur 1101, mémoire) — seulement les jours demandés, clé par clé ; le résumé vient des compteurs complets
+      const jours = Math.min(14, Math.max(1, Number(u.searchParams.get("jours")) || 3)), Zx = (this.N && this.N.reelZ) || {}, cles = [];
+      for (const k of Object.keys(Zx)) { if (k === "__tv") continue; Q[k] = []; for (let d = 0; d <= jours; d++) cles.push("xreel:" + k + "|" + new Date(Date.now() - d * 864e5).toISOString().slice(0, 10)); }
+      for (let i = 0; i < cles.length; i += 128) for (const [kk, v] of await this.state.storage.get(cles.slice(i, i + 128))) { const k = kk.slice(6, kk.lastIndexOf("|")); (Q[k] = Q[k] || []).push(...v); }
       for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => (a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0));
       if (!Object.keys(Q).length) return new Response("Aucun vrai trade réglé pour l'instant.", { headers: { "content-type": "text/plain; charset=utf-8" } });
       // 19.11.2026 (Pitch : « oui » — l'export plantait, erreur 1101, fichier trop gros) : résumé sur tout l'historique, lignes de trades des N derniers jours (3 par défaut, 14 au plus)
-      const jours = Math.min(14, Math.max(1, Number(u.searchParams.get("jours")) || 3));
-      const corps = await xlClasseur(Q, this._reelDepuis || new Date().toISOString(), { lignesDepuis: new Date(Date.now() - jours * 864e5).toISOString(), deux: true, titre: "Bot95 — VRAIS TRADES (signaux reçus par le bot, joués sur le vrai carnet Polymarket, frais compris, réglés par Polymarket ; teneurs de marché = estimés) depuis le " });
+      const corps = await xlClasseur(Q, this._reelDepuis || new Date().toISOString(), { stats: Zx, lignesDepuis: new Date(Date.now() - jours * 864e5).toISOString(), deux: true, titre: "Bot95 — VRAIS TRADES (signaux reçus par le bot, joués sur le vrai carnet Polymarket, frais compris, réglés par Polymarket ; teneurs de marché = estimés) depuis le " });
       return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_vrais_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:T]/g, "") + '.xlsx"', "cache-control": "no-store" } }); }
     if (["/zero6", "/zero5", "/zero2", "/zero", "/zero3-ancien", "/onglet1-archive", "/", "/index.html"].includes(u.pathname)) return Response.redirect(new URL("/reel", req.url).toString(), 302);
     if (u.pathname === "/zero6") return new Response(PAGE_ZERO5, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
@@ -4543,13 +4545,16 @@ async function xlClasseur(Q, depuis, opt = {}) {
       lignes.push([{ v: serie(l[0]), s: 1 }, l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: mise ?? "", s: 2 }, { v: net, s: 2 }, { v: cum, s: 2 }, l[5] || ""]);
       tous.push([l[0], k, l]); }
     const f = court(k); feuilleDe[k] = f; lignes[0].push("", { v: "← Tous les trades", s: 5 }); feuilles.push([f, xlFeuille(lignes, { fige: 2, largeurs: [18, 8, 8, 9, 10, 11, 11, 18], filtre: "A2:H" + lignes.length, liens: [["F1", "'Résumé'!A1"], ["H1", "'Tous les trades'!A1"]] })]);
-    R.push({ k, f, n: L.length, g, p, pnl: cum, pertes, pire, creux, cap: Math.round((2 * creux + 2 * 50) / 50) * 50, moy: cum / nJours, mise: nm ? mises / nm : null, der: L[L.length - 1][0] });
+    const z = opt.stats && opt.stats[k];   // 19.11.2026 : résumé sur tout l'historique depuis les compteurs complets (les lignes ne couvrent que les derniers jours)
+    if (z) { g = z.gains || 0; p = z.pertes || 0; cum = +z.pnl || 0; pertes = +z.pertesTot || 0; pire = +z.pire || 0; creux = +z.creux || 0; }
+    if (!L.length && !z) continue;
+    R.push({ k, f, n: z ? z.n || 0 : L.length, g, p, pnl: cum, pertes, pire, creux, cap: Math.round((2 * creux + 2 * 50) / 50) * 50, moy: cum / nJours, mise: z && z.n ? (+z.mise || 0) / z.n : nm ? mises / nm : null, der: L.length ? L[L.length - 1][0] : "" });
   }
   R.sort((a, b) => b.pnl - a.pnl);
   const res = [[{ v: (opt.titre || "Bot95 — trades fantômes depuis la remise à 0 du ") + new Date(Date.parse(depuis) + decalSuisse(Date.parse(depuis))).toISOString().slice(0, 16).replace("T", " ") + " (heure suisse) — fichier du " + new Date(maint + decalSuisse(maint)).toISOString().slice(0, 16).replace("T", " ") + ". Aucun argent réel. Cliquer un nom pour voir ses trades.", s: 4 }],
     [...(opt.deux ? ["N°"] : []), "Stratégie", "Trades", "Gagnés", "Perdus", "% gagnés", "Résultat $", "Total pertes $", "Pire trade $", "Creux max $", "Capital conseillé $", "Moyenne / jour $", "Mise moyenne $", "Dernier trade"].map((v) => ({ v, s: 3 }))];
   const liens = [];
-  R.forEach((x, i) => { res.push([...(opt.deux ? [{ v: numDe(x.k) ?? "", s: 5 }, String(x.k).replace(/ BTC$/, "")] : [{ v: avecNum(x.k), s: 5 }]), x.n, x.g, x.p, { v: x.n ? x.g / x.n : 0, s: 6 }, { v: x.pnl, s: 2 }, { v: x.pertes, s: 2 }, { v: x.pire, s: 2 }, { v: -x.creux, s: 2 }, { v: x.cap, s: 2 }, { v: x.moy, s: 2 }, { v: x.mise ?? "", s: 2 }, { v: serie(x.der), s: 1 }]); liens.push(["A" + (i + 3), "'" + x.f + "'!A1"]); });
+  R.forEach((x, i) => { res.push([...(opt.deux ? [{ v: numDe(x.k) ?? "", s: 5 }, String(x.k).replace(/ BTC$/, "")] : [{ v: avecNum(x.k), s: 5 }]), x.n, x.g, x.p, { v: x.n ? x.g / x.n : 0, s: 6 }, { v: x.pnl, s: 2 }, { v: x.pertes, s: 2 }, { v: x.pire, s: 2 }, { v: -x.creux, s: 2 }, { v: x.cap, s: 2 }, { v: x.moy, s: 2 }, { v: x.mise ?? "", s: 2 }, (x.der ? { v: serie(x.der), s: 1 } : "")]); liens.push(["A" + (i + 3), "'" + x.f + "'!A1"]); });
   res.push([...(opt.deux ? [""] : []), "Total", R.reduce((a, x) => a + x.n, 0), R.reduce((a, x) => a + x.g, 0), R.reduce((a, x) => a + x.p, 0), "", { v: R.reduce((a, x) => a + x.pnl, 0), s: 2 }, { v: R.reduce((a, x) => a + x.pertes, 0), s: 2 }]);
   res.push([]); res.push(["Capital conseillé = 2 × creux max + 2 mises de 50 $, arrondi à 50 $. Moyenne / jour = résultat ÷ " + nJours + " jours (du " + jourS(depuis).split("-").reverse().join(".") + " à aujourd'hui)."]);
   tous.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
