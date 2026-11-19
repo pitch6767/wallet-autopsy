@@ -1,0 +1,50 @@
+name: Deploy Barrieres
+on:
+  push:
+    branches: [main]
+    paths: [barrieres/src/**, barrieres/public/**, barrieres/migrations/**, barrieres/wrangler.jsonc, barrieres/controle.sh, .github/workflows/barrieres.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: barrieres
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deployer et controler
+        run: |
+          set +e
+          npm i -g wrangler@4 >/dev/null 2>&1
+          cd barrieres
+          U=https://barrieres.pitch67.workers.dev
+          code=$(curl -sS -m 20 -o /tmp/avant.html -w "%{http_code}" $U/)
+          if [ "$code" = "200" ] && ! grep -q "barrieres-app" /tmp/avant.html; then
+            echo "STOP : un autre Worker nommé barrieres existe déjà, rien n'a été déployé" > controle.txt
+          else
+            lire_id() { wrangler d1 list --json 2>/dev/null | python3 -c "import json,sys;print(next((d['uuid'] for d in json.load(sys.stdin) if d['name']=='barrieres'),''))"; }
+            ID=$(lire_id)
+            if [ -z "$ID" ]; then wrangler d1 create barrieres --location weur > /tmp/d1.log 2>&1; ID=$(lire_id); fi
+            echo "D1: $ID" > /tmp/d.log
+            sed -i "s/A_REMPLACER_PAR_LE_WORKFLOW/$ID/" wrangler.jsonc
+            wrangler deploy >> /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log
+            wrangler d1 migrations apply barrieres --remote >> /tmp/d.log 2>&1; echo "migrations: $?" >> /tmp/d.log
+            sleep 10
+            {
+              tail -15 /tmp/d.log
+              echo "=== sonde (un relevé)"; curl -sS -m 120 "$U/api/sonde"; echo
+              echo "=== controles"; bash controle.sh "$U"
+            } > controle.txt 2>&1
+            git checkout wrangler.jsonc
+          fi
+          cd ..; git config user.name controle; git config user.email bot@users.noreply.github.com
+          git add barrieres/controle.txt; git commit -m "Controle barrieres [skip ci]"; for k in 1 2 3 4 5; do git pull --rebase -q origin main && git push && break; sleep 5; done
