@@ -1,28 +1,70 @@
-├───────────────┤
-│ 0001_init.sql │
-└───────────────┘
-? About to apply 1 migration(s)
-Your database may not be available to serve requests during the migration, continue?
-🤖 Using fallback value in non-interactive context: yes
-🌀 Executing on remote database barrieres (dea40366-9a15-498a-b8b1-bcf1093f97dc):
-🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
-🚣 Executed 5 commands in 0.70ms
-┌───────────────┬────────┐
-│ name          │ status │
-├───────────────┼────────┤
-│ 0001_init.sql │ ✅     │
-└───────────────┴────────┘
+env.ASSETS                  Assets           
+
+Uploaded barrieres (3.22 sec)
+Deployed barrieres triggers (0.85 sec)
+  https://barrieres.pitch67.workers.dev
+  schedule: */10 * * * *
+Current Version ID: ada8fab1-8c8c-4045-b696-57844f2eaae6
+code sortie: 0
+
+ ⛅️ wrangler 4.165.0
+────────────────────
+Resource location: remote 
+
+✅ No migrations to apply!
 migrations: 0
 === sonde (un relevé)
-error code: 1042
-
+{"paliers":145,"evalues":55,"candidats":0,"ouverts":0,"journal":[]}
 === controles
+--- controle du Thu Nov 19 11:16:39 UTC 2026
 --- version
 {"version":"1.0.0"}
 --- page
-cache-control: private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+cache-control: no-store, max-age=0
+barrieres-app
+version 1.0.0
 --- etat
-journal None
-lignes 0
+journal []
+lignes 145
+ETH bas 1500 bid/ask 0.357 0.372347 NONask 0.6551460000000001 p_opt 0.463 p_mod 0.415 gainOUI 34 gainNON -174 29JAN27 1400/1600 dec 675
+BTC bas 55000 bid/ask 0.127 0.13525500000000001 NONask 0.8734103400000001 p_opt 0.176 p_mod 0.169 gainOUI 12 gainNON -78 4DEC26 50000/60000 dec 75
+BTC bas 45000 bid/ask 0.094 0.0978202 NONask 0.9115304000000001 p_opt 0.128 p_mod 0.109 gainOUI 3 gainNON -69 29JAN27 40000/50000 dec 675
+ETH haut 2500 bid/ask 0.021 0.023420000000000003 NONask 0.9807729999999999 p_opt 0.007 p_mod 0.007 gainOUI -27 gainNON 2 4DEC26 2400/2600 dec 75
+ETH bas 1600 bid/ask 0.26 0.27152542 NONask 0.741364 p_opt 0.314 p_mod 0.335 gainOUI -9 gainNON -101 4DEC26 1500/1700 dec 75
+ETH haut 2400 bid/ask 0.021 0.031995 NONask 0.9825029999999999 p_opt 0.018 p_mod 0.013 gainOUI -24 gainNON -10 4DEC26 2200/2600 dec 75
+ETH bas 1300 bid/ask 0.054 0.063 NONask 0.9466519999999999 p_opt 0.042 p_mod 0.047 gainOUI -47 gainNON -13 4DEC26 1200/1400 dec 75
+ETH haut 2000 bid/ask 0.26 0.27 NONask 0.74788 p_opt 0.326 p_mod 0.277 gainOUI -20 gainNON -147 4DEC26 1950/2050 dec 75
+BTC bas 50000 bid/ask 0.047 0.05760576000000001 NONask 0.95395 p_opt 0.056 p_mod 0.056 gainOUI -20 gainNON -28 4DEC26 45000/55000 dec 75
+BTC haut 70000 bid/ask 0.032 0.03784699999999999 NONask 0.972593 p_opt 0.022 p_mod 0.039 gainOUI -49 gainNON -21 23NOV26 69000/71000 dec 3
+ETH haut 2300 bid/ask 0.024 0.035995 NONask 0.976264 p_opt 0.029 p_mod 0.024 gainOUI -28 gainNON -25 4DEC26 2200/2400 dec 75
+BTC bas 57500 bid/ask 0.22 0.229331 NONask 0.78 p_opt 0.264 p_mod 0.298 gainOUI -30 gainNON -109 4DEC26 55000/60000 dec 75
+BTC bas 60000 bid/ask 0.048 0.05270984 NONask 0.9616942399999998 p_opt 0.062 p_mod 0.07 gainOUI -31 gainNON -60 20NOV26 59000/61000 dec 3
+ETH haut 3000 bid/ask 0.031 0.03465012 NONask 0.969894 p_opt 0.03 p_mod 0.01 gainOUI -39 gainNON -32 29JAN27 2900/3100 dec 675
+BTC haut 67000 bid/ask 0.039 0.0478917 NONask 0.963086 p_opt 0.043 p_mod 0.054 gainOUI -38 gainNON -35 20NOV26 66000/68000 dec 3
+ETH bas 1500 bid/ask 0.14 0.160491 NONask 0.8620358499999998 p_opt 0.159 p_mod 0.173 gainOUI -40 gainNON -58 4DEC26 1400/1600 dec 75
+ETH bas 1400 bid/ask 0.082 0.09135800000000001 NONask 0.92159566 p_opt 0.081 p_mod 0.089 gainOUI -46 gainNON -40 4DEC26 1300/1500 dec 75
+BTC haut 100000 bid/ask 0.022 0.02617541 NONask 0.97896024 p_opt 0.016 p_mod 0.005 gainOUI -56 gainNON -41 29JAN27 98000/102000 dec 675
+ETH haut 2200 bid/ask 0.07 0.08 NONask 0.94377 p_opt 0.068 p_mod 0.052 gainOUI -42 gainNON -42 4DEC26 2100/2300 dec 75
+ETH bas 1650 bid/ask 0.037 0.05769657 NONask 0.963 p_opt 0.05 p_mod 0.068 gainOUI -43 gainNON -48 20NOV26 1600/1700 dec 3
+BTC bas 52500 bid/ask 0.07 0.0895 NONask 0.93 p_opt 0.088 p_mod 0.092 gainOUI -45 gainNON -60 4DEC26 50000/55000 dec 75
+BTC bas 60000 bid/ask 0.42 0.43813309999999994 NONask 0.58 p_opt 0.461 p_mod 0.511 gainOUI -47 gainNON -114 4DEC26 58000/62000 dec 75
+ETH haut 1900 bid/ask 0.08 0.09971000000000001 NONask 0.92087 p_opt 0.097 p_mod 0.125 gainOUI -51 gainNON -63 20NOV26 1860/1950 dec 3
+BTC bas 56000 bid/ask 0.027 0.031216999999999998 NONask 0.9739939999999999 p_opt 0.042 p_mod 0.042 gainOUI -53 gainNON -84 23NOV26 56000/57000 dec 3
+ETH haut 1900 bid/ask 0.57 0.59 NONask 0.43667 p_opt 0.615 p_mod 0.577 gainOUI -55 gainNON -147 4DEC26 1850/1950 dec 75
+ X BTC haut 100000 pas d'options adaptées
+ X BTC haut 97500 pas d'options adaptées
+ X BTC haut 95000 pas d'options adaptées
+ X BTC haut 92500 pas d'options adaptées
+ X BTC haut 90000 pas d'options adaptées
+ X BTC haut 87500 pas d'options adaptées
+ X BTC haut 85000 pas d'options adaptées
+ X BTC haut 82500 prix hors 2-98 c
+ X BTC haut 80000 pas d'options adaptées
+ X ETH haut 3500 pas d'options adaptées
+ X ETH haut 3100 pas d'options adaptées
+ X ETH haut 3000 pas d'options adaptées
+ X ETH haut 2900 pas d'options adaptées
+ X ETH haut 2800 pas d'options adaptées
+ X ETH haut 2700 pas d'options adaptées
 positions 0
 bilan {'OUI': {'n': 0, 'net': 0, 'jour': 0, 'creux': 0, 'miseMax': 0, 'ic': None, 'ouvertes': 0}, 'NON': {'n': 0, 'net': 0, 'jour': 0, 'creux': 0, 'miseMax': 0, 'ic': None, 'ouvertes': 0}}
