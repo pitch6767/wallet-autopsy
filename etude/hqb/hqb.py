@@ -1,5 +1,5 @@
 # Analyse du portefeuille hqb.prediction (lecture seule, API publique Polymarket)
-import json, urllib.request, time, collections, datetime
+import json, urllib.request, urllib.parse, time, collections, datetime
 U = "0x76eca4109d0dfe8649d5e3861dfccac67ae7d630"
 B = "https://data-api.polymarket.com"
 OUT = "etude/hqb/"
@@ -13,20 +13,29 @@ def get(url):
             print("erreur", url, e); time.sleep(3)
     return []
 
-def pages(path, limit, maxn=20000):
-    out, off = [], 0
-    while off < maxn:
-        sep = "&" if "?" in path else "?"
-        d = get(f"{B}{path}{sep}user={U}&limit={limit}&offset={off}")
-        if not d: break
-        out += d; off += limit
-        if len(d) < limit: break
+def pages(path, maxn=50000):
+    out, cur = [], None
+    while len(out) < maxn:
+        url = f"{B}{path}&user={U}&limit=1000" + (f"&cursor={urllib.parse.quote(cur)}" if cur else "")
+        j = get(url)
+        data = j.get("data", []) if isinstance(j, dict) else (j or [])
+        for d in data:
+            for k in list(d.keys()):
+                c = "".join(w if i==0 else w.capitalize() for i,w in enumerate(k.split("_")))
+                d.setdefault(c, d[k])
+            d.setdefault("timestamp", d.get("last_event_at"))
+            d.setdefault("totalBought", d.get("total_size"))
+            d.setdefault("cashPnl", d.get("total_pnl"))
+        out += data
+        pg = j.get("pagination", {}) if isinstance(j, dict) else {}
+        cur = pg.get("next_cursor")
+        if not data or not pg.get("has_more") or not cur: break
         time.sleep(0.3)
     return out
 
-closed = pages("/closed-positions?sortBy=TIMESTAMP&sortDirection=DESC", 50)
-openp = pages("/positions?sizeThreshold=0", 100)
-act = pages("/activity", 500, 50000)
+closed = pages("/v2/positions?status=CLOSED")
+openp = pages("/v2/positions?status=OPEN")
+act = pages("/v2/activity?x=1")
 json.dump(closed, open(OUT+"closed.json","w"))
 json.dump(openp, open(OUT+"open.json","w"))
 json.dump(act, open(OUT+"activity.json","w"))
@@ -47,7 +56,7 @@ L.append("\n== PnL realise par mois (date de cloture) ==")
 pm = collections.defaultdict(lambda:[0.0,0,0,0.0])
 for c in closed:
     m = mois(c.get("timestamp")); x = float(c.get("realizedPnl",0))
-    pm[m][0]+=x; pm[m][1]+=1; pm[m][2]+= x>0; pm[m][3]+= float(c.get("totalBought",0))*float(c.get("avgPrice",0))
+    pm[m][0]+=x; pm[m][1]+=1; pm[m][2]+= x>0; pm[m][3]+= float(c.get("total_cost_usdc") or 0)
 for m in sorted(pm): L.append(f"{m}: PnL {pm[m][0]:>12,.0f} $ | {pm[m][2]}/{pm[m][1]} gagnantes | mise ~{pm[m][3]:,.0f} $")
 
 def typ(t):
