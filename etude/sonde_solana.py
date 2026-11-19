@@ -1,4 +1,4 @@
-# garde vitesse 2026-11-19T17:34:37Z
+# reel gros gains 2026-11-19T18:30Z
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
@@ -22,3 +22,9 @@ BE = g("https://72-11-157-70.sslip.io/api/bot/banc/etat"); print("SOURCE", json.
 DG = g("https://72-11-157-70.sslip.io/api/bot/diag?heures=14"); print("DIAG-HEURES", json.dumps(DG, ensure_ascii=False)[:6000])
 
 print("EXECUTEUR", json.dumps((V or {}).get("executeur"), ensure_ascii=False)[:1200]); print("MEMOIRE", json.dumps((V or {}).get("memoire"), ensure_ascii=False)[:1200])
+
+R = g("https://bot95.pitch67.workers.dev/api/reel")
+print("REEL-DEPUIS", R.get("depuis"), "TOTAL", R.get("total"), R.get("ERREUR"))
+for x in (R.get("strats") or []):
+    pj = x.get("parJour") or {}
+    print("REEL", json.dumps({k: x.get(k) for k in ("num","nom","estimee","n","gains","pertes","pnl","mise","miseMaxCycle","pire","creux","capital")}, ensure_ascii=False), "JOURS", json.dumps(dict(sorted(pj.items())[-6:])))
