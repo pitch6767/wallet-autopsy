@@ -1,26 +1,53 @@
-Traceback (most recent call last):
-  File "/home/runner/work/wallet-autopsy/wallet-autopsy/peptides/qa/qa.py", line 24, in <module>
-    s, h, _ = http("/", tete=True)
-              ^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/wallet-autopsy/wallet-autopsy/peptides/qa/qa.py", line 19, in http
-    with urllib.request.urlopen(req, timeout=20) as r:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/urllib/request.py", line 215, in urlopen
-    return opener.open(url, data, timeout)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/urllib/request.py", line 521, in open
-    response = meth(req, response)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/urllib/request.py", line 630, in http_response
-    response = self.parent.error(
-               ^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/urllib/request.py", line 559, in error
-    return self._call_chain(*args)
-           ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/urllib/request.py", line 492, in _call_chain
-    result = func(*args)
-             ^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/urllib/request.py", line 639, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 403: Forbidden
-code sortie: 1
+PASS page d'accueil 200 — 200
+PASS cache-control no-store — no-store, max-age=0
+PASS fichier /manifest.webmanifest 200 — 200
+PASS fichier /icon-192.png 200 — 200
+PASS fichier /icon-512.png 200 — 200
+PASS fichier /icon-180.png 200 — 200
+PASS fichier /app.js 200 — 200
+PASS fichier /style.css 200 — 200
+PASS fichier /version.txt 200 — 200
+PASS version.txt = 1.0 — 1.0
+PASS titre accueil « Peptides »
+PASS flèche cachée sur l'accueil
+PASS version affichée 1.0 — 1.0
+PASS champ de recherche présent
+PASS 17 tuiles (16 cas + tous) — 17
+PASS avertissement médical visible
+   tunnel carpien -> ['BPC-157', 'TB-500 (Thymosin β4)', 'GHK-Cu (Copper Peptide)', 'NGF (Nerve Growth Factor)', 'Collagène hydrolysé type I & III', 'IGF-1']
+PASS tunnel carpien contient BPC-157
+PASS tunnel carpien contient TB-500
+PASS tunnel carpien contient GHK-Cu
+PASS tunnel carpien contient NGF
+PASS tunnel carpien contient IGF-1
+PASS tunnel carpien contient Collagène
+PASS flèche visible sur la liste
+PASS fiche : dose indicative affichée
+PASS fiche : forme affichée
+PASS fiche : cas associés cliquables
+PASS flèche visible sur la fiche
+PASS flèche depuis la fiche → accueil
+PASS flèche depuis la liste → accueil
+PASS retour du navigateur depuis une liste → accueil
+PASS retour du navigateur depuis une fiche → accueil
+PASS cas « Érection & libido » contient PT-141 (3 peptides)
+PASS cas « Perte de poids » contient Sémaglutide (8 peptides)
+PASS cas « Récupération chirurgie » contient BPC-157 (4 peptides)
+PASS cas « Douleur » contient Ziconotide (6 peptides)
+PASS cas « Rides & cosmétique » contient Argireline (5 peptides)
+PASS cas « Cholestérol » contient soja (6 peptides)
+PASS cas « Cheveux » contient Biotinoyl (5 peptides)
+PASS cas « Arthrose & articulations » contient UC-II (5 peptides)
+PASS cas « Anti-inflammatoire » contient BPC-157 (10 peptides)
+PASS cas « Anti-âge & peau » contient Épitalon (11 peptides)
+PASS cas « Alzheimer & cognition » contient Dihexa (9 peptides)
+PASS « Tous les peptides » : 42 fiches — 42
+PASS recherche « douleur » trouve Ziconotide — ['BPC-157', 'NGF (Nerve Growth Factor)', 'Ziconotide (Prialt)', 'Collagène type II (UC-II)', 'Endorphines']
+PASS recherche « cheveux » trouve Biotinoyl — ['GHK-Cu (Copper Peptide)', 'Biotinoyl tripeptide-1', 'GHK-Cu (cheveux)', 'Acetyl tetrapeptide-3', 'Follistatin (peptide)']
+PASS recherche « erection » trouve PT-141 — ['PT-141 (Bremelanotide)', 'CJC-1295 + Ipamorelin', 'Oxytocine']
+PASS flèche depuis une fiche issue d'une recherche → accueil
+PASS pas de défilement horizontal à 390 px
+PASS aucune erreur JavaScript
+
+RÉSULTAT : PASS
+code sortie: 0
