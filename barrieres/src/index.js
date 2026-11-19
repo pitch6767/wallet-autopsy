@@ -10,7 +10,7 @@
 //   2. l'échéance Deribit n'est pas exactement la fin du palier Polymarket (décalage en heures affiché) ;
 //   3. Polymarket règle sur Binance BTC/USDT (bougie 1 min), la détection ici se fait sur le perpétuel Deribit + le prix Polymarket ;
 //   4. tous les frais (Polymarket taker, Deribit à l'ouverture ET à la fermeture) et les écarts achat/vente sont payés aux vrais carnets.
-const VERSION = "1.0.1";
+const VERSION = "1.0.2";
 
 // Règles proposées — Pitch décide, modifiables ici
 const R = {

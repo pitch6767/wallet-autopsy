@@ -2,6 +2,7 @@
 U=$1
 echo "--- controle du $(date -u)"
 echo "--- version"; curl -sS -m 20 "$U/api/version"; echo
+echo "--- icone"; curl -sS -m 20 "$U/icon-180.png" | md5sum
 echo "--- page"; curl -sS -m 20 -D - "$U/" -o /tmp/p.html | grep -i "^cache-control"; grep -o "barrieres-app" /tmp/p.html | head -1; grep -o "version [0-9.]*" /tmp/p.html | head -1
 echo "--- etat"; curl -sS -m 60 "$U/api/etat" | python3 -c "
 import json,sys;d=json.load(sys.stdin);dl=d.get('dernier',{})
