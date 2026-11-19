@@ -1,4 +1,4 @@
-# garde vitesse 2026-11-19T20:35Z
+# verif dedoublonnage reel 2026-11-19T20:45Z
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
@@ -32,7 +32,10 @@ for x in (R.get("strats") or []):
 
 
 
-R = g("https://bot95.pitch67.workers.dev/api/reel")
-for x in (R.get("strats") or []):
-    j = (x.get("parJour") or {}).get("2026-11-19") or 0
-    if j >= 10000: print("J19", x["num"], j, x["nom"][:80])
+
+R = g("https://bot95.pitch67.workers.dev/api/reel?tout=1")
+print("DEDUP", json.dumps((R.get("reconstruction") or {}).get("dedup19")), "cachees", R.get("cachees"), R.get("ERREUR"))
+for x in (R.get("strats") or [])[:40]:
+    pj = x.get("parJour") or {}
+    print("RL", x["num"], round(x.get("pnl") or 0), x.get("creux"), x.get("miseMaxCycle"), pj.get("2026-11-19"), pj.get("2026-11-18"), x["nom"][:70])
+R2 = g("https://bot95.pitch67.workers.dev/api/reel"); print("VISIBLES", len(R2.get("strats") or []), "cachees", R2.get("cachees"))
