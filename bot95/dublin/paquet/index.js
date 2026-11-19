@@ -22824,7 +22824,7 @@ var index_default = {
     }
     if (req.method === "GET" && pathname === "/excel-reel") {
       try {
-        const u = new URL(req.url), jours = Math.min(14, Math.max(1, Number(u.searchParams.get("jours")) || 3));
+        const u = new URL(req.url), jours = Math.min(2, Math.max(1, Number(u.searchParams.get("jours")) || 1));
         const lire = /* @__PURE__ */ __name(async (q) => {
           const r = await stub(env).fetch("https://bot95/api/reel/xl-donnees?" + q);
           if (!r.ok) throw new Error("donn\xE9es HTTP " + r.status);
@@ -30807,7 +30807,7 @@ var PAGE_REEL = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><met
 <div class="mu">Seulement des trades r\xE9els : chaque signal r\xE9ellement re\xE7u par le bot (moteur de Dublin) est jou\xE9 sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix du signal + 5 c, frais compris) et r\xE9gl\xE9 par le r\xE9sultat officiel de Polymarket. 200 $ au plus par cycle et par strat\xE9gie, frais compris (trade r\xE9duit au reste, sinon ignor\xE9). Aucun argent r\xE9el engag\xE9. <b>Exception : les teneurs de march\xE9 (n\xB0 3304 \xE0 3309) sont ESTIM\xC9S</b> \u2014 ordres pos\xE9s dans le carnet, impossibles \xE0 jouer sans vrais ordres.</div>
 <div class="mu" id="dep"></div>
 <div class="mu"><a href="/lecons" style="font-weight:600">\u{1F4D8} Le\xE7ons du projet (erreurs, corrections, vitesse)</a></div>
-<div class="mu"><a href="/excel-reel" style="font-weight:600">\u{1F4E5} Fichier Excel des vrais trades (r\xE9sum\xE9 complet + trades des 3 derniers jours, une ligne par trade, filtres)</a> \xB7 <a href="/excel-reel?jours=7">7 jours</a></div>
+<div class="mu"><a href="/excel-reel" style="font-weight:600">\u{1F4E5} Fichier Excel des vrais trades (r\xE9sum\xE9 complet + trades des derni\xE8res 24 h, une ligne par trade, filtres)</a> \xB7 <a href="/excel-reel?jours=2">48 h</a></div>
 <div class="mu" id="caches"></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom" style="font-size:1.05em;padding:8px 10px;width:min(360px,90%);border-radius:8px;border:1px solid #8886"> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur r\xE9sultat</option><option value="creux">Trier : plus petit creux</option><option value="n">Trier : plus de trades</option><option value="cycle">Trier : moins de mise par cycle</option></select></div>
 <div id="app" style="margin-top:12px">Chargement\u2026</div>
