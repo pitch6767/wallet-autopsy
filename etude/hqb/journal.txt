@@ -1,27 +1,69 @@
-erreur https://data-api.polymarket.com/closed-positions?sortBy=TIMESTAMP&sortDirection=DESC&user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=50&offset=0 HTTP Error 410: Gone
-erreur https://data-api.polymarket.com/closed-positions?sortBy=TIMESTAMP&sortDirection=DESC&user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=50&offset=0 HTTP Error 410: Gone
-erreur https://data-api.polymarket.com/closed-positions?sortBy=TIMESTAMP&sortDirection=DESC&user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=50&offset=0 HTTP Error 410: Gone
-erreur https://data-api.polymarket.com/closed-positions?sortBy=TIMESTAMP&sortDirection=DESC&user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=50&offset=0 HTTP Error 410: Gone
-erreur https://data-api.polymarket.com/positions?sizeThreshold=0&user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=100&offset=0 HTTP Error 410: Gone
-erreur https://data-api.polymarket.com/positions?sizeThreshold=0&user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=100&offset=0 HTTP Error 410: Gone
-erreur https://data-api.polymarket.com/positions?sizeThreshold=0&user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=100&offset=0 HTTP Error 410: Gone
-erreur https://data-api.polymarket.com/positions?sizeThreshold=0&user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=100&offset=0 HTTP Error 410: Gone
-erreur https://data-api.polymarket.com/activity?user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=500&offset=0 HTTP Error 410: Gone
-erreur https://data-api.polymarket.com/activity?user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=500&offset=0 HTTP Error 410: Gone
-erreur https://data-api.polymarket.com/activity?user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=500&offset=0 HTTP Error 410: Gone
-erreur https://data-api.polymarket.com/activity?user=0x76eca4109d0dfe8649d5e3861dfccac67ae7d630&limit=500&offset=0 HTTP Error 410: Gone
-Positions fermees: 0 | ouvertes: 0 | lignes d'activite: 0
-PnL realise total (fermees): 0 $ | gagnantes 0 / 0
-PnL latent (ouvertes): 0 $ | valeur ouverte 0 $
+/home/runner/work/wallet-autopsy/wallet-autopsy/etude/hqb/hqb.py:44: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+  try: return datetime.datetime.utcfromtimestamp(int(ts)).strftime("%Y-%m")
+Positions fermees: 224 | ouvertes: 142 | lignes d'activite: 4692
+PnL realise total (fermees): 226,913 $ | gagnantes 89 / 224
+PnL latent (ouvertes): 45,073 $ | valeur ouverte 176,619 $
 
 == PnL realise par mois (date de cloture) ==
+2026-05: PnL            0 $ | 0/1 gagnantes | mise ~0 $
+2026-06: PnL        2,244 $ | 14/21 gagnantes | mise ~4 $
+2026-07: PnL       -6,630 $ | 11/31 gagnantes | mise ~1 $
+2026-08: PnL        9,216 $ | 25/55 gagnantes | mise ~4 $
+2026-09: PnL      -11,404 $ | 13/45 gagnantes | mise ~29 $
+2026-10: PnL       -5,775 $ | 13/36 gagnantes | mise ~102 $
+2026-11: PnL      239,262 $ | 13/35 gagnantes | mise ~3,141 $
 
 == Par type de marche ==
+dip to: PnL 220,030 $ | 52/117 gagnantes
+reach: PnL 6,883 $ | 37/107 gagnantes
 
 == Par prix d'entree ==
+10-30c: PnL 200,438 $ | 13/36 gagnantes
+30-70c: PnL 40,704 $ | 19/33 gagnantes
+<10c: PnL -19,805 $ | 13/98 gagnantes
+70-90c: PnL 3,871 $ | 11/18 gagnantes
+>90c: PnL 1,706 $ | 33/39 gagnantes
 
 == 15 plus gros gains / 15 plus grosses pertes ==
+2026-11 | Will Bitcoin dip to $62,500 in November? [Yes] entree 11.0c | PnL 78,883 $
+2026-11 | Will Bitcoin dip to $65,000 in November? [Yes] entree 15.7c | PnL 56,200 $
+2026-11 | Will Bitcoin dip to $67,500 in November? [Yes] entree 22.4c | PnL 33,792 $
+2026-11 | Will Ethereum dip to $1,800 in November? [Yes] entree 18.6c | PnL 23,271 $
+2026-11 | Will Bitcoin dip to $70,000 in November? [Yes] entree 36.9c | PnL 17,362 $
+2026-11 | Will Ethereum dip to $1,900 in November? [Yes] entree 26.8c | PnL 14,242 $
+2026-11 | Will Bitcoin dip to $72,500 in November? [Yes] entree 51.0c | PnL 9,984 $
+2026-11 | Will Ethereum dip to $2,000 in November? [Yes] entree 39.8c | PnL 7,886 $
+2026-08 | Will Bitcoin reach $80,000 in August? [Yes] entree 4.2c | PnL 5,088 $
+2026-10 | Will Ethereum dip to $2,200 in October? [Yes] entree 17.7c | PnL 5,085 $
+2026-11 | Will Bitcoin dip to $75,000 in November? [Yes] entree 70.6c | PnL 4,259 $
+2026-11 | Will Ethereum dip to $2,100 in November? [Yes] entree 55.0c | PnL 4,088 $
+2026-08 | Will Bitcoin reach $77,500 in August? [Yes] entree 6.2c | PnL 3,596 $
+2026-08 | Will Ethereum reach $2,500 in August? [Yes] entree 2.1c | PnL 3,362 $
+2026-10 | Will Ethereum dip to $2,300 in October? [Yes] entree 27.0c | PnL 2,803 $
+2026-11 | Will Bitcoin dip to $65,000 in October? [Yes] entree 5.5c | PnL -2,543 $
+2026-09 | Will Bitcoin dip to $57,500 in August? [Yes] entree 1.7c | PnL -2,065 $
+2026-10 | Will Bitcoin dip to $65,000 in September? [Yes] entree 9.6c | PnL -2,059 $
+2026-11 | Will Bitcoin dip to $70,000 in October? [Yes] entree 7.3c | PnL -2,036 $
+2026-10 | Will Bitcoin dip to $67,500 in September? [Yes] entree 18.6c | PnL -2,013 $
+2026-10 | Will Bitcoin dip to $72,500 in September? [Yes] entree 53.9c | PnL -1,960 $
+2026-11 | Will Bitcoin dip to $67,500 in October? [Yes] entree 8.8c | PnL -1,950 $
+2026-11 | Will Bitcoin dip to $72,500 in October? [Yes] entree 17.5c | PnL -1,805 $
+2026-10 | Will Ethereum dip to $1,900 in September? [Yes] entree 10.7c | PnL -1,783 $
+2026-09 | Will Bitcoin reach $87,500 in August? [Yes] entree 19.0c | PnL -1,712 $
+2026-07 | Will Bitcoin dip to $55,000 in June? [Yes] entree 8.4c | PnL -1,675 $
+2026-09 | Will Ethereum reach $3,000 in August? [Yes] entree 4.6c | PnL -1,597 $
+2026-09 | Will Bitcoin dip to $60,000 in August? [Yes] entree 1.8c | PnL -1,581 $
+2026-09 | Will Bitcoin dip to $55,000 in August? [Yes] entree 1.3c | PnL -1,497 $
+2026-10 | Will Ethereum dip to $2,000 in September? [Yes] entree 15.3c | PnL -1,386 $
 
 == Activite par mois (achats/ventes en $) ==
+2026-05: TRADE/BUY=3, TRADE/SELL=2
+2026-06: TRADE/BUY=28,028, TRADE/SELL=12,172, MAKER_REBATE/=359, REDEEM/=5,502, REWARD/=0
+2026-07: REDEEM/=1,995, TRADE/BUY=5,631, TRADE/SELL=2,820, MAKER_REBATE/=26, TAKER_REBATE/=11
+2026-08: REDEEM/=9,282, MAKER_REBATE/=241, TAKER_REBATE/=199, TRADE/SELL=30,436, TRADE/BUY=43,176
+2026-09: TRADE/SELL=16,785, MAKER_REBATE/=121, TAKER_REBATE/=151, TRADE/BUY=43,685, REDEEM/=8,183
+2026-10: TRADE/SELL=9,000, MAKER_REBATE/=100, TAKER_REBATE/=102, REDEEM/=16,218, TRADE/BUY=28,296
+2026-11: TRADE/BUY=177,406, MAKER_REBATE/=617, TAKER_REBATE/=227, TRADE/SELL=14,698, REDEEM/=338,093
 
 == Taille typique des ordres (TRADE BUY) ==
+3081 achats | mediane 14 $ | max 7,556 $
