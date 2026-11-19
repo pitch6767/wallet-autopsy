@@ -10,7 +10,7 @@
 //   2. l'échéance Deribit n'est pas exactement la fin du palier Polymarket (décalage en heures affiché) ;
 //   3. Polymarket règle sur Binance BTC/USDT (bougie 1 min), la détection ici se fait sur le perpétuel Deribit + le prix Polymarket ;
 //   4. tous les frais (Polymarket taker, Deribit à l'ouverture ET à la fermeture) et les écarts achat/vente sont payés aux vrais carnets.
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 
 // Règles proposées — Pitch décide, modifiables ici
 const R = {
@@ -19,6 +19,7 @@ const R = {
   seuil: 0.03,          // ouvrir seulement si le gain attendu APRÈS tous les frais ≥ 3 points (30 $ pour 1000 parts)
   decalageMaxH: 96,     // échéance Deribit au plus 4 jours après la fin du palier
   ecartStrikeMax: 0.01, // milieu des deux strikes à moins de 1 % du niveau
+  largeurMax: 0.05,     // écart entre les deux strikes ≤ 5 % du niveau (sinon la digitale reconstruite est trop grossière)
   prixMin: 0.02, prixMax: 0.98,
   maxNouveaux: 5,       // nouveaux trades par relevé (limite d'appels)
 };
@@ -109,7 +110,7 @@ function choisirEcart(par, p) {
   let best = null;
   for (let i = 0; i < ks.length - 1; i++) for (let k = i + 1; k < Math.min(ks.length, i + 4); k++) {
     const mil = (ks[i] + ks[k]) / 2, d = Math.abs(mil - p.niveau) / p.niveau;
-    if (d <= R.ecartStrikeMax && (!best || d < best.d - 1e-9 || (Math.abs(d - best.d) < 1e-9 && ks[k] - ks[i] < best.dk))) best = { bas: ks[i], haut: ks[k], d, dk: ks[k] - ks[i] };
+    if (d <= R.ecartStrikeMax && (ks[k] - ks[i]) / p.niveau <= R.largeurMax && (!best || d < best.d - 1e-9 || (Math.abs(d - best.d) < 1e-9 && ks[k] - ks[i] < best.dk))) best = { bas: ks[i], haut: ks[k], d, dk: ks[k] - ks[i] };
   }
   if (!best) return null;
   const ob = e[t][best.bas], oh = e[t][best.haut];
