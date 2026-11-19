@@ -28,6 +28,7 @@ th:first-child,td:first-child{text-align:left}th{color:#94a3b8;font-weight:600}
 <div id="cartes2" class="cartes" style="margin-top:8px"></div>
 <div class="tab" id="pos2" style="margin-top:8px"></div>
 <div class="mu" id="avant" style="margin-top:8px"></div>
+<h2>Comptes réels</h2><div id="comptes" class="mu">…</div>
 <h2>Emprunt (vente à découvert)</h2><div id="emp" class="mu"></div>
 <h2>Plateformes</h2><div id="plat" class="mu"></div>
 <h2>Stratégie 1 — trades (fantôme, gain net après frais)</h2><div class="tab" id="tr"></div>
@@ -69,5 +70,7 @@ async function go(){
  const r=d.regles;
  document.getElementById("regles").innerHTML="Mise "+r.mise.toLocaleString("fr-CH")+" $ de chaque côté · scan toutes les 10 s · prix moyens réels des carnets pour toute la quantité · même jeton et même monnaie (USDT ou USDC) · au moins "+(r.volumeMin/1e6)+" M$ échangés sur 24 h sur les 2 plateformes · écart > "+(r.ecartMaxPrix*100)+" % ignoré (jeton probablement différent) · un écart > "+(r.ecartSuspect*100)+" % qui dure plus de "+(r.dureeSuspectS/60)+" min est considéré comme faux (jeton différent ou retraits bloqués) : ses trades sont annulés · vente à découvert : la crypto vendue est empruntée sur la plateforme de vente, trade seulement si elle y est empruntable pour toute la quantité ; intérêts d'emprunt déduits (stratégie 1 : "+r.heuresEmpruntS1+" h, le temps de virer les pièces achetées pour rendre l'emprunt ; stratégie 2 : toute la durée de tenue), au taux publié par la plateforme, sinon "+(d.tauxDefautH*100).toFixed(3)+" % par heure (estimé, prudent) · stratégie 1 : gain net ≥ "+r.gainMin+" $, un même actif au plus une fois par "+r.pauseMemeActifS+" s · stratégie 2 : entrée si l'écart couvre les frais d'entrée, une position par actif et par variante, clôture quand l'écart dans le sens contraire rapporte ≥ 5 $ ou ≥ 10 $ après frais et intérêts. Frais preneur (palier de base, estimés, prudents) : "+Object.entries(d.frais).map(([k,v])=>k+" "+(v*100).toFixed(2)+"%").join(", ")+".";
 }
-go();setInterval(go,10e3);
+async function comptes(){try{const d=await (await fetch("/api/comptes",{cache:"no-store"})).json();
+ document.getElementById("comptes").innerHTML="<div><b>Mode réel : désactivé</b> — aucun ordre n'est envoyé.</div>"+Object.entries(d.comptes).map(([k,v])=>"<div>"+k+" — "+(!v.cles?"clé API pas encore fournie":v.ok?'<span class="ok">clé OK</span> · '+usd(v.usdt)+" USDT disponibles":'<span class="ko">clé refusée</span> : '+v.err)+"</div>").join("");}catch(e){}}
+go();comptes();setInterval(go,10e3);setInterval(comptes,60e3);
 </script></body></html>

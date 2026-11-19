@@ -19,3 +19,4 @@ for p in d.get('positions',[])[:12]:print(' P2',p['variante'],p['cle'],p['achat_
 for p in (sc.get('top') or [])[:12]:print(' T',p['cle'],p['achat'],p['ask'],p['vente'],p['bid'],round(p['ecart']*100,3),'%',round(p['gain'],2),'verif',p['verif'])"
 echo "--- page comptant"; curl -sS -m 20 -D - "$U/comptant" | grep -iE "^cache-control|<h1|Version|href=\"/\"" | head -5
 echo "--- regles comptant"; curl -sS -m 20 "$U/api/comptant" | python3 -c "import json,sys;print(json.load(sys.stdin)['regles'])"
+echo "--- comptes"; curl -sS -m 30 "$U/api/comptes"; echo

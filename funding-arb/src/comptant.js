@@ -16,7 +16,9 @@ export const REGLES_C = {
   dureeSuspectS: 300,   // …qui dure plus de 5 min = jeton différent ou retraits bloqués → trades annulés, actif ignoré
   sorties: [5, 10],
   empruntObligatoire: true, // la crypto vendue doit être empruntable sur la plateforme de vente (vente à découvert au comptant)
-  heuresEmpruntS1: 1,   // stratégie 1 : intérêts comptés 1 h (le temps de virer les pièces achetées pour rendre l'emprunt)     // stratégie 2 : clôture quand l'écart inverse rapporte au moins 5 $ (variante 5) ou 10 $ (variante 10)
+  heuresEmpruntS1: 1,
+  plateformes: ["gate", "bybit", "okx", "kucoin"], // 19.11.2026 : seulement les plateformes prévues pour le réel
+  maxOuvertes: 5,       // stratégie 2 : au plus 5 positions ouvertes en même temps par variante (hypothèse, Pitch n'a pas fixé)   // stratégie 1 : intérêts comptés 1 h (le temps de virer les pièces achetées pour rendre l'emprunt)     // stratégie 2 : clôture quand l'écart inverse rapporte au moins 5 $ (variante 5) ou 10 $ (variante 10)
 };
 // Frais « preneur » au comptant, palier de base (estimés, prudents)
 export const LECT_EXPORT = () => LECT;
@@ -121,7 +123,7 @@ const carnetR = (env, x) => avecRelais(env, () => carnetC(x), (st) => st.carnetC
 export async function tickComptant(env) {
   const now = Date.now(), N = REGLES_C.mise, db = env.DB;
   const statut = {}, lignes = [];
-  await Promise.all(Object.entries(LECT).map(async ([ex, f]) => {
+  await Promise.all(Object.entries(LECT).filter(([ex]) => REGLES_C.plateformes.includes(ex)).map(async ([ex, f]) => {
     const t0 = Date.now();
     try { const l = (await avecRelais(env, f, (st) => st.lireComptant(ex))).filter((x) => x && x.bid > 0 && x.ask > 0 && x.ask >= x.bid).map((x) => ({ ...x, ex }));
       lignes.push(...l); statut[ex] = { ok: true, n: l.length, ms: Date.now() - t0 }; }
@@ -215,8 +217,9 @@ export async function tickComptant(env) {
     } catch (e) {}
   }
   const dejaOuv = new Set(ouvertes.map((p) => p.variante + "|" + p.cle));
+  const nOuv = {}; for (const p of ouvertes) if (p.regles === REGLES_ID_C) nOuv[p.variante] = (nOuv[p.variante] || 0) + 1;
   for (const c of cands.filter((c) => c.gain >= 0 && !permanent(c)).slice(0, 6)) {
-    const libres = REGLES_C.sorties.filter((v) => !dejaOuv.has(v + "|" + c.k));
+    const libres = REGLES_C.sorties.filter((v) => !dejaOuv.has(v + "|" + c.k) && (nOuv[v] || 0) < REGLES_C.maxOuvertes);
     if (!libres.length) continue;
     try {
       const [ca, cb] = await Promise.all([carnetR(env, c.a), carnetR(env, c.b)]);
@@ -230,7 +233,7 @@ export async function tickComptant(env) {
       for (const v of libres) {
         st.push(db.prepare("INSERT INTO comptant_pos (variante, cle, base, quote, achat_ex, vente_ex, qte, px_achat, px_vente, ouvert, entree, frais, statut, taux, regles) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'ouvert',?,?)")
           .bind(v, c.k, c.a.base, c.a.quote, c.a.ex, c.b.ex, Q, vA, vB, now, entree, Q * vA * FRAIS_C[c.a.ex] + Q * vB * FRAIS_C[c.b.ex], em.taux, REGLES_ID_C));
-        dejaOuv.add(v + "|" + c.k);
+        dejaOuv.add(v + "|" + c.k); nOuv[v] = (nOuv[v] || 0) + 1;
       }
     } catch (e) {}
   }

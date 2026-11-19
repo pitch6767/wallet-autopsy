@@ -4,7 +4,8 @@
 // après tous les frais atteint l'objectif, avec des prix pris dans les vrais carnets d'ordres pour la mise complète.
 import { DurableObject } from "cloudflare:workers";
 import { tickComptant, etatComptant, lireComptant, carnetC } from "./comptant.js";
-const VERSION = "2.6.2"
+import { etatComptes } from "./comptes.js";
+const VERSION = "2.7.0"
 const REGLES_ID = "2.1";;
 
 // Règles (Pitch décide — modifiables ici)
@@ -124,6 +125,7 @@ Relais.prototype.carnetBybit = async function (sym) {
 Relais.prototype.carnetOkx = async function (sym) { return carnetOkxDirect(sym); };
 Relais.prototype.lireComptant = async function (ex) { return lireComptant(ex); };
 Relais.prototype.carnetComptant = async function (x) { return carnetC(x); };
+Relais.prototype.comptes = async function () { return etatComptes(this.env); };
 
 async function lireEurope(env, nom) {
   let dernier = null;
@@ -311,6 +313,7 @@ export default {
       const p = ecarts(lignes).slice(0, 5).map((x) => ({ base: x.base, achat: x.a.ex, vente: x.b.ex, ecart: x.ecart, gain: x.gain }));
       return new Response(JSON.stringify({ app: "funding-arb-app", type: "arbitrage-prix", version: VERSION, statut, top: p }), { headers: JSONH });
     }
+    if (u.pathname === "/api/comptes") return new Response(JSON.stringify(await env.RELAIS.get(env.RELAIS.idFromName("relais-weur"), { locationHint: "weur" }).comptes()), { headers: JSONH });
     if (u.pathname === "/api/comptant") { const er = await env.DB.prepare("SELECT * FROM etat WHERE id=3").first(); return new Response(JSON.stringify({ version: VERSION, erreur: er ? { t: er.t, ...JSON.parse(er.json) } : null, ...(await etatComptant(env)) }), { headers: JSONH }); }
     if (u.pathname === "/comptant") {
       const r = await env.ASSETS.fetch(new Request(new URL("/comptant.tpl", u)));
