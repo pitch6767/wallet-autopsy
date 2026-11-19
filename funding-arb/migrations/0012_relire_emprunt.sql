@@ -1,0 +1,1 @@
+DELETE FROM etat WHERE id=4;

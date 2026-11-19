@@ -54,14 +54,14 @@ async function go(){
  const c2=[];for(const v of d.regles.sorties){const f=(d.total2||[]).find(x=>x.variante==v)||{},o=(d.ouvertes2||[]).find(x=>x.variante==v)||{};
   c2.push(["Clôture ≥ "+v+" $ dans le sens contraire — fermés",(f.n||0)+" · "+'<span class="'+cl(f.net)+'">'+usd(f.net||0)+"</span> · durée moy. "+dur(f.duree)],["Clôture ≥ "+v+" $ dans le sens contraire — ouvertes",(o.n||0)]);}
  const av=d.avant||{};document.getElementById("avant").textContent="Avant l'emprunt obligatoire (règles précédentes, non comptés ici) : stratégie 1 "+(av.n1||0)+" trades · "+usd(av.net1||0)+" ; stratégie 2 "+(av.n2||0)+" fermées · "+usd(av.net2||0)+".";
- const es=d.empruntStatut||{};document.getElementById("emp").innerHTML=Object.entries(es).map(([k,v])=>'<div><span class="'+(v.ok?"ok":"ko")+'">'+(v.ok?"●":"✕")+"</span> "+k+" — "+(v.ok?v.n+" cryptos empruntables":v.err)+"</div>").join("")||"—";
+ const es=d.empruntStatut||{};document.getElementById("emp").innerHTML=Object.entries(es).map(([k,v])=>'<div><span class="'+(v.ok?"ok":"ko")+'">'+(v.ok?"●":"✕")+"</span> "+k+" — "+(v.ok?v.n+" cryptos empruntables"+(v.sansPlafond?" · "+v.sansPlafond+" sans plafond publié (quantité non vérifiée)":"")+(v.sansTaux?" · "+v.sansTaux+" sans taux publié (taux estimé)":"")+(v.tauxMax?" · taux = plafond du marché de prêt (prudent, le vrai taux est plus bas)":""):v.err)+"</div>").join("")||"—";
  document.getElementById("cartes2").innerHTML=c2.map(([a,b])=>'<div class="c"><span class="mu">'+a+"</span><b>"+b+"</b></div>").join("");
- document.getElementById("pos2").innerHTML=table(["Clôture","Actif","Achat","Vente","Ouvert","Statut","Entrée","Net"],
-  (d.positions||[]).map(p=>["≥ "+p.variante+" $ sens contraire",p.cle,p.achat_ex+" "+px(p.px_achat),p.vente_ex+" "+px(p.px_vente),hh(p.ouvert),p.statut+(p.ferme?" ("+dur(p.ferme-p.ouvert)+")":""),usd(p.entree),p.net==null?"—":'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>"]));
+ document.getElementById("pos2").innerHTML=table(["Clôture","Actif","Achat","Vente","Ouvert","Statut","Entrée","Intérêts","Net","Règles"],
+  (d.positions||[]).map(p=>["≥ "+p.variante+" $ sens contraire",p.cle,p.achat_ex+" "+px(p.px_achat),p.vente_ex+" "+px(p.px_vente),hh(p.ouvert),p.statut+(p.ferme?" ("+dur(p.ferme-p.ouvert)+")":""),usd(p.entree),usd(p.interet||0),p.net==null?"—":'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>",p.regles==d.reglesId?"emprunt":"avant"]));
  const s=d.scan?.statut||{};
  document.getElementById("plat").innerHTML=Object.entries(s).map(([k,v])=>'<div><span class="'+(v.ok?"ok":"ko")+'">'+(v.ok?"●":"✕")+"</span> "+k+" — "+(v.ok?v.n+" marchés":v.err)+"</div>").join("")||"—";
- document.getElementById("tr").innerHTML=table(["Heure","Actif","Achat","Vente","Quantité","Frais","Net","Statut"],
-  d.trades.map(p=>[hh(p.t),p.base+"/"+p.quote,p.achat_ex+" "+px(p.px_achat),p.vente_ex+" "+px(p.px_vente),px(p.qte),usd(p.frais),'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>",p.statut||"validé"]));
+ document.getElementById("tr").innerHTML=table(["Heure","Actif","Achat","Vente","Quantité","Frais","Intérêts","Net","Statut","Règles"],
+  d.trades.map(p=>[hh(p.t),p.base+"/"+p.quote,p.achat_ex+" "+px(p.px_achat),p.vente_ex+" "+px(p.px_vente),px(p.qte),usd(p.frais),usd(p.interet||0),'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>",p.statut||"validé",p.regles==d.reglesId?"emprunt":"avant"]));
  const m={};for(const r of d.mouvements){const k=r.ex+"|"+r.base+"/"+r.quote;m[k]=m[k]||{ex:r.ex,a:r.base+"/"+r.quote,q:0,d:0};m[k].q+=r.q;m[k].d-=r.d;}
  document.getElementById("mv").innerHTML=table(["Plateforme","Actif","Pièces","Dollars"],Object.values(m).filter(x=>Math.abs(x.q)>1e-12).map(x=>[x.ex,x.a,(x.q>0?"+":"")+px(x.q),usd(x.d)]));
  document.getElementById("top").innerHTML=table(["Actif","Achat (vendeur)","Vente (acheteur)","Écart","Gain attendu","Vérifié carnet"],

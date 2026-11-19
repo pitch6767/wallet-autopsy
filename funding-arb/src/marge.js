@@ -40,7 +40,9 @@ const SOURCES = {
       if (x.status !== "enabled") continue;
       const [b] = x.currency_pair.split("_");
       const c = cr[b];
-      m[b] = { taux: taux[b] ?? TAUX_DEFAUT_H, tauxPublie: taux[b] != null, max: c && c.loanable ? num(c.user_max_borrow_amount) : null };
+      // Gate : user_max_borrow_amount est en USDT → converti en pièces avec le prix fourni ; taux = plafond du marché de prêt (prudent)
+      const px = c ? num(c.price) : null, maxU = c && c.loanable ? num(c.user_max_borrow_amount) : null;
+      m[b] = { taux: taux[b] ?? TAUX_DEFAUT_H, tauxPublie: taux[b] != null, tauxMax: true, max: maxU != null && px > 0 ? maxU / px : (c && !c.loanable ? 0 : null) };
     }
     return m;
   },
@@ -60,7 +62,8 @@ export async function lireMarge(db) {
   if (ancien && now - ancien.t < 600e3) { cache = { t: ancien.t, ...JSON.parse(ancien.json) }; return cache; }
   const plat = {}, statut = {};
   await Promise.all(Object.entries(SOURCES).map(async ([ex, f]) => {
-    try { plat[ex] = await f(); statut[ex] = { ok: true, n: Object.keys(plat[ex]).length }; }
+    try { plat[ex] = await f(); const v = Object.values(plat[ex]);
+      statut[ex] = { ok: true, n: v.length, sansPlafond: v.filter((x) => x.max == null).length, sansTaux: v.filter((x) => !x.tauxPublie).length, tauxMax: ex === "gate" }; }
     catch (e) { statut[ex] = { ok: false, err: String(e.message || e).slice(0, 120) }; if (cache?.plat?.[ex]) plat[ex] = cache.plat[ex]; }
   }));
   cache = { t: now, plat, statut };

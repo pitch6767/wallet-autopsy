@@ -4,7 +4,7 @@
 // après tous les frais atteint l'objectif, avec des prix pris dans les vrais carnets d'ordres pour la mise complète.
 import { DurableObject } from "cloudflare:workers";
 import { tickComptant, etatComptant, lireComptant, carnetC } from "./comptant.js";
-const VERSION = "2.6.1"
+const VERSION = "2.6.2"
 const REGLES_ID = "2.1";;
 
 // Règles (Pitch décide — modifiables ici)
