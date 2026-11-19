@@ -24490,7 +24490,8 @@ var Bot = class {
           parJour: Object.fromEntries(Object.entries(z.parJour || {}).map(([j, v]) => [j, +(+v).toFixed(2)]))
         };
       }).sort((a, b) => b.pnl - a.pnl || b.n - a.n);
-      return json({ depuis: this._reelDepuis || null, strats: L, total: +L.filter((x) => !x.estimee && !x.variante).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } });
+      const tout = u.searchParams.get("tout") === "1", visibles = tout ? L : L.filter((x) => (+x.pnl || 0) >= SEUIL_REEL);
+      return json({ depuis: this._reelDepuis || null, strats: visibles, cachees: L.length - visibles.length, seuil: SEUIL_REEL, total: +L.filter((x) => !x.estimee && !x.variante).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } });
     }
     if (u.pathname === "/excel-reel") {
       const Q = {};
@@ -24500,7 +24501,8 @@ var Bot = class {
       }
       for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0);
       if (!Object.keys(Q).length) return new Response("Aucun vrai trade r\xE9gl\xE9 pour l'instant.", { headers: { "content-type": "text/plain; charset=utf-8" } });
-      const corps = await xlClasseur(Q, this._reelDepuis || (/* @__PURE__ */ new Date()).toISOString(), { deux: true, titre: "Bot95 \u2014 VRAIS TRADES (signaux re\xE7us par le bot, jou\xE9s sur le vrai carnet Polymarket, frais compris, r\xE9gl\xE9s par Polymarket ; teneurs de march\xE9 = estim\xE9s) depuis le " });
+      const jours = Math.min(14, Math.max(1, Number(u.searchParams.get("jours")) || 3));
+      const corps = await xlClasseur(Q, this._reelDepuis || (/* @__PURE__ */ new Date()).toISOString(), { lignesDepuis: new Date(Date.now() - jours * 864e5).toISOString(), deux: true, titre: "Bot95 \u2014 VRAIS TRADES (signaux re\xE7us par le bot, jou\xE9s sur le vrai carnet Polymarket, frais compris, r\xE9gl\xE9s par Polymarket ; teneurs de march\xE9 = estim\xE9s) depuis le " });
       return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_vrais_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:T]/g, "") + '.xlsx"', "cache-control": "no-store" } });
     }
     if (["/zero6", "/zero5", "/zero2", "/zero", "/zero3-ancien", "/onglet1-archive", "/", "/index.html"].includes(u.pathname)) return Response.redirect(new URL("/reel", req.url).toString(), 302);
@@ -30705,6 +30707,7 @@ async function xlClasseur(Q, depuis, opt = {}) {
         mises += mise;
         nm++;
       }
+      if (opt.lignesDepuis && l[0] < opt.lignesDepuis) continue;
       lignes.push([{ v: serie(l[0]), s: 1 }, l[1] || "", { v: l[2] ?? "", s: 7 }, { v: l[3] ?? "", s: 7 }, { v: mise ?? "", s: 2 }, { v: net, s: 2 }, { v: cum, s: 2 }, l[5] || ""]);
       tous.push([l[0], k, l]);
     }
@@ -30774,13 +30777,14 @@ var PAGE_REEL = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><met
 <div class="mu">Seulement des trades r\xE9els : chaque signal r\xE9ellement re\xE7u par le bot (moteur de Dublin) est jou\xE9 sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix du signal + 5 c, frais compris) et r\xE9gl\xE9 par le r\xE9sultat officiel de Polymarket. 200 $ au plus par cycle et par strat\xE9gie, frais compris (trade r\xE9duit au reste, sinon ignor\xE9). Aucun argent r\xE9el engag\xE9. <b>Exception : les teneurs de march\xE9 (n\xB0 3304 \xE0 3309) sont ESTIM\xC9S</b> \u2014 ordres pos\xE9s dans le carnet, impossibles \xE0 jouer sans vrais ordres.</div>
 <div class="mu" id="dep"></div>
 <div class="mu"><a href="/lecons" style="font-weight:600">\u{1F4D8} Le\xE7ons du projet (erreurs, corrections, vitesse)</a></div>
-<div class="mu"><a href="/excel-reel" style="font-weight:600">\u{1F4E5} Fichier Excel des vrais trades (une ligne par trade, N\xB0 et strat\xE9gie en deux colonnes, filtres)</a></div>
+<div class="mu"><a href="/excel-reel" style="font-weight:600">\u{1F4E5} Fichier Excel des vrais trades (r\xE9sum\xE9 complet + trades des 3 derniers jours, une ligne par trade, filtres)</a> \xB7 <a href="/excel-reel?jours=7">7 jours</a></div>
+<div class="mu" id="caches"></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="\u{1F50D} n\xB0 ou nom" style="font-size:1.05em;padding:8px 10px;width:min(360px,90%);border-radius:8px;border:1px solid #8886"> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur r\xE9sultat</option><option value="creux">Trier : plus petit creux</option><option value="n">Trier : plus de trades</option><option value="cycle">Trier : moins de mise par cycle</option></select></div>
 <div id="app" style="margin-top:12px">Chargement\u2026</div>
 <script>
 const f=(x)=>(x>=0?"+":"")+Number(x).toFixed(2)+" $";
 const t=document.getElementById("tri"),q=document.getElementById("cherche");try{t.value=sessionStorage.getItem("triR")||"pnl";q.value=sessionStorage.getItem("chR")||""}catch(e){}
-async function maj(){try{const d=await (await fetch("/api/reel",{cache:"no-store"})).json();try{sessionStorage.setItem("triR",t.value);sessionStorage.setItem("chR",q.value)}catch(e){}
+async function maj(){try{const d=await (await fetch("/api/reel"+(location.search.indexOf("tout=1")>=0?"?tout=1":""),{cache:"no-store"})).json();try{var ec=document.getElementById("caches");if(ec)ec.innerHTML=d.cachees?(d.cachees+" lignes sous "+(d.seuil||10000).toLocaleString("fr-CH")+" $ cach\xE9es (toujours compt\xE9es) \u2014 <a href="/reel?tout=1">tout voir</a>"):(location.search.indexOf("tout=1")>=0?"<a href="/reel">cacher les lignes sous 10 000 $</a>":"")}catch(e){}try{sessionStorage.setItem("triR",t.value);sessionStorage.setItem("chR",q.value)}catch(e){}
 document.getElementById("dep").textContent="D\xE9part \xE0 z\xE9ro : "+(d.depuis?new Date(d.depuis).toLocaleString("fr-CH",{timeZone:"Europe/Paris"}):"\u2014")+" (heure de Paris) \xB7 total des vrais trades : "+f(d.total)+" \xB7 teneur 3309 : servi seul \xE0 un prix plus cher "+d.file3309.servisSeuls+" fois, servi dans la file "+d.file3309.servisFile+" fois, en moyenne "+(d.file3309.fileMoyenne??"\u2014")+" parts devant nous";
 const k=t.value,v={pnl:(x)=>-x.pnl,creux:(x)=>x.n?x.creux:1e18,n:(x)=>-x.n,cycle:(x)=>x.n?x.miseMaxCycle:1e18}[k];const qq=q.value.trim().toLowerCase();
 const S=d.strats.filter(x=>!qq||(/^[0-9]+$/.test(qq)?String(x.num)===qq:x.nom.toLowerCase().includes(qq))).sort((a,b)=>v(a)-v(b)||b.pnl-a.pnl);
@@ -31015,6 +31019,7 @@ var PAGE_LECONS = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><m
 <li>Ce qu'on ne peut pas mesurer sans vrais ordres (place dans la file d'attente, concurrence) : seulement par un <strong>petit test LIVE</strong> plafonn\xE9.</li>
 </ul>
 </body></html>`;
+var SEUIL_REEL = 1e4;
 var PLAFOND_REEL = 200;
 var NOM_3304 = "TENEUR DE MARCH\xC9 mod\xE8le BTC";
 var NOMS_ESTIMES = /* @__PURE__ */ new Set([NOM_3304, "TENEUR DE MARCH\xC9 retrait si les bourses bougent BTC", "TENEUR DE MARCH\xC9 prix pench\xE9s selon le stock BTC", "TENEUR DE MARCH\xC9 \xE9cart variable BTC", "TENEUR DE MARCH\xC9 arr\xEAt 60 s avant la fin BTC", "TENEUR DE MARCH\xC9 file d'attente estim\xE9e BTC"]);
