@@ -215,7 +215,7 @@ export default {
     // il est maintenant assemblé ici, dans un isolat séparé ; l'objet ne rend que les données, un jour à la fois.
     if (req.method === "GET" && pathname === "/excel-reel") {
       try {
-        const u = new URL(req.url), jours = Math.min(14, Math.max(1, Number(u.searchParams.get("jours")) || 3));
+        const u = new URL(req.url), jours = Math.min(2, Math.max(1, Number(u.searchParams.get("jours")) || 1));   // 3 jours dépassaient les limites (erreur 1102)
         const lire = async (q) => { const r = await stub(env).fetch("https://bot95/api/reel/xl-donnees?" + q); if (!r.ok) throw new Error("données HTTP " + r.status); return r.json(); };
         const base = await lire("stats=1"), Q = {};
         for (const k of Object.keys(base.stats)) Q[k] = [];
@@ -4615,7 +4615,7 @@ const PAGE_REEL = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><m
 <div class="mu">Seulement des trades réels : chaque signal réellement reçu par le bot (moteur de Dublin) est joué sur le vrai carnet Polymarket (rafale 10 s jusqu'au prix du signal + 5 c, frais compris) et réglé par le résultat officiel de Polymarket. 200 $ au plus par cycle et par stratégie, frais compris (trade réduit au reste, sinon ignoré). Aucun argent réel engagé. <b>Exception : les teneurs de marché (n° 3304 à 3309) sont ESTIMÉS</b> — ordres posés dans le carnet, impossibles à jouer sans vrais ordres.</div>
 <div class="mu" id="dep"></div>
 <div class="mu"><a href="/lecons" style="font-weight:600">📘 Leçons du projet (erreurs, corrections, vitesse)</a></div>
-<div class="mu"><a href="/excel-reel" style="font-weight:600">📥 Fichier Excel des vrais trades (résumé complet + trades des 3 derniers jours, une ligne par trade, filtres)</a> · <a href="/excel-reel?jours=7">7 jours</a></div>
+<div class="mu"><a href="/excel-reel" style="font-weight:600">📥 Fichier Excel des vrais trades (résumé complet + trades des dernières 24 h, une ligne par trade, filtres)</a> · <a href="/excel-reel?jours=2">48 h</a></div>
 <div class="mu" id="caches"></div>
 <div style="position:sticky;top:0;z-index:5;background:#0b0f14;padding:8px 0"><input id="cherche" placeholder="🔍 n° ou nom" style="font-size:1.05em;padding:8px 10px;width:min(360px,90%);border-radius:8px;border:1px solid #8886"> <select id="tri" style="font-size:1em;padding:7px;border-radius:8px"><option value="pnl">Trier : meilleur résultat</option><option value="creux">Trier : plus petit creux</option><option value="n">Trier : plus de trades</option><option value="cycle">Trier : moins de mise par cycle</option></select></div>
 <div id="app" style="margin-top:12px">Chargement…</div>
