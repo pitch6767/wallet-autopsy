@@ -27,6 +27,8 @@ th:first-child,td:first-child{text-align:left}th{color:#94a3b8;font-weight:600}
 <div class="mu">Achat sur A et vente sur B dès que l'écart paie les frais d'entrée ; clôture (vente sur A, achat sur B) quand l'écart s'est inversé et rapporte au moins 5 $ (variante 5) ou 10 $ (variante 10) après frais.</div>
 <div id="cartes2" class="cartes" style="margin-top:8px"></div>
 <div class="tab" id="pos2" style="margin-top:8px"></div>
+<div class="mu" id="avant" style="margin-top:8px"></div>
+<h2>Emprunt (vente à découvert)</h2><div id="emp" class="mu"></div>
 <h2>Plateformes</h2><div id="plat" class="mu"></div>
 <h2>Stratégie 1 — trades (fantôme, gain net après frais)</h2><div class="tab" id="tr"></div>
 <h2>À rééquilibrer en réel (pièces et dollars déplacés)</h2><div class="mu">En réel, chaque trade vide un peu une plateforme et en remplit une autre : il faudra virer de temps en temps, avec des frais de retrait non comptés ici.</div><div class="tab" id="mv"></div>
@@ -46,11 +48,13 @@ async function go(){
  document.getElementById("maj").textContent=d.t?"dernier scan "+hh(d.t):"pas encore de scan (toutes les 10 s)";
  const t=d.total||{};
  const a=d.attente||{},n=d.annules||{};
- document.getElementById("cartes").innerHTML=[["Trades validés",t.n||0],["Gain net validé",'<span class="'+cl(t.net)+'">'+usd(t.net||0)+"</span>"],["En attente (écart > 1 %, 5 min)",(a.n||0)+" · "+usd(a.net||0)],["Annulés (écart permanent)",(n.n||0)+" · "+usd(n.net||0)],["Depuis",t.debut?hh(t.debut):"—"]]
+ document.getElementById("cartes").innerHTML=[["Trades validés",t.n||0],["Gain net validé",'<span class="'+cl(t.net)+'">'+usd(t.net||0)+"</span>"],["Intérêts d'emprunt payés",usd(t.interet||0)],["En attente (écart > 1 %, 5 min)",(a.n||0)+" · "+usd(a.net||0)],["Annulés (écart permanent)",(n.n||0)+" · "+usd(n.net||0)],["Depuis",t.debut?hh(t.debut):"—"]]
   .map(([a,b])=>'<div class="c"><span class="mu">'+a+"</span><b>"+b+"</b></div>").join("");
  const dur=ms=>{if(!ms)return"—";const m=Math.round(ms/60e3);return m<60?m+" min":m<1440?(m/60).toFixed(1)+" h":(m/1440).toFixed(1)+" j"};
  const c2=[];for(const v of d.regles.sorties){const f=(d.total2||[]).find(x=>x.variante==v)||{},o=(d.ouvertes2||[]).find(x=>x.variante==v)||{};
   c2.push(["Clôture ≥ "+v+" $ dans le sens contraire — fermés",(f.n||0)+" · "+'<span class="'+cl(f.net)+'">'+usd(f.net||0)+"</span> · durée moy. "+dur(f.duree)],["Clôture ≥ "+v+" $ dans le sens contraire — ouvertes",(o.n||0)]);}
+ const av=d.avant||{};document.getElementById("avant").textContent="Avant l'emprunt obligatoire (règles précédentes, non comptés ici) : stratégie 1 "+(av.n1||0)+" trades · "+usd(av.net1||0)+" ; stratégie 2 "+(av.n2||0)+" fermées · "+usd(av.net2||0)+".";
+ const es=d.empruntStatut||{};document.getElementById("emp").innerHTML=Object.entries(es).map(([k,v])=>'<div><span class="'+(v.ok?"ok":"ko")+'">'+(v.ok?"●":"✕")+"</span> "+k+" — "+(v.ok?v.n+" cryptos empruntables":v.err)+"</div>").join("")||"—";
  document.getElementById("cartes2").innerHTML=c2.map(([a,b])=>'<div class="c"><span class="mu">'+a+"</span><b>"+b+"</b></div>").join("");
  document.getElementById("pos2").innerHTML=table(["Clôture","Actif","Achat","Vente","Ouvert","Statut","Entrée","Net"],
   (d.positions||[]).map(p=>["≥ "+p.variante+" $ sens contraire",p.cle,p.achat_ex+" "+px(p.px_achat),p.vente_ex+" "+px(p.px_vente),hh(p.ouvert),p.statut+(p.ferme?" ("+dur(p.ferme-p.ouvert)+")":""),usd(p.entree),p.net==null?"—":'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>"]));
@@ -63,7 +67,7 @@ async function go(){
  document.getElementById("top").innerHTML=table(["Actif","Achat (vendeur)","Vente (acheteur)","Écart","Gain attendu","Vérifié carnet"],
   (d.scan?.top||[]).map(p=>[p.cle,p.achat+" "+px(p.ask),p.vente+" "+px(p.bid),pc(p.ecart)+(p.approx?" ~":""),'<span class="'+cl(p.gain)+'">'+usd(p.gain)+"</span>",p.permanent?"écart permanent → ignoré":(p.verif==null?"—":(typeof p.verif==="number"?usd(p.verif):p.verif))]));
  const r=d.regles;
- document.getElementById("regles").innerHTML="Mise "+r.mise.toLocaleString("fr-CH")+" $ de chaque côté · scan toutes les 10 s · trade si le gain net (prix moyens réels des carnets pour toute la quantité, frais d'achat et de vente) ≥ "+r.gainMin+" $ · même jeton et même monnaie (USDT ou USDC) · au moins "+(r.volumeMin/1e6)+" M$ échangés sur 24 h sur les 2 plateformes · écart > "+(r.ecartMaxPrix*100)+" % ignoré (jeton probablement différent) · un même actif au plus une fois par "+r.pauseMemeActifS+" s. Frais preneur (palier de base, estimés, prudents) : "+Object.entries(d.frais).map(([k,v])=>k+" "+(v*100).toFixed(2)+"%").join(", ")+".";
+ document.getElementById("regles").innerHTML="Mise "+r.mise.toLocaleString("fr-CH")+" $ de chaque côté · scan toutes les 10 s · prix moyens réels des carnets pour toute la quantité · même jeton et même monnaie (USDT ou USDC) · au moins "+(r.volumeMin/1e6)+" M$ échangés sur 24 h sur les 2 plateformes · écart > "+(r.ecartMaxPrix*100)+" % ignoré (jeton probablement différent) · un écart > "+(r.ecartSuspect*100)+" % qui dure plus de "+(r.dureeSuspectS/60)+" min est considéré comme faux (jeton différent ou retraits bloqués) : ses trades sont annulés · vente à découvert : la crypto vendue est empruntée sur la plateforme de vente, trade seulement si elle y est empruntable pour toute la quantité ; intérêts d'emprunt déduits (stratégie 1 : "+r.heuresEmpruntS1+" h, le temps de virer les pièces achetées pour rendre l'emprunt ; stratégie 2 : toute la durée de tenue), au taux publié par la plateforme, sinon "+(d.tauxDefautH*100).toFixed(3)+" % par heure (estimé, prudent) · stratégie 1 : gain net ≥ "+r.gainMin+" $, un même actif au plus une fois par "+r.pauseMemeActifS+" s · stratégie 2 : entrée si l'écart couvre les frais d'entrée, une position par actif et par variante, clôture quand l'écart dans le sens contraire rapporte ≥ 5 $ ou ≥ 10 $ après frais et intérêts. Frais preneur (palier de base, estimés, prudents) : "+Object.entries(d.frais).map(([k,v])=>k+" "+(v*100).toFixed(2)+"%").join(", ")+".";
 }
 go();setInterval(go,10e3);
 </script></body></html>

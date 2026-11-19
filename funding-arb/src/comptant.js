@@ -4,6 +4,8 @@
 // le gain est acquis immédiatement (pas de position à fermer plus tard).
 // Tourne dans le Moteur (Durable Object en Europe), après le scan des perpétuels.
 
+import { lireMarge, emprunt, TAUX_DEFAUT_H } from "./marge.js";
+export const REGLES_ID_C = "3";
 export const REGLES_C = {
   mise: 5000,           // $ de chaque côté : 5 000 $ achetés sur A, 5 000 $ vendus sur B (choix de Pitch, 18.11.2026)
   gainMin: 50,          // $ net après frais des 2 achats/ventes
@@ -12,7 +14,9 @@ export const REGLES_C = {
   pauseMemeActifS: 60,  // stratégie 1 : un même actif ne compte qu'une fois par minute (le carnet doit se reconstituer)
   ecartSuspect: 0.01,   // A : un écart > 1 %…
   dureeSuspectS: 300,   // …qui dure plus de 5 min = jeton différent ou retraits bloqués → trades annulés, actif ignoré
-  sorties: [5, 10],     // stratégie 2 : clôture quand l'écart inverse rapporte au moins 5 $ (variante 5) ou 10 $ (variante 10)
+  sorties: [5, 10],
+  empruntObligatoire: true, // la crypto vendue doit être empruntable sur la plateforme de vente (vente à découvert au comptant)
+  heuresEmpruntS1: 1,   // stratégie 1 : intérêts comptés 1 h (le temps de virer les pièces achetées pour rendre l'emprunt)     // stratégie 2 : clôture quand l'écart inverse rapporte au moins 5 $ (variante 5) ou 10 $ (variante 10)
 };
 // Frais « preneur » au comptant, palier de base (estimés, prudents)
 export const LECT_EXPORT = () => LECT;
@@ -126,6 +130,7 @@ export async function tickComptant(env) {
   // candidats : même jeton, même monnaie de cotation, toutes les paires de plateformes
   const par = new Map();
   for (const x of lignes) { if (!(x.vol >= REGLES_C.volumeMin)) continue; const k = x.base + "/" + x.quote; if (!par.has(k)) par.set(k, []); par.get(k).push(x); }
+  let marge = null; try { marge = await lireMarge(db); } catch (e) {}
   const cands = [];
   for (const [k, l] of par) {
     let best = null;
@@ -174,13 +179,16 @@ export async function tickComptant(env) {
     try {
       const [ca, cb] = await Promise.all([carnetR(env, c.a), carnetR(env, c.b)]);
       const Q = N / c.a.ask;
+      const em = emprunt(marge, c.b.ex, c.b.base, Q);
+      if (!em) { verifies[c.k] = c.b.base + " pas empruntable sur " + c.b.ex + " pour cette quantité"; continue; }
       const vA = prixMoyenQ(ca.asks, Q), vB = prixMoyenQ(cb.bids, Q);
       if (!vA || !vB) { verifies[c.k] = "carnet trop mince pour " + N + " $"; continue; }
-      const net = Q * vB * (1 - FRAIS_C[c.b.ex]) - Q * vA * (1 + FRAIS_C[c.a.ex]);
+      const interet = Q * vB * em.taux * REGLES_C.heuresEmpruntS1;
+      const net = Q * vB * (1 - FRAIS_C[c.b.ex]) - Q * vA * (1 + FRAIS_C[c.a.ex]) - interet;
       verifies[c.k] = Math.round(net * 100) / 100;
       if (net < REGLES_C.gainMin) continue;
-      st.push(db.prepare("INSERT INTO comptant (t, cle, base, quote, achat_ex, vente_ex, qte, px_achat, px_vente, frais, net, statut) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
-        .bind(now, c.k, c.a.base, c.a.quote, c.a.ex, c.b.ex, Q, vA, vB, Q * vA * FRAIS_C[c.a.ex] + Q * vB * FRAIS_C[c.b.ex], net, c.ecart > REGLES_C.ecartSuspect ? "attente" : "validé"));
+      st.push(db.prepare("INSERT INTO comptant (t, cle, base, quote, achat_ex, vente_ex, qte, px_achat, px_vente, frais, net, statut, interet, taux, regles) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        .bind(now, c.k, c.a.base, c.a.quote, c.a.ex, c.b.ex, Q, vA, vB, Q * vA * FRAIS_C[c.a.ex] + Q * vB * FRAIS_C[c.b.ex], net, c.ecart > REGLES_C.ecartSuspect ? "attente" : "validé", interet, em.taux, REGLES_ID_C));
     } catch (e) { verifies[c.k] = "carnet illisible : " + String(e.message || e).slice(0, 60); }
   }
 
@@ -193,16 +201,17 @@ export async function tickComptant(env) {
     const a = idx.get(p.achat_ex + "|" + p.cle), b = idx.get(p.vente_ex + "|" + p.cle);
     if (!a || !b) continue;
     const fA = FRAIS_C[p.achat_ex], fB = FRAIS_C[p.vente_ex];
-    const sortieHaut = p.qte * a.bid * (1 - fA) - p.qte * b.ask * (1 + fB); // au meilleur prix affiché
+    const interet = p.taux ? p.qte * p.px_vente * p.taux * (now - p.ouvert) / 3600e3 : 0; // intérêts d'emprunt courus
+    const sortieHaut = p.qte * a.bid * (1 - fA) - p.qte * b.ask * (1 + fB) - interet; // au meilleur prix affiché
     if (sortieHaut < p.variante) continue;
     try {
       const [ca, cb] = await Promise.all([carnetR(env, a), carnetR(env, b)]);
       const sA = prixMoyenQ(ca.bids, p.qte), sB = prixMoyenQ(cb.asks, p.qte);
       if (!sA || !sB) continue;
-      const sortie = p.qte * sA * (1 - fA) - p.qte * sB * (1 + fB);
+      const sortie = p.qte * sA * (1 - fA) - p.qte * sB * (1 + fB) - interet;
       if (sortie < p.variante) continue;
       const fraisS = p.qte * sA * fA + p.qte * sB * fB;
-      st.push(db.prepare("UPDATE comptant_pos SET statut='fermé', ferme=?, px_sortie_vente=?, px_sortie_achat=?, frais=frais+?, net=entree+? WHERE id=?").bind(now, sA, sB, fraisS, sortie, p.id));
+      st.push(db.prepare("UPDATE comptant_pos SET statut='fermé', ferme=?, px_sortie_vente=?, px_sortie_achat=?, frais=frais+?, interet=?, net=entree+? WHERE id=?").bind(now, sA, sB, fraisS, interet, sortie, p.id));
     } catch (e) {}
   }
   const dejaOuv = new Set(ouvertes.map((p) => p.variante + "|" + p.cle));
@@ -212,13 +221,15 @@ export async function tickComptant(env) {
     try {
       const [ca, cb] = await Promise.all([carnetR(env, c.a), carnetR(env, c.b)]);
       const Q = N / c.a.ask;
+      const em = emprunt(marge, c.b.ex, c.b.base, Q);
+      if (!em) continue;
       const vA = prixMoyenQ(ca.asks, Q), vB = prixMoyenQ(cb.bids, Q);
       if (!vA || !vB) continue;
       const entree = Q * vB * (1 - FRAIS_C[c.b.ex]) - Q * vA * (1 + FRAIS_C[c.a.ex]);
       if (entree < 0) continue;
       for (const v of libres) {
-        st.push(db.prepare("INSERT INTO comptant_pos (variante, cle, base, quote, achat_ex, vente_ex, qte, px_achat, px_vente, ouvert, entree, frais, statut) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'ouvert')")
-          .bind(v, c.k, c.a.base, c.a.quote, c.a.ex, c.b.ex, Q, vA, vB, now, entree, Q * vA * FRAIS_C[c.a.ex] + Q * vB * FRAIS_C[c.b.ex]));
+        st.push(db.prepare("INSERT INTO comptant_pos (variante, cle, base, quote, achat_ex, vente_ex, qte, px_achat, px_vente, ouvert, entree, frais, statut, taux, regles) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'ouvert',?,?)")
+          .bind(v, c.k, c.a.base, c.a.quote, c.a.ex, c.b.ex, Q, vA, vB, now, entree, Q * vA * FRAIS_C[c.a.ex] + Q * vB * FRAIS_C[c.b.ex], em.taux, REGLES_ID_C));
         dejaOuv.add(v + "|" + c.k);
       }
     } catch (e) {}
@@ -233,11 +244,15 @@ export async function tickComptant(env) {
 export async function etatComptant(env) {
   const e = await env.DB.prepare("SELECT * FROM etat WHERE id=2").first();
   const trades = (await env.DB.prepare("SELECT * FROM comptant ORDER BY t DESC LIMIT 200").all()).results;
-  const tot = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net, SUM(frais) frais, MIN(t) debut FROM comptant WHERE statut='validé'").first();
-  const att = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net FROM comptant WHERE statut='attente'").first();
-  const ann = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net FROM comptant WHERE statut='annulé'").first();
+  const R = REGLES_ID_C;
+  const tot = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net, SUM(frais) frais, SUM(interet) interet, MIN(t) debut FROM comptant WHERE statut='validé' AND regles=?").bind(R).first();
+  const avant = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM comptant WHERE statut='validé' AND (regles IS NULL OR regles<>?)) n1, (SELECT SUM(net) FROM comptant WHERE statut='validé' AND (regles IS NULL OR regles<>?)) net1, (SELECT COUNT(*) FROM comptant_pos WHERE statut='fermé' AND (regles IS NULL OR regles<>?)) n2, (SELECT SUM(net) FROM comptant_pos WHERE statut='fermé' AND (regles IS NULL OR regles<>?)) net2").bind(R, R, R, R).first();
+  const marge = await env.DB.prepare("SELECT t, json FROM etat WHERE id=4").first();
+  const att = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net FROM comptant WHERE statut='attente' AND regles=?").bind(R).first();
+  const ann = await env.DB.prepare("SELECT COUNT(*) n, SUM(net) net FROM comptant WHERE statut='annulé' AND regles=?").bind(R).first();
   const pos = (await env.DB.prepare("SELECT * FROM comptant_pos ORDER BY COALESCE(ferme, ouvert) DESC LIMIT 300").all()).results;
-  const tot2 = (await env.DB.prepare("SELECT variante, COUNT(*) n, SUM(net) net, SUM(frais) frais, AVG(ferme-ouvert) duree FROM comptant_pos WHERE statut='fermé' GROUP BY variante").all()).results;
-  const ouv2 = (await env.DB.prepare("SELECT variante, COUNT(*) n FROM comptant_pos WHERE statut='ouvert' GROUP BY variante").all()).results;
-  return { regles: REGLES_C, frais: FRAIS_C, t: e?.t, scan: e ? JSON.parse(e.json) : null, trades, total: tot, attente: att, annules: ann, positions: pos, total2: tot2, ouvertes2: ouv2 };
+  const tot2 = (await env.DB.prepare("SELECT variante, COUNT(*) n, SUM(net) net, SUM(frais) frais, SUM(interet) interet, AVG(ferme-ouvert) duree FROM comptant_pos WHERE statut='fermé' AND regles=? GROUP BY variante").bind(R).all()).results;
+  const ouv2 = (await env.DB.prepare("SELECT variante, COUNT(*) n FROM comptant_pos WHERE statut='ouvert' AND regles=? GROUP BY variante").bind(R).all()).results;
+  const mj = marge ? JSON.parse(marge.json) : null;
+  return { reglesId: R, avant, empruntStatut: mj?.statut || null, tauxDefautH: TAUX_DEFAUT_H, regles: REGLES_C, frais: FRAIS_C, t: e?.t, scan: e ? JSON.parse(e.json) : null, trades, total: tot, attente: att, annules: ann, positions: pos, total2: tot2, ouvertes2: ouv2 };
 }
