@@ -1,4 +1,4 @@
-# reel gros gains 2026-11-19T18:30Z
+# banc trades 96h 2026-11-19T18:40Z
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
@@ -28,3 +28,15 @@ print("REEL-DEPUIS", R.get("depuis"), "TOTAL", R.get("total"), R.get("ERREUR"))
 for x in (R.get("strats") or []):
     pj = x.get("parJour") or {}
     print("REEL", json.dumps({k: x.get(k) for k in ("num","nom","estimee","n","gains","pertes","pnl","mise","miseMaxCycle","pire","creux","capital")}, ensure_ascii=False), "JOURS", json.dumps(dict(sorted(pj.items())[-6:])))
+
+import gzip, base64, datetime
+dep = (datetime.datetime.utcnow() - datetime.timedelta(hours=95)).strftime("%Y-%m-%dT%H:%M:%SZ")
+try:
+    raw = urllib.request.urlopen(urllib.request.Request("https://72-11-157-70.sslip.io/api/bot/banc/trades?depuis=" + dep, headers={"user-agent": "verif"}), timeout=280).read()
+    T = json.loads(raw)["trades"]
+    print("BANC-N", len(T), len(raw))
+    K = ("num","ouvert","endTs","side","prix","prixSignal","mise","pnl","gagne")
+    rows = [[t.get(k) for k in K] for t in T if t["num"] < 1000000 or t["num"] % 1000000 in (12116,12110,12115,12112,12122,2112,12126,2116,2110,12125,2115,12120,11505,2122,11805,11905,10105,2126,2125,2120,10107,1505,1805,1905,105,107,2140,101,2141,2111,12111,1114,14)]
+    print("BANC-GZ", base64.b64encode(gzip.compress(json.dumps([K, rows]).encode())).decode())
+except Exception as e:
+    print("BANC-ERREUR", e)
