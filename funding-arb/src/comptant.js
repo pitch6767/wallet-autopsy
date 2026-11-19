@@ -216,7 +216,7 @@ export async function tickComptant(env) {
       const sortie = p.qte * sA * (1 - fA) - p.qte * sB * (1 + fB) - interet;
       if (sortie < p.variante) continue;
       const fraisS = p.qte * sA * fA + p.qte * sB * fB;
-      st.push(db.prepare("UPDATE comptant_pos SET statut='fermé', ferme=?, px_sortie_vente=?, px_sortie_achat=?, frais=frais+?, interet=?, net=entree+? WHERE id=?").bind(now, sA, sB, fraisS, interet, sortie, p.id));
+      st.push(db.prepare("UPDATE comptant_pos SET statut='fermé', ferme=?, px_sortie_vente=?, px_sortie_achat=?, frais=frais+?, interet=?, net=entree+? WHERE id=? AND statut='ouvert'").bind(now, sA, sB, fraisS, interet, sortie, p.id));
     } catch (e) {}
   }
   const dejaOuv = new Set(ouvertes.map((p) => p.variante + "|" + p.cle));
@@ -278,7 +278,8 @@ export async function fermerManuel(env, id) {
   const interet = p.taux ? p.qte * p.px_vente * p.taux * (now - p.ouvert) / 3600e3 : 0;
   const fraisS = p.qte * sA * fA + p.qte * sB * fB;
   const sortie = p.qte * sA * (1 - fA) - p.qte * sB * (1 + fB) - interet;
-  await db.prepare("UPDATE comptant_pos SET statut='fermé', ferme=?, px_sortie_vente=?, px_sortie_achat=?, frais=frais+?, interet=?, net=entree+?, raison='manuelle' WHERE id=? AND statut='ouvert'")
+  const r = await db.prepare("UPDATE comptant_pos SET statut='fermé', ferme=?, px_sortie_vente=?, px_sortie_achat=?, frais=frais+?, interet=?, net=entree+?, raison='manuelle' WHERE id=? AND statut='ouvert'")
     .bind(now, sA, sB, fraisS, interet, sortie, id).run();
+  if (!r.meta?.changes) return { ok: false, err: "la position venait d'être fermée automatiquement" };
   return { ok: true, net: p.entree + sortie, fraisSortie: fraisS, interet };
 }
