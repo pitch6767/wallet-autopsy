@@ -207,7 +207,7 @@ export async function tickComptant(env) {
     const interet = p.taux ? p.qte * p.px_vente * p.taux * (now - p.ouvert) / 3600e3 : 0; // intérêts d'emprunt courus
     const sortieHaut = p.qte * a.bid * (1 - fA) - p.qte * b.ask * (1 + fB) - interet; // au meilleur prix affiché
     // pour l'affichage : résultat si on fermait maintenant (meilleurs prix affichés, frais et intérêts compris)
-    st.push(db.prepare("UPDATE comptant_pos SET interet=?, sortie_now=?, maj=? WHERE id=?").bind(interet, sortieHaut, now, p.id));
+    st.push(db.prepare("UPDATE comptant_pos SET interet=?, sortie_now=?, frais_sortie_now=?, maj=? WHERE id=?").bind(interet, sortieHaut, p.qte * a.bid * fA + p.qte * b.ask * fB, now, p.id));
     if (sortieHaut < p.variante) continue;
     try {
       const [ca, cb] = await Promise.all([carnetR(env, a), carnetR(env, b)]);
@@ -261,4 +261,24 @@ export async function etatComptant(env) {
   const ouv2 = (await env.DB.prepare("SELECT variante, COUNT(*) n FROM comptant_pos WHERE statut='ouvert' AND regles=? GROUP BY variante").bind(R).all()).results;
   const mj = marge ? JSON.parse(marge.json) : null;
   return { reglesId: R, avant, empruntStatut: mj?.statut || null, tauxDefautH: TAUX_DEFAUT_H, regles: REGLES_C, frais: FRAIS_C, t: e?.t, scan: e ? JSON.parse(e.json) : null, trades, total: tot, attente: att, annules: ann, positions: pos, total2: tot2, ouvertes2: ouv2 };
+}
+
+// Clôture manuelle (bouton de la page) : sortie au vrai carnet pour toute la quantité, frais et intérêts compris
+export async function fermerManuel(env, id) {
+  const db = env.DB, now = Date.now();
+  const p = await db.prepare("SELECT * FROM comptant_pos WHERE id=? AND statut='ouvert'").bind(id).first();
+  if (!p) return { ok: false, err: "position introuvable ou déjà fermée" };
+  const symA = (await lireComptant(p.achat_ex)).find((x) => x.base === p.base && x.quote === p.quote)?.sym;
+  const symB = (await lireComptant(p.vente_ex)).find((x) => x.base === p.base && x.quote === p.quote)?.sym;
+  if (!symA || !symB) return { ok: false, err: "marché introuvable" };
+  const [ca, cb] = await Promise.all([carnetC({ ex: p.achat_ex, sym: symA }), carnetC({ ex: p.vente_ex, sym: symB })]);
+  const sA = prixMoyenQ(ca.bids, p.qte), sB = prixMoyenQ(cb.asks, p.qte);
+  if (!sA || !sB) return { ok: false, err: "carnet trop mince pour clôturer toute la quantité maintenant" };
+  const fA = FRAIS_C[p.achat_ex], fB = FRAIS_C[p.vente_ex];
+  const interet = p.taux ? p.qte * p.px_vente * p.taux * (now - p.ouvert) / 3600e3 : 0;
+  const fraisS = p.qte * sA * fA + p.qte * sB * fB;
+  const sortie = p.qte * sA * (1 - fA) - p.qte * sB * (1 + fB) - interet;
+  await db.prepare("UPDATE comptant_pos SET statut='fermé', ferme=?, px_sortie_vente=?, px_sortie_achat=?, frais=frais+?, interet=?, net=entree+?, raison='manuelle' WHERE id=? AND statut='ouvert'")
+    .bind(now, sA, sB, fraisS, interet, sortie, id).run();
+  return { ok: true, net: p.entree + sortie, fraisSortie: fraisS, interet };
 }

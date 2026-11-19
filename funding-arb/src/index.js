@@ -3,9 +3,9 @@
 // achète (en simulation) là où c'est le moins cher et vend là où c'est le plus cher, seulement si le gain attendu
 // après tous les frais atteint l'objectif, avec des prix pris dans les vrais carnets d'ordres pour la mise complète.
 import { DurableObject } from "cloudflare:workers";
-import { tickComptant, etatComptant, lireComptant, carnetC } from "./comptant.js";
+import { tickComptant, etatComptant, lireComptant, carnetC, fermerManuel } from "./comptant.js";
 import { etatComptes } from "./comptes.js";
-const VERSION = "2.7.3"
+const VERSION = "2.8.0"
 const REGLES_ID = "2.1";;
 
 // Règles (Pitch décide — modifiables ici)
@@ -126,6 +126,7 @@ Relais.prototype.carnetOkx = async function (sym) { return carnetOkxDirect(sym);
 Relais.prototype.lireComptant = async function (ex) { return lireComptant(ex); };
 Relais.prototype.carnetComptant = async function (x) { return carnetC(x); };
 Relais.prototype.comptes = async function () { return etatComptes(this.env); };
+Relais.prototype.fermer = async function (id) { return fermerManuel(this.env, id); };
 
 async function lireEurope(env, nom) {
   let dernier = null;
@@ -312,6 +313,11 @@ export default {
       const { statut, lignes } = await toutLire(env);
       const p = ecarts(lignes).slice(0, 5).map((x) => ({ base: x.base, achat: x.a.ex, vente: x.b.ex, ecart: x.ecart, gain: x.gain }));
       return new Response(JSON.stringify({ app: "funding-arb-app", type: "arbitrage-prix", version: VERSION, statut, top: p }), { headers: JSONH });
+    }
+    if (u.pathname === "/api/fermer" && req.method === "POST") {
+      const id = parseInt(u.searchParams.get("id"), 10);
+      if (!(id > 0)) return new Response(JSON.stringify({ ok: false, err: "id invalide" }), { status: 400, headers: JSONH });
+      return new Response(JSON.stringify(await env.RELAIS.get(env.RELAIS.idFromName("relais-weur"), { locationHint: "weur" }).fermer(id)), { headers: JSONH });
     }
     if (u.pathname === "/api/comptes") return new Response(JSON.stringify(await env.RELAIS.get(env.RELAIS.idFromName("relais-weur"), { locationHint: "weur" }).comptes()), { headers: JSONH });
     if (u.pathname === "/api/comptant") { const er = await env.DB.prepare("SELECT * FROM etat WHERE id=3").first(); return new Response(JSON.stringify({ version: VERSION, erreur: er ? { t: er.t, ...JSON.parse(er.json) } : null, ...(await etatComptant(env)) }), { headers: JSONH }); }

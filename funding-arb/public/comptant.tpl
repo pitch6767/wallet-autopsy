@@ -63,8 +63,9 @@ async function go(){
   return '<div class="c" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-weight:600;font-size:16px"><span>'+p.cle+'</span><span class="mu" style="font-weight:400">clôture ≥ '+p.variante+' $</span></div>'
   +ligne("Achat",p.achat_ex+" à "+px(p.px_achat))+ligne("Vente à découvert",p.vente_ex+" à "+px(p.px_vente))+ligne("Gain à l'entrée",'<span class="'+cl(p.entree)+'">'+usd(p.entree)+"</span>")
   +ligne("Intérêts d'emprunt",usd(-(p.interet||0)))+ligne(enCours?"Ouverte depuis":"Durée",dur((enCours?Date.now():p.ferme)-p.ouvert))
-  +(enCours?ligne("Si on fermait maintenant",maint==null?"—":'<b class="'+cl(maint)+'">'+usd(maint)+"</b>")
-     :ligne(p.statut==="fermé"?"Résultat net":"Statut",p.statut==="fermé"?'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>":p.statut))+"</div>";};
+  +(enCours?ligne("Frais de sortie (2 côtés)",p.frais_sortie_now==null?"—":usd(-p.frais_sortie_now))+ligne("Net après clôture maintenant",maint==null?"—":'<b class="'+cl(maint)+'">'+usd(maint)+"</b>")
+     +'<button onclick="fermer('+p.id+','+(maint==null?"null":maint.toFixed(2))+')" style="margin-top:8px;width:100%;padding:10px;border:0;border-radius:8px;background:#7c3aed;color:#fff;font-size:15px;font-weight:600">Clôturer maintenant</button>'
+     :(p.raison==="manuelle"?ligne("Clôture","manuelle"):"")+ligne(p.statut==="fermé"?"Résultat net":"Statut",p.statut==="fermé"?'<b class="'+cl(p.net)+'">'+usd(p.net)+"</b>":p.statut))+"</div>";};
  document.getElementById("pos2").innerHTML=(o2.length?'<div class="mu" style="margin:6px 0">Positions ouvertes</div>'+o2.map(carte).join(""):'<div class="mu">Aucune position ouverte.</div>')
   +(f2.length?'<div class="mu" style="margin:10px 0 6px">Positions fermées</div>'+f2.slice(0,30).map(carte).join(""):"");
  const s=d.scan?.statut||{};
@@ -80,5 +81,7 @@ async function go(){
 }
 async function comptes(){try{const d=await (await fetch("/api/comptes",{cache:"no-store"})).json();
  document.getElementById("comptes").innerHTML="<div><b>Mode réel : désactivé</b> — aucun ordre n'est envoyé.</div>"+Object.entries(d.comptes).map(([k,v])=>"<div>"+k+" — "+(!v.cles?"clé API pas encore fournie":v.ok?'<span class="ok">clé OK</span> · '+usd(v.usdt)+" USDT disponibles":'<span class="ko">clé refusée</span> : '+v.err)+"</div>").join("");}catch(e){}}
+async function fermer(id,net){if(!confirm("Clôturer cette position maintenant ?\nNet estimé : "+(net==null?"inconnu":usd(net))+" (calculé au vrai carnet au moment du clic, frais et intérêts compris)."))return;
+ try{const r=await (await fetch("/api/fermer?id="+id,{method:"POST"})).json();alert(r.ok?"Position clôturée. Net : "+usd(r.net):"Impossible : "+r.err);}catch(e){alert("Erreur : "+e.message)}go();}
 go();comptes();setInterval(go,10e3);setInterval(comptes,60e3);
 </script></body></html>
