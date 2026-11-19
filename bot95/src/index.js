@@ -211,6 +211,20 @@ export default {
         return Response.json({ ok: true, decoupe: true, n: (d.signaux || []).length });
       } catch (e) { return Response.json({ ok: false, erreur: String((e && e.message) || e) }, { status: 503 }); }
     }
+    // 19.11.2026 : l'Excel des vrais trades faisait dépasser la mémoire de l'objet (« isolate exceeded its memory limit », l'objet redémarrait) —
+    // il est maintenant assemblé ici, dans un isolat séparé ; l'objet ne rend que les données, un jour à la fois.
+    if (req.method === "GET" && pathname === "/excel-reel") {
+      try {
+        const u = new URL(req.url), jours = Math.min(14, Math.max(1, Number(u.searchParams.get("jours")) || 3));
+        const lire = async (q) => { const r = await stub(env).fetch("https://bot95/api/reel/xl-donnees?" + q); if (!r.ok) throw new Error("données HTTP " + r.status); return r.json(); };
+        const base = await lire("stats=1"), Q = {};
+        for (const k of Object.keys(base.stats)) Q[k] = [];
+        for (let d = jours; d >= 0; d--) { const j = await lire("jour=" + new Date(Date.now() - d * 864e5).toISOString().slice(0, 10)); for (const [k, L] of Object.entries(j.Q || {})) (Q[k] = Q[k] || []).push(...L); }
+        for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => (a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0));
+        const corps = await xlClasseur(Q, base.depuis || new Date().toISOString(), { stats: base.stats, lignesDepuis: new Date(Date.now() - jours * 864e5).toISOString(), deux: true, titre: "Bot95 — VRAIS TRADES (signaux reçus par le bot, joués sur le vrai carnet Polymarket, frais compris, réglés par Polymarket ; teneurs de marché = estimés ; lignes de trades des " + jours + " derniers jours, résumé sur tout l'historique) depuis le " });
+        return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_vrais_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:T]/g, "") + '.xlsx"', "cache-control": "no-store" } });
+      } catch (e) { return new Response("Excel indisponible : " + String((e && e.message) || e), { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } }); }
+    }
     return stub(env).fetch(req);
   },
   async scheduled(_e, env, ctx) { ctx.waitUntil(stub(env).fetch("https://bot95/api/reveil")); },
@@ -1064,16 +1078,11 @@ const json = (x) => Response.json(x, { headers: { "cache-control": "no-store" } 
       // cachées de la page (toujours comptées, rien d'effacé) ; ?tout=1 les montre toutes
       const tout = u.searchParams.get("tout") === "1", visibles = tout ? L : L.filter((x) => (+x.pnl || 0) >= SEUIL_REEL);
       return json({ depuis: this._reelDepuis || null, strats: visibles, cachees: L.length - visibles.length, seuil: SEUIL_REEL, total: +L.filter((x) => !x.estimee && !x.variante).reduce((a, x) => a + x.pnl, 0).toFixed(2), file3309: { servisSeuls: z9.servisSeuls || 0, servisFile: z9.servisFile || 0, fileMoyenne: z9.fileMoyenne ?? null }, diag: this.diag.prixReel || null, reconstruction: { r200: await this.state.storage.get("reel:rebuild200b"), teneurs: await this.state.storage.get("reel:teneurs2") } }); }
-    if (u.pathname === "/excel-reel") { const Q = {};
-      // 19.11.2026 : plus de lecture de TOUT l'historique (erreur 1101, mémoire) — seulement les jours demandés, clé par clé ; le résumé vient des compteurs complets
-      const jours = Math.min(14, Math.max(1, Number(u.searchParams.get("jours")) || 3)), Zx = (this.N && this.N.reelZ) || {}, cles = [];
-      for (const k of Object.keys(Zx)) { if (k === "__tv") continue; Q[k] = []; for (let d = 0; d <= jours; d++) cles.push("xreel:" + k + "|" + new Date(Date.now() - d * 864e5).toISOString().slice(0, 10)); }
-      for (let i = 0; i < cles.length; i += 128) for (const [kk, v] of await this.state.storage.get(cles.slice(i, i + 128))) { const k = kk.slice(6, kk.lastIndexOf("|")); (Q[k] = Q[k] || []).push(...v); }
-      for (const k of Object.keys(Q)) Q[k].sort((a2, b2) => (a2[0] < b2[0] ? -1 : a2[0] > b2[0] ? 1 : 0));
-      if (!Object.keys(Q).length) return new Response("Aucun vrai trade réglé pour l'instant.", { headers: { "content-type": "text/plain; charset=utf-8" } });
-      // 19.11.2026 (Pitch : « oui » — l'export plantait, erreur 1101, fichier trop gros) : résumé sur tout l'historique, lignes de trades des N derniers jours (3 par défaut, 14 au plus)
-      const corps = await xlClasseur(Q, this._reelDepuis || new Date().toISOString(), { stats: Zx, lignesDepuis: new Date(Date.now() - jours * 864e5).toISOString(), deux: true, titre: "Bot95 — VRAIS TRADES (signaux reçus par le bot, joués sur le vrai carnet Polymarket, frais compris, réglés par Polymarket ; teneurs de marché = estimés) depuis le " });
-      return new Response(corps, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": 'attachment; filename="bot95_vrais_trades_' + new Date(Date.now() + decalSuisse(Date.now())).toISOString().slice(0, 16).replace(/[-:T]/g, "") + '.xlsx"', "cache-control": "no-store" } }); }
+    if (u.pathname === "/api/reel/xl-donnees") { const Zx = (this.N && this.N.reelZ) || {};
+      if (u.searchParams.get("stats") === "1") { const st = {}; for (const [k, z] of Object.entries(Zx)) if (k !== "__tv" && z) st[k] = { n: z.n, gains: z.gains, pertes: z.pertes, pnl: z.pnl, pertesTot: z.pertesTot, pire: z.pire, creux: z.creux, mise: z.mise }; return json({ depuis: this._reelDepuis || null, stats: st }); }
+      const jour = String(u.searchParams.get("jour") || "").slice(0, 10), cles = Object.keys(Zx).filter((k) => k !== "__tv").map((k) => "xreel:" + k + "|" + jour), Q = {};
+      for (let i = 0; i < cles.length; i += 128) for (const [kk, v] of await this.state.storage.get(cles.slice(i, i + 128))) Q[kk.slice(6, kk.lastIndexOf("|"))] = v;
+      return json({ Q }); }
     if (["/zero6", "/zero5", "/zero2", "/zero", "/zero3-ancien", "/onglet1-archive", "/", "/index.html"].includes(u.pathname)) return Response.redirect(new URL("/reel", req.url).toString(), 302);
     if (u.pathname === "/zero6") return new Response(PAGE_ZERO5, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     if (u.pathname === "/zero5") return new Response(PAGE_ZERO4, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
