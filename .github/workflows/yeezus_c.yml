@@ -1,0 +1,25 @@
+name: Yeezus analyse
+on:
+  push:
+    branches: [main]
+    paths: [etude/yeezus/analyse9.py]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: trades_gmgn
+          run-id: 44641582380
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/a
+      - run: |
+          ls -la /tmp/a; gunzip -f /tmp/a/trades_gmgn.json.gz; tail -2 /tmp/a/journal_b.txt; grep -c INCOMPLET /tmp/a/journal_b.txt || true
+          python3 -u etude/yeezus/analyse9.py /tmp/a/trades_gmgn.json 2>&1 | tee etude/yeezus/resultat9.txt
+          git config user.name tests; git config user.email bot@users.noreply.github.com
+          git add etude/yeezus/resultat9.txt; git commit -m "Yeezus résultat analyse [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 3; done
