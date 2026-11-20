@@ -1,10 +1,10 @@
 env.ASSETS                    Assets              
 
-Uploaded funding-arb (4.04 sec)
-Deployed funding-arb triggers (0.68 sec)
+Uploaded funding-arb (3.31 sec)
+Deployed funding-arb triggers (0.72 sec)
   https://funding-arb.pitch67.workers.dev
   schedule: * * * * *
-Current Version ID: 562e0510-3d4e-48f0-819c-0de1229ab2c8
+Current Version ID: 7ea9c7d7-627a-42ea-8df9-56c03cb4df9e
 code sortie: 0
 
  ⛅️ wrangler 4.165.0
@@ -16,10 +16,10 @@ migrations: 0
 === page
 200
 === sonde
-{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.10.0","statut":{"okx":{"ok":true,"n":531,"ms":227},"deribit":{"ok":true,"n":151,"ms":306},"bybit":{"ok":true,"n":835,"ms":1339,"lieu":"AMS/US"},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":330,"ms":6061}},"top":[{"base":"INIT","achat":"okx","vente":"bybit","ecart":0.02351017070428285,"gain":210.5711954187602},{"base":"IRYS","achat":"okx","vente":"bybit","ecart":0.01049868766404205,"gain":76.58112399070308},{"base":"YB","achat":"okx","vente":"bybit","ecart":0.0033411949685533404,"gain":4.568204480516677},{"base":"BREV","achat":"okx","vente":"bybit","ecart":0.0026346989856407266,"gain":4.031370979598776},{"base":"RKLB","achat":"hyperliquid","vente":"okx","ecart":0.002434681206467282,"gain":2.1675802111190983}]}
+{"app":"funding-arb-app","type":"arbitrage-prix","version":"2.11.0","statut":{"okx":{"ok":true,"n":531,"ms":162},"deribit":{"ok":true,"n":151,"ms":267},"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"hyperliquid":{"ok":true,"n":330,"ms":788},"bybit":{"ok":true,"n":835,"ms":1035,"lieu":"AMS/US"}},"top":[{"base":"INIT","achat":"okx","vente":"bybit","ecart":0.024887800897592793,"gain":226.360326382431},{"base":"IRYS","achat":"okx","vente":"bybit","ecart":0.008674503445480264,"gain":57.89422646261691},{"base":"YB","achat":"okx","vente":"bybit","ecart":0.0052133616528287074,"gain":22.463852738455255},{"base":"BREV","achat":"okx","vente":"bybit","ecart":0.002784038181095072,"gain":5.5164894157017414},{"base":"HUMA","achat":"okx","vente":"bybit","ecart":0.002594706798131785,"gain":-1.7833042477900563}]}
 === controles
 --- version
-{"version":"2.9.0"}
+{"version":"2.11.0"}
 --- bilan
 total {'n': 0, 'net': None, 'g': None, 'fund': None, 'frais': None, 'debut': None}
 anciennes {'n': 0, 'net': None}
@@ -37,7 +37,7 @@ ouvertes 1
 cache-control: no-store, max-age=0
  Arbitrage — fantôme 
    Arbitrage FANTÔME   
- Aucun ordre réel. Version 2.10.0 ·  …   
+ Aucun ordre réel. Version 2.11.0 ·  …   
  Achat/vente puis clôture quand l'écart s'inverse 
  Comptes réels  … 
  Emprunt (vente à découvert)   
@@ -45,26 +45,28 @@ cache-control: no-store, max-age=0
  Plus gros écarts maintenant  « Gain attendu » au meilleur prix affiché, après frais.   
  Règles   
 --- etat brut (début)
-{"version":"2.10.0","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794998753994,"scan":{"statut":{"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"deribit":{"ok":true,"n":151,"ms":81},"okx":{"ok":true,"n":532,"ms":250},"bybit":{"ok":true,"n":832,"ms":787,"lieu":"AMS/US"},"hyperliquid":{"ok":true,"n":329,"ms":875}},"top":[{"base":"INIT","stock":false,"achat":"okx","ask":0.097,"vente":"bybit","bid":0.09947,"ecart":0.02546391752577315,"gain":232.11845758718863,"verif":"carnet trop mince pour 10000 $"},{"base":"BREV","stock":false,"achat":"okx","ask":0.09243,"vente":"bybit","bid":0.09445,"ecart":0.02185437628475606,"gain":195.93239336632988,"verif":null},{"base":"ZKP","stock":false,"achat":"okx","ask":0.03574,"vente":"bybit","bid":0.03618,"ecart":0.01231113598209288,"gain":93.74906142503517,"verif":-229.48},{"base":"IRYS","stock":false,"achat":"okx","ask":0.01709,"vente":"bybit","bid":0.017249,"ecart":0.009303686366296082,"gain":63.60578591339214,"verif":-269.52},{"base":"MSFT","stock":true,"achat":"hyperliquid","ask":508.15,"vente":"bybit","bid":509.08,"ecart":0.00183016825740423,"gain":-2.751066542283205,"verif":null},{"base":"SPY","stock":false,"achat":"deribit","ask":736.92,"vente":"okx","bid":738.18,"ecart":0.0017098curl: (23) Failure writing output to destination, passed 1360 returned 0
-
+{"version":"2.11.0","regles":{"notional":10000,"gainMin":50,"ecartMaxPrix":0.1,"volumeMin":1000000,"heuresFunding":8},"frais":{"binance":0.0005,"bybit":0.00055,"okx":0.0005,"hyperliquid":0.00045,"deribit":0.0005},"t":1794998753994,"scan":{"statut":{"binance":{"ok":false,"err":"relais Dublin : {\"premiumIndex\":\"Binance HTTP 451\",\"fundingInfo\":\"Binance HTTP 451\",\"bookTicker\":\"Binance HTTP 451\"}"},"deribit":{"ok":true,"n":151,"ms":81},"okx":{"ok":true,"n":532,"ms":250},"bybit":{"ok":true,"n":832,"ms":787,"lieu":"AMS/US"},"hyperliquid":{"ok":true,"n":329,"ms":875}},"top":[{"base":"INIT","stock":false,"achat":"okx","ask":0.097,"vente":"bybit","bid":0.09947,"ecart":0.02546391752577315,"gain":232.11845758718863,"verif":"carnet trop mince pour 10000 $"},{"base":"BREV","stock":false,"achat":"okx","ask":0.09243,"vente":"bybit","bid":0.09445,"ecart":0.02185437628475606,"gain":195.93239336632988,"verif":null},{"base":"ZKP","stock":false,"achat":"okx","ask":0.03574,"vente":"bybit","bid":0.03618,"ecart":0.01231113598209288,"gain":93.74906142503517,"verif":-229.48},{"base":"IRYS","stock":false,"achat":"okx","ask":0.01709,"vente":"bybit","bid":0.017249,"ecart":0.009303686366296082,"gain":63.60578591339214,"verif":-269.52},{"base":"MSFT","stock":true,"achat":"hyperliquid","ask":508.15,"vente":"bybit","bid":509.08,"ecart":0.00183016825740423,"gain":-2.751066542283205,"verif":null},{"base":"SPY","stock":false,"achat":"deribit","ask":736.92,"vente":"okx","bid":738.18,"ecart":0.0017098
 --- comptant
 total {'n': 4, 'net': 469.25868672013206, 'frais': 60.28106698238177, 'interet': 4.756208811115879, 'debut': 1795094714093}
-emprunt {'okx': {'ok': True, 'n': 261, 'sansPlafond': 82, 'sansTaux': 82, 'tauxMax': False}, 'bybit': {'ok': True, 'n': 264, 'sansPlafond': 0, 'sansTaux': 0, 'tauxMax': False}, 'kucoin': {'ok': True, 'n': 65, 'sansPlafond': 65, 'sansTaux': 65, 'tauxMax': False}, 'gate': {'ok': True, 'n': 690, 'sansPlafond': 0, 'sansTaux': 0, 'tauxMax': True}}
+emprunt {'bybit': {'ok': True, 'n': 264, 'sansPlafond': 0, 'sansTaux': 0, 'tauxMax': False}, 'okx': {'ok': True, 'n': 261, 'sansPlafond': 82, 'sansTaux': 82, 'tauxMax': False}, 'kucoin': {'ok': True, 'n': 65, 'sansPlafond': 65, 'sansTaux': 65, 'tauxMax': False}, 'gate': {'ok': True, 'n': 690, 'sansPlafond': 0, 'sansTaux': 0, 'tauxMax': True}}
 avant {'n1': 0, 'net1': None, 'n2': 0, 'net2': None}
 erreur None
-age scan s 13
- P okx {'ok': True, 'n': 805, 'ms': 231}
- P kucoin {'ok': True, 'n': 871, 'ms': 286}
- P bybit {'ok': True, 'n': 458, 'ms': 1223}
- P gate {'ok': True, 'n': 2075, 'ms': 1644}
+age scan s 7
+ P aster {'ok': True, 'n': 554, 'ms': 222}
+ P okx {'ok': True, 'n': 805, 'ms': 237}
+ P kucoin {'ok': True, 'n': 871, 'ms': 241}
+ P bybit {'ok': True, 'n': 458, 'ms': 813}
+ P gate {'ok': True, 'n': 2075, 'ms': 1553}
 attente {'n': 0, 'net': None} annules {'n': 0, 'net': None}
 strat2 [{'variante': 5, 'n': 14, 'net': 1474.4422409792523, 'frais': 423.89363038039136, 'interet': 38.92605805719268, 'duree': 3504436.785714286}, {'variante': 10, 'n': 11, 'net': 1049.6924338699355, 'frais': 333.8641497875539, 'interet': 48.62470681619372, 'duree': 5529873.181818182}] [{'variante': 5, 'n': 1}, {'variante': 10, 'n': 1}]
  C MMT USDT gate 0.263251038349 bybit 0.267713226139 net 68.99 validé
  C MMT USDT gate 0.237048100118 bybit 0.24379793957079998 net 125.11 validé
  C MMT USDT bybit 0.233358334352 gate 0.24171333483519997 net 159.45 validé
  C MMT USDT gate 0.22100422920479998 bybit 0.22685626678800003 net 115.71 validé
- P2 5 LUNC/USDT kucoin bybit ouvert 27.88 None
- P2 10 LUNC/USDT kucoin bybit ouvert 27.88 None
+ P2 5 LUNC/USDT kucoin bybit ouvert 29.69 None
+ P2 10 LUNC/USDT kucoin bybit ouvert 29.69 None
+ P2 5 LUNC/USDT kucoin bybit annulé 27.88 None
+ P2 10 LUNC/USDT kucoin bybit annulé 27.88 None
  P2 5 LUNC/USDT kucoin bybit annulé 29.13 None
  P2 10 LUNC/USDT kucoin bybit annulé 29.13 None
  P2 10 PI/USDT okx gate fermé 212.89 174.52939314282213
@@ -73,24 +75,22 @@ strat2 [{'variante': 5, 'n': 14, 'net': 1474.4422409792523, 'frais': 423.8936303
  P2 10 LUNC/USDT kucoin bybit annulé 30.24 None
  P2 10 ICNT/USDT bybit gate fermé 54.79 -18.34747301461792
  P2 10 PIEVERSE/USDT bybit gate fermé 43.37 3.2723829212051285
- P2 5 PIEVERSE/USDT bybit gate fermé 43.37 -0.6140583540436495
- P2 5 MMT/USDT kucoin gate fermé 62.15 16.920112603868013
- T LUNC/USDT kucoin 4.707e-05 bybit 4.748e-05 0.871 % 33.55 verif None
- T EVAA/USDT gate 5.2577 kucoin 5.2757 0.342 % 2.12 verif None
- T NIGHT/USDT okx 0.044789 kucoin 0.04483 0.092 % -5.42 verif None
- T SENT/USDT bybit 0.021244 okx 0.02126 0.075 % -6.23 verif None
- T LIT/USDT bybit 2.77 okx 2.7716 0.058 % -7.11 verif None
- T ENA/USDT bybit 0.10507 okx 0.10511 0.038 % -8.1 verif None
- T XAUT/USDT okx 3608.6 kucoin 3609.97 0.038 % -8.1 verif None
- T PEPE/USDT bybit 3.71e-06 kucoin 3.711e-06 0.027 % -8.65 verif None
- T IRYS/USDT gate 0.02386 okx 0.02389 0.126 % -8.71 verif None
- T HYPE/USDT bybit 67.246 kucoin 67.261 0.022 % -8.88 verif None
- T BTC/USDT kucoin 62095.6 okx 62108.2 0.02 % -8.99 verif None
- T ETH/USDT bybit 1761.53 okx 1761.87 0.019 % -9.03 verif None
+ T LUNC/USDT kucoin 4.741e-05 bybit 4.79e-05 1.034 % 41.68 verif None
+ T BTW/USDT gate 0.5755 aster 0.5783 0.487 % 12.33 verif None
+ T NAORIS/USDT kucoin 0.02978 aster 0.02987 0.302 % 8.11 verif None
+ T ASTER/USDT okx 0.5144 aster 0.515 0.117 % -1.17 verif None
+ T BNB/USDT kucoin 582.099 aster 582.53 0.074 % -3.3 verif None
+ T PIEVERSE/USDT kucoin 2.9941 aster 2.9956 0.05 % -4.5 verif None
+ T EVAA/USDT gate 5.1681 aster 5.1754 0.141 % -4.94 verif None
+ T PIPPIN/USDT gate 0.019326 aster 0.01935 0.124 % -5.79 verif None
+ T NIGHT/USDT okx 0.044578 kucoin 0.0446 0.049 % -7.53 verif None
+ T BTC/USDT kucoin 62208.3 okx 62225.7 0.028 % -8.6 verif None
+ T HYPE/USDT okx 67.159 bybit 67.172 0.019 % -9.03 verif None
+ T PEPE/USDT bybit 3.723e-06 okx 3.7236e-06 0.016 % -9.19 verif None
 --- page comptant
 cache-control: no-store, max-age=0
 <header><div style="display:flex;align-items:center;gap:10px"><h1>Arbitrage<span class="badge">FANTÔME</span></h1></div>
-<div class="mu">Aucun ordre réel. Version 2.10.0 · <span id="maj">…</span></div></header>
+<div class="mu">Aucun ordre réel. Version 2.11.0 · <span id="maj">…</span></div></header>
 --- regles comptant
 {'mise': 5000, 'gainMin': 50, 'ecartMaxPrix': 0.1, 'volumeMin': 1000000, 'pauseMemeActifS': 60, 'ecartSuspect': 0.01, 'dureeSuspectS': 300, 'sorties': [5, 10], 'entreeMin2': 25, 'empruntObligatoire': True, 'heuresEmpruntS1': 1, 'plateformes': ['gate', 'bybit', 'okx', 'kucoin', 'aster'], 'shortSeul': ['aster'], 'maxOuvertes': 5}
 --- comptes
