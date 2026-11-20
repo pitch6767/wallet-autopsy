@@ -13,7 +13,7 @@ export const REGLES_C = {
   volumeMin: 1e6,       // $ échangés sur 24 h sur chacune des 2 plateformes
   pauseMemeActifS: 60,  // stratégie 1 : un même actif ne compte qu'une fois par minute (le carnet doit se reconstituer)
   ecartSuspect: 0.01,   // A : un écart > 1 %…
-  dureeSuspectS: 300,   // …qui dure plus de 5 min = jeton différent ou retraits bloqués → trades annulés, actif ignoré
+  dureeSuspectS: 300,   // …qui dure plus de 5 min = jeton différent ou retraits bloqués → actif ignoré. 20.11.2026 (Pitch, option A) : décision à l'entrée seulement, une position prise n'est plus jamais annulée
   sorties: [5, 10],
   entreeMin2: 25,       // stratégie 2 : gain à l'entrée ≥ 25 $ après frais d'entrée (Pitch, 19.11.2026)
   empruntObligatoire: true, // la crypto vendue doit être empruntable sur la plateforme de vente (vente à découvert au comptant)
@@ -216,8 +216,6 @@ export async function tickComptant(env) {
   const idx = new Map(lignes.map((x) => [x.ex + "|" + x.base + "/" + x.quote, x]));
   const ouvertes = (await db.prepare("SELECT * FROM comptant_pos WHERE statut='ouvert'").all()).results;
   for (const p of ouvertes) {
-    const dS = suivis.get(p.cle + "|" + p.achat_ex + ">" + p.vente_ex);
-    if (dS != null && now - dS > REGLES_C.dureeSuspectS * 1000) { st.push(db.prepare("UPDATE comptant_pos SET statut='annulé', ferme=? WHERE id=?").bind(now, p.id)); continue; }
     const a = idx.get(p.achat_ex + "|" + p.cle), b = idx.get(p.vente_ex + "|" + p.cle);
     if (!a || !b) continue;
     const fA = FRAIS_C[p.achat_ex], fB = FRAIS_C[p.vente_ex];
@@ -238,7 +236,8 @@ export async function tickComptant(env) {
   }
   const dejaOuv = new Set(ouvertes.map((p) => p.variante + "|" + p.cle));
   const nOuv = {}; for (const p of ouvertes) if (p.regles === REGLES_ID_C) nOuv[p.variante] = (nOuv[p.variante] || 0) + 1;
-  for (const c of cands.filter((c) => c.gain >= REGLES_C.entreeMin2 && !permanent(c)).slice(0, 6)) {
+  // option A : un écart > 1 % n'est jamais pris tant qu'il dure (au-delà de 5 min il est ignoré) ; on n'entre qu'une fois revenu sous 1 %
+  for (const c of cands.filter((c) => c.gain >= REGLES_C.entreeMin2 && c.ecart <= REGLES_C.ecartSuspect && !permanent(c)).slice(0, 6)) {
     const libres = REGLES_C.sorties.filter((v) => !dejaOuv.has(v + "|" + c.k) && (nOuv[v] || 0) < REGLES_C.maxOuvertes);
     if (!libres.length) continue;
     try {
