@@ -215,22 +215,22 @@ export async function tickComptant(env) {
   // ---------- Stratégie 2 : achat sur A + vente sur B, puis clôture quand l'écart s'inverse (vente sur A + achat sur B)
   const idx = new Map(lignes.map((x) => [x.ex + "|" + x.base + "/" + x.quote, x]));
   const ouvertes = (await db.prepare("SELECT * FROM comptant_pos WHERE statut='ouvert'").all()).results;
+  const carnets = new Map(); const carnetCache = (x) => { const c = x.ex + "|" + x.sym; if (!carnets.has(c)) carnets.set(c, carnetR(env, x)); return carnets.get(c); };
   for (const p of ouvertes) {
     const a = idx.get(p.achat_ex + "|" + p.cle), b = idx.get(p.vente_ex + "|" + p.cle);
     if (!a || !b) continue;
     const fA = FRAIS_C[p.achat_ex], fB = FRAIS_C[p.vente_ex];
     let interet; try { interet = await coutPortage(p, now, b.sym); } catch (e) { interet = p.interet || 0; } // intérêts d'emprunt ou funding courus
-    const sortieHaut = p.qte * a.bid * (1 - fA) - p.qte * b.ask * (1 + fB) - interet; // au meilleur prix affiché
-    // pour l'affichage : résultat si on fermait maintenant (meilleurs prix affichés, frais et intérêts compris)
-    st.push(db.prepare("UPDATE comptant_pos SET interet=?, sortie_now=?, frais_sortie_now=?, maj=? WHERE id=?").bind(interet, sortieHaut, p.qte * a.bid * fA + p.qte * b.ask * fB, now, p.id));
-    if (sortieHaut < p.variante) continue;
+    // 20.11.2026 (Pitch) : « net si on clôture maintenant » calculé comme la vraie clôture — vrais carnets pour toute la quantité,
+    // frais et intérêts/funding compris (carnets lus une fois par scan et par marché, partagés entre les variantes)
     try {
-      const [ca, cb] = await Promise.all([carnetR(env, a), carnetR(env, b)]);
+      const [ca, cb] = await Promise.all([carnetCache(a), carnetCache(b)]);
       const sA = prixMoyenQ(ca.bids, p.qte), sB = prixMoyenQ(cb.asks, p.qte);
-      if (!sA || !sB) continue;
-      const sortie = p.qte * sA * (1 - fA) - p.qte * sB * (1 + fB) - interet;
-      if (sortie < p.variante) continue;
+      if (!sA || !sB) { st.push(db.prepare("UPDATE comptant_pos SET interet=?, sortie_now=NULL, frais_sortie_now=NULL, maj=? WHERE id=?").bind(interet, now, p.id)); continue; } // carnet trop mince pour toute la quantité
       const fraisS = p.qte * sA * fA + p.qte * sB * fB;
+      const sortie = p.qte * sA * (1 - fA) - p.qte * sB * (1 + fB) - interet;
+      st.push(db.prepare("UPDATE comptant_pos SET interet=?, sortie_now=?, frais_sortie_now=?, maj=? WHERE id=?").bind(interet, sortie, fraisS, now, p.id));
+      if (sortie < p.variante) continue;
       st.push(db.prepare("UPDATE comptant_pos SET statut='fermé', ferme=?, px_sortie_vente=?, px_sortie_achat=?, frais=frais+?, interet=?, net=entree+? WHERE id=? AND statut='ouvert'").bind(now, sA, sB, fraisS, interet, sortie, p.id));
     } catch (e) {}
   }
