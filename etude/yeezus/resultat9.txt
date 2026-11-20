@@ -1,0 +1,146 @@
+tokens 58 (complets jusqu'au post: 47)
+
+=== A. WALLETS qui achètent AVANT le post (perdants compris), par nb de calls ===
+SJKcwYrBTFkwg1m5YN9jJdS1AjayPfxKfnsu6haVAHU 39/58 calls | P&L connu sur 0: mise $0 gain $0 | financeur  0
+DrnuP46qcf7b7utTY9Esm46SwkTFhYu4TrtRGTyvkE67 35/58 calls | P&L connu sur 1: mise $83 gain $269 | financeur 4UGbSmgp 0.02
+7JCe3GHwkEr3feHgtLXnmuJ1yB3A7coSeyynxTBgdG8k 35/58 calls | P&L connu sur 23: mise $1,020,769 gain $-184,973 | financeur Coinbase Hot Wallet 1 0.01
+7iVCXQn4u6tiTEfNVqbWSEsRdEi69E9oYsSMiepuECwi 34/58 calls | P&L connu sur 24: mise $1,026,469 gain $-250,071 | financeur Coinbase Hot Wallet 1 2.0
+Em8J3gBWapfVBGVhVipwQnLrqCvnWBnLajw6XFsFECPF 34/58 calls | P&L connu sur 24: mise $1,107,435 gain $-176,121 | financeur Coinbase Hot Wallet 4 0.01
+52oc72vjNbpUhF7jNE1pPAvc17JwBTyxybFp3u7PvetG 31/58 calls | P&L connu sur 12: mise $116,265 gain $2,496 | financeur Bybit 8.0
+54Pz1e35z9uoFdnxtzjp7xZQoFiofqhdayQWBMN7dsuy 30/58 calls | P&L connu sur 20: mise $521,763 gain $-14,935 | financeur 3HLhk7xV 0.02
+2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY 30/58 calls | P&L connu sur 6: mise $35,309 gain $795 | financeur Bybit 1.0
+8avtb3GZapmpYWUjXoJYCXfATRBhH8SGQkyDSoqF6CPC 28/58 calls | P&L connu sur 18: mise $166,969 gain $-5 | financeur 9EBLkVe1 222.9
+AaQcyiibLc1UbCXjmTF2EYMtrJn4VF2x4B7o2JEp4D22 28/58 calls | P&L connu sur 4: mise $3,373 gain $2,440 | financeur 3Abaeaqi 0.7
+8L2y55D11k63CAftvW7uMM2mBhtMxLoLnivG9uY2bt8j 27/58 calls | P&L connu sur 0: mise $0 gain $0 | financeur  0
+F7p3dFrjRTbtRp8FRF6qHLomXbKRBzpvBLjtQcfcgmNe 27/58 calls | P&L connu sur 10: mise $336,566 gain $-40,179 | financeur 7uTT8Xi5 18.84
+H5d8DMkLywD7UJ7gkEM2aSsrGEcbQ9DqhmZ3LjPQdM7V 26/58 calls | P&L connu sur 16: mise $206,048 gain $-33 | financeur DZYfsuqY 211.69
+CkUZV387xnoGpF7wC2moMa6mPmAgCvTT4pWgzq4M9fCD 26/58 calls | P&L connu sur 1: mise $12,882 gain $258 | financeur CigB1qdR 0.02
+WJALExViUEY61D1VPBt48xYfpsY7bMFcJMVkt2tiebU 26/58 calls | P&L connu sur 0: mise $0 gain $0 | financeur GVtUhBrt 0.1
+AfHNjAnXJKkQ4yrBDop77A3UaLZgFmGKhaSDZC4Msrvk 26/58 calls | P&L connu sur 2: mise $22,123 gain $0 | financeur DYuJos5p 5.0
+3nG9zBc6fTne3j9kkS1CB5quyt25CS29GEjvMGNKmDSz 25/58 calls | P&L connu sur 11: mise $30,572 gain $10,248 | financeur GpbnApaG 0.7
+BbYZnUraNVgDAbtmh6oi4wXjZPr5NKRhovHKF1nEfcdv 24/58 calls | P&L connu sur 6: mise $10,829 gain $7,078 | financeur 4mKfRcrB 0.01
+gtagyESa99t49VmUqnnfsuowYnigSNKuYXdXWyXWNdd 24/58 calls | P&L connu sur 7: mise $313,515 gain $15,009 | financeur raymsMyH 0.98
+HZBmjtgG8MDownvB9wTLTRN2stjozUBwDaBUhUpybvrm 23/58 calls | P&L connu sur 0: mise $0 gain $0 | financeur DYuJos5p 5.0
+
+=== C. BUNDLES (>=3 wallets même seconde avant le post) ===
+tokens avec bundle: 58 / 58
+
+GROUPE de bundles sur 58 calls, 28846 wallets | financeurs [('?', 25857), ('Binance', 296), ('Kucoin Wallet', 218)] | montants SOL [(0.1, 157), (0.05, 102), (0.04, 92), (0.15, 80), (0.02, 72)]
+/home/runner/work/wallet-autopsy/wallet-autopsy/etude/yeezus/analyse9.py:64: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+  for m in tk: print("   ", dt.datetime.utcfromtimestamp(D[m]['tc']).strftime('%Y-%m-%d'), m[:8], "bundle", min(round((D[m]['tc']-BUN[i][1])/60) for i in ids if BUN[i][0]==m), "min avant le post")
+    2025-12-01 1PNnDdzy bundle 0 min avant le post
+    2025-12-03 14nFSmjd bundle 0 min avant le post
+    2025-12-08 ACSBrUfq bundle 0 min avant le post
+    2025-12-13 BMMWMuy1 bundle 0 min avant le post
+    2025-12-19 5AvX5eGG bundle 0 min avant le post
+    2025-12-20 6PDR3o1K bundle 0 min avant le post
+    2025-12-31 BBG3vpXV bundle 15213 min avant le post
+    2026-01-02 6GihmsqN bundle 0 min avant le post
+    2026-01-17 DMYNp65m bundle 161 min avant le post
+    2026-01-24 B5X3YLev bundle 0 min avant le post
+    2026-01-29 676k7xHR bundle 2 min avant le post
+    2026-01-30 8nR9712Z bundle 53 min avant le post
+    2026-02-03 4MTfiD3z bundle 1856 min avant le post
+    2026-02-07 86WM5NBU bundle 0 min avant le post
+    2026-02-15 84CYQkyJ bundle 0 min avant le post
+    2026-02-16 57KoEZXm bundle 5466 min avant le post
+    2026-02-17 2ACRyurP bundle 0 min avant le post
+    2026-02-23 8jiVXftn bundle 0 min avant le post
+    2026-02-25 moLtguTf bundle 0 min avant le post
+    2026-02-27 F4ZHCziz bundle 0 min avant le post
+    2026-03-10 GyL9u313 bundle 0 min avant le post
+    2026-03-10 4D9jZY6n bundle 0 min avant le post
+    2026-03-13 uphcYhzN bundle 0 min avant le post
+    2026-03-13 2e9XazVz bundle 0 min avant le post
+    2026-03-22 3BHhMXMy bundle 6812 min avant le post
+    2026-03-25 6MFiqqkS bundle 0 min avant le post
+    2026-03-28 GKjAe1bQ bundle 95203 min avant le post
+    2026-04-06 5552z6Qp bundle 0 min avant le post
+    2026-04-11 61uiuu5a bundle 0 min avant le post
+    2026-04-13 CAjtTHvC bundle 0 min avant le post
+    2026-04-29 Ha5Z2DfR bundle 0 min avant le post
+    2026-05-09 CYSVBkXu bundle 2689 min avant le post
+    2026-05-13 CowyrEtb bundle 0 min avant le post
+    2026-05-18 FmjijgwE bundle 0 min avant le post
+    2026-05-24 3TYgKwkE bundle 76464 min avant le post
+    2026-05-25 2RWndXkx bundle 0 min avant le post
+    2026-06-01 ACuZX4as bundle 0 min avant le post
+    2026-06-05 CotmxNNE bundle 0 min avant le post
+    2026-06-10 6MLWMbv4 bundle 0 min avant le post
+    2026-06-23 9af7PmWR bundle 0 min avant le post
+    2026-07-04 WjZoPoUs bundle 0 min avant le post
+    2026-07-07 CUB9xv5q bundle 0 min avant le post
+    2026-07-19 G9j8WWDe bundle 5852 min avant le post
+    2026-07-21 4tnZ57E3 bundle 0 min avant le post
+    2026-07-27 HK3igJ6L bundle 0 min avant le post
+    2026-07-31 8Byg9wi4 bundle 0 min avant le post
+    2026-08-03 2YxEmTED bundle 0 min avant le post
+    2026-08-08 6dX5M8DY bundle 0 min avant le post
+    2026-08-17 4skFA8Fe bundle 0 min avant le post
+    2026-08-19 HcCRM9G4 bundle 0 min avant le post
+    2026-08-20 HiY4qx8j bundle 0 min avant le post
+    2026-08-26 2f2vJQzG bundle 0 min avant le post
+    2026-09-21 36jkatzX bundle 31 min avant le post
+    2026-09-23 CbouD8kh bundle 2753 min avant le post
+    2026-10-20 A75Xx6Se bundle 1284 min avant le post
+    2026-11-04 42qKoGmE bundle 0 min avant le post
+    2026-11-09 34DXEU2t bundle 68 min avant le post
+    2026-11-16 Gg5aWvfu bundle 0 min avant le post
+    wallets: SJKcwYrBTFkwg1m5YN9jJdS1AjayPfxKfnsu6haVAHU DrnuP46qcf7b7utTY9Esm46SwkTFhYu4TrtRGTyvkE67 7JCe3GHwkEr3feHgtLXnmuJ1yB3A7coSeyynxTBgdG8k 7iVCXQn4u6tiTEfNVqbWSEsRdEi69E9oYsSMiepuECwi Em8J3gBWapfVBGVhVipwQnLrqCvnWBnLajw6XFsFECPF 52oc72vjNbpUhF7jNE1pPAvc17JwBTyxybFp3u7PvetG
+
+GROUPE de bundles sur 3 calls, 12 wallets | financeurs [('?', 5), ('3BSpxixm', 1), ('6gkvMYgd', 1)] | montants SOL [(5.0, 2), (6.0, 1), (15.0, 1), (20.0, 1), (1.32, 1)]
+    2025-12-13 BMMWMuy1 bundle 426 min avant le post
+    2026-01-02 6GihmsqN bundle 783 min avant le post
+    2026-02-16 57KoEZXm bundle 9175 min avant le post
+    wallets: 3vjvZmByBe1hdNFycBifKhReFCgRXFC8o3Tb1GKLgqKS 6LgTxtECBaiPGhmkwMT146dBHKrdpqX7tWCdMuuGcEN5 GUM1LDV4acyWxXqEPnUg5CiBjv4xZ1LPDNwrjY1UAcFW 7MsfYVsBCCkY1f2e6UGjALQ3w97WDB72GhSMykozGRxi 9icUaQq1v6fnRAZdTWLoj559q9pyCcTa6jHGDmSQdnZJ 95Q8cZkmux7ZpgGJaaxVwaKH6iMR1xAJh73YcoZ7bH92
+
+GROUPE de bundles sur 3 calls, 13 wallets | financeurs [('?', 12), ('ErAo14ZQ', 1)] | montants SOL [(1.53, 1)]
+    2025-12-19 5AvX5eGG bundle 23 min avant le post
+    2026-07-19 G9j8WWDe bundle 7092 min avant le post
+    2026-08-19 HcCRM9G4 bundle 108 min avant le post
+    wallets: CCCCQCrL6zVjnDeucDzcxJgxAs5ahNmrhw1CDexPhqrd BCYtCrywdgAsox5htAt7sq3mCWxwonXq82DHCofT46xk 44Gw6m4dtmzfoDfXKHDF9s6yitzYDf8VDtwuZvZiqLXb HkbcDb546MXamfCqwadptWjwSh6rLvWMfTEETb5xMkq1 AbuGAb9M4AgXBchk42pJ3NSGgQKbiW6Lgc48BtMMKqkN 2bQnWTeVisa2K8iwN1GpwQsQRjE1ZdpApjLuxutWpVCv
+
+GROUPE de bundles sur 3 calls, 17 wallets | financeurs [('?', 17)] | montants SOL []
+    2025-12-01 1PNnDdzy bundle 64 min avant le post
+    2026-03-13 2e9XazVz bundle 70 min avant le post
+    2026-11-16 Gg5aWvfu bundle 34 min avant le post
+    wallets: 67LwNGrukVFFcA1XZQ9U8ddZGCBuPvPHgMxw81AeRtQ7 89Sv5FvnMNRid1bn8y2Ti1vJPSxWxgiW9GSLsPpBnKK1 7Tp1HTcwG4umnRLpcTwWAf4ZfeyXvd4UMsKr7fcRH97t G9nYeWrFRp8CTi1RMBEEgx9rD6NKj1ToQGNYmeZCqJMk 9o1NgYWPRBHLdR9ZHwYaJvyygt1qTrww9PkNoUWgqpcm GAtX2CpXSRXe5578zrWZiD7zXrzTQmAVeMyKdX1KEvRR
+
+GROUPE de bundles sur 2 calls, 14 wallets | financeurs [('?', 12), ('Coinbase Hot Wallet 4', 1), ('8o7bkbEH', 1)] | montants SOL [(5.5, 1), (7.45, 1)]
+    2026-01-02 6GihmsqN bundle 804 min avant le post
+    2026-02-07 86WM5NBU bundle 856 min avant le post
+    wallets: 9AKcaskXyKBATdzi624QZ8dABcexv1c2gj5tji7rQumS 434vqgpbRZSCXJnssucDFyGECU7UR6y7mkVEqugizHeV AKooZZ6cRQkbqJ7rHjYiMJH3HXEPLB9UtS5QWGF9xDeD 5qgs5LnQgyGTsRHawYuTVBM1QeoB5ka7EjAVTveWgFHs GRANRPGS4wFKVAGwM5ScD6rreNHFs7SmET7GhH2U7EWB CSTShkviwTN2HT1HkcHdnqYv3WGbFDrPvZZZ7ZvVWGNz
+
+GROUPE de bundles sur 2 calls, 18 wallets | financeurs [('?', 11), ('FjtguR9a', 1), ('8UxiomVg', 1)] | montants SOL [(0.02, 3), (0.03, 3), (0.19, 1)]
+    2025-12-19 5AvX5eGG bundle 23 min avant le post
+    2025-12-31 BBG3vpXV bundle 18071 min avant le post
+    wallets: C67qGGCoFEQjWpLC8nXpRLDEY1rSQnCtAAdFh73CpQjv 4QgWkRf2uaet65PAWpWPXmFd5j7m7REm9Qo7FvnvMf2W C2nMYhc1fvvzH3oiCVRwHZz5XmtnPeqpikHfhHGFV5r 6jZ3u3NRgf3sFRysAuvDBq37k4vVizWuAJEukMeZUTS6 Aw1NoBkfh5AjTXUEwwSR4VgrMyHBRBji6wd2FUvcGCa5 87tVcyNSAdFK9QRBRcUbHk8DyZ6o5HeQ9BZnrTFBWBjz
+
+GROUPE de bundles sur 2 calls, 17 wallets | financeurs [('?', 14), ('GhviW14P', 1), ('CMLvRJ2e', 1)] | montants SOL [(0.03, 2), (0.02, 1)]
+    2025-12-19 5AvX5eGG bundle 23 min avant le post
+    2025-12-31 BBG3vpXV bundle 18026 min avant le post
+    wallets: 4xgSGBkM4vzfJBUUwKJWPk6b8dzionjVAGKCf2ZazEdp 3NePvPcw3b2jEsW4M5ejHcjmUgVrWUzHFkMn6RnLCYmH EHx5QZ6xSdYsqTnBpECBdEHamE2rooH9fD768sQKzZjj 4YQiPtASAxCuqgLcLZtdjKdYfj3QiHixLGhRVyt2pQn4 14oUHjaNm8C2BZoumjEZ1vkp9n3qQWXh5MW8frSMd3Pb e197uDMqm9mJMEQvCeFXmFqWfMSuFKkoQMZAzGEUss2
+
+GROUPE de bundles sur 2 calls, 12 wallets | financeurs [('?', 11), ('CpYC7QpF', 1)] | montants SOL [(7.6, 1)]
+    2025-12-19 5AvX5eGG bundle 4 min avant le post
+    2026-02-23 8jiVXftn bundle 74 min avant le post
+    wallets: DaTcUPLd8Rw6g39SN4B6KD7PMTKipYVEMG5UxygCS4yN 9bdWxBewAKXu9EXx9SBmhoDScfoSHXSmx4HQHgVbZJT7 6WzGiK5tBYAcJRF2G67BC5DE81LxPSk5RsKLfYSWkf3B ijoqHN4YD4DP9YsxLJzXfj5wxKm7C6hFaMPRydxgwxV 67cZdEGVBcpUqMH1RSnnRDid3TUPbMe8x45HJ4uVghGz 3UdMsjWBrqu8eaMjAuoYscrxB2J1TN4hZzcExjXWwR3E
+
+GROUPE de bundles sur 2 calls, 7 wallets | financeurs [('?', 7)] | montants SOL []
+    2025-12-08 ACSBrUfq bundle 777 min avant le post
+    2026-01-24 B5X3YLev bundle 1005 min avant le post
+    wallets: 59mjzQRXKam29dg7hPfSkTuzLNnK5jC59ofu1WgG17sc E2F2Wsbbu5efwvZB2ytyJWqVvYPGSVZDW54ENo7iG5pJ 3wZVZATa2Fn9oYPUzNn47ZVFTEcUeDt1jsfpNs9AEgpQ DUZJmDfppMbDMBhbwDoijxefLx64FtQt6Jd6iUZZFTfG 9SUqmnzBgHnPTNWuPxo5RHUaQC9J2kdjcfEJtTS2xjCb 9ds1oSktYLACGoRzXyyCPdagm2e8SqKArTgbdfVT4vjj
+
+GROUPE de bundles sur 2 calls, 10 wallets | financeurs [('?', 10)] | montants SOL []
+    2026-02-07 86WM5NBU bundle 696 min avant le post
+    2026-02-16 57KoEZXm bundle 6767 min avant le post
+    wallets: 5ZtsWBqFmbRHnCTLRT4F9VWw8NppMPDgzpa9rH1Gw5sd 2q1Uy6dyYSfTinpsZjw5Q3SkjZX41mMWg3NVHaj3jewh FczdyuBWFwDmqyts7aPYhgmyLsPTCtSNvHy1komTGEYw AVWRcfCgHoXAFccwgUR4DdSN2vaifW8qzzdsYzpRG5Nv BW6ZiPfqT7oxbFzMMeq6LfzAfEEGrKycgcuiov6oV1bb CUok5NWD8inRwoJ41Bavarf44pRYS5TDvsELWHUXxZX8
+
+=== D. ENTRER JUSTE APRÈS LE 1er BUNDLE ===
+tokens: 47  délai bundle->post médiane 126 min
+prix au post / prix juste après bundle : médiane x5.54, quartiles [2.9, 5.54, 19.67], gagnant (>1) 45/47
+max des 10 min après post / prix après bundle : médiane x9.16, >2x: 46/47
+  bundle 0-30 min avant post: 12 tokens, médiane x3.21, gagnants 12/12
+  bundle 30-180 min avant post: 14 tokens, médiane x6.11, gagnants 14/14
+  bundle 180-1440 min avant post: 14 tokens, médiane x10.51, gagnants 13/14
+  bundle 1440-99999 min avant post: 6 tokens, médiane x4.97, gagnants 5/6
