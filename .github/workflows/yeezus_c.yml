@@ -2,7 +2,7 @@ name: Yeezus analyse
 on:
   push:
     branches: [main]
-    paths: [etude/yeezus/etape12.py]
+    paths: [etude/yeezus/etape13.py]
 permissions:
   contents: write
   actions: read
@@ -20,6 +20,6 @@ jobs:
           path: /tmp/a
       - run: |
           gunzip -f /tmp/a/trades_gmgn.json.gz
-          timeout 50m python3 -u etude/yeezus/etape12.py 2>&1 | tee etude/yeezus/resultat12.txt
+          timeout 45m python3 -u etude/yeezus/etape13.py 2>&1 | tee etude/yeezus/resultat13.txt
           git config user.name tests; git config user.email bot@users.noreply.github.com
-          git add etude/yeezus/resultat12.txt etude/yeezus/resultat12.json; git commit -m "Yeezus résultat 10 [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 3; done
+          git add etude/yeezus/resultat13.txt etude/yeezus/resultat13.json; git commit -m "Yeezus résultat 10 [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 3; done
