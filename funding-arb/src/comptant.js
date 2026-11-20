@@ -18,12 +18,13 @@ export const REGLES_C = {
   entreeMin2: 25,       // stratégie 2 : gain à l'entrée ≥ 25 $ après frais d'entrée (Pitch, 19.11.2026)
   empruntObligatoire: true, // la crypto vendue doit être empruntable sur la plateforme de vente (vente à découvert au comptant)
   heuresEmpruntS1: 1,
-  plateformes: ["gate", "bybit", "okx", "kucoin"], // 19.11.2026 : seulement les plateformes prévues pour le réel
+  plateformes: ["gate", "bybit", "okx", "kucoin", "aster"], // 19.11.2026 : plateformes prévues pour le réel ; 20.11.2026 : + Aster (DEX) en fantôme
+  shortSeul: ["aster"],  // 20.11.2026 (Pitch) : Aster sert seulement de côté « vente à découvert » (perpétuel), l'achat reste au comptant sur les 4 plateformes
   maxOuvertes: 5,       // stratégie 2 : au plus 5 positions ouvertes en même temps par variante (hypothèse, Pitch n'a pas fixé)   // stratégie 1 : intérêts comptés 1 h (le temps de virer les pièces achetées pour rendre l'emprunt)     // stratégie 2 : clôture quand l'écart inverse rapporte au moins 5 $ (variante 5) ou 10 $ (variante 10)
 };
 // Frais « preneur » au comptant, palier de base (estimés, prudents)
 export const LECT_EXPORT = () => LECT;
-export const FRAIS_C = { bybit: 0.001, okx: 0.001, kucoin: 0.001, gate: 0.002, mexc: 0.0005, bitget: 0.001, kraken: 0.008, coinbase: 0.012 };
+export const FRAIS_C = { aster: 0.0004, bybit: 0.001, okx: 0.001, kucoin: 0.001, gate: 0.002, mexc: 0.0005, bitget: 0.001, kraken: 0.008, coinbase: 0.012 };
 
 const num = (x) => { const v = parseFloat(x); return Number.isFinite(v) ? v : null; };
 async function j(url) {
@@ -54,6 +55,11 @@ const LECT = {
   async gate() {
     const r = await j("https://api.gateio.ws/api/v4/spot/tickers");
     return (r || []).map((x) => { const [b, q] = x.currency_pair.split("_"); return QUOTES.includes(q) && { sym: x.currency_pair, base: b, quote: q, bid: num(x.highest_bid), ask: num(x.lowest_ask), vol: num(x.quote_volume) }; });
+  },
+  async aster() { // perpétuels USDT d'Aster (DEX) : sert seulement au short ; préfixes 1000/k (prix multipliés) exclus
+    const [bt, h] = await Promise.all([j("https://fapi.asterdex.com/fapi/v1/ticker/bookTicker"), j("https://fapi.asterdex.com/fapi/v1/ticker/24hr")]);
+    const v = Object.fromEntries((h || []).map((x) => [x.symbol, num(x.quoteVolume)]));
+    return (bt || []).map((x) => { const p = splitSym(x.symbol); return p && p[1] === "USDT" && !/^(1000|1M|k[A-Z])/.test(p[0]) && { sym: x.symbol, base: p[0], quote: p[1], bid: num(x.bidPrice), ask: num(x.askPrice), vol: v[x.symbol], perp: true }; });
   },
   async mexc() {
     const [bt, h] = await Promise.all([j("https://api.mexc.com/api/v3/ticker/bookTicker"), j("https://api.mexc.com/api/v3/ticker/24hr")]);
@@ -91,6 +97,7 @@ async function carnetC(x) {
     case "okx": { const r = await j(`https://www.okx.com/api/v5/market/books?instId=${x.sym}&sz=100`); return { bids: paires(r.data?.[0]?.bids), asks: paires(r.data?.[0]?.asks) }; }
     case "kucoin": { const r = await j(`https://api.kucoin.com/api/v1/market/orderbook/level2_100?symbol=${x.sym}`); return { bids: paires(r.data?.bids), asks: paires(r.data?.asks) }; }
     case "gate": { const r = await j(`https://api.gateio.ws/api/v4/spot/order_book?currency_pair=${x.sym}&limit=100`); return { bids: paires(r.bids), asks: paires(r.asks) }; }
+    case "aster": { const r = await j(`https://fapi.asterdex.com/fapi/v1/depth?symbol=${x.sym}&limit=100`); return { bids: paires(r.bids), asks: paires(r.asks) }; }
     case "mexc": { const r = await j(`https://api.mexc.com/api/v3/depth?symbol=${x.sym}&limit=100`); return { bids: paires(r.bids), asks: paires(r.asks) }; }
     case "bitget": { const r = await j(`https://api.bitget.com/api/v2/spot/market/orderbook?symbol=${x.sym}&type=step0&limit=100`); return { bids: paires(r.data?.bids), asks: paires(r.data?.asks) }; }
     case "kraken": { const r = await j(`https://api.kraken.com/0/public/Depth?pair=${x.sym}&count=100`); const b = Object.values(r.result || {})[0] || {}; return { bids: paires(b.bids), asks: paires(b.asks) }; }
@@ -105,6 +112,13 @@ function prixMoyenQ(niveaux, qte) {
   return null;
 }
 
+// Coût de portage : intérêts d'emprunt (comptant) ou funding réellement versé sur Aster depuis l'ouverture
+// (short : funding positif = reçu → coût négatif). Historique public des taux, montant ≈ quantité × prix de vente.
+async function coutPortage(p, now, symB) {
+  if (p.vente_ex !== "aster") return p.taux ? p.qte * p.px_vente * p.taux * (now - p.ouvert) / 3600e3 : 0;
+  const l = await j(`https://fapi.asterdex.com/fapi/v1/fundingRate?symbol=${symB}&startTime=${p.ouvert}&limit=1000`);
+  return -(l || []).filter((x) => x.fundingTime > p.ouvert && x.fundingTime <= now).reduce((t, x) => t + (num(x.fundingRate) || 0), 0) * p.qte * p.px_vente;
+}
 export async function lireComptant(ex) { return (await LECT[ex]()).filter(Boolean); }
 export { carnetC };
 // B : OKX / KuCoin refusent parfois (429, trop de demandes) → nouvel essai par le module Europe (autre adresse)
@@ -138,7 +152,7 @@ export async function tickComptant(env) {
   for (const [k, l] of par) {
     let best = null;
     for (const a of l) for (const b of l) {
-      if (a.ex === b.ex) continue;
+      if (a.ex === b.ex || REGLES_C.shortSeul.includes(a.ex)) continue;
       const ecart = b.bid / a.ask - 1;
       if (ecart <= 0 || ecart > REGLES_C.ecartMaxPrix) continue;
       const gain = N * ecart - N * (FRAIS_C[a.ex] + FRAIS_C[b.ex]);
@@ -207,7 +221,7 @@ export async function tickComptant(env) {
     const a = idx.get(p.achat_ex + "|" + p.cle), b = idx.get(p.vente_ex + "|" + p.cle);
     if (!a || !b) continue;
     const fA = FRAIS_C[p.achat_ex], fB = FRAIS_C[p.vente_ex];
-    const interet = p.taux ? p.qte * p.px_vente * p.taux * (now - p.ouvert) / 3600e3 : 0; // intérêts d'emprunt courus
+    let interet; try { interet = await coutPortage(p, now, b.sym); } catch (e) { interet = p.interet || 0; } // intérêts d'emprunt ou funding courus
     const sortieHaut = p.qte * a.bid * (1 - fA) - p.qte * b.ask * (1 + fB) - interet; // au meilleur prix affiché
     // pour l'affichage : résultat si on fermait maintenant (meilleurs prix affichés, frais et intérêts compris)
     st.push(db.prepare("UPDATE comptant_pos SET interet=?, sortie_now=?, frais_sortie_now=?, maj=? WHERE id=?").bind(interet, sortieHaut, p.qte * a.bid * fA + p.qte * b.ask * fB, now, p.id));
@@ -230,7 +244,7 @@ export async function tickComptant(env) {
     try {
       const [ca, cb] = await Promise.all([carnetR(env, c.a), carnetR(env, c.b)]);
       const Q = N / c.a.ask;
-      const em = emprunt(marge, c.b.ex, c.b.base, Q);
+      const em = REGLES_C.shortSeul.includes(c.b.ex) ? { taux: 0 } : emprunt(marge, c.b.ex, c.b.base, Q); // Aster : short en perpétuel, pas d'emprunt
       if (!em) continue;
       const vA = prixMoyenQ(ca.asks, Q), vB = prixMoyenQ(cb.bids, Q);
       if (!vA || !vB) continue;
@@ -278,7 +292,7 @@ export async function fermerManuel(env, id) {
   const sA = prixMoyenQ(ca.bids, p.qte), sB = prixMoyenQ(cb.asks, p.qte);
   if (!sA || !sB) return { ok: false, err: "carnet trop mince pour clôturer toute la quantité maintenant" };
   const fA = FRAIS_C[p.achat_ex], fB = FRAIS_C[p.vente_ex];
-  const interet = p.taux ? p.qte * p.px_vente * p.taux * (now - p.ouvert) / 3600e3 : 0;
+  const interet = await coutPortage(p, now, symB);
   const fraisS = p.qte * sA * fA + p.qte * sB * fB;
   const sortie = p.qte * sA * (1 - fA) - p.qte * sB * (1 + fB) - interet;
   const r = await db.prepare("UPDATE comptant_pos SET statut='fermé', ferme=?, px_sortie_vente=?, px_sortie_achat=?, frais=frais+?, interet=?, net=entree+?, raison='manuelle' WHERE id=? AND statut='ouvert'")
