@@ -1,15 +1,38 @@
-# veille de nuit : réveille le bot toutes les 10 min (relance la boucle s'il s'était arrêté), aucun déploiement, aucun commit
-name: Veille bot95
+name: Deploy Veille
 on:
-  schedule:
-    - cron: "*/10 * * * *"
+  push:
+    branches: [main]
+    paths: [veille/**, .github/workflows/veille.yml]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
-  veille:
+  deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
-      - name: Reveiller et verifier
-        run: |
-          U=https://bot95.pitch67.workers.dev
-          for k in 1 2 3; do curl -sS -m 30 "$U/api/v1debug" | python3 -c "import json,sys;d=json.load(sys.stdin);print('carnet Polymarket', d['wsPoly'], 'cycle', d['mk'].get('start'))" && break; sleep 10; done
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          set +e
+          cd veille
+          U=https://veille.pitch67.workers.dev
+          code=$(curl -sS -m 20 -o /tmp/avant.html -w "%{http_code}" $U/)
+          if [ "$code" = "200" ] && ! grep -q "Veille wallets yeezus" /tmp/avant.html; then
+            echo "STOP : un autre Worker nommé veille existe déjà" > controle.txt
+          else
+            npx -y wrangler@4 deploy > /tmp/d.log 2>&1; echo "code sortie: $?" >> /tmp/d.log; sleep 20
+            curl -sS -m 30 $U/tick-force >/dev/null 2>&1
+            sleep 130
+            {
+              tail -8 /tmp/d.log
+              for p in / /manifest.webmanifest /icone.svg; do echo "$p $(curl -sS -m 20 -o /dev/null -w '%{http_code}' $U$p)"; done
+              echo "etat: $(curl -sS -m 30 $U/api/etat | python3 -c "import json,sys;d=json.load(sys.stdin);print(json.dumps({'v':d['version'],'wallets':len(d['wallets']),'events':len(d['events']),'diag':d['diag'],'initialises':sum(1 for w in d['wallets'] if w['last_sig'])}))")"
+            } > controle.txt 2>&1
+          fi
+          cd ..; git config user.name controle; git config user.email bot@users.noreply.github.com
+          git add veille/controle.txt; git commit -m "Controle veille [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done
