@@ -1,7 +1,7 @@
 // Veille — surveillance en direct du réseau de wallets trouvé sur les calls cryptoyeezuscalls (Solana)
 // Alerte téléphone (ntfy) quand un wallet surveillé achète un token ; suivi auto des wallets qu'il finance ;
 // lecture du canal Telegram pour mesurer l'avance de chaque alerte sur le call.
-const VERSION = "1.0.1";
+const VERSION = "1.0.2";
 const MARQUEUR = "Veille wallets yeezus";
 const NTFY = "pitch-veille-80cbd99313";
 const RPC = ["https://solana-rpc.publicnode.com", "https://solana.drpc.org", "https://api.mainnet-beta.solana.com"];
@@ -78,8 +78,9 @@ export class Veille {
   }
 
   async scanWallet(w) {
-    const sigs = await rpc("getSignaturesForAddress", [w.addr, w.last_sig ? { limit: 25, until: w.last_sig } : { limit: 1 }]);
-    if (!sigs.length) return 0;
+    const vide = w.last_sig === "VIDE";   // wallet sans transaction récente : tout ce qui arrive est nouveau
+    const sigs = await rpc("getSignaturesForAddress", [w.addr, w.last_sig && !vide ? { limit: 25, until: w.last_sig } : { limit: vide ? 25 : 1 }]);
+    if (!sigs.length) { if (!w.last_sig) this.sql.exec(`UPDATE wallets SET last_sig='VIDE' WHERE addr=?`, w.addr); return 0; }
     if (!w.last_sig) { this.sql.exec(`UPDATE wallets SET last_sig=?, last_act=? WHERE addr=?`, sigs[0].signature, (sigs[0].blockTime || 0) * 1000, w.addr); return 0; }
     let n = 0;
     for (const s of sigs.slice(0, 15).reverse()) {
