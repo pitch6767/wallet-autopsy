@@ -15,8 +15,9 @@ SyntaxError: Invalid or unexpected token
 
 Node.js v22.23.5
 === test alerte
-envoyé
+ntfy: 429 {"code":42908,"http":429,"error":"limit reached: daily message quota reached; increase your limits with a paid plan, see https://ntfy.sh","link":"https://ntfy.sh/docs/publish/#limitations"}
+
 === messages reçus sur ntfy (pitch-veille-80cbd99313)
 
 === etat
-1.0.2 20 wallets 0 events {'dernier_tick': 1795259303921, 'tick_ms': '32389', 'erreurs': '2', 'tx_lues': '0', 'derniere_erreur': '2026-11-21T11:08:12.733Z BdpVwD https://solana-rpc.publicnode.com 429', 'calls_connus': 42, 'err_canal': ''}
+1.0.3 21 wallets 1 events {'dernier_tick': 1795259612906, 'tick_ms': '40720', 'erreurs': '2', 'tx_lues': '0', 'derniere_erreur': '2026-11-21T11:14:00.967Z 592X5D https://solana-rpc.publicnode.com 429', 'calls_connus': 42, 'err_canal': '', 'err_ntfy': '429 {"code":42908,"http":429,"error":"limit reached: daily message quota reached; increase your limits with a paid plan, see https://ntfy.sh","link":"https://ntfy.sh/docs/publish/#limitations"}\n'}
