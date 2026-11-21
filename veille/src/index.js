@@ -1,7 +1,7 @@
 // Veille — surveillance en direct du réseau de wallets trouvé sur les calls cryptoyeezuscalls (Solana)
 // Alerte téléphone (notification web de la PWA) quand un wallet surveillé achète un token ; suivi auto des wallets qu'il finance ;
 // lecture du canal Telegram pour mesurer l'avance de chaque alerte sur le call.
-const VERSION = "1.3.0";
+const VERSION = "1.3.1";
 const MARQUEUR = "Veille wallets yeezus";
 const RPC = ["https://solana-rpc.publicnode.com", "https://solana.drpc.org", "https://api.mainnet-beta.solana.com"];
 const PAR_PASSAGE = 12;   // wallets lus par minute (rotation), pour rester sous les limites des serveurs gratuits
@@ -144,16 +144,19 @@ export class Veille {
     if (!F.length) return;
     const P = await this.prix(F.map(f => f.mint));
     for (const f of F) {
-      const p = P[f.mint]; if (!p) continue;
+      let p = P[f.mint];
+      if (!p) { // plus aucun prix : après 24 h sans prix, token considéré comme mort (vendu à 0) ; sinon on attend
+        if (Date.now() - f.maj > 86400000) p = 1e-30; else continue;
+      }
       const mult = p / f.entree, maxi = Math.max(f.maxi, p), mmax = maxi / f.entree, etat = JSON.parse(f.etat);
       for (const [k, r] of Object.entries(REGLES)) {
         const e = etat[k]; if (e.reste <= 1e-9) continue;
-        for (const [x, part] of r.paliers) if (mult >= x && !e.ventes.some(v => v.palier === x)) { const q = Math.min(part, e.reste); e.reste -= q; e.encaisse += q * mult; e.ventes.push({ palier: x, part: q, mult: +mult.toFixed(2), ts: Date.now() }); }
+        for (const [x, part] of r.paliers) if (mult >= x && !e.ventes.some(v => v.palier === x)) { const q = Math.min(part, e.reste); e.reste -= q; e.encaisse += q * x; e.ventes.push({ palier: x, part: q, mult: x, ts: Date.now() }); }   // ordre posé au palier : vendu au palier, pas plus haut
         if (r.suiveur && e.reste > 1e-9 && mmax >= r.suiveur.des && mult <= mmax * (1 - r.suiveur.recul)) { e.encaisse += e.reste * mult; e.ventes.push({ palier: "suiveur", part: e.reste, mult: +mult.toFixed(2), ts: Date.now() }); e.reste = 0; }
       }
       const fin = Date.now() - f.ouvert > DUREE_FANTOME || Object.values(etat).every(e => e.reste <= 1e-9);
       if (fin) for (const e of Object.values(etat)) if (e.reste > 1e-9) { e.encaisse += e.reste * mult; e.ventes.push({ palier: "10 jours", part: e.reste, mult: +mult.toFixed(2), ts: Date.now() }); e.reste = 0; }
-      this.sql.exec(`UPDATE fantomes SET maxi=?, dernier=?, maj=?, etat=?, ferme=?, nom=COALESCE(NULLIF(nom,''),?) WHERE mint=?`, maxi, p, Date.now(), JSON.stringify(etat), fin ? 1 : 0, this.get("nom_" + f.mint) || "", f.mint);
+      this.sql.exec(`UPDATE fantomes SET maxi=?, dernier=?, maj=CASE WHEN ?>1e-20 THEN ? ELSE maj END, etat=?, ferme=?, nom=COALESCE(NULLIF(nom,''),?) WHERE mint=?`, maxi, p, p, Date.now(), JSON.stringify(etat), fin ? 1 : 0, this.get("nom_" + f.mint) || "", f.mint);
     }
   }
 
