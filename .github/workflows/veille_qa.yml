@@ -1,0 +1,25 @@
+name: Veille QA
+on:
+  push:
+    branches: [main]
+    paths: [veille/qa/qa.mjs, .github/workflows/veille_qa.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: |
+          set +e
+          npm i playwright@1 >/dev/null 2>&1; npx playwright install --with-deps chromium >/dev/null 2>&1
+          { node veille/qa/qa.mjs
+            echo "=== test alerte"; curl -sS -m 30 https://veille.pitch67.workers.dev/api/test-alerte; echo; sleep 5
+            echo "=== messages reçus sur ntfy (pitch-veille-80cbd99313)"; curl -sS -m 30 "https://ntfy.sh/pitch-veille-80cbd99313/json?poll=1&since=10m" | head -c 600; echo
+            echo "=== etat"; curl -sS -m 30 https://veille.pitch67.workers.dev/api/etat | python3 -c "import json,sys;d=json.load(sys.stdin);print(d['version'],len(d['wallets']),'wallets',len(d['events']),'events',d['diag'])"
+          } > veille/qa/resultat.txt 2>&1
+          git config user.name qa; git config user.email bot@users.noreply.github.com
+          git add veille/qa; git commit -m "QA veille [skip ci]"; for k in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 5; done

@@ -2,7 +2,7 @@ name: Deploy Veille
 on:
   push:
     branches: [main]
-    paths: [veille/**, .github/workflows/veille.yml]
+    paths: [veille/src/**, veille/wrangler.jsonc, .github/workflows/veille.yml]
   workflow_dispatch:
 permissions:
   contents: write
