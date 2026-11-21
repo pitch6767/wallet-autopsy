@@ -1,4 +1,4 @@
-# garde vitesse 2026-11-21T13:36Z
+# garde vitesse 2026-11-21T14:36Z
 import json, urllib.request, time
 print("lu à", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()), time.time())
 def g(u):
