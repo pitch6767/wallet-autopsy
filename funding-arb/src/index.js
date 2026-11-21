@@ -5,7 +5,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { tickComptant, etatComptant, lireComptant, carnetC, fermerManuel } from "./comptant.js";
 import { etatComptes } from "./comptes.js";
-const VERSION = "2.12.0"
+const VERSION = "2.12.1"
 const REGLES_ID = "2.1";;
 
 // Règles (Pitch décide — modifiables ici)
