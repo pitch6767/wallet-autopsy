@@ -1,14 +1,22 @@
-iphone titre Veille wallets | retour visible accueil: false | texte: Dernier passage : il y a 12 s · 20 wallets surveillés · 42 adresses lues dans le canalAucun mouvement depuis le démarrage. Dès qu’un wallet du réseau achète un token ou envoie des SOL à un nouveau wal
-iphone écran wallets: retour visible: true | nb cartes: 21
-iphone après ←: onglet Alertes actif: true
-iphone après retour navigateur (glisser iPhone): Alertes actif: true | url: https://veille.pitch67.workers.dev/
-ordi titre Veille wallets | retour visible accueil: false | texte: Dernier passage : il y a 18 s · 20 wallets surveillés · 42 adresses lues dans le canalAucun mouvement depuis le démarrage. Dès qu’un wallet du réseau achète un token ou envoie des SOL à un nouveau wal
-ordi écran wallets: retour visible: true | nb cartes: 21
-ordi après ←: onglet Alertes actif: true
-ordi après retour navigateur (glisser iPhone): Alertes actif: true | url: https://veille.pitch67.workers.dev/
+file:///home/runner/work/wallet-autopsy/wallet-autopsy/veille/qa/qa.mjs:18
+# relance 1795259236
+^
+
+SyntaxError: Invalid or unexpected token
+    at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+    at #translate (node:internal/modules/esm/loader:559:20)
+    at afterLoad (node:internal/modules/esm/loader:612:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:617:12)
+    at #createModuleJob (node:internal/modules/esm/loader:640:36)
+    at #getJobFromResolveResult (node:internal/modules/esm/loader:353:34)
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:321:41)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:25)
+
+Node.js v22.23.5
 === test alerte
 envoyé
 === messages reçus sur ntfy (pitch-veille-80cbd99313)
 
 === etat
-1.0.2 20 wallets 0 events {'dernier_tick': 1795259181614, 'tick_ms': '29854', 'erreurs': '1', 'tx_lues': '1', 'derniere_erreur': '2026-11-21T11:06:16.185Z 32WtUY https://solana-rpc.publicnode.com 429', 'calls_connus': 42, 'err_canal': ''}
+1.0.2 20 wallets 0 events {'dernier_tick': 1795259303921, 'tick_ms': '32389', 'erreurs': '2', 'tx_lues': '0', 'derniere_erreur': '2026-11-21T11:08:12.733Z BdpVwD https://solana-rpc.publicnode.com 429', 'calls_connus': 42, 'err_canal': ''}
