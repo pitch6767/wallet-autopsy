@@ -1,22 +1,16 @@
-file:///home/runner/work/wallet-autopsy/wallet-autopsy/veille/qa/qa.mjs:18
-# relance 1795259236
-^
-
-SyntaxError: Invalid or unexpected token
-    at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
-    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
-    at #translate (node:internal/modules/esm/loader:559:20)
-    at afterLoad (node:internal/modules/esm/loader:612:29)
-    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:617:12)
-    at #createModuleJob (node:internal/modules/esm/loader:640:36)
-    at #getJobFromResolveResult (node:internal/modules/esm/loader:353:34)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:321:41)
-    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:25)
-
-Node.js v22.23.5
+iphone titre Veille wallets | retour visible accueil: false | texte: Dernier passage : il y a 40 s · 23 wallets surveillés · 43 adresses lues dans le canal21.11 12:47 · transfert9jA4MU…vsWp envoie 9.99 SOL à DFvLhm2i4XcKw6VRFr6Xx3qhqMhLwXog67r2d7JDUcKR21.11 12:13 · tra
+iphone écran wallets: retour visible: true | nb cartes: 25
+iphone après ←: onglet Alertes actif: true
+iphone après retour navigateur (glisser iPhone): Alertes actif: true | url: https://veille.pitch67.workers.dev/
+ordi titre Veille wallets | retour visible accueil: false | texte: Dernier passage : il y a 46 s · 23 wallets surveillés · 43 adresses lues dans le canal21.11 12:47 · transfert9jA4MU…vsWp envoie 9.99 SOL à DFvLhm2i4XcKw6VRFr6Xx3qhqMhLwXog67r2d7JDUcKR21.11 12:13 · tra
+ordi écran wallets: retour visible: true | nb cartes: 25
+ordi après ←: onglet Alertes actif: true
+ordi après retour navigateur (glisser iPhone): Alertes actif: true | url: https://veille.pitch67.workers.dev/
+=== push de bout en bout (Firefox)
+TEST PUSH impossible ici : page.evaluate: Error retrieving push subscription.
 === test alerte
 aucun appareil abonné
 === messages reçus sur push
 BDLaISO-VZNDOhxD0ZgrL6BudRvUt3kvSHuAnComi_qCIfhc5_kIY8xlGzZxbMX1I5TxCNg4pMPyc8MUsa4cmjQ
 === etat
-1.1.0 22 wallets 2 events {'dernier_tick': 1795260068184, 'tick_ms': '16432', 'erreurs': '1', 'tx_lues': '0', 'derniere_erreur': '2026-11-21T11:21:07.394Z 9jA4MU https://solana-rpc.publicnode.com 429', 'calls_connus': 42, 'err_canal': '', 'err_push': '', 'appareils': 0}
+1.1.0 26 wallets 6 events {'dernier_tick': 1795262125717, 'tick_ms': '33838', 'erreurs': '1', 'tx_lues': '0', 'derniere_erreur': '2026-11-21T11:55:04.818Z 51o5Vw https://solana-rpc.publicnode.com 429', 'calls_connus': 43, 'err_canal': '', 'err_push': '', 'appareils': 0}
