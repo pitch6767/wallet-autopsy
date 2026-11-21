@@ -1,10 +1,12 @@
 // Veille — surveillance en direct du réseau de wallets trouvé sur les calls cryptoyeezuscalls (Solana)
 // Alerte téléphone (ntfy) quand un wallet surveillé achète un token ; suivi auto des wallets qu'il finance ;
 // lecture du canal Telegram pour mesurer l'avance de chaque alerte sur le call.
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 const MARQUEUR = "Veille wallets yeezus";
 const NTFY = "pitch-veille-80cbd99313";
-const RPC = ["https://solana-rpc.publicnode.com", "https://api.mainnet-beta.solana.com", "https://api.mainnet.solana.com"];
+const RPC = ["https://solana-rpc.publicnode.com", "https://solana.drpc.org", "https://api.mainnet-beta.solana.com"];
+const PAR_PASSAGE = 12;   // wallets lus par minute (rotation), pour rester sous les limites des serveurs gratuits
+const dormir = ms => new Promise(r => setTimeout(r, ms));
 const CANAL = "https://t.me/s/cryptoyeezuscalls";
 const IGNORE = new Set(["So11111111111111111111111111111111111111112", "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"]);
 const SEUIL_TRANSFERT = 0.5;   // SOL envoyés vers un nouveau wallet => on le suit
@@ -20,10 +22,10 @@ export default {
 
 async function rpc(method, params) {
   let err = "";
-  for (const u of RPC) {
+  for (const u of [...RPC, RPC[0]]) {
     try {
       const r = await fetch(u, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
-      if (!r.ok) { err = u + " " + r.status; continue; }
+      if (!r.ok) { err = u + " " + r.status; await dormir(400); continue; }
       const j = await r.json();
       if ("result" in j) return j.result;
       err = u + " " + JSON.stringify(j.error || {}).slice(0, 80);
@@ -37,6 +39,7 @@ export class Veille {
     this.sql = ctx.storage.sql; this.env = env;
     this.sql.exec(`CREATE TABLE IF NOT EXISTS wallets(addr TEXT PRIMARY KEY, label TEXT, ajoute INTEGER, last_sig TEXT, last_act INTEGER, n_achats INTEGER DEFAULT 0, source TEXT)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER, type TEXT, wallet TEXT, mint TEXT, sol REAL, detail TEXT, sig TEXT UNIQUE)`);
+    try { this.sql.exec(`ALTER TABLE wallets ADD COLUMN last_scan INTEGER DEFAULT 0`); } catch (e) {}
     this.sql.exec(`CREATE TABLE IF NOT EXISTS calls(mint TEXT PRIMARY KEY, ts INTEGER, msg INTEGER)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS kv(k TEXT PRIMARY KEY, v TEXT)`);
     const n = this.sql.exec(`SELECT count(*) c FROM wallets`).one().c;
@@ -63,10 +66,11 @@ export class Veille {
     if (Date.now() - Number(this.get("tick_en_cours") || 0) < 50000) return;   // pas deux passages en même temps
     this.set("tick_en_cours", Date.now());
     const t0 = Date.now(); let erreurs = 0, lus = 0;
-    const ws = this.sql.exec(`SELECT * FROM wallets ORDER BY COALESCE(last_act,0) DESC`).toArray();
+    const ws = this.sql.exec(`SELECT * FROM wallets ORDER BY COALESCE(last_scan,0) ASC LIMIT ?`, PAR_PASSAGE).toArray();
     for (const w of ws) {
+      this.sql.exec(`UPDATE wallets SET last_scan=? WHERE addr=?`, Date.now(), w.addr);
       if (Date.now() - t0 > 40000) break;
-      try { lus += await this.scanWallet(w); } catch (e) { erreurs++; this.set("derniere_erreur", new Date().toISOString() + " " + w.addr.slice(0, 6) + " " + e.message); }
+      try { lus += await this.scanWallet(w); await dormir(250); } catch (e) { erreurs++; this.set("derniere_erreur", new Date().toISOString() + " " + w.addr.slice(0, 6) + " " + e.message); }
     }
     if (Date.now() - Number(this.get("canal_ts") || 0) > 4 * 60000) { try { await this.lireCanal(); } catch (e) { this.set("err_canal", e.message); } this.set("canal_ts", Date.now()); }
     this.set("dernier_tick", Date.now()); this.set("tick_ms", Date.now() - t0); this.set("tick_err", erreurs); this.set("tick_tx", lus);
