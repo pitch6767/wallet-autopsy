@@ -39,13 +39,13 @@ def plus_haut(m, depuis):
     if not KL: return None
     best = 0
     for r, span in (("1h", None),):
-        j = get(KL.format(m=m, r="1h", f=int(depuis), t=now)); d = j.get("data")
+        j = get(KL.format(m=m, r="5m", f=int(depuis) - 300, t=min(now, int(depuis) + 10 * 86400))); d = j.get("data")
         L = d.get("list") if isinstance(d, dict) else d
         for c in L or []:
             h = float(c.get("high") or c.get("h") or 0)
             ts = int(c.get("time") or c.get("timestamp") or c.get("t") or 0)
             if ts > 1e12: ts //= 1000
-            if ts >= depuis - 3600: best = max(best, h)
+            if ts >= depuis - 300: best = max(best, h)
     return best or None
 def activite(w):
     out = []; cur = None
@@ -56,7 +56,7 @@ def activite(w):
         if not cur or not L: break
         time.sleep(0.3)
     return out
-if True:
+if False:
     a = activite("FT9VDscMGy2qDkcbFBD4xLkaGPBqkEgDA6E59GaHN7u6")
     print("EX ACTIVITE", json.dumps([x for x in a if x.get("event_type") in ("buy","sell")][:2])[:1500])
 RES = {}
@@ -84,11 +84,15 @@ for reseau, tranches in RESEAUX.items():
             time.sleep(0.5)
         tot |= {l["mint"] for l in lignes}
         RES.setdefault(reseau, []).append({"tranche": nom, "calls": lignes})
-        print(f"\n=== {nom} : {len(lignes)} calls", flush=True)
+        nav = sum(1 for l in lignes if l["minutes_avant_call"] > 0)
+        print(f"\n=== {nom} : {len(lignes)} calls ({nav} achetés AVANT le call)", flush=True)
         for l in lignes:
             f = lambda v: f"{v:.8g}" if v else "-"
             mult = f"x{l['plus_haut']/l['prix_achat']:.1f}" if l["plus_haut"] and l["prix_achat"] else "-"
-            print(f"  {l['achat_date']} {l['nom'][:14]:14} | {'avant' if l['minutes_avant_call']>0 else 'APRÈS'} le call ({l['minutes_avant_call']} min) | achat {f(l['prix_achat'])} $ | vente {f(l['prix_vente'])} $ | plus haut après achat {f(l['plus_haut'])} $ ({mult}) | mise {l['mise']} $ vendu {l['vendu']} $ | {','.join(l['wallets'])} | {l['mint']}", flush=True)
-    print(f"\nTOTAL {reseau} : {len(tot)} calls différents", flush=True)
+            print(f"  {l['achat_date']} {l['nom'][:14]:14} | {(str(l['minutes_avant_call'])+' min AVANT le call') if l['minutes_avant_call']>0 else ('même minute que le call' if l['minutes_avant_call']==0 else str(-l['minutes_avant_call'])+' min après le call')} | achat {f(l['prix_achat'])} $ | vente {f(l['prix_vente'])} $ | plus haut après achat {f(l['plus_haut'])} $ ({mult}) | mise {l['mise']} $ vendu {l['vendu']} $ | {','.join(l['wallets'])} | {l['mint']}", flush=True)
+    av = {l["mint"] for t in RES[reseau] for l in t["calls"] if l["minutes_avant_call"] > 0}
+    print(f"\nTOTAL {reseau} : {len(tot)} calls différents, dont {len(av)} achetés AVANT le call", flush=True)
 json.dump(RES, open("etude/yeezus/resultat15.json", "w"))
 print("FIN")
+
+# v2 : plus haut sur 10 jours en bougies 5 min
