@@ -1,7 +1,7 @@
 // Veille — surveillance en direct du réseau de wallets trouvé sur les calls cryptoyeezuscalls (Solana)
 // Alerte téléphone (notification web de la PWA) quand un wallet surveillé achète un token ; suivi auto des wallets qu'il finance ;
 // lecture du canal Telegram pour mesurer l'avance de chaque alerte sur le call.
-const VERSION = "1.2.0";
+const VERSION = "1.3.0";
 const MARQUEUR = "Veille wallets yeezus";
 const RPC = ["https://solana-rpc.publicnode.com", "https://solana.drpc.org", "https://api.mainnet-beta.solana.com"];
 const PAR_PASSAGE = 12;   // wallets lus par minute (rotation), pour rester sous les limites des serveurs gratuits
@@ -10,6 +10,8 @@ const CANAL = "https://t.me/s/cryptoyeezuscalls";
 const IGNORE = new Set(["So11111111111111111111111111111111111111112", "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"]);
 const SEUIL_TRANSFERT = 0.5;   // SOL envoyés vers un nouveau wallet => on le suit
 const MAX_WALLETS = 200;
+const PROFONDEUR_MAX = 2;      // on suit les wallets financés par le réseau, et ceux qu’ils financent, pas plus loin
+const MAX_PAR_SOURCE_JOUR = 5;  // au-delà, la source distribue à tout le monde (échangeur, gros distributeur) : on arrête de suivre ses envois
 // Fantômes de revente (aucun argent réel) : 100 $ fictifs au prix du token au moment de l'alerte
 const REGLES = {
   A: { nom: "A — moitié à ×2, moitié à ×10", paliers: [[2, 0.5], [10, 0.5]] },
@@ -50,6 +52,17 @@ export class Veille {
     this.sql.exec(`CREATE TABLE IF NOT EXISTS wallets(addr TEXT PRIMARY KEY, label TEXT, ajoute INTEGER, last_sig TEXT, last_act INTEGER, n_achats INTEGER DEFAULT 0, source TEXT)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER, type TEXT, wallet TEXT, mint TEXT, sol REAL, detail TEXT, sig TEXT UNIQUE)`);
     try { this.sql.exec(`ALTER TABLE wallets ADD COLUMN last_scan INTEGER DEFAULT 0`); } catch (e) {}
+    try { this.sql.exec(`ALTER TABLE wallets ADD COLUMN prof INTEGER DEFAULT 0`); } catch (e) {}
+    if (!this.sql.exec(`SELECT v FROM kv WHERE k='nettoyage_130'`).toArray().length) {
+      // nettoyage : on ne garde que les wallets de départ et, par wallet de départ, ses 5 premiers wallets financés
+      const garde = new Set(Object.keys(SEED));
+      for (const a of Object.keys(SEED)) for (const r of this.sql.exec(`SELECT addr FROM wallets WHERE source=? ORDER BY ajoute ASC LIMIT 5`, a).toArray()) garde.add(r.addr);
+      for (const r of this.sql.exec(`SELECT addr, source FROM wallets`).toArray()) {
+        if (!garde.has(r.addr)) this.sql.exec(`DELETE FROM wallets WHERE addr=?`, r.addr);
+        else this.sql.exec(`UPDATE wallets SET prof=? WHERE addr=?`, SEED[r.addr] ? 0 : 1, r.addr);
+      }
+      this.sql.exec(`INSERT OR REPLACE INTO kv(k,v) VALUES('nettoyage_130','1')`);
+    }
     this.sql.exec(`CREATE TABLE IF NOT EXISTS calls(mint TEXT PRIMARY KEY, ts INTEGER, msg INTEGER)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS kv(k TEXT PRIMARY KEY, v TEXT)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS fantomes(mint TEXT PRIMARY KEY, ouvert INTEGER, entree REAL, maxi REAL, dernier REAL, maj INTEGER, etat TEXT, ferme INTEGER DEFAULT 0, test INTEGER DEFAULT 0, nom TEXT)`);
@@ -209,8 +222,10 @@ export class Veille {
       this.sql.exec(`UPDATE wallets SET last_act=? WHERE addr=?`, ts, w.addr);
       const deja = this.sql.exec(`SELECT 1 FROM wallets WHERE addr=?`, dst).toArray().length;
       const total = this.sql.exec(`SELECT count(*) c FROM wallets`).one().c;
-      if (!deja && total < MAX_WALLETS) {
-        this.sql.exec(`INSERT INTO wallets(addr,label,ajoute,source) VALUES(?,?,?,?)`, dst, `reçu ${sol.toFixed(1)} SOL de ${w.addr.slice(0, 6)}`, Date.now(), w.addr);
+      const prof = (w.prof || 0) + 1;
+      const recents = this.sql.exec(`SELECT count(*) c FROM wallets WHERE source=? AND ajoute>?`, w.addr, Date.now() - 86400000).one().c;
+      if (!deja && total < MAX_WALLETS && prof <= PROFONDEUR_MAX && recents < MAX_PAR_SOURCE_JOUR) {
+        this.sql.exec(`INSERT INTO wallets(addr,label,ajoute,source,prof) VALUES(?,?,?,?,?)`, dst, `reçu ${sol.toFixed(1)} SOL de ${w.addr.slice(0, 6)}`, Date.now(), w.addr, prof);
         await this.notifier(`Nouveau wallet suivi`, `${w.addr.slice(0, 6)}… envoie ${sol.toFixed(2)} SOL à ${dst} — ajouté à la surveillance`, 3, "https://solscan.io/account/" + dst);
       }
     }
