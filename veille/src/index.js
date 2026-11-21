@@ -1,7 +1,7 @@
 // Veille — surveillance en direct du réseau de wallets trouvé sur les calls cryptoyeezuscalls (Solana)
 // Alerte téléphone (notification web de la PWA) quand un wallet surveillé achète un token ; suivi auto des wallets qu'il finance ;
 // lecture du canal Telegram pour mesurer l'avance de chaque alerte sur le call.
-const VERSION = "1.1.1";
+const VERSION = "1.1.2";
 const MARQUEUR = "Veille wallets yeezus";
 const RPC = ["https://solana-rpc.publicnode.com", "https://solana.drpc.org", "https://api.mainnet-beta.solana.com"];
 const PAR_PASSAGE = 12;   // wallets lus par minute (rotation), pour rester sous les limites des serveurs gratuits
@@ -16,7 +16,7 @@ const SEED = {"51o5VwwsB2KG1Ejuq2FdmaCQcnuTyKRF6c5HjtYVmEgr":"groupe FT9VD","5au
 
 function b64u(b) { let s = ""; for (const x of b) s += String.fromCharCode(x); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
 
-const SW = `self.addEventListener("push", e => e.waitUntil(fetch("/api/derniere", { cache: "no-store" }).then(r => r.json()).then(d => self.registration.showNotification(d.title || "Veille", { body: d.message || "", data: { url: d.click || "/" }, tag: String(d.ts || Date.now()) }))));
+const SW = `self.addEventListener("push", e => e.waitUntil(fetch("/api/dernieres", { cache: "no-store" }).then(r => r.json()).then(async L => { const vues = new Set((await self.registration.getNotifications()).map(n => n.tag)); const a = L.filter(d => !vues.has(String(d.ts))).slice(-3); if (!a.length) a.push(L[L.length - 1] || { title: "Veille", message: "Nouveau mouvement" }); for (const d of a) await self.registration.showNotification(d.title, { body: d.message || "", data: { url: d.click || "/" }, tag: String(d.ts || Date.now()) }); })));
 self.addEventListener("notificationclick", e => { e.notification.close(); e.waitUntil(clients.openWindow(e.notification.data.url)); });`;
 
 export default {
@@ -59,7 +59,7 @@ export class Veille {
     if (u.pathname === "/api/etat") return Response.json(this.etat(), { headers: { "cache-control": "no-store" } });
     if (u.pathname === "/api/vapid") return new Response((await this.cles()).pub);
     if (u.pathname === "/api/abonner" && req.method === "POST") { const j = await req.json(); if (j && j.endpoint) this.sql.exec(`INSERT OR REPLACE INTO abos(endpoint,ajoute) VALUES(?,?)`, j.endpoint, Date.now()); return Response.json({ ok: true, abonnes: this.sql.exec(`SELECT count(*) c FROM abos`).one().c }); }
-    if (u.pathname === "/api/derniere") return Response.json(JSON.parse(this.get("derniere") || "{}"), { headers: { "cache-control": "no-store" } });
+    if (u.pathname === "/api/dernieres") return Response.json(JSON.parse(this.get("dernieres") || "[]"), { headers: { "cache-control": "no-store" } });
     if (u.pathname === "/sw.js") return new Response(SW, { headers: { "content-type": "text/javascript", "cache-control": "no-store" } });
     if (u.pathname === "/api/test-alerte") { const r = await this.notifier("Test Veille", "Si tu lis ceci, les alertes marchent.", 3, "https://veille.pitch67.workers.dev/"); return new Response(r); }
     if (u.pathname === "/manifest.webmanifest") return new Response(JSON.stringify({ name: "Veille wallets", short_name: "Veille", start_url: "/", display: "standalone", background_color: "#0f1115", theme_color: "#0f1115", icons: [{ src: "/icone.svg", sizes: "any", type: "image/svg+xml" }] }), { headers: { "content-type": "application/manifest+json" } });
@@ -78,7 +78,8 @@ export class Veille {
     return JSON.parse(k);
   }
   async notifier(title, message, priority, click) {
-    this.set("derniere", JSON.stringify({ title, message, click, ts: Date.now() }));
+    const liste = JSON.parse(this.get("dernieres") || "[]").filter(a => Date.now() - a.ts < 10 * 60000);
+    liste.push({ title, message, click, ts: Date.now() + Math.random() }); this.set("dernieres", JSON.stringify(liste.slice(-10)));
     const { priv, pub } = await this.cles();
     const cle = await crypto.subtle.importKey("jwk", priv, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
     const abos = this.sql.exec(`SELECT endpoint FROM abos`).toArray();
@@ -142,7 +143,8 @@ export class Veille {
     const depense = -(dsol + wsol);
     for (const m of Object.keys(post)) {
       if (IGNORE.has(m) || (post[m] || 0) <= (pre[m] || 0) || depense < 0.01) continue;
-      this.sql.exec(`INSERT OR IGNORE INTO events(ts,type,wallet,mint,sol,detail,sig) VALUES(?,?,?,?,?,?,?)`, ts, "achat", w.addr, m, Math.round(depense * 1000) / 1000, "", sig + ":" + m.slice(0, 8));
+      const neuf = this.sql.exec(`INSERT OR IGNORE INTO events(ts,type,wallet,mint,sol,detail,sig) VALUES(?,?,?,?,?,?,?)`, ts, "achat", w.addr, m, Math.round(depense * 1000) / 1000, "", sig + ":" + m.slice(0, 8)).rowsWritten;
+      if (!neuf) continue;
       this.sql.exec(`UPDATE wallets SET last_act=?, n_achats=n_achats+1 WHERE addr=?`, ts, w.addr);
       const qui = this.sql.exec(`SELECT DISTINCT wallet FROM events WHERE type='achat' AND mint=? AND ts>?`, m, ts - 30 * 60000).toArray().map(r => r.wallet);
       const lien = "https://gmgn.ai/sol/token/" + m;
