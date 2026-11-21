@@ -15,41 +15,8 @@ SyntaxError: Invalid or unexpected token
 
 Node.js v22.23.5
 === test alerte
-ntfy: 429 {"code":42908,"http":429,"error":"limit reached: daily message quota reached; increase your limits with a paid plan, see https://ntfy.sh","link":"https://ntfy.sh/docs/publish/#limitations"}
-
+aucun appareil abonné
 === messages reçus sur push
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Veille wallets</title><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icone.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#0f1115">
-<!-- Veille wallets yeezus -->
-<style>body{margin:0;font:15px -apple-system,system-ui,sans-serif;background:#0f1115;color:#e8e8e8}
-header{position:sticky;top:0;background:#171a21;padding:12px 14px calc(10px) 14px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #2a2f3a;z-index:2}
-header h1{font-size:17px;margin:0;flex:1}#retour{display:none;font-size:22px;background:none;border:0;color:#f5c542;padding:0 8px 0 0}
-nav{display:flex;gap:8px}nav button{background:#262b36;color:#ddd;border:0;border-radius:8px;padding:7px 10px;font-size:14px}nav button.on{background:#f5c542;color:#111}
-main{padding:12px}.c{background:#171a21;border:1px solid #2a2f3a;border-radius:10px;padding:10px 12px;margin-bottom:8px}
-.t{font-size:12px;color:#9aa}.fort{border-color:#f5c542}.ok{color:#4ade80}.ko{color:#f87171}a{color:#7cc4ff;word-break:break-all}.mono{font-family:ui-monospace,monospace;font-size:12px;word-break:break-all}
-.pill{display:inline-block;font-size:11px;padding:2px 6px;border-radius:6px;background:#262b36;margin-right:4px}.v{font-size:11px;color:#667;text-align:center;padding:16px}</style></head><body>
-<header><button id="retour" aria-label="Retour à l'accueil">←</button><h1>Veille wallets</h1><nav><button id="b-a" class="on">Alertes</button><button id="b-w">Wallets</button></nav></header>
-<main id="m">Chargement…</main><div class="v">version 1.0.3 · heure de Paris</div>
-<script>
-const V="1.0.3";try{if(sessionStorage.getItem("v")!==V){sessionStorage.setItem("v",V);}}catch(e){}
-const P=t=>new Date(t).toLocaleString("fr-CH",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
-const C=a=>a?a.slice(0,6)+"…"+a.slice(-4):"";
-let E=null,vue="a";
-function aff(){const m=document.getElementById("m");if(!E)return;document.getElementById("b-a").className=vue==="a"?"on":"";document.getElementById("b-w").className=vue==="w"?"on":"";document.getElementById("retour").style.display=vue==="a"?"none":"inline";
-const d=E.diag,age=Math.round((Date.now()-d.dernier_tick)/1000);
-let h='<div class="c t">Dernier passage : '+(d.dernier_tick?('il y a '+age+' s'):'pas encore')+' · '+E.wallets.length+' wallets surveillés · '+d.calls_connus+' adresses lues dans le canal</div>';
-if(vue==="a"){const ev=E.events;if(!ev.length)h+='<div class="c">Aucun mouvement depuis le démarrage. Dès qu’un wallet du réseau achète un token ou envoie des SOL à un nouveau wallet, il apparaît ici et sur ton téléphone.</div>';
-const cnt={};ev.filter(e=>e.type==="achat").forEach(e=>{cnt[e.mint]=(cnt[e.mint]||new Set()).add(e.wallet)});
-for(const e of ev){if(e.type==="achat"){const n=cnt[e.mint].size;let av="";if(e.call_ts){const dm=Math.round((e.call_ts-e.ts)/60000);av=dm>=0?'<span class="ok">Appelé par le canal '+dm+' min après cet achat</span>':'<span class="ko">Le canal l’avait appelé '+(-dm)+' min avant</span>';}
-h+='<div class="c'+(n>1?' fort':'')+'"><div class="t">'+P(e.ts)+' · '+(n>1?'<b>SIGNAL FORT : '+n+' wallets</b>':'achat')+'</div><b>'+(e.label||'')+'</b> '+C(e.wallet)+' achète '+e.sol+' SOL<div class="mono"><a href="https://gmgn.ai/sol/token/'+e.mint+'" target="_blank">'+e.mint+'</a></div>'+(av?'<div>'+av+'</div>':'')+'</div>';}
-else h+='<div class="c"><div class="t">'+P(e.ts)+' · transfert</div>'+C(e.wallet)+' envoie '+(+e.sol).toFixed(2)+' SOL à <a class="mono" href="https://solscan.io/account/'+e.detail+'" target="_blank">'+e.detail+'</a></div>';}}
-else{for(const w of E.wallets)h+='<div class="c"><span class="pill">'+(w.label||'')+'</span><div class="mono"><a href="https://gmgn.ai/sol/address/'+w.addr+'" target="_blank">'+w.addr+'</a></div><div class="t">dernière activité vue : '+(w.last_act?P(w.last_act):'aucune depuis le démarrage')+' · achats vus : '+w.n_achats+'</div></div>';}
-m.innerHTML=h;}
-async function charger(){try{E=await (await fetch("/api/etat",{cache:"no-store"})).json();if(E.version!==V){try{if(sessionStorage.getItem("rl")!==E.version){sessionStorage.setItem("rl",E.version);location.reload();return}}catch(e){}}aff();}catch(e){document.getElementById("m").textContent="Erreur de chargement";}}
-function aller(x){if(x!==vue){vue=x;if(x!=="a")history.pushState({v:x},"");aff();}}
-document.getElementById("b-a").onclick=()=>{vue="a";aff()};document.getElementById("b-w").onclick=()=>aller("w");document.getElementById("retour").onclick=()=>{vue="a";aff()};
-addEventListener("popstate",()=>{vue="a";aff()});
-charger();setInterval(charger,20000);
-</script></body></html>
+BDLaISO-VZNDOhxD0ZgrL6BudRvUt3kvSHuAnComi_qCIfhc5_kIY8xlGzZxbMX1I5TxCNg4pMPyc8MUsa4cmjQ
 === etat
-1.0.3 22 wallets 2 events {'dernier_tick': 1795259787575, 'tick_ms': '36024', 'erreurs': '3', 'tx_lues': '2', 'derniere_erreur': '2026-11-21T11:16:20.957Z D2rcDM https://solana-rpc.publicnode.com 429', 'calls_connus': 42, 'err_canal': '', 'err_ntfy': '429 {"code":42908,"http":429,"error":"limit reached: daily message quota reached; increase your limits with a paid plan, see https://ntfy.sh","link":"https://ntfy.sh/docs/publish/#limitations"}\n'}
+1.1.0 22 wallets 2 events {'dernier_tick': 1795260068184, 'tick_ms': '16432', 'erreurs': '1', 'tx_lues': '0', 'derniere_erreur': '2026-11-21T11:21:07.394Z 9jA4MU https://solana-rpc.publicnode.com 429', 'calls_connus': 42, 'err_canal': '', 'err_push': '', 'appareils': 0}
