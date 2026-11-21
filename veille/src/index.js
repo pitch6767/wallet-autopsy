@@ -1,7 +1,7 @@
 // Veille — surveillance en direct du réseau de wallets trouvé sur les calls cryptoyeezuscalls (Solana)
-// Alerte téléphone (ntfy) quand un wallet surveillé achète un token ; suivi auto des wallets qu'il finance ;
+// Alerte téléphone (notification web de la PWA) quand un wallet surveillé achète un token ; suivi auto des wallets qu'il finance ;
 // lecture du canal Telegram pour mesurer l'avance de chaque alerte sur le call.
-const VERSION = "1.1.0";
+const VERSION = "1.1.1";
 const MARQUEUR = "Veille wallets yeezus";
 const RPC = ["https://solana-rpc.publicnode.com", "https://solana.drpc.org", "https://api.mainnet-beta.solana.com"];
 const PAR_PASSAGE = 12;   // wallets lus par minute (rotation), pour rester sous les limites des serveurs gratuits
@@ -89,7 +89,7 @@ export class Veille {
         const enc = o => b64u(new TextEncoder().encode(JSON.stringify(o)));
         const base = enc({ typ: "JWT", alg: "ES256" }) + "." + enc({ aud, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: "mailto:alertes@i-a.fan" });
         const sig = b64u(new Uint8Array(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, cle, new TextEncoder().encode(base))));
-        const r = await fetch(endpoint, { method: "POST", headers: { TTL: "3600", Urgency: priority >= 4 ? "high" : "normal", Authorization: `vapid t=${base}.${sig}, k=${pub}`, "Content-Length": "0" } });
+        const r = await fetch(endpoint, { method: "POST", headers: { TTL: "3600", Urgency: priority >= 4 ? "high" : "normal", Authorization: `vapid t=${base}.${sig}, k=${pub}` }, body: "" });
         res.push(r.status);
         if (r.status === 404 || r.status === 410) this.sql.exec(`DELETE FROM abos WHERE endpoint=?`, endpoint);
         else if (!r.ok) this.set("err_push", r.status + " " + (await r.text()).slice(0, 150));
