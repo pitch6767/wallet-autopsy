@@ -17,9 +17,13 @@ jobs:
       - run: |
           set +e
           npm i playwright@1 >/dev/null 2>&1; npx playwright install --with-deps chromium firefox >/dev/null 2>&1
-          { timeout 240 node veille/qa/qa.mjs; echo "=== push de bout en bout (Firefox)"; timeout 150 node veille/qa/push.mjs
+          { M=34DXEU2ttEtBSb1TqGJm7izgvYTTkqKcCoiNWdPDpump
+            echo "=== fantôme de test : $(curl -sS -m 60 "https://veille.pitch67.workers.dev/api/test-fantome?mint=$M")"; sleep 100
+            curl -sS -m 30 https://veille.pitch67.workers.dev/api/etat | python3 -c "import json,sys;d=json.load(sys.stdin);print('fantomes', json.dumps(d['fantomes'])[:700], 'err_prix', d['diag'].get('err_prix'))"
+            timeout 240 node veille/qa/qa.mjs; echo "=== push de bout en bout (Firefox)"; timeout 150 node veille/qa/push.mjs
             echo "=== test alerte"; curl -sS -m 30 https://veille.pitch67.workers.dev/api/test-alerte; echo; sleep 5
             echo "=== messages reçus sur push"; curl -sS -m 30 https://veille.pitch67.workers.dev/api/vapid; echo
+            echo "=== suppression du fantôme de test : $(curl -sS -m 30 "https://veille.pitch67.workers.dev/api/test-fantome?mint=$M&suppr=1")"
             echo "=== etat"; curl -sS -m 30 https://veille.pitch67.workers.dev/api/etat | python3 -c "import json,sys;d=json.load(sys.stdin);print(d['version'],len(d['wallets']),'wallets',len(d['events']),'events',d['diag'])"
           } > veille/qa/resultat.txt 2>&1
           git config user.name qa; git config user.email bot@users.noreply.github.com

@@ -11,6 +11,10 @@ for (const [nom, opt] of [["iphone", devices["iPhone 13"]], ["ordi", { viewport:
   console.log(nom, "écran wallets: retour visible:", await p.isVisible("#retour"), "| nb cartes:", await p.locator(".c").count());
   await p.click("#retour"); await p.waitForTimeout(500);
   console.log(nom, "après ←: onglet Alertes actif:", (await p.getAttribute("#b-a", "class")) === "on");
+  await p.click("#b-f"); await p.waitForTimeout(800);
+  await p.screenshot({ path: `veille/qa/${nom}-fantomes.png` });
+  console.log(nom, "écran fantômes: retour visible:", await p.isVisible("#retour"), "| texte:", (await p.textContent("#m")).slice(0, 400));
+  await p.click("#retour"); await p.waitForTimeout(400);
   await p.click("#b-w"); await p.waitForTimeout(500); await p.goBack(); await p.waitForTimeout(800);
   console.log(nom, "après retour navigateur (glisser iPhone): Alertes actif:", (await p.getAttribute("#b-a", "class")) === "on", "| url:", p.url());
 }
