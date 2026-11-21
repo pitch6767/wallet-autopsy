@@ -15,3 +15,4 @@ for (const [nom, opt] of [["iphone", devices["iPhone 13"]], ["ordi", { viewport:
   console.log(nom, "après retour navigateur (glisser iPhone): Alertes actif:", (await p.getAttribute("#b-a", "class")) === "on", "| url:", p.url());
 }
 await b.close();
+# relance 1795259236

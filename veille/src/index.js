@@ -1,7 +1,7 @@
 // Veille — surveillance en direct du réseau de wallets trouvé sur les calls cryptoyeezuscalls (Solana)
 // Alerte téléphone (ntfy) quand un wallet surveillé achète un token ; suivi auto des wallets qu'il finance ;
 // lecture du canal Telegram pour mesurer l'avance de chaque alerte sur le call.
-const VERSION = "1.0.2";
+const VERSION = "1.0.3";
 const MARQUEUR = "Veille wallets yeezus";
 const NTFY = "pitch-veille-80cbd99313";
 const RPC = ["https://solana-rpc.publicnode.com", "https://solana.drpc.org", "https://api.mainnet-beta.solana.com"];
@@ -52,14 +52,15 @@ export class Veille {
     const u = new URL(req.url);
     if (u.pathname === "/tick") { await this.tick(); return new Response("ok"); }
     if (u.pathname === "/api/etat") return Response.json(this.etat(), { headers: { "cache-control": "no-store" } });
-    if (u.pathname === "/api/test-alerte") { await this.notifier("Test Veille", "Si tu lis ceci, les alertes marchent.", 3, "https://veille.pitch67.workers.dev/"); return new Response("envoyé"); }
+    if (u.pathname === "/api/test-alerte") { const r = await this.notifier("Test Veille", "Si tu lis ceci, les alertes marchent.", 3, "https://veille.pitch67.workers.dev/"); return new Response("ntfy: " + r); }
     if (u.pathname === "/manifest.webmanifest") return new Response(JSON.stringify({ name: "Veille wallets", short_name: "Veille", start_url: "/", display: "standalone", background_color: "#0f1115", theme_color: "#0f1115", icons: [{ src: "/icone.svg", sizes: "any", type: "image/svg+xml" }] }), { headers: { "content-type": "application/manifest+json" } });
     if (u.pathname === "/icone.svg") return new Response(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0f1115"/><circle cx="50" cy="50" r="30" fill="none" stroke="#f5c542" stroke-width="8"/><circle cx="50" cy="50" r="10" fill="#f5c542"/></svg>`, { headers: { "content-type": "image/svg+xml" } });
     return new Response(PAGE.replaceAll("__V__", VERSION), { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store, max-age=0" } });
   }
 
   async notifier(title, message, priority, click) {
-    try { await fetch("https://ntfy.sh/", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ topic: NTFY, title, message, priority, click, tags: ["eyes"] }) }); } catch (e) { this.set("err_ntfy", e.message); }
+    try { const r = await fetch("https://ntfy.sh/", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ topic: NTFY, title, message, priority, click, tags: ["eyes"] }) });
+      const t = r.status + " " + (await r.text()).slice(0, 200); if (!r.ok) this.set("err_ntfy", t); return t; } catch (e) { this.set("err_ntfy", e.message); return "ERR " + e.message; }
   }
 
   async tick() {
@@ -152,7 +153,7 @@ export class Veille {
     const ws = this.sql.exec(`SELECT * FROM wallets ORDER BY COALESCE(last_act,0) DESC`).toArray();
     const kv = Object.fromEntries(this.sql.exec(`SELECT k,v FROM kv`).toArray().map(r => [r.k, r.v]));
     const appels = this.sql.exec(`SELECT count(*) c FROM calls`).one().c;
-    return { version: VERSION, marqueur: MARQUEUR, ntfy: NTFY, events: ev, wallets: ws, diag: { dernier_tick: Number(kv.dernier_tick || 0), tick_ms: kv.tick_ms, erreurs: kv.tick_err, tx_lues: kv.tick_tx, derniere_erreur: kv.derniere_erreur || "", calls_connus: appels, err_canal: kv.err_canal || "" } };
+    return { version: VERSION, marqueur: MARQUEUR, ntfy: NTFY, events: ev, wallets: ws, diag: { dernier_tick: Number(kv.dernier_tick || 0), tick_ms: kv.tick_ms, erreurs: kv.tick_err, tx_lues: kv.tick_tx, derniere_erreur: kv.derniere_erreur || "", calls_connus: appels, err_canal: kv.err_canal || "", err_ntfy: kv.err_ntfy || "" } };
   }
 }
 
