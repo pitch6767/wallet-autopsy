@@ -5,6 +5,7 @@
 // Tourne dans le Moteur (Durable Object en Europe), après le scan des perpétuels.
 
 import { lireMarge, emprunt, TAUX_DEFAUT_H } from "./marge.js";
+import { lireTransferts, transfertsOk } from "./transferts.js";
 export const REGLES_ID_C = "3";
 export const REGLES_C = {
   mise: 5000,           // $ de chaque côté : 5 000 $ achetés sur A, 5 000 $ vendus sur B (choix de Pitch, 18.11.2026)
@@ -12,7 +13,7 @@ export const REGLES_C = {
   ecartMaxPrix: 0.10,   // au-delà de 10 % ce n'est probablement pas le même jeton → ignoré
   volumeMin: 1e6,       // $ échangés sur 24 h sur chacune des 2 plateformes
   pauseMemeActifS: 60,  // stratégie 1 : un même actif ne compte qu'une fois par minute (le carnet doit se reconstituer)
-  ecartSuspect: 0.01,   // A : un écart > 1 %…
+  ecartSuspect: 0.05,   // A : un écart > 5 % (1 % jusqu'au 21.11.2026, relevé par Pitch, choix 3)…
   dureeSuspectS: 300,   // …qui dure plus de 5 min = jeton différent ou retraits bloqués → actif ignoré. 20.11.2026 (Pitch, option A) : décision à l'entrée seulement, une position prise n'est plus jamais annulée
   sorties: [5, 10],
   entreeMin2: 25,       // stratégie 2 : gain à l'entrée ≥ 25 $ après frais d'entrée (Pitch, 19.11.2026)
@@ -234,12 +235,14 @@ export async function tickComptant(env) {
       st.push(db.prepare("UPDATE comptant_pos SET statut='fermé', ferme=?, px_sortie_vente=?, px_sortie_achat=?, frais=frais+?, interet=?, net=entree+? WHERE id=? AND statut='ouvert'").bind(now, sA, sB, fraisS, interet, sortie, p.id));
     } catch (e) {}
   }
+  let transf = null; try { transf = await lireTransferts(); } catch (e) {}
   const dejaOuv = new Set(ouvertes.map((p) => p.variante + "|" + p.cle));
   const nOuv = {}; for (const p of ouvertes) if (p.regles === REGLES_ID_C) nOuv[p.variante] = (nOuv[p.variante] || 0) + 1;
-  // option A : un écart > 1 % n'est jamais pris tant qu'il dure (au-delà de 5 min il est ignoré) ; on n'entre qu'une fois revenu sous 1 %
+  // option A : un écart > 5 % n'est jamais pris tant qu'il dure (au-delà de 5 min il est ignoré) ; on n'entre qu'une fois revenu sous 5 %
   for (const c of cands.filter((c) => c.gain >= REGLES_C.entreeMin2 && c.ecart <= REGLES_C.ecartSuspect && !permanent(c)).slice(0, 6)) {
     const libres = REGLES_C.sorties.filter((v) => !dejaOuv.has(v + "|" + c.k) && (nOuv[v] || 0) < REGLES_C.maxOuvertes);
     if (!libres.length) continue;
+    if (!transfertsOk(transf, c.a.ex, c.a.base) || !transfertsOk(transf, c.b.ex, c.b.base)) continue; // dépôts ou retraits suspendus (Gate/KuCoin)
     try {
       const [ca, cb] = await Promise.all([carnetR(env, c.a), carnetR(env, c.b)]);
       const Q = N / c.a.ask;
@@ -258,8 +261,8 @@ export async function tickComptant(env) {
   }
 
   const top = cands.slice(0, 40).map((c) => ({ cle: c.k, achat: c.a.ex, ask: c.a.ask, vente: c.b.ex, bid: c.b.bid, ecart: c.ecart, gain: c.gain, approx: !!(c.a.approx || c.b.approx),
-    permanent: permanent(c), verif: verifies[c.k] ?? null }));
-  st.push(db.prepare("INSERT OR REPLACE INTO etat (id,t,json) VALUES (2,?,?)").bind(now, JSON.stringify({ statut, top, nActifs: par.size })));
+    permanent: permanent(c), transfertsFermes: !(transfertsOk(transf, c.a.ex, c.a.base) && transfertsOk(transf, c.b.ex, c.b.base)), verif: verifies[c.k] ?? null }));
+  st.push(db.prepare("INSERT OR REPLACE INTO etat (id,t,json) VALUES (2,?,?)").bind(now, JSON.stringify({ statut, top, nActifs: par.size, transferts: transf?.statut || null })));
   for (let i = 0; i < st.length; i += 90) await db.batch(st.slice(i, i + 90));
 }
 
